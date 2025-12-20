@@ -1,0 +1,18 @@
+title: GitHub Copilot Agents
+description: Specialized agents for intelligent, plan-first development
+remote_theme: pages-themes/slate@v0.2.0
+plugins:
+- jekyll-remote-theme # add this line to the plugins list if you already have one
+search_enabled: true
+search_tokenizer_separator: /[\s/]+/
+search.heading_level: 2
+search.previews: 2
+search.preview_words_before: 5
+search.preview_words_after: 10
+
+nav_order: 1
+
+footer_content: "Copyright &copy; 2025 OpenAgents Community"
+
+back_to_top: true
+back_to_top_text: "Back to top"
