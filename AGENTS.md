@@ -32,6 +32,14 @@ Apply Clean Architecture principles:
 - Generics for reusable code
 - Utility types (Pick, Omit, Partial, etc.)
 
+### Flutter/Dart Projects
+- Use Riverpod for state management
+- Feature-based architecture with clean separation
+- Immutable data models with freezed
+- Result pattern for error handling
+- Provider pattern for dependency injection
+- Widget testing for all UI components
+
 ## Agent Usage
 
 Primary agents:
@@ -43,11 +51,31 @@ Subagents:
 - `review` - Code review for security, performance, and best practices
 - `em-advisor` - Engineering management guidance
 
+## Session Summary Requirements
+
+**All agents MUST summarize sessions upon task completion:**
+
+### Summary Format
+- **Context**: Brief description of what was accomplished
+- **Key Decisions**: Important architectural or implementation choices made
+- **Open Items**: Any follow-up tasks or unresolved issues
+- **Lessons Learned**: Insights or patterns discovered during the session
+
+### Summary Optimization
+- Keep summaries concise and actionable
+- Focus on information that would be valuable for future sessions
+- Avoid redundant information from previous summaries
+- Use bullet points for readability
+- Include timestamps for chronological context
+
+### Summary Location
+Summaries should be added to this AGENTS.md file under a "Session Summaries" section for easy reference across sessions.
+
 ## Quality Requirements
 
 All code changes must:
-- Pass type checking (mypy, tsc --noEmit)
-- Pass linting (ruff, eslint)
+- Pass type checking (mypy, tsc --noEmit, flutter analyze)
+- Pass linting (ruff, eslint, dart format)
 - Pass all tests
 - Follow language-specific conventions
 - Include proper documentation

@@ -94,3 +94,15 @@ docs(scope): description
 - Never implement without approval
 - Ask before executing risky terminal commands
 - Validate inputs and handle errors gracefully
+
+## Session Summary Requirements
+
+**At task completion, ALWAYS add a session summary to AGENTS.md:**
+
+### Summary Format
+- **Context**: Brief description of what was accomplished
+- **Key Decisions**: Important architectural or implementation choices made
+- **Open Items**: Any follow-up tasks or unresolved issues
+- **Lessons Learned**: Insights or patterns discovered during the session
+
+Keep summaries concise and actionable, focusing on information valuable for future sessions.

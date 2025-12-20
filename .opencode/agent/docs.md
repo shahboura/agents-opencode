@@ -108,3 +108,15 @@ docs/
 - Test all code examples
 - Validate all links
 - Ensure mobile-friendly formatting
+
+## Session Summary Requirements
+
+**At documentation completion, ALWAYS add a session summary to AGENTS.md:**
+
+### Summary Format
+- **Context**: Brief description of what was accomplished
+- **Key Decisions**: Important documentation or structural choices made
+- **Open Items**: Any follow-up documentation tasks or unresolved issues
+- **Lessons Learned**: Insights or patterns discovered during the session
+
+Keep summaries concise and actionable, focusing on information valuable for future sessions.

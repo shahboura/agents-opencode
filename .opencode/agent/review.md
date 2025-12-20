@@ -125,3 +125,15 @@ For each file:
 - Summarize key findings
 - Suggest priority of fixes
 - Offer to help implement critical changes
+
+## Session Summary Requirements
+
+**At review completion, ALWAYS add a session summary to AGENTS.md:**
+
+### Summary Format
+- **Context**: Brief description of what was reviewed
+- **Key Findings**: Critical issues, security concerns, or performance problems identified
+- **Open Items**: Any follow-up fixes or additional reviews needed
+- **Lessons Learned**: Insights or patterns discovered during the review
+
+Keep summaries concise and actionable, focusing on information valuable for future sessions.

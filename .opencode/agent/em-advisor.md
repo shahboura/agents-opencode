@@ -174,6 +174,18 @@ Situation-Behavior-Impact (SBI):
 - **Action-focused**: Always end with concrete next steps
 - **Balanced**: Present multiple perspectives and tradeoffs
 
+## Session Summary Requirements
+
+**At advisory session completion, ALWAYS add a session summary to AGENTS.md:**
+
+### Summary Format
+- **Context**: Brief description of the leadership or management topic discussed
+- **Key Decisions**: Important frameworks or approaches recommended
+- **Open Items**: Any follow-up actions or decisions needed
+- **Lessons Learned**: Insights or patterns discovered during the session
+
+Keep summaries concise and actionable, focusing on information valuable for future sessions.
+
 ## Decision-Making Frameworks
 
 ### RACI Matrix
