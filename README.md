@@ -1,6 +1,6 @@
-# GitHub Copilot Custom Agents
+# OpenCode Custom Agents
 
-Specialized GitHub Copilot agents for intelligent, plan-first development workflows.
+Specialized OpenCode agents for intelligent, plan-first development workflows.
 
 **Agents:** @orchestrator • @codebase • @docs • @review • @em-advisor
 
@@ -10,7 +10,7 @@ Specialized GitHub Copilot agents for intelligent, plan-first development workfl
 
 ### Use an Agent
 
-1. Open GitHub Copilot Chat: `Ctrl+Shift+I` (or `Cmd+Shift+I`)
+1. Open OpenCode: `opencode` command
 2. Select an agent: `@orchestrator`, `@codebase`, `@review`, etc.
 3. Describe what you want:
 
@@ -23,13 +23,10 @@ Specialized GitHub Copilot agents for intelligent, plan-first development workfl
 - ⏸️ Wait for your approval (or proceed if you approve execution)
 - 🔨 Implement with validation
 - ✨ Suggest next steps (docs, review, etc.)
+
 ---
 
 ## 📚 Core Concepts
-
-### 6 Specialized Agents
-
-### 6 Specialized Agents
 
 ### 5 Specialized Agents
 
@@ -45,7 +42,7 @@ Specialized GitHub Copilot agents for intelligent, plan-first development workfl
 
 ## ⚡ 5 Reusable Prompts
 
-Invoke with `/` in Copilot Chat:
+Invoke with `/` in OpenCode:
 
 - `/create-readme` - Generate professional README
 - `/code-review` - Comprehensive code review
@@ -66,6 +63,7 @@ No configuration needed. When you edit files, standards activate automatically:
 | `.cs` / `.csproj` | .NET Clean Architecture, async/await, nullable types |
 | `.py` | Python type hints, pytest, black formatting |
 | `.ts` / `.tsx` | TypeScript strict mode, null safety |
+| `.dart` | Flutter Riverpod, freezed models, widget testing |
 
 **[👉 View Standards](./docs/instructions.md)**
 
@@ -99,7 +97,7 @@ No configuration needed. When you edit files, standards activate automatically:
 
 ## 🛠️ Customization
 
-Add project context to `.github/copilot-instructions.md`:
+Add project context to `AGENTS.md`:
 
 ```markdown
 ## Your Project
@@ -121,16 +119,59 @@ Agents automatically use this context!
 
 ---
 
+## 📦 Installation & Setup
+
+### Prerequisites
+- [OpenCode CLI](https://opencode.ai/docs/cli/) installed
+- Any project (works with existing repos)
+
+### Install Agents
+
+1. **Clone this repository:**
+```bash
+git clone https://github.com/your-username/agents-opencode.git
+cd agents-opencode
+```
+
+2. **Copy agent configurations:**
+```bash
+# For global installation (available in all projects)
+cp -r .opencode/agent/ ~/.config/opencode/agent/
+
+# Or for project-specific installation
+cp -r .opencode/agent/ your-project/.opencode/agent/
+```
+
+3. **Copy language instructions (optional):**
+```bash
+cp -r .github/instructions/ your-project/.github/instructions/
+```
+
+4. **Set up AGENTS.md (optional):**
+```bash
+cp AGENTS.md your-project/
+# Edit to match your project
+```
+
+### Verify Installation
+
+```bash
+opencode
+# Type @ in chat to see available agents
+```
+
+---
+
 ## ❓ FAQ & Troubleshooting
 
 **Q: How do I get agents to show up?**  
-A: Ensure files are in `.github/agents/` with `.agent.md` extension. Reload VS Code.
+A: Ensure files are in `.opencode/agent/` with `.md` extension. Restart OpenCode.
 
 **Q: How do I modify agent behavior?**  
-A: Edit `.github/agents/[agent-name].agent.md` directly.
+A: Edit `.opencode/agent/[agent-name].md` directly.
 
 **Q: Do agents save context between sessions?**  
-A: Yes! They update `.github/copilot-instructions.md` automatically (with your approval).
+A: Yes! They update `AGENTS.md` automatically with session summaries.
 
 **[👉 Full FAQ](./docs/troubleshooting.md)**
 

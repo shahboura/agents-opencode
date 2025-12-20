@@ -6,9 +6,9 @@ has_children: true
 has_toc: false
 ---
 
-# GitHub Copilot Agents - Full Documentation
+# OpenCode Agents - Full Documentation
 
-Welcome to the comprehensive documentation for GitHub Copilot custom agents.
+Welcome to the comprehensive documentation for OpenCode custom agents.
 
 ## Quick Navigation
 
@@ -23,7 +23,7 @@ Welcome to the comprehensive documentation for GitHub Copilot custom agents.
 
 ## What Are These Agents?
 
-Five specialized GitHub Copilot agents that work together for intelligent development:
+Five specialized OpenCode agents that work together for intelligent development:
 
 | Agent | Purpose |
 |-------|---------|
@@ -36,7 +36,7 @@ Five specialized GitHub Copilot agents that work together for intelligent develo
 ## Key Features
 
 ✅ **Plan-First Workflow** - Agents propose plans, you approve before changes  
-✅ **Multi-Language** - Auto-detects .NET, Python, TypeScript  
+✅ **Multi-Language** - Auto-detects .NET, Python, TypeScript, Flutter  
 ✅ **Auto-Applied Standards** - Coding rules activated by file type  
 ✅ **Agent Handoffs** - Seamless transitions between specialists  
 ✅ **Context Persistence** - Decisions saved automatically  

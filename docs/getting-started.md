@@ -6,16 +6,16 @@ nav_order: 1
 
 # Getting Started in 5 Minutes
 
-Get up and running with GitHub Copilot agents in just 5 minutes.
+Get up and running with OpenCode agents in just 5 minutes.
 
 ## Prerequisites
 
-- VS Code with GitHub Copilot extension installed
+- [OpenCode CLI](https://opencode.ai/docs/cli/) installed
 - Any project (this works with existing repos)
 
 ## Step 1: Understand Agent Concepts (1 min)
 
-**Agents** are specialized versions of GitHub Copilot that excel at specific tasks.
+**Agents** are specialized versions of OpenCode that excel at specific tasks.
 
 | Agent | What It Does |
 |-------|-------------|
@@ -27,28 +27,28 @@ Get up and running with GitHub Copilot agents in just 5 minutes.
 
 ## Step 2: Start Your First Conversation (2 min)
 
-1. **Open Copilot Chat**
-   - Windows: `Ctrl+Shift+I`
-   - Mac: `Cmd+Shift+I`
+1. **Open OpenCode**
+    ```bash
+    opencode
+    ```
 
 2. **Select an Agent**
-   - Click the agent dropdown at the top
-   - Choose `@codebase` (start with the most versatile)
+    - Type `@codebase` (start with the most versatile)
 
 3. **Type Your Request**
-   ```
-   @codebase Create a REST API endpoint for getting users by ID
-   ```
+    ```
+    @codebase Create a REST API endpoint for getting users by ID
+    ```
 
 4. **Review the Plan**
-   - The agent will propose a step-by-step plan
-   - Review it carefully
-   - Type "Yes" or "Approved" to proceed
+    - The agent will propose a step-by-step plan
+    - Review it carefully
+    - Type "Yes" or "Approved" to proceed
 
 5. **Watch Implementation**
-   - Agent implements one step at a time
-   - Each step shows what changed
-   - Can stop or adjust at any time
+    - Agent implements one step at a time
+    - Each step shows what changed
+    - Can stop or adjust at any time
 
 ## Step 3: Use Reusable Prompts (1 min)
 
@@ -62,13 +62,13 @@ Save time with `/` commands:
 /architecture-decision # Design documentation
 ```
 
-Type `/` in Copilot Chat to see all available prompts.
+Type `/` in OpenCode to see all available prompts.
 
 ## Step 4: Add Project Context (1 min)
 
 Make agents smarter by providing project context:
 
-1. **Create file**: `.github/copilot-instructions.md`
+1. **Create file**: `AGENTS.md`
 
 2. **Add context**:
 ```markdown
@@ -117,7 +117,7 @@ Now you're ready! Try these:
 
 ### ✅ DO: Be Specific
 ```
-@codebase Create an authentication middleware that validates JWT tokens 
+@codebase Create an authentication middleware that validates JWT tokens
 and extracts user info to req.user
 ```
 

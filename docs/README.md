@@ -1,4 +1,4 @@
-# GitHub Pages Configuration
+# OpenCode Agents Documentation
 
 GitHub Pages is automatically enabled for this repository.
 
@@ -19,8 +19,8 @@ The documentation is built from the `docs/` folder:
 
 1. Go to repository **Settings** → **Pages**
 2. Under "Source", select:
-   - Branch: `main`
-   - Folder: `docs/`
+    - Branch: `main`
+    - Folder: `docs/`
 3. Click **Save**
 
 That's it! GitHub Pages will automatically build and deploy.

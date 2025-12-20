@@ -10,11 +10,12 @@ Coding rules that activate automatically based on file type.
 
 ## How It Works
 
-When you edit a file, GitHub Copilot checks the file extension and applies relevant standards:
+When you edit a file, OpenCode checks the file extension and applies relevant standards:
 
 - `.cs` or `.csproj` → .NET Clean Architecture rules
 - `.py` → Python best practices
 - `.ts` or `.tsx` → TypeScript strict mode
+- `.dart` → Flutter best practices
 
 **You don't configure anything** - it just works!
 
@@ -37,12 +38,12 @@ All code follows layered architecture with strict dependency rules.
 ```csharp
 // ✅ Always include CancellationToken
 public async Task<User> GetUserAsync(
-    int id, 
+    int id,
     CancellationToken cancellationToken)
 {
     return await _context.Users
         .FirstOrDefaultAsync(
-            u => u.Id == id, 
+            u => u.Id == id,
             cancellationToken);
 }
 ```
@@ -264,6 +265,109 @@ npm run build     # Build
 
 ---
 
+## Flutter Standards
+
+**Applies to:** `.dart` files
+
+### Key Standards
+
+#### State Management with Riverpod
+```dart
+// Riverpod provider
+final userProvider = StateNotifierProvider<UserNotifier, User?>((ref) {
+  return UserNotifier();
+});
+
+class UserNotifier extends StateNotifier<User?> {
+  UserNotifier() : super(null);
+
+  Future<void> login(String email, String password) async {
+    state = await _authService.login(email, password);
+  }
+}
+
+// Usage in widget
+class ProfileScreen extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(userProvider);
+
+    return user == null
+        ? LoginScreen()
+        : UserProfile(user: user);
+  }
+}
+```
+
+#### Immutable Models with freezed
+```dart
+@freezed
+class User with _$User {
+  const factory User({
+    required int id,
+    required String email,
+    required String name,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
+    @Default(true) bool isActive,
+  }) = _User;
+
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+}
+```
+
+#### Result Pattern for Error Handling
+```dart
+sealed class Result<T> {
+  const Result();
+
+  factory Result.success(T data) = Success<T>;
+  factory Result.error(String message) = Error<T>;
+}
+
+// Usage in repository
+Future<Result<User>> getUser(int id) async {
+  try {
+    final user = await _api.getUser(id);
+    return Result.success(user);
+  } catch (e) {
+    return Result.error('Failed to fetch user: $e');
+  }
+}
+```
+
+#### Widget Testing
+```dart
+void main() {
+  testWidgets('CounterButton increments count on tap',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [counterProvider.overrideWith((ref) => CounterNotifier())],
+        child: MaterialApp(home: CounterButton()),
+      ),
+    );
+
+    expect(find.text('Count: 0'), findsOneWidget);
+
+    await tester.tap(find.byType(ElevatedButton));
+    await tester.pump();
+
+    expect(find.text('Count: 1'), findsOneWidget);
+  });
+}
+```
+
+### Validation Commands
+
+```bash
+flutter analyze      # Static analysis
+flutter test         # Run tests
+dart format .        # Format code
+flutter build apk    # Build APK
+```
+
+---
+
 ## Quality Requirements
 
 All files must pass:
@@ -283,6 +387,7 @@ Each standard has comprehensive details:
 - **[.NET Clean Architecture](../.github/instructions/dotnet-clean-architecture.instructions.md)** - Full reference
 - **[Python Best Practices](../.github/instructions/python-best-practices.instructions.md)** - Full reference
 - **[TypeScript Strict Mode](../.github/instructions/typescript-strict.instructions.md)** - Full reference
+- **[Flutter Best Practices](../.github/instructions/flutter.instructions.md)** - Full reference
 ---
 
 ## Override Standards

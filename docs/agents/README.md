@@ -5,7 +5,7 @@ nav_order: 2
 has_children: true
 ---
 
-# GitHub Copilot Agents
+# OpenCode Agents
 
 Five specialized agents, each excelling at specific tasks.
 
@@ -146,6 +146,7 @@ Agent suggests next steps (review, document, etc.).
 | `*.sln`, `*.csproj` | .NET | Clean Architecture, async/await, nullable types |
 | `pyproject.toml`, `requirements.txt` | Python | Virtual env, type hints, pytest |
 | `package.json`, `tsconfig.json` | TypeScript | Strict types, incremental builds |
+| `pubspec.yaml`, `*.dart` | Flutter | Riverpod, freezed models, widget testing |
 | Mixed or unclear | Generic | Language-agnostic patterns |
 
 **Tip:** Mention your language if detection is ambiguous:
@@ -173,7 +174,7 @@ Each handoff includes context, so the next agent understands the full picture.
 
 ## Context Persistence
 
-Agents automatically save important decisions to `.github/copilot-instructions.md`:
+Agents automatically save important decisions to `AGENTS.md`:
 
 - Architectural patterns established
 - Coding standards developed
