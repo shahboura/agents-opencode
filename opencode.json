@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENTS.md",
+    ".github/instructions/dotnet-clean-architecture.instructions.md",
+    ".github/instructions/python-best-practices.instructions.md",
+    ".github/instructions/typescript-strict.instructions.md",
+    ".github/instructions/flutter.instructions.md"
+  ]
+}
