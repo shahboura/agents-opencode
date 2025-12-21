@@ -139,21 +139,20 @@ Now when you:
 
 ### Modify an Agent
 
-Agents are defined in `.github/agents/`:
+Agents are defined in `.opencode/agent/`:
 
 ```bash
-.github/agents/
-├── codebase.agent.md
-├── planner.agent.md
-├── orchestrator.agent.md
-├── docs.agent.md
-├── review.agent.md
-└── em-advisor.agent.md
+.opencode/agent/
+├── codebase.md
+├── orchestrator.md
+├── docs.md
+├── review.md
+└── em-advisor.md
 ```
 
 ### Example: Customize @review
 
-Edit `.github/agents/review.agent.md`:
+Edit `.opencode/agent/review.md`:
 
 ```markdown
 ---
@@ -188,28 +187,24 @@ Add project-specific prompts for common tasks.
 
 ### Step 1: Create Prompt File
 
-Create `.github/prompts/database-migration.prompt.md`:
+Add to `.opencode/agent/codebase.md` under a Custom Prompts section:
 
 ```markdown
----
-description: Generate database migration
-agent: codebase
----
+## Custom Prompts
 
-# Database Migration
+### /database-migration
+Generate database migration
 
-Generate a database migration for [change]:
-
-## Requirements
-- Use Sequelize migrations
-- Support rollback
-- Test on PostgreSQL 14
-- Add to migration history
-- Update models if needed
+Usage:
+```
+/database-migration Add user last_login timestamp
 ```
 
-### Step 2: Use in Copilot Chat
+### Step 2: Use in OpenCode Chat
 
+```bash
+opencode
+/database-migration Add user last_login timestamp
 ```
 /database-migration Add user last_login timestamp
 ```
@@ -218,7 +213,7 @@ Generate a database migration for [change]:
 
 ## Add Coding Standards for Your Stack
 
-Create `.github/instructions/node-express.instructions.md`:
+Create `.opencode/instructions/node-express.instructions.md`:
 
 ```markdown
 ---
@@ -264,7 +259,7 @@ app.post('/users', asyncHandler(async (req, res) => {
 
 ### For TypeScript Only
 
-Create `.github/instructions/typescript-only.instructions.md`:
+Create `.opencode/instructions/typescript-only.instructions.md`:
 
 ```markdown
 ---
@@ -279,7 +274,7 @@ applyTo: '**/*.ts'
 
 ### For React Components
 
-Create `.github/instructions/react.instructions.md`:
+Create `.opencode/instructions/react.instructions.md`:
 
 ```markdown
 ---
@@ -299,7 +294,7 @@ applyTo: '**/components/**/*.tsx'
 As your project evolves:
 
 1. **Agent proposes improvements** at task completion
-2. **You review updates** to `.github/copilot-instructions.md`
+2. **You review updates** to `AGENTS.md`
 3. **Approve or modify** the context
 4. **All future sessions use new context**
 
@@ -372,13 +367,13 @@ For mature projects:
 ## Troubleshooting Customization
 
 **Q: Agent not using my context?**  
-A: Make sure `.github/copilot-instructions.md` exists in repository root.
+A: Make sure `AGENTS.md` exists in repository root.
 
 **Q: Agent ignoring my standards?**  
-A: Add standards to `.github/instructions/` files with proper `applyTo` patterns.
+A: Add standards to `.opencode/instructions/` files with proper `applyTo` patterns.
 
 **Q: Custom prompt not showing?**  
-A: Verify file is in `.github/prompts/` with `.prompt.md` extension.
+A: Verify file is in `.opencode/agent/` with proper format.
 
 ---
 

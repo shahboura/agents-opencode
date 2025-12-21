@@ -305,7 +305,7 @@ Take time to review and refine proposed plans.
 Let agents transition between roles automatically.
 
 ### ✅ DO: Save Context
-Accept agent proposals to update `.github/copilot-instructions.md`.
+Accept agent proposals to update `AGENTS.md`.
 
 ### ❌ DON'T: Skip Planning
 Jumping straight to implementation causes rework.

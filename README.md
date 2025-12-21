@@ -199,9 +199,6 @@ Complete documentation is available at [https://shahboura.github.io/agents-openc
 ├── .opencode/
 │   ├── agent/                # OpenCode agent configurations
 │   └── instructions/         # Language-specific coding standards
-├── .github/
-│   ├── agents/               # Legacy agent definitions
-│   └── prompts/              # Reusable prompt templates
 ├── docs/                     # Documentation
 ├── AGENTS.md                 # Session summaries and context
 └── opencode.json            # OpenCode configuration

@@ -1,6 +1,6 @@
 # OpenCode Agents Repository
 
-This repository contains customized agents for OpenCode.ai, adapted from GitHub Copilot agents and aligned with Anthropic's skills framework.
+This repository contains customized agents for OpenCode.ai, aligned with Anthropic's skills framework.
 
 ## Project Structure
 
@@ -82,6 +82,13 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 
 
 ## Session Summaries
+
+### Session Summary - Sun Dec 21 2025
+
+- **Context**: Reviewed all documentation files and removed remaining Copilot references, moved instruction files to .opencode/instructions/ to match configuration, and updated repository structure documentation to reflect the cleaned-up OpenCode-only organization.
+- **Key Decisions**: Moved instruction files from .github/instructions/ to .opencode/instructions/ for consistency, updated all Copilot references to OpenCode throughout documentation, corrected all file paths to reflect current repository structure.
+- **Open Items**: None.
+- **Lessons Learned**: Systematic documentation cleanup ensures users have accurate, consistent information across all docs files.
 
 ### Session Summary - Sun Dec 21 2025
 

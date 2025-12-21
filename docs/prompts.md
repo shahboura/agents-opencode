@@ -117,23 +117,23 @@ Documents decisions with:
 
 ## How to Use
 
-1. **Open Copilot Chat** - `Ctrl+Shift+I` (Windows) or `Cmd+Shift+I` (Mac)
+1. **Open OpenCode Chat** - `opencode` command
 
 2. **Type the command**
-   ```
-   /create-readme
-   ```
+    ```
+    /create-readme
+    ```
 
 3. **Select the agent** (if prompted)
-   - Most prompts route to specific agents automatically
+    - Most prompts route to specific agents automatically
 
 4. **Provide context** (if requested)
-   - Answer clarifying questions
-   - Attach files if needed
+    - Answer clarifying questions
+    - Attach files if needed
 
 5. **Review output**
-   - Edit as needed
-   - Accept or refine
+    - Edit as needed
+    - Accept or refine
 
 ---
 
@@ -158,31 +158,25 @@ Documents decisions with:
 
 ## Location
 
-All prompts are stored in:
-```
-.github/prompts/*.prompt.md
-```
-
-You can view them to understand how they work!
+Prompts are built into the agent configurations in `.opencode/agent/`. Each agent defines the prompts it supports.
 
 ---
 
 ## Create Custom Prompts
 
-Want to add your own prompt? Create a `.prompt.md` file:
+Want to add your own prompt? Add it to an agent configuration in `.opencode/agent/[agent-name].md`:
 
 ```markdown
----
-description: What this prompt does
-agent: codebase
----
+## Custom Prompts
 
-# Your Prompt Name
+### /my-custom-prompt
+Description of what this prompt does.
 
-Instructions here...
+Usage:
 ```
-
-Store in `.github/prompts/` and it appears in autocomplete!
+/my-custom-prompt Do something specific
+```
+```
 
 ---
 

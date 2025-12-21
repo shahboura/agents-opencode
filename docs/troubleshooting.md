@@ -26,15 +26,15 @@
 **[→ Agents Guide](./agents/README.md)**
 
 ### How do I customize agents?
-Edit `.github/copilot-instructions.md` to add project context.
+Edit `AGENTS.md` to add project context.
 
 **[→ Customization Guide](./customization.md)**
 
 ### Do agents save context between sessions?
-**Yes!** They update `.github/copilot-instructions.md` automatically (with approval).
+**Yes!** They update `AGENTS.md` automatically (with approval).
 
 ### Can I create custom prompts?
-Yes! Create files in `.github/prompts/` with `.prompt.md` extension.
+Yes! Add prompts to agent configurations in `.opencode/agent/`.
 
 **[→ Prompts Guide](./prompts.md)**
 
@@ -44,21 +44,20 @@ Yes! Create files in `.github/prompts/` with `.prompt.md` extension.
 
 ### Agents Not Showing in Dropdown
 
-**Problem:** Can't find agents in Copilot Chat.
+**Problem:** Can't find agents in OpenCode Chat.
 
 **Solution:**
 1. Verify files exist: `.github/agents/*.agent.md`
 2. Check file names end with `.agent.md` exactly
 3. Reload VS Code: `Ctrl+Shift+P` → "Reload Window"
-4. Restart Copilot extension
+4. Restart OpenCode
 
 **Files to check:**
-- `.github/agents/codebase.agent.md`
-- `.github/agents/planner.agent.md`
-- `.github/agents/orchestrator.agent.md`
-- `.github/agents/docs.agent.md`
-- `.github/agents/review.agent.md`
-- `.github/agents/em-advisor.agent.md`
+- `.opencode/agent/codebase.md`
+- `.opencode/agent/orchestrator.md`
+- `.opencode/agent/docs.md`
+- `.opencode/agent/review.md`
+- `.opencode/agent/em-advisor.md`
 
 ---
 
@@ -67,13 +66,13 @@ Yes! Create files in `.github/prompts/` with `.prompt.md` extension.
 **Problem:** Agent not following project standards.
 
 **Solution:**
-1. Create/update `.github/copilot-instructions.md`
+1. Create/update `AGENTS.md`
 2. Include specific examples
 3. Refresh chat context (start new conversation)
 4. Mention standards in your request:
-   ```
-   @codebase Create user service following our standards in .github/copilot-instructions.md
-   ```
+    ```bash
+    @codebase Create user service following our standards in AGENTS.md
+    ```
 
 ---
 
@@ -157,9 +156,9 @@ Yes! Create files in `.github/prompts/` with `.prompt.md` extension.
 **Problem:** `/create-readme` and other prompts don't autocomplete.
 
 **Solution:**
-1. Check files exist: `.github/prompts/*.prompt.md`
-2. Verify file names end with `.prompt.md` exactly
-3. Reload VS Code
+1. Check prompts are defined in `.opencode/agent/*.md` files
+2. Verify file names end with `.md` exactly
+3. Reload OpenCode
 4. Type `/` and wait for autocomplete list
 
 ---
@@ -229,12 +228,12 @@ No need for extensive planning.
 
 ### Performance Issues
 
-**Problem:** Copilot Chat running slowly.
+**Problem:** OpenCode running slowly.
 
 **Solution:**
 1. Make requests more specific (smaller scope)
 2. Break large tasks into smaller pieces
-3. Restart Copilot extension
+3. Restart OpenCode
 4. Check internet connection
 5. Reduce open files/projects
 
@@ -273,7 +272,7 @@ Don't do:
 ```
 
 ### ❌ Not Providing Context
-Without `.github/copilot-instructions.md`, agents use generic patterns.
+Without `AGENTS.md`, agents use generic patterns.
 
 **Provide context!** It makes agents smarter.
 
@@ -323,7 +322,7 @@ then
 ```
 
 ### Save Important Context
-Accept agent proposals to update `.github/copilot-instructions.md`:
+Accept agent proposals to update `AGENTS.md`:
 - Architectural decisions
 - Coding patterns established
 - Project-specific conventions
@@ -333,7 +332,7 @@ This improves all future sessions!
 ### Reference Previous Decisions
 In your request, reference saved context:
 ```
-@codebase Create the auth service using patterns from our .github/copilot-instructions.md
+@codebase Create the auth service using patterns from our AGENTS.md
 ```
 
 ---

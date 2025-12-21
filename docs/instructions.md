@@ -385,10 +385,10 @@ All files must pass:
 
 Each standard has comprehensive details:
 
-- **[.NET Clean Architecture](../.github/instructions/dotnet-clean-architecture.instructions.md)** - Full reference
-- **[Python Best Practices](../.github/instructions/python-best-practices.instructions.md)** - Full reference
-- **[TypeScript Strict Mode](../.github/instructions/typescript-strict.instructions.md)** - Full reference
-- **[Flutter Best Practices](../.github/instructions/flutter.instructions.md)** - Full reference
+- **[.NET Clean Architecture](../.opencode/instructions/dotnet-clean-architecture.instructions.md)** - Full reference
+- **[Python Best Practices](../.opencode/instructions/python-best-practices.instructions.md)** - Full reference
+- **[TypeScript Strict Mode](../.opencode/instructions/typescript-strict.instructions.md)** - Full reference
+- **[Flutter Best Practices](../.opencode/instructions/flutter.instructions.md)** - Full reference
 ---
 
 ## Override Standards
