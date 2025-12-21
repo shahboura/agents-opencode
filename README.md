@@ -144,10 +144,12 @@ cp -r .opencode/agent/ ~/.config/opencode/agent/
 cp -r .opencode/agent/ your-project/.opencode/agent/
 ```
 
-3. **Copy language instructions:**
+3. **Copy language instructions and configuration:**
 ```bash
 cp -r .opencode/instructions/ your-project/.opencode/instructions/
+cp opencode.json your-project/
 ```
+**Note:** The `opencode.json` file specifies which instruction files to load and is configured automatically. Users do not need to modify it unless adding custom instructions.
 
 4. **Set up AGENTS.md (optional):**
 ```bash

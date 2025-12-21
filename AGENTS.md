@@ -85,6 +85,20 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 
 ### Session Summary - Sun Dec 21 2025
 
+- **Context**: Added the requested session summary to AGENTS.md under the Session Summaries section as instructed.
+- **Key Decisions**: Used the edit tool to insert the new summary at the top of the section to maintain chronological order.
+- **Open Items**: None.
+- **Lessons Learned**: Session summaries can be added directly using the edit tool when the content is provided.
+
+### Session Summary - Sun Dec 21 2025
+
+- **Context**: Consolidated repository to OpenCode-only by moving instructions locally, updating configurations, removing Copilot files, cleaning up documentation, and simplifying installation.
+- **Key Decisions**: Moved instructions to .opencode/instructions/ for consolidation, removed all Copilot configurations (.github/agents/, prompts/, copilot-instructions.md), updated opencode.json and README accordingly.
+- **Open Items**: None.
+- **Lessons Learned**: Repository consolidation improves maintainability; clear separation of concerns makes setup easier for users.
+
+### Session Summary - Sun Dec 21 2025
+
 - **Context**: Reviewed all documentation files and removed remaining Copilot references, moved instruction files to .opencode/instructions/ to match configuration, and updated repository structure documentation to reflect the cleaned-up OpenCode-only organization.
 - **Key Decisions**: Moved instruction files from .github/instructions/ to .opencode/instructions/ for consistency, updated all Copilot references to OpenCode throughout documentation, corrected all file paths to reflect current repository structure.
 - **Open Items**: None.
