@@ -1,7 +1,6 @@
 ---
 description: Documentation and wiki generation specialist for creating comprehensive project documentation
 mode: subagent
-model: anthropic/claude-sonnet-4-20250514
 temperature: 0.1
 tools:
   write: true

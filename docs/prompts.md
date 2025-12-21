@@ -1,32 +1,26 @@
----
-layout: default
-title: Prompts
-nav_order: 3
----
+# Prompts
 
-# Reusable Prompts
+Reusable commands for common tasks.
 
-Five powerful slash commands for common tasks.
+## Available Commands
 
-## What Are Prompts?
+- `/create-readme` - Generate professional README
+- `/code-review` - Comprehensive code review
+- `/generate-tests` - Unit test generation
+- `/1-on-1-prep` - Meeting preparation
+- `/architecture-decision` - ADR creation
 
-Type `/` in Copilot Chat to invoke ready-made instructions for specific scenarios.
+## Usage
 
-## Available Prompts
+Type `/` in OpenCode to see available prompts, then select one.
 
-### `/create-readme`
-**Generate a professional README.md file**
+## Examples
 
-Auto-detects your project and creates comprehensive documentation:
-- Project title & description
-- Features list
-- Installation instructions
-- Usage examples
-- API documentation
-- Contributing guidelines
-- License information
-
-**Example:**
+```
+/create-readme
+/code-review
+/generate-tests
+```
 ```
 /create-readme
 ```

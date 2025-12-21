@@ -1,31 +1,32 @@
----
-layout: default
-title: Coding Standards
-nav_order: 4
----
+# Coding Standards
 
-# Auto-Applied Coding Standards
+Auto-applied standards by file type.
 
-Coding rules that activate automatically based on file type.
+## .NET (C#)
+- Clean Architecture layers
+- Async/await with CancellationToken
+- Nullable reference types
+- Constructor dependency injection
 
-## How It Works
+## Python
+- Type hints on all functions
+- Context managers for resources
+- List comprehensions over loops
+- Async/await for I/O
 
-When you edit a file, OpenCode checks the file extension and applies relevant standards:
+## TypeScript
+- Strict mode enabled
+- Explicit types, no implicit any
+- Strict null checks
+- Utility types (Pick, Omit, etc.)
 
-- `.cs` or `.csproj` → .NET Clean Architecture rules
-- `.py` → Python best practices
-- `.ts` or `.tsx` → TypeScript strict mode
-- `.dart` → Flutter best practices
+## Flutter (Dart)
+- Riverpod for state management
+- Freezed for immutable models
+- Result pattern for error handling
+- Provider for dependency injection
 
-**You don't configure anything** - it just works!
-
----
-
-## .NET Standards
-
-**Applies to:** `.cs` and `.csproj` files
-
-### Architecture: Clean Architecture
+Standards activate automatically when editing matching files.
 ```
 Domain → Application → Infrastructure → WebAPI
 ```

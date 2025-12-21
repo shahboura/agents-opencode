@@ -1,7 +1,6 @@
 ---
 description: Strategic coordinator for planning and orchestrating complex multi-phase workflows with execution options
 mode: primary
-model: anthropic/claude-sonnet-4-20250514
 temperature: 0.2
 tools:
   write: true

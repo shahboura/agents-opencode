@@ -1,7 +1,6 @@
 ---
 description: Code review specialist focusing on security, performance, and best practices
 mode: subagent
-model: anthropic/claude-sonnet-4-20250514
 temperature: 0.1
 tools:
   read: true

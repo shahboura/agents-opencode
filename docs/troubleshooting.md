@@ -1,32 +1,27 @@
----
-layout: default
-title: FAQ & Troubleshooting
-nav_order: 7
----
-
 # FAQ & Troubleshooting
 
-Common questions and solutions.
+## Common Issues
 
----
+### Agents not showing up
+- Ensure `.opencode/agent/` files exist
+- Restart OpenCode
+- Check file permissions
 
-## Quick FAQ
+### Plans too complex
+- Be more specific in requests
+- Break large tasks into smaller ones
+- Use @orchestrator for planning first
 
-### How do I use agents?
-1. Open Copilot Chat: `Ctrl+Shift+I` (Windows) or `Cmd+Shift+I` (Mac)
-2. Select an agent from dropdown
-3. Describe what you want
-4. Review and approve the plan
-5. Agent implements
+### Code not compiling
+- Check auto-applied standards match your project
+- Review error messages
+- Adjust AGENTS.md context
 
-**[→ Full Getting Started](./getting-started.md)**
+## Getting Help
 
-### Which agent should I use?
-- **Planning or complex projects** → @orchestrator
-- **Direct implementation** → @codebase
-- **Quality review** → @review
-- **Documentation** → @docs
-- **Leadership** → @em-advisor
+- Check agent capabilities in docs
+- Review session summaries in AGENTS.md
+- Start with simple requests to learn patterns
 
 **[→ Agents Guide](./agents/README.md)**
 

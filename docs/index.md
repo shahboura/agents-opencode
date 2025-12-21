@@ -1,53 +1,38 @@
----
-layout: default
-title: Documentation
-nav_order: 0
-has_children: true
-has_toc: false
----
+# OpenCode Agents
 
-# OpenCode Agents - Full Documentation
+Specialized agents for intelligent development workflows.
 
-Welcome to the comprehensive documentation for OpenCode custom agents.
+## Agents
 
-## Quick Navigation
+- **@orchestrator** - Planning and multi-phase workflow coordination
+- **@codebase** - Multi-language code implementation
+- **@docs** - Documentation creation
+- **@review** - Security and quality audits
+- **@em-advisor** - Leadership and strategy guidance
 
-- **[Getting Started](./getting-started.md)** - 5-minute setup guide
-- **[Agents](./agents/README.md)** - Detailed agent capabilities and usage
-- **[Prompts](./prompts.md)** - Reusable prompt commands
-- **[Coding Standards](./instructions.md)** - Auto-applied standards by language
-- **[Workflows](./workflows.md)** - Real-world workflow examples
-- **[Customization](./customization.md)** - Adapt agents to your project
-- **[API Reference](./reference/README.md)** - Tools and capabilities reference
-- **[FAQ & Troubleshooting](./troubleshooting.md)** - Common questions and fixes
+## Quick Start
 
-## What Are These Agents?
+1. Install agents: Copy `.opencode/agent/` to your project
+2. Use in OpenCode: `@orchestrator Build a user API`
+3. Agents plan, seek approval, then implement
 
-Five specialized OpenCode agents that work together for intelligent development:
+## Features
 
-| Agent | Purpose |
-|-------|---------|
-| @orchestrator | Planning and multi-phase workflow coordination |
-| @codebase | Multi-language code implementation |
-| @docs | Documentation creation and updates |
-| @review | Security and quality audits |
-| @em-advisor | Leadership and strategy guidance |
+- Plan-first workflow with approval steps
+- Multi-language support (.NET, Python, TypeScript, Flutter)
+- Auto-applied coding standards
+- Agent handoffs and context persistence
 
-## Key Features
+## Installation
 
-✅ **Plan-First Workflow** - Agents propose plans, you approve before changes  
-✅ **Multi-Language** - Auto-detects .NET, Python, TypeScript, Flutter  
-✅ **Auto-Applied Standards** - Coding rules activated by file type  
-✅ **Agent Handoffs** - Seamless transitions between specialists  
-✅ **Context Persistence** - Decisions saved automatically  
+```bash
+# Copy to your project
+cp -r .opencode/agent/ your-project/.opencode/agent/
+```
 
-## Next Steps
+## Documentation
 
-1. **[Get Started in 5 minutes](./getting-started.md)**
-2. **[Explore Agents](./agents/README.md)**
-3. **[Try a Workflow](./workflows.md)**
-4. **[Customize for Your Project](./customization.md)**
-
----
-
-**Need help?** Check [FAQ & Troubleshooting](./troubleshooting.md)
+- [Getting Started](getting-started.md)
+- [Agent Details](agents/README.md)
+- [Workflows](workflows.md)
+- [Troubleshooting](troubleshooting.md)

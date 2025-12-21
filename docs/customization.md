@@ -1,24 +1,33 @@
----
-layout: default
-title: Customization
-nav_order: 6
----
+# Customization
 
-# Customizing for Your Project
+## Project Context
 
-Adapt agents to your specific project needs.
+Make agents smarter by adding context to `AGENTS.md`:
 
----
+```markdown
+# My Project
 
-## Add Project Context
+Tech stack: Node.js, TypeScript, PostgreSQL
 
-The most powerful customization is providing project context.
+## Standards
+- Use async/await everywhere
+- Write tests for new features
+- Follow REST API conventions
+```
 
-### Step 1: Create the File
+## Language Standards
 
-Create `.github/copilot-instructions.md` in your repository root.
+Agents auto-apply standards based on file types:
+- `.cs` → .NET Clean Architecture
+- `.py` → Python type hints
+- `.ts` → TypeScript strict mode
 
-### Step 2: Document Your Project
+## Agent Configuration
+
+Edit `.opencode/agent/[agent].md` to modify behavior:
+- Change model settings
+- Adjust permissions
+- Update tools
 
 ```markdown
 # Project Context

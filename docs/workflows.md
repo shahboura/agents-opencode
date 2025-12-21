@@ -1,53 +1,41 @@
----
-layout: default
-title: Workflows
-nav_order: 5
----
+# Workflows
 
-# Real-World Workflows
+Common patterns for using agents effectively.
 
-See agents working together on realistic projects.
+## Basic Workflow
 
----
+1. **Plan** with @orchestrator
+2. **Implement** with @codebase
+3. **Review** with @review
+4. **Document** with @docs
 
-## Workflow 1: Build REST API (30 min)
+## Examples
 
-**Goal:** Create a user management REST API with JWT authentication.
-
-### Step 1: Plan the Architecture
+### Build API Feature
 ```
-@orchestrator Create plan for user API with:
-- User entity (email, password, name)
-- CRUD endpoints
-- JWT authentication
-- Input validation
-- Error handling
-- Unit tests
+@orchestrator Plan user authentication API
+@codebase Implement JWT auth endpoints
+@review Security audit
+@docs Create API documentation
 ```
 
-**Agent proposes:**
-- Domain entities (User, JwtToken)
-- Service layer (UserService, AuthService)
-- Repository pattern for data
-- Middleware for JWT validation
-- Comprehensive test suite
-
-**You review and approve** ✓
-
-### Step 2: Implement the Code
+### Fix Bug
 ```
-@codebase Implement the plan above. Use .NET Clean Architecture with:
-- Entity Framework for data access
-- Repository pattern
-- Dependency injection
-- xUnit + Moq for testing
+@codebase Debug and fix login issue
+@review Check for regressions
 ```
 
-**Agent:**
-- Creates User entity with validation
-- Implements UserRepository with EF Core
-- Builds UserService with business logic
-- Creates API controllers
+### Code Review
+```
+@review Audit payment module for security
+```
+
+## Tips
+
+- Start with @orchestrator for complex tasks
+- Use @codebase for direct implementation
+- Always review plans before approval
+- Add context to AGENTS.md for better results
 - Adds comprehensive tests
 - Validates build and tests pass
 

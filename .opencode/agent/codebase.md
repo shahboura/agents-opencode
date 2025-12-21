@@ -1,7 +1,6 @@
 ---
 description: Multi-language development agent with profile auto-detection for implementing features across .NET, Python, and TypeScript projects
 mode: primary
-model: anthropic/claude-sonnet-4-20250514
 temperature: 0.1
 tools:
   write: true
