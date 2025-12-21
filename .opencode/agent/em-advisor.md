@@ -1,6 +1,6 @@
 ---
 description: Engineering Manager advisor for leadership decisions, team dynamics, and technical strategy
-mode: subagent
+mode: primary
 temperature: 0.3
 tools:
   read: true
