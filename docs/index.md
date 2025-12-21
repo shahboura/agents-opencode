@@ -6,9 +6,11 @@ Specialized agents for intelligent development workflows.
 
 - **@orchestrator** - Planning and multi-phase workflow coordination
 - **@codebase** - Multi-language code implementation
+- **@blogger** - Content creation for blogging, podcasting, and YouTube scripting
+- **@brutal-critic** - Ruthless content reviewer with framework-based criticism
+- **@em-advisor** - Leadership and strategy guidance
 - **@docs** - Documentation creation
 - **@review** - Security and quality audits
-- **@em-advisor** - Leadership and strategy guidance
 
 ## Quick Start
 

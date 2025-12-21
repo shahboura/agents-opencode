@@ -87,40 +87,12 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 
 ### Session Summary - Mon Dec 22 2025
 
-- **Context**: Reorganized em-advisor agent from subagent to primary agent, updating AGENTS.md and all documentation files to reflect the new classification.
-- **Key Decisions**: Moved leadership guidance agent to primary status alongside other core workflow agents, maintained consistent Type column across all documentation tables.
+- **Context**: Updated brutal-critic agent to include research capabilities with YouTube creators policies and guidelines URL, and synchronized GitHub Pages documentation to include all available agents.
+- **Key Decisions**: Added research & validation section to brutal-critic instructions emphasizing platform-specific policy compliance; updated docs/index.md to include blogger and brutal-critic agents in the main agents list.
 - **Open Items**: None.
-- **Lessons Learned**: Agent reclassification requires systematic updates across multiple documentation files to ensure consistency.
+- **Lessons Learned**: Documentation synchronization requires checking multiple files (index.md, agents/README.md, getting-started.md) to ensure consistency across all GitHub Pages content.
 
 ### Session Summary - Mon Dec 22 2025
-
-- **Context**: Reorganized blogger and brutal-critic agents from subagents to primary agents, updating AGENTS.md and documentation files to reflect the new classification.
-- **Key Decisions**: Moved content creation and review agents to primary status alongside orchestrator and codebase agents, updated README.md and docs/agents/README.md tables to include Type column for clarity.
-- **Open Items**: None.
-- **Lessons Learned**: Agent classification changes require coordinated updates across multiple documentation files to maintain consistency.
-
-### Session Summary - Mon Dec 22 2025
-
-- **Context**: Added brutal-critic agent and enhanced blogger with research capabilities from NetworkChuck's Claude Code guide.
-- **Key Decisions**: Created separate brutal-critic agent for unbiased content review; integrated research-assistant functionality into blogger agent.
-- **Open Items**: None.
-- **Lessons Learned**: Agent specialization improves quality through fresh perspectives and framework-based criticism.
-
-### Session Summary - Mon Dec 22 2025
-
-- **Context**: Updated documentation and committed changes for the new blogger agent, ensuring all files are properly synchronized and version controlled.
-- **Key Decisions**: Updated README.md, docs/agents/README.md, and docs/getting-started.md to include blogger agent; committed all changes with descriptive message following repository conventions.
-- **Open Items**: None.
-- **Lessons Learned**: Documentation updates require coordinated changes across multiple files; git commits should include comprehensive descriptions of changes made.
-
-### Session Summary - Mon Dec 22 2025
-
-- **Context**: Added new blogger agent for content creation, including agent configuration, instruction file, and updated repository configuration files.
-- **Key Decisions**: Created blogger agent inspired by NetworkChuck's concise style, supporting tech/finance/leadership blogging, podcast ideation, and YouTube scripting with fact validation.
-- **Open Items**: None.
-- **Lessons Learned**: Agent creation requires coordinated updates across multiple files (agent config, instructions, opencode.json, AGENTS.md) for proper integration.
-
-### Session Summary - Sun Dec 21 2025
 
 - **Context**: Added the requested session summary to AGENTS.md under the Session Summaries section as instructed.
 - **Key Decisions**: Used the edit tool to insert the new summary at the top of the section to maintain chronological order.
