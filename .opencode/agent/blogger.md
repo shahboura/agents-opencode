@@ -1,6 +1,6 @@
 ---
 description: Concise blogging agent for tech, finance, and leadership content with fact validation and multimedia creation
-mode: subagent
+mode: primary
 temperature: 0.3
 tools:
   write: true
