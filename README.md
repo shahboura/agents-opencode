@@ -28,17 +28,17 @@ Specialized OpenCode agents for intelligent, plan-first development workflows.
 
 ## 📚 Core Concepts
 
-### 5 Specialized Agents
+### Agents Overview
 
-| Agent | Purpose | Use For |
-|-------|---------|---------|
-| **@orchestrator** | Strategic planning & coordination | Complex features, risk assessment, multi-phase projects, end-to-end execution |
-| **@codebase** | Multi-language dev | Direct implementation, bug fixes, code generation |
-| **@docs** | Documentation | README, API docs, guides |
-| **@review** | Security & quality | Audits, performance, best practices |
-| **@em-advisor** | Leadership guidance | Strategy, team dynamics, 1-on-1s |
-| **@blogger** | Content creation | Tech/finance/leadership blogging, podcast ideation, YouTube scripting |
-| **@brutal-critic** | Content review | Honest feedback, framework validation, quality assessment |
+| Agent | Type | Purpose | Use For |
+|-------|------|---------|---------|
+| **@orchestrator** | Primary | Strategic planning & coordination | Complex features, risk assessment, multi-phase projects, end-to-end execution |
+| **@codebase** | Primary | Multi-language dev | Direct implementation, bug fixes, code generation |
+| **@blogger** | Primary | Content creation | Tech/finance/leadership blogging, podcast ideation, YouTube scripting |
+| **@brutal-critic** | Primary | Content review | Honest feedback, framework validation, quality assessment |
+| **@em-advisor** | Primary | Leadership guidance | Strategy, team dynamics, 1-on-1s |
+| **@docs** | Subagent | Documentation | README, API docs, guides |
+| **@review** | Subagent | Security & quality | Audits, performance, best practices |
 
 **Note:** All agents automatically add session summaries to AGENTS.md after task completion.
 

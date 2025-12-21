@@ -45,13 +45,13 @@ Apply Clean Architecture principles:
 Primary agents:
 - `codebase` - Multi-language development with profile detection
 - `orchestrator` - Strategic planning and complex workflow coordination
+- `blogger` - Content creation for blogging, podcasting, and YouTube scripting
+- `brutal-critic` - Ruthless content reviewer with framework-based criticism
+- `em-advisor` - Engineering management guidance
 
 Subagents:
 - `docs` - Documentation creation and maintenance
 - `review` - Code review for security, performance, and best practices
-- `em-advisor` - Engineering management guidance
-- `blogger` - Content creation for blogging, podcasting, and YouTube scripting
-- `brutal-critic` - Ruthless content reviewer with framework-based criticism
 
 ## Quality Requirements
 
@@ -84,6 +84,20 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 
 
 ## Session Summaries
+
+### Session Summary - Mon Dec 22 2025
+
+- **Context**: Reorganized em-advisor agent from subagent to primary agent, updating AGENTS.md and all documentation files to reflect the new classification.
+- **Key Decisions**: Moved leadership guidance agent to primary status alongside other core workflow agents, maintained consistent Type column across all documentation tables.
+- **Open Items**: None.
+- **Lessons Learned**: Agent reclassification requires systematic updates across multiple documentation files to ensure consistency.
+
+### Session Summary - Mon Dec 22 2025
+
+- **Context**: Reorganized blogger and brutal-critic agents from subagents to primary agents, updating AGENTS.md and documentation files to reflect the new classification.
+- **Key Decisions**: Moved content creation and review agents to primary status alongside orchestrator and codebase agents, updated README.md and docs/agents/README.md tables to include Type column for clarity.
+- **Open Items**: None.
+- **Lessons Learned**: Agent classification changes require coordinated updates across multiple documentation files to maintain consistency.
 
 ### Session Summary - Mon Dec 22 2025
 

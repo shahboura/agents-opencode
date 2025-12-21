@@ -4,15 +4,15 @@ Seven specialized agents for development and content creation tasks.
 
 ## Agent Overview
 
-| Agent | Purpose | Use For |
-|-------|---------|---------|
-| @orchestrator | Planning & coordination | Complex projects, risk assessment |
-| @codebase | Code implementation | Features, bug fixes |
-| @review | Quality audits | Security, performance, best practices |
-| @docs | Documentation | README, API docs |
-| @em-advisor | Leadership guidance | Strategy, team dynamics |
-| @blogger | Content creation | Tech/finance/leadership blogging, podcasting, YouTube scripting |
-| @brutal-critic | Content review | Honest feedback, framework validation, quality assessment |
+| Agent | Type | Purpose | Use For |
+|-------|------|---------|---------|
+| @orchestrator | Primary | Planning & coordination | Complex projects, risk assessment |
+| @codebase | Primary | Code implementation | Features, bug fixes |
+| @blogger | Primary | Content creation | Tech/finance/leadership blogging, podcasting, YouTube scripting |
+| @brutal-critic | Primary | Content review | Honest feedback, framework validation, quality assessment |
+| @em-advisor | Primary | Leadership guidance | Strategy, team dynamics |
+| @review | Subagent | Quality audits | Security, performance, best practices |
+| @docs | Subagent | Documentation | README, API docs |
 
 ## When to Use Each Agent
 
