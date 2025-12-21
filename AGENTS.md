@@ -87,6 +87,13 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 
 ### Session Summary - Mon Dec 22 2025
 
+- **Context**: Added brutal-critic agent and enhanced blogger with research capabilities from NetworkChuck's Claude Code guide.
+- **Key Decisions**: Created separate brutal-critic agent for unbiased content review; integrated research-assistant functionality into blogger agent.
+- **Open Items**: None.
+- **Lessons Learned**: Agent specialization improves quality through fresh perspectives and framework-based criticism.
+
+### Session Summary - Mon Dec 22 2025
+
 - **Context**: Updated documentation and committed changes for the new blogger agent, ensuring all files are properly synchronized and version controlled.
 - **Key Decisions**: Updated README.md, docs/agents/README.md, and docs/getting-started.md to include blogger agent; committed all changes with descriptive message following repository conventions.
 - **Open Items**: None.
