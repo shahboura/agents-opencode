@@ -144,9 +144,9 @@ cp -r .opencode/agent/ ~/.config/opencode/agent/
 cp -r .opencode/agent/ your-project/.opencode/agent/
 ```
 
-3. **Copy language instructions (optional):**
+3. **Copy language instructions:**
 ```bash
-cp -r .github/instructions/ your-project/.github/instructions/
+cp -r .opencode/instructions/ your-project/.opencode/instructions/
 ```
 
 4. **Set up AGENTS.md (optional):**
@@ -196,12 +196,13 @@ Complete documentation is available at [https://shahboura.github.io/agents-openc
 ### 🏗️ Repository Structure
 
 ```
-├── .opencode/agent/          # OpenCode agent configurations
+├── .opencode/
+│   ├── agent/                # OpenCode agent configurations
+│   └── instructions/         # Language-specific coding standards
 ├── .github/
-│   ├── agents/               # GitHub Copilot agent definitions
-│   ├── instructions/         # Language-specific coding standards
+│   ├── agents/               # Legacy agent definitions
 │   └── prompts/              # Reusable prompt templates
-├── docs/                     # GitHub Pages documentation
+├── docs/                     # Documentation
 ├── AGENTS.md                 # Session summaries and context
 └── opencode.json            # OpenCode configuration
 ```

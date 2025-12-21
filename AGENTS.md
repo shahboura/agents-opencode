@@ -85,6 +85,34 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 
 ### Session Summary - Sun Dec 21 2025
 
+- **Context**: Removed Copilot-specific files and directories (.github/agents/, .github/copilot-instructions.md, .github/prompts/) to clean up repository structure.
+- **Key Decisions**: Used bash rm commands to remove the specified paths completely.
+- **Open Items**: None.
+- **Lessons Learned**: Efficient file removal maintains repository cleanliness and removes outdated configurations.
+
+### Session Summary - Sun Dec 21 2025
+
+- **Context**: Updated README.md installation section to make copying instructions files from .opencode/instructions/ a standard step, simplified setup process, and updated repository structure documentation to remove Copilot references.
+- **Key Decisions**: Changed instructions copying from optional to mandatory, updated path from .github/instructions/ to .opencode/instructions/, reorganized repository structure to reflect current organization.
+- **Open Items**: None.
+- **Lessons Learned**: Direct README updates efficiently maintain documentation consistency and user experience.
+
+### Session Summary - Sun Dec 21 2025
+
+- **Context**: Updated opencode.json to reference new instruction file locations, changing paths from ".github/instructions/" to ".opencode/instructions/" while maintaining exact filenames.
+- **Key Decisions**: Used replaceAll edit operation to update all instruction paths simultaneously.
+- **Open Items**: None.
+- **Lessons Learned**: The edit tool's replaceAll functionality efficiently handles bulk path updates across configuration files.
+
+### Session Summary - Sun Dec 21 2025
+
+- **Context**: Performed minor updates to AGENTS.md, validated changes, removed Acknowledgments section from README.md, and pushed all changes with meaningful commit message.
+- **Key Decisions**: Removed Acknowledgments to streamline documentation, maintained all other sections and formatting.
+- **Open Items**: None.
+- **Lessons Learned**: Direct documentation edits can be validated quickly; consistent commit messages improve repository history.
+
+### Session Summary - Sun Dec 21 2025
+
 - **Context**: Updated all agent configuration files in .opencode/agent/ to include explicit instructions for adding session summaries, ensuring consistent workflow across agents with different edit permissions.
 - **Key Decisions**: For agents with edit "allow" or "ask", use edit tool directly; for agents with edit "deny" (review, em-advisor), use task tool to launch @docs agent.
 - **Open Items**: None
@@ -107,6 +135,6 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 ### Session Summary - Sun Dec 21 2025
 
 - **Context**: Added the requested session summary to AGENTS.md under the Session Summaries section as instructed.
-- **Key Decisions**: Used the edit tool to insert the new summary between existing summaries and the Quality Requirements section.
+- **Key Decisions**: Used the edit tool to insert the new summary at the top of the section to maintain chronological order.
 - **Open Items**: None.
 - **Lessons Learned**: Session summaries can be added directly using the edit tool when the content is provided.
