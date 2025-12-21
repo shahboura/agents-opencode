@@ -2,7 +2,7 @@
 
 Specialized OpenCode agents for intelligent, plan-first development workflows.
 
-**Agents:** @orchestrator • @codebase • @docs • @review • @em-advisor • @blogger
+**Agents:** @orchestrator • @codebase • @docs • @review • @em-advisor • @blogger • @brutal-critic
 
 ---
 
@@ -38,6 +38,7 @@ Specialized OpenCode agents for intelligent, plan-first development workflows.
 | **@review** | Security & quality | Audits, performance, best practices |
 | **@em-advisor** | Leadership guidance | Strategy, team dynamics, 1-on-1s |
 | **@blogger** | Content creation | Tech/finance/leadership blogging, podcast ideation, YouTube scripting |
+| **@brutal-critic** | Content review | Honest feedback, framework validation, quality assessment |
 
 **Note:** All agents automatically add session summaries to AGENTS.md after task completion.
 

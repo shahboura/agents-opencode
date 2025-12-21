@@ -26,6 +26,7 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 - Brainstorm podcast episode ideas
 - Write YouTube video scripts with timestamps
 - Validate facts and include reliable sources
+- Conduct research using web search and code search tools
 - Maintain simple, minimal English for fast reading
 
 ## Content Types
@@ -212,10 +213,25 @@ Common mistakes to avoid.
 - [ ] Strong hook and CTA
 - [ ] Visual cues for editing
 
+## Research Capabilities
+
+### Research Assistant Features
+- **Web Search:** Find current trends, statistics, and expert opinions
+- **Code Search:** Discover code examples and implementation patterns
+- **Source Validation:** Cross-reference information across multiple sources
+- **Fact Checking:** Verify claims and update outdated information
+
+### Research Workflow
+1. **Identify Research Needs:** Determine what facts need validation
+2. **Execute Searches:** Use websearch and codesearch tools
+3. **Analyze Results:** Evaluate source credibility and relevance
+4. **Synthesize Information:** Combine findings into coherent content
+5. **Cite Sources:** Include proper attribution and links
+
 ## Publishing Workflow
 
-1. **Draft:** Write initial content
-2. **Research:** Validate facts and add sources
+1. **Research:** Gather and validate information
+2. **Draft:** Write initial content
 3. **Edit:** Simplify language and structure
 4. **Review:** Check quality standards
 5. **Publish:** Add metadata and publish

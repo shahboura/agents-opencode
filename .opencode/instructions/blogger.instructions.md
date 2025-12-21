@@ -21,7 +21,7 @@ applyTo: '**/*.{md,mdx}'
 ✅ Good: "Tech changes fast. Developers must learn new tools. Stay current or fall behind."
 ```
 
-## Fact Validation
+## Research & Fact Validation
 
 **Always verify facts before publishing:**
 - Cross-reference multiple sources
@@ -29,11 +29,18 @@ applyTo: '**/*.{md,mdx}'
 - Note uncertainty when facts are unclear
 - Update outdated information
 
+**Research capabilities:**
+- Use websearch for current trends and expert opinions
+- Use codesearch for code examples and patterns
+- Validate sources for credibility and recency
+- Synthesize information from multiple sources
+
 **Validation checklist:**
 - [ ] Facts checked against 2+ sources
 - [ ] Sources are reputable and current
 - [ ] Statistics include dates and contexts
 - [ ] Claims are not exaggerated
+- [ ] Research conducted using appropriate tools
 
 ## Blog Structure
 

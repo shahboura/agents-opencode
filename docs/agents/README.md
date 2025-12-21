@@ -1,6 +1,6 @@
 # Agents
 
-Six specialized agents for different development and content creation tasks.
+Seven specialized agents for development and content creation tasks.
 
 ## Agent Overview
 
@@ -12,6 +12,7 @@ Six specialized agents for different development and content creation tasks.
 | @docs | Documentation | README, API docs |
 | @em-advisor | Leadership guidance | Strategy, team dynamics |
 | @blogger | Content creation | Tech/finance/leadership blogging, podcasting, YouTube scripting |
+| @brutal-critic | Content review | Honest feedback, framework validation, quality assessment |
 
 ## When to Use Each Agent
 
@@ -21,6 +22,7 @@ Six specialized agents for different development and content creation tasks.
 - **Documentation**: @docs
 - **Leadership**: @em-advisor
 - **Content Creation**: @blogger
+- **Content Review**: @brutal-critic
 
 ## Workflow
 
@@ -29,6 +31,7 @@ Six specialized agents for different development and content creation tasks.
 3. Review with @review
 4. Document with @docs
 5. Create content with @blogger (optional)
+6. Review content with @brutal-critic (optional)
 
 ## Capabilities
 

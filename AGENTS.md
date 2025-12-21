@@ -51,6 +51,7 @@ Subagents:
 - `review` - Code review for security, performance, and best practices
 - `em-advisor` - Engineering management guidance
 - `blogger` - Content creation for blogging, podcasting, and YouTube scripting
+- `brutal-critic` - Ruthless content reviewer with framework-based criticism
 
 ## Quality Requirements
 

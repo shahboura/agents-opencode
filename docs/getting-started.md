@@ -28,6 +28,7 @@
 - `@docs` - Documentation
 - `@em-advisor` - Leadership guidance
 - `@blogger` - Content creation
+- `@brutal-critic` - Content review
 
 ## Tips
 
