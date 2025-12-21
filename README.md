@@ -178,3 +178,50 @@ A: Yes! They update `AGENTS.md` automatically with session summaries.
 ---
 
 ## 📖 Full Documentation
+
+Complete documentation is available at [https://shahboura.github.io/agents-opencode/](https://shahboura.github.io/agents-opencode/)
+
+### 📚 Documentation Sections
+
+- **[Getting Started Guide](./docs/getting-started.md)** - Step-by-step setup and first usage
+- **[Agent Reference](./docs/agents/README.md)** - Detailed capabilities of each agent
+- **[Workflow Examples](./docs/workflows.md)** - Real-world usage patterns
+- **[Coding Standards](./docs/instructions.md)** - Auto-applied language-specific rules
+- **[Prompt Commands](./docs/prompts.md)** - Reusable `/` commands
+- **[Customization](./docs/customization.md)** - Adapt agents to your project
+- **[Troubleshooting](./docs/troubleshooting.md)** - FAQ and common issues
+
+### 🏗️ Repository Structure
+
+```
+├── .opencode/agent/          # OpenCode agent configurations
+├── .github/
+│   ├── agents/               # GitHub Copilot agent definitions
+│   ├── instructions/         # Language-specific coding standards
+│   └── prompts/              # Reusable prompt templates
+├── docs/                     # GitHub Pages documentation
+├── AGENTS.md                 # Session summaries and context
+└── opencode.json            # OpenCode configuration
+```
+
+### 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+### 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+### 🙏 Acknowledgments
+
+- Built for the OpenCode platform
+- Inspired by modern development workflows
+- Community-driven agent ecosystem
+
+---
+
+**Ready to get started?** Check out the [Getting Started Guide](./docs/getting-started.md) 🚀
