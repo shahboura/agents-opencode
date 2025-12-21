@@ -104,4 +104,10 @@ docs(scope): description
 - **Open Items**: Any follow-up tasks or unresolved issues
 - **Lessons Learned**: Insights or patterns discovered during the session
 
+**Implementation:** 
+- Use the edit tool to append the summary to AGENTS.md under the "Session Summaries" section
+- If the section doesn't exist, create it first
+- Format as a new subsection with the current date
+- Example: ### Session Summary - [Date]
+
 Keep summaries concise and actionable, focusing on information valuable for future sessions.

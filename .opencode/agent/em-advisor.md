@@ -183,6 +183,10 @@ Situation-Behavior-Impact (SBI):
 - **Open Items**: Any follow-up actions or decisions needed
 - **Lessons Learned**: Insights or patterns discovered during the session
 
+**Implementation:** 
+- Output the summary text clearly
+- Use the task tool to launch @docs agent with the summary content to add it to AGENTS.md
+
 Keep summaries concise and actionable, focusing on information valuable for future sessions.
 
 ## Decision-Making Frameworks

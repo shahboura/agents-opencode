@@ -51,6 +51,15 @@ Subagents:
 - `review` - Code review for security, performance, and best practices
 - `em-advisor` - Engineering management guidance
 
+## Quality Requirements
+
+All code changes must:
+- Pass type checking (mypy, tsc --noEmit, flutter analyze)
+- Pass linting (ruff, eslint, dart format)
+- Pass all tests
+- Follow language-specific conventions
+- Include proper documentation
+
 ## Session Summary Requirements
 
 **All agents MUST summarize sessions upon task completion:**
@@ -71,11 +80,33 @@ Subagents:
 ### Summary Location
 Summaries should be added to this AGENTS.md file under a "Session Summaries" section for easy reference across sessions.
 
-## Quality Requirements
 
-All code changes must:
-- Pass type checking (mypy, tsc --noEmit, flutter analyze)
-- Pass linting (ruff, eslint, dart format)
-- Pass all tests
-- Follow language-specific conventions
-- Include proper documentation
+## Session Summaries
+
+### Session Summary - Sun Dec 21 2025
+
+- **Context**: Updated all agent configuration files in .opencode/agent/ to include explicit instructions for adding session summaries, ensuring consistent workflow across agents with different edit permissions.
+- **Key Decisions**: For agents with edit "allow" or "ask", use edit tool directly; for agents with edit "deny" (review, em-advisor), use task tool to launch @docs agent.
+- **Open Items**: None
+- **Lessons Learned**: Centralized summary management improves consistency and provides better historical context for agent interactions.
+
+### Session Summary - Sun Dec 21 2025
+
+- **Context**: Added a brief note to README.md under the agents table mentioning that all agents automatically add session summaries to AGENTS.md after task completion.
+- **Key Decisions**: Placed the note in the Core Concepts section after the agents table for visibility.
+- **Open Items**: None
+- **Lessons Learned**: Minor documentation updates can be implemented directly without requiring the full analysis-approval-execution workflow phases.
+
+### Session Summary - Sun Dec 21 2025
+
+- **Context**: Troubleshot and fixed agent session summary issue by updating all agent configurations with explicit implementation guidance, tested the fix, and validated consistency.
+- **Key Decisions**: Added edit tool instructions for agents with permissions, task tool delegation for read-only agents, maintained role-specific summary formats.
+- **Open Items**: None - all agents now have proper summary workflows.
+- **Lessons Learned**: Explicit implementation guidance in agent prompts ensures consistent behavior; testing small changes validates fixes before full deployment.
+
+### Session Summary - Sun Dec 21 2025
+
+- **Context**: Added the requested session summary to AGENTS.md under the Session Summaries section as instructed.
+- **Key Decisions**: Used the edit tool to insert the new summary between existing summaries and the Quality Requirements section.
+- **Open Items**: None.
+- **Lessons Learned**: Session summaries can be added directly using the edit tool when the content is provided.

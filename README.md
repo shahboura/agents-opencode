@@ -38,6 +38,8 @@ Specialized OpenCode agents for intelligent, plan-first development workflows.
 | **@review** | Security & quality | Audits, performance, best practices |
 | **@em-advisor** | Leadership guidance | Strategy, team dynamics, 1-on-1s |
 
+**Note:** All agents automatically add session summaries to AGENTS.md after task completion.
+
 ---
 
 ## ⚡ 5 Reusable Prompts
@@ -216,12 +218,6 @@ Complete documentation is available at [https://shahboura.github.io/agents-openc
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-### 🙏 Acknowledgments
 
-- Built for the OpenCode platform
-- Inspired by modern development workflows
-- Community-driven agent ecosystem
-
----
 
 **Ready to get started?** Check out the [Getting Started Guide](./docs/getting-started.md) 🚀

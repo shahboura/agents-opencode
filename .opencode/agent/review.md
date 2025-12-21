@@ -135,4 +135,8 @@ For each file:
 - **Open Items**: Any follow-up fixes or additional reviews needed
 - **Lessons Learned**: Insights or patterns discovered during the review
 
+**Implementation:** 
+- Output the summary text clearly
+- Use the task tool to launch @docs agent with the summary content to add it to AGENTS.md
+
 Keep summaries concise and actionable, focusing on information valuable for future sessions.
