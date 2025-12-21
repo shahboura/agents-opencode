@@ -27,6 +27,7 @@
 - `@review` - Security/quality audits
 - `@docs` - Documentation
 - `@em-advisor` - Leadership guidance
+- `@blogger` - Content creation
 
 ## Tips
 

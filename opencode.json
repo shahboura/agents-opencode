@@ -5,6 +5,7 @@
     ".opencode/instructions/dotnet-clean-architecture.instructions.md",
     ".opencode/instructions/python-best-practices.instructions.md",
     ".opencode/instructions/typescript-strict.instructions.md",
-    ".opencode/instructions/flutter.instructions.md"
+    ".opencode/instructions/flutter.instructions.md",
+    ".opencode/instructions/blogger.instructions.md"
   ]
 }

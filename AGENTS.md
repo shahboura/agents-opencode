@@ -50,6 +50,7 @@ Subagents:
 - `docs` - Documentation creation and maintenance
 - `review` - Code review for security, performance, and best practices
 - `em-advisor` - Engineering management guidance
+- `blogger` - Content creation for blogging, podcasting, and YouTube scripting
 
 ## Quality Requirements
 
@@ -82,6 +83,13 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 
 
 ## Session Summaries
+
+### Session Summary - Mon Dec 22 2025
+
+- **Context**: Added new blogger agent for content creation, including agent configuration, instruction file, and updated repository configuration files.
+- **Key Decisions**: Created blogger agent inspired by NetworkChuck's concise style, supporting tech/finance/leadership blogging, podcast ideation, and YouTube scripting with fact validation.
+- **Open Items**: None.
+- **Lessons Learned**: Agent creation requires coordinated updates across multiple files (agent config, instructions, opencode.json, AGENTS.md) for proper integration.
 
 ### Session Summary - Sun Dec 21 2025
 
