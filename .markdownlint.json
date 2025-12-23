@@ -1,0 +1,50 @@
+{
+  "default": true,
+
+  "MD013": {
+    "line_length": 120,
+    "code_blocks": false,
+    "tables": false
+  },
+  "comment_MD013": "Line length - Allow longer lines in session summaries and command examples where breaking would reduce readability",
+
+  "MD024": {
+    "siblings_only": true
+  },
+  "comment_MD024": "Allow duplicate headings when they're in different sections (e.g., multiple 'Session Summary' entries in AGENTS.md)",
+
+  "MD033": false,
+  "comment_MD033": "Allow inline HTML for badges, emoji images, and formatting in documentation that can't be achieved with pure Markdown",
+
+  "MD041": false,
+  "comment_MD041": "Allow front matter and metadata at the top of files before the first heading (needed for Jekyll/YAML front matter)",
+
+  "MD025": false,
+  "comment_MD025": "Allow multiple H1 headings when Jekyll front matter creates title (common in static site generators)",
+
+  "MD040": false,
+  "comment_MD040": "Allow code blocks without language specification for generic examples and configuration snippets",
+
+  "MD029": false,
+  "comment_MD029": "Allow flexible ordered list numbering (1/1/1 or 1/2/3) for easier editing and maintenance",
+
+  "MD022": false,
+  "comment_MD022": "Allow compact headings in structured lists and examples where vertical spacing would reduce scanability",
+
+  "MD032": false,
+  "comment_MD032": "Allow compact lists in reference documentation and structured examples where spacing would reduce information density",
+
+  "MD034": false,
+  "comment_MD034": "Allow bare URLs in code examples and API documentation where angle brackets would interfere with copy-paste",
+
+  "MD036": false,
+  "comment_MD036": "Allow emphasis for styling section headers in documentation (common pattern in guides)",
+
+  "MD046": {
+    "style": "fenced"
+  },
+  "comment_MD046": "Enforce fenced code blocks for consistency and syntax highlighting support",
+
+  "MD060": false,
+  "comment_MD060": "Allow flexible table formatting for better readability in documentation"
+}
