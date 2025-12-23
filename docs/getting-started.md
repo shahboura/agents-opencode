@@ -11,25 +11,57 @@ Get up and running with OpenCode agents in under 5 minutes.
 ## Prerequisites
 
 - [OpenCode CLI](https://opencode.ai/docs/cli/) installed
+- Node.js/npm and Git (for installation)
 - Any project (existing repos work perfectly)
 
 ## Quick Setup (60 seconds)
 
-1. **Copy OpenCode files to your project:**
+### Automatic Installation (Recommended)
+
+**One-command setup - downloads everything automatically:**
+
+```bash
+# Install for current project
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project .
+
+# Or install globally (available in all projects)
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --global
+```
+
+**Features:**
+- ✅ Automatic backups of existing installations
+- ✅ Preserves your session history (AGENTS.md)
+- ✅ Post-installation verification
+- ✅ Cross-platform support (Windows/Linux/macOS)
+
+### Manual Installation (Alternative)
+
+If you prefer to download files first:
+
+1. **Download the repository:**
 
    ```bash
-   cp -r .opencode/ your-project/.opencode/
-   cp opencode.json your-project/
+   git clone https://github.com/shahboura/agents-opencode.git
+   cd agents-opencode
    ```
 
-2. **Start using:**
+2. **Copy files to your project:**
 
    ```bash
+   # Copy to your project directory
+   cp -r .opencode/ /path/to/your/project/.opencode/
+   cp opencode.json /path/to/your/project/
+   ```
+
+3. **Start using:**
+
+   ```bash
+   cd /path/to/your/project
    opencode
    @codebase Create a user API endpoint
    ```
 
-**For full installation options including automated setup, see the [main README](../README.md#installation--setup).**
+**Note:** Manual installation requires downloading the full repository first.
 
 ## Your First Agent Interaction
 

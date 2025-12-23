@@ -20,26 +20,7 @@ npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js 
 
 # Or for project-specific installation
 npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project /path/to/your/project
-
-# Check version before installing
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --version
-
-# Uninstall if needed
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --uninstall
 ```
-
-**Alternative for Unix systems (Linux/macOS):**
-
-```bash
-# Global installation
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --global
-
-# Project installation
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --project /path/to/your/project
-```
-
-**What happens:** The script automatically downloads the latest agents, instructions,
-and prompts from GitHub - no manual cloning required!
 
 **Features:**
 - ✅ Automatic backups of existing installations
@@ -48,33 +29,16 @@ and prompts from GitHub - no manual cloning required!
 - ✅ Cross-platform support (Windows/Linux/macOS)
 - ✅ Includes examples and learning materials
 
-### Manual Installation (Alternative)
-
-If you prefer to download files first:
-
-#### Windows
-
-```powershell
-# Download install.ps1, then run:
-.\install.ps1
-
-# Or install to specific project directory
-.\install.ps1 -TargetDir "C:\path\to\your\project\.opencode"
-```
-
-#### Linux/macOS
-
+**Additional commands:**
 ```bash
-# Download install.sh, then run:
-./install.sh
+# Check version before installing
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --version
 
-# Or install to specific project directory
-./install.sh /path/to/your/project/.opencode
+# Uninstall if needed
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --uninstall
 ```
 
-**Prerequisites:** Git must be installed
-
-**Note:** Installation preserves existing `AGENTS.md` files to maintain your session history and project context.
+**Prerequisites:** Node.js/npm and Git
 
 ---
 
