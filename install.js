@@ -57,11 +57,7 @@ function getHomeDir() {
 
 function getGlobalConfigDir() {
     const home = getHomeDir();
-    if (os.platform() === 'win32') {
-        return path.join(home, 'AppData', 'Local', 'opencode');
-    } else {
-        return path.join(home, '.config', 'opencode');
-    }
+    return path.join(home, '.config', 'opencode');
 }
 
 function ensureDir(dirPath) {
@@ -201,6 +197,7 @@ function installGlobal(tempDir) {
     }
 
     success('✅ Global installation completed successfully!');
+    info(`Configuration location: ${globalConfigDir}`);
     info('Agents are now available in all your projects.');
 }
 
@@ -379,12 +376,16 @@ PREREQUISITES:
     - Node.js/npm
     - Internet connection
 
-FEATURES:
+ FEATURES:
     ✓ Cross-platform (Windows/Linux/macOS)
     ✓ Automatic backups of existing installations
     ✓ Preserves user session history (AGENTS.md)
     ✓ Post-installation verification
     ✓ Automatic cleanup (removes installation script)
+
+ INSTALLATION LOCATIONS:
+    Global: ~/.config/opencode/ (Linux/macOS/Windows)
+    Project: ./.opencode/ in your project directory
 
 For more information, visit: https://github.com/shahboura/agents-opencode
 `);

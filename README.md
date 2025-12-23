@@ -21,6 +21,10 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
 ```
 
+**Installation Locations:**
+- **Global:** `~/.config/opencode/` (Linux/macOS/Windows)
+- **Project:** `./.opencode/` in your project directory
+
 **That's it!** Agents are ready to use. No configuration needed.
 
 ---

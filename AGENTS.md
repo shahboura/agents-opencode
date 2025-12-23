@@ -103,6 +103,17 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 
 ## Session Summaries
 
+### 2025-12-24 11:00 - Update global config location to match OpenCode standards
+
+**Agent:** opencode
+**Summary:** Updated global configuration directory to match OpenCode.ai documentation standards
+
+- Modified getGlobalConfigDir() to use ~/.config/opencode/ on all platforms (Linux/macOS/Windows)
+- Updated README.md to document correct installation locations
+- Updated install.js help text to include installation location information
+- Added configuration path display in global install success message
+- All changes align with https://opencode.ai/docs/config/#global specifications
+
 ### 2025-12-23 21:00 - Update instructions.md with new language standards
 
 **Agent:** docs  
