@@ -6,42 +6,144 @@ nav_order: 2
 
 # Getting Started
 
-## Quick Setup
+Get up and running with OpenCode agents in under 5 minutes.
 
-1. **Install OpenCode CLI**
-2. **Copy agents to your project:**
+## Prerequisites
+
+- [OpenCode CLI](https://opencode.ai/docs/cli/) installed
+- Any project (existing repos work perfectly)
+
+## Quick Setup (60 seconds)
+
+1. **Copy agents to your project:**
 
    ```bash
    cp -r .opencode/agent/ your-project/.opencode/agent/
    ```
 
-3. **Start using:**
+2. **Start using:**
 
    ```bash
    opencode
    @codebase Create a user API endpoint
    ```
 
+**For full installation options including automated setup, see the [main README](../README.md#installation--setup).**
+
+## Your First Agent Interaction
+
+1. **Open OpenCode Chat:**
+
+   ```bash
+   opencode
+   ```
+
+2. **Select an agent and describe what you want:**
+
+   ```
+   @orchestrator Build a user authentication API with JWT tokens
+   ```
+
+   **The agent will:**
+   - 📋 Propose a detailed implementation plan
+   - ⏸️ Wait for your approval before proceeding
+   - 🔨 Implement step-by-step with validation
+   - ✨ Suggest next steps (docs, review, etc.)
+
 ## How It Works
 
-- **Plan First**: Agents propose plans, you approve
-- **Step-by-Step**: Implementation happens incrementally
-- **Multi-Language**: Auto-detects .NET, Python, TypeScript, Flutter
-- **Standards**: Auto-applies coding best practices
+### Plan-First Approach
+Agents never jump straight into coding. They always:
+1. **Analyze** your request and current codebase
+2. **Propose** a structured plan with phases and dependencies
+3. **Wait** for your approval before implementation
+4. **Execute** incrementally with validation at each step
 
-## Agents
+### Multi-Language Support
+Agents automatically detect your tech stack and apply appropriate standards:
 
-- `@orchestrator` - Planning and coordination
-- `@codebase` - Code implementation
-- `@review` - Security/quality audits
-- `@docs` - Documentation
-- `@em-advisor` - Leadership guidance
-- `@blogger` - Content creation
-- `@brutal-critic` - Content review
+| Language | Standards Applied |
+|----------|-------------------|
+| .NET (C#) | Clean Architecture, async/await, nullable types |
+| Python | Type hints, pytest, black formatting |
+| TypeScript | Strict mode, null safety |
+| Flutter (Dart) | Riverpod, freezed models, widget testing |
+| Go | Modules, error handling, concurrency |
+| Node.js (Express) | Security middleware, async patterns |
+| React (Next.js) | Accessibility, performance optimization |
 
-## Tips
+### Context Awareness
+Agents read your `AGENTS.md` file to understand:
+- Your project architecture and patterns
+- Coding standards and conventions
+- Team preferences and constraints
+- Past decisions and implementations
 
-- Be specific in requests
-- Review plans before approval
-- Use `/` commands for common tasks
-- Add project context to `AGENTS.md`
+## Available Agents
+
+| Agent | Purpose | Use When |
+|-------|---------|----------|
+| `@orchestrator` | Strategic planning & coordination | Complex features, risk assessment, multi-phase projects |
+| `@planner` | Read-only analysis & planning | Detailed plans without code changes |
+| `@codebase` | Code implementation | Direct implementation, bug fixes, feature development |
+| `@blogger` | Content creation | Tech blogging, podcasting, YouTube scripting |
+| `@brutal-critic` | Content review | Honest feedback, framework validation |
+| `@em-advisor` | Leadership guidance | Team management, 1-on-1 preparation |
+| `@docs` | Documentation | README generation, API docs, guides |
+| `@review` | Security & quality audits | Code review, security checks, performance analysis |
+
+## Essential Tips for Success
+
+### 🎯 Be Specific
+
+```bash
+❌ @codebase Add authentication
+✅ @codebase Add JWT authentication with:
+    - Login endpoint (email/password)
+    - Refresh token mechanism
+    - Password hashing with bcrypt
+    - Rate limiting on login attempts
+```
+
+### 📋 Always Review Plans
+- Agents propose plans before implementing
+- Take time to review and provide feedback
+- Plans can be refined before approval
+
+### 🔄 Use Agent Handoffs
+Don't do everything with one agent. Use sequences:
+
+```
+@orchestrator (plan) → @codebase (implement) → @review (audit) → @docs (document)
+```
+
+### 📚 Leverage Context
+Add project details to `AGENTS.md`:
+
+```markdown
+## My Project
+- Tech: Node.js, TypeScript, PostgreSQL
+- Architecture: Clean Architecture with repository pattern
+- Standards: Async/await everywhere, comprehensive error handling
+```
+
+### ⚡ Use Slash Commands
+Type `/` in chat for common tasks:
+- `/create-readme` - Generate professional documentation
+- `/code-review` - Comprehensive code audit
+- `/generate-tests` - Unit test generation
+- `/security-audit` - Security vulnerability scan
+
+## Next Steps
+
+- **[Agent Reference](./agents/README.md)** - Deep dive into each agent's capabilities
+- **[Workflow Examples](./workflows.md)** - Real-world usage patterns
+- **[Customization](./customization.md)** - Tailor agents to your project
+- **[Troubleshooting](./troubleshooting.md)** - FAQ and common issues
+
+**Ready to build something amazing?** 🚀
+
+```bash
+opencode
+@orchestrator What would you like to build?
+```

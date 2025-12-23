@@ -70,6 +70,14 @@ All code changes must:
 - Follow language-specific conventions
 - Include proper documentation
 
+### Documentation Standards
+
+All documentation changes must:
+
+- Pass markdown linting (`npm run lint:md`)
+- Have valid internal/external links (`npm run validate:docs`)
+- Run validation before committing changes
+
 ## Session Summary Requirements
 
 **All agents MUST summarize sessions upon task completion:**
