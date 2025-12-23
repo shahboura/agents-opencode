@@ -5,21 +5,15 @@ url: https://shahboura.github.io
 baseurl: /agents-opencode
 
 # Theme
-# Popular alternatives: minimal-mistakes, jekyll-theme-cayman, jekyll-theme-slate, jekyll-theme-tactile
 remote_theme: pmarsceill/just-the-docs
 
-# Just the Docs settings
-color_scheme: "dark"  # Enable dark mode
+# Enable dark mode
+color_scheme: "dark"
 
-# Just the Docs navigation
+# Navigation
 nav_external_links:
   - title: GitHub Repository
     url: https://github.com/shahboura/agents-opencode
 
 # Footer
 footer_content: "Copyright &copy; 2025 Shehab Elhadidy. Licensed under the MIT License."
-
-# Exclude from processing
-exclude:
-  - Gemfile
-  - Gemfile.lock
