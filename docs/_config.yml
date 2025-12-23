@@ -52,6 +52,7 @@ navbar-links:
 author: Shehab Elhadidy
 github: shahboura
 twitter: shahboura
+# avatar: /assets/images/avatar.png  # Commented out - no avatar image
 
 # Site settings are defined above
 
