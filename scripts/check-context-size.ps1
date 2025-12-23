@@ -1,13 +1,22 @@
 # Context File Size Monitor
 $ErrorActionPreference = "Stop"
-$contextFile = ".github/agents.md"
+
+# Check for global installation first, then local
+$globalContextFile = "$env:USERPROFILE\AppData\Local\opencode\AGENTS.md"
+if ($IsLinux -or $IsMacOS) {
+    $globalContextFile = "$HOME/.config/opencode/AGENTS.md"
+}
+$localContextFile = "AGENTS.md"
+
+$contextFile = if (Test-Path $globalContextFile) { $globalContextFile } elseif (Test-Path $localContextFile) { $localContextFile } else { $null }
+
 $maxSizeKB = 100
 $pruneToKB = 75
 
 Write-Host "Checking context file size..." -ForegroundColor Cyan
 
-if (-not (Test-Path $contextFile)) {
-    Write-Host "WARNING: $contextFile not found." -ForegroundColor Yellow
+if (-not $contextFile) {
+    Write-Host "WARNING: No AGENTS.md context file found in global or local location." -ForegroundColor Yellow
     exit 0
 }
 

@@ -38,6 +38,14 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --project .
 ```
 
+### Uninstall
+
+```bash
+node install.js --uninstall
+```
+
+**Note:** Creates backups of your session history and configurations before removal.
+
 ---
 
 ## 🚀 Get Started (60 seconds)

@@ -40,7 +40,14 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --project .
 ```
 
+### Uninstall
+
+```bash
+node install.js --uninstall
+```
+
 **What happens:** Downloads and installs all agents, instructions, and prompts automatically.
+Uninstallation creates backups of your session history.
 
 ## Your First Agent Interaction
 
