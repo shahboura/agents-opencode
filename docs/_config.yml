@@ -14,13 +14,8 @@ plugins:
   - jekyll-feed
   - jekyll-seo-tag
 
-# Color scheme - supports dark/light with system preference
-color_scheme: nil # nil enables auto-detection of system preference
-
-# Dark mode configuration for just-the-docs
-enable_dark_mode: true
-enable_dark_mode_toggle: true
-dark_mode_toggle_position: header
+# Color scheme - just-the-docs dark mode
+color_scheme: "auto" # Options: light, dark, auto
 
 # Custom styling (just-the-docs automatically includes _sass/custom.scss)
 
@@ -83,6 +78,35 @@ footer_content: |
           hint.style.opacity = '1';
           setTimeout(() => hint.style.opacity = '0', 3000);
         });
+      }
+    }
+
+    // Add dark mode toggle if it doesn't exist
+    if (!document.querySelector('.dark-mode-toggle, .color-scheme-toggle')) {
+      const header = document.querySelector('.site-header, header');
+      if (header) {
+        const toggle = document.createElement('button');
+        toggle.className = 'dark-mode-toggle';
+        toggle.innerHTML = '🌓';
+        toggle.title = 'Toggle dark/light mode';
+        toggle.style.cssText = 'background:none;border:none;cursor:pointer;font-size:1.2rem;padding:0.5rem;margin-left:1rem;color:var(--text-color);';
+        toggle.onclick = function() {
+          const html = document.documentElement;
+          const currentTheme = html.getAttribute('data-theme') || 'light';
+          const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+          html.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+          toggle.innerHTML = newTheme === 'dark' ? '☀️' : '🌓';
+        };
+
+        // Load saved theme or detect system preference
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+        toggle.innerHTML = theme === 'dark' ? '☀️' : '🌓';
+
+        header.appendChild(toggle);
       }
     }
   });
