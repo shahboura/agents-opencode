@@ -340,9 +340,12 @@ function uninstall() {
 
                 // Create backup of entire installation
                 const backupDir = path.join(currentDir, `.opencode.backup.${Date.now()}`);
+                console.log(`Debug: opencodeDir=${opencodeDir}, exists=${fs.existsSync(opencodeDir)}`);
                 if (fs.existsSync(opencodeDir)) {
                     fs.renameSync(opencodeDir, backupDir);
                     success(`✅ Agents backed up to: .opencode.backup.${path.basename(backupDir)}/`);
+                } else {
+                    console.log(`Debug: .opencode directory not found for backup`);
                 }
 
                 // Remove other installation files
