@@ -17,10 +17,10 @@ plugins:
 # Color scheme - supports dark/light with system preference
 color_scheme: nil # nil enables auto-detection of system preference
 
-# Dark mode configuration
+# Dark mode configuration for just-the-docs
 enable_dark_mode: true
 enable_dark_mode_toggle: true
-dark_mode_toggle_position: "header" # Position of the toggle button
+dark_mode_toggle_position: header
 
 # Custom styling (just-the-docs automatically includes _sass/custom.scss)
 
@@ -61,21 +61,27 @@ footer_content: |
       }
     });
 
-    // Add search hint
-    const searchContainer = document.querySelector('.search, .search-input-container');
-    if (searchContainer) {
-      const hint = document.createElement('div');
-      hint.className = 'search-hint';
-      hint.innerHTML = '<kbd>Ctrl</kbd> + <kbd>K</kbd> to search';
-      hint.style.cssText = 'position:absolute;top:100%;right:0;background:var(--color-scheme-bg);border:1px solid var(--border-color);border-radius:4px;padding:0.25rem 0.5rem;font-size:0.75rem;color:var(--text-muted);opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:1000;';
-      searchContainer.style.position = 'relative';
-      searchContainer.appendChild(hint);
+    // Add search placeholder and hint
+    const searchInput = document.querySelector('.search-input, input[type="search"], input[placeholder*="search" i]');
+    if (searchInput) {
+      // Set placeholder with keyboard shortcut
+      if (!searchInput.placeholder || searchInput.placeholder.length < 10) {
+        searchInput.placeholder = 'Search docs... (Ctrl+K)';
+      }
 
-      const searchInput = searchContainer.querySelector('input');
-      if (searchInput) {
+      // Add search hint
+      const searchContainer = searchInput.closest('.search, .search-input-container') || searchInput.parentElement;
+      if (searchContainer && !searchContainer.querySelector('.search-hint')) {
+        const hint = document.createElement('div');
+        hint.className = 'search-hint';
+        hint.innerHTML = '<kbd>Ctrl</kbd> + <kbd>K</kbd>';
+        hint.style.cssText = 'position:absolute;top:100%;right:0;background:var(--color-scheme-bg);border:1px solid var(--border-color);border-radius:4px;padding:0.25rem 0.5rem;font-size:0.75rem;color:var(--text-muted);opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:1000;margin-top:2px;';
+        searchContainer.style.position = 'relative';
+        searchContainer.appendChild(hint);
+
         searchInput.addEventListener('focus', function() {
           hint.style.opacity = '1';
-          setTimeout(() => hint.style.opacity = '0', 2000);
+          setTimeout(() => hint.style.opacity = '0', 3000);
         });
       }
     }

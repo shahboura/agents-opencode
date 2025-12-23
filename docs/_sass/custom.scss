@@ -13,6 +13,19 @@
   }
 }
 
+/* Ensure dark mode toggle is visible */
+.dark-mode-toggle,
+.color-scheme-toggle {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+}
+
+.site-header .dark-mode-toggle {
+  margin-left: 1rem;
+}
+
 /* Code block improvements */
 .highlight {
   border-radius: 6px;
