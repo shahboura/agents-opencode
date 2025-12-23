@@ -259,13 +259,7 @@ function installProject(tempDir, projectDir) {
         info(`✓ Preserved existing session history`);
     }
 
-    // Copy examples directory for learning
-    const examplesSrc = path.join(tempDir, 'examples');
-    if (fs.existsSync(examplesSrc)) {
-        const examplesDest = path.join(projectDir, 'examples');
-        copyRecursive(examplesSrc, examplesDest);
-        success(`✓ Examples installed for learning`);
-    }
+
 
     // Verify installation
     if (verifyInstallation(opencodeDir)) {
@@ -293,8 +287,16 @@ function uninstall() {
 
     try {
         // Check for any OpenCode installation files/directories
-        if (fs.existsSync(opencodeDir) || fs.existsSync(configPath)) {
+        if (fs.existsSync(opencodeDir) || fs.existsSync(configPath) || fs.existsSync(agentsMdPath)) {
             foundInstallation = true;
+
+            // Backup AGENTS.md with timestamp
+            if (fs.existsSync(agentsMdPath)) {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                const backupAgentsMd = path.join(currentDir, `AGENTS.${timestamp}.bk.md`);
+                fs.renameSync(agentsMdPath, backupAgentsMd);
+                success(`✅ Session history backed up to: AGENTS.${timestamp}.bk.md`);
+            }
 
             // Remove opencode.json
             if (fs.existsSync(configPath)) {
