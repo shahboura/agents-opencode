@@ -16,7 +16,7 @@ Eight specialized agents for development and content creation tasks.
 | @planner | Primary | Read-only planning | Detailed analysis, architecture plans (no code changes) |
 | @codebase | Primary | Code implementation | Features, bug fixes, direct implementation |
 | @blogger | Primary | Content creation | Tech/finance/leadership blogging, podcasting, YouTube scripting |
-| @brutal-critic | Primary | Content review | Honest feedback, framework validation, quality assessment |
+| @brutal-critic | Subagent | Content review | Honest feedback, framework validation, research capabilities, YouTube guidelines compliance |
 | @em-advisor | Primary | Leadership guidance | Strategy, team dynamics, 1-on-1 preparation |
 | @review | Subagent | Quality audits | Security, performance, best practices |
 | @docs | Subagent | Documentation | README, API docs, guides |
@@ -45,7 +45,7 @@ Eight specialized agents for development and content creation tasks.
 ## Capabilities
 
 - **Read**: All agents can read code and docs
-- **Edit**: @codebase, @orchestrator, @docs, @blogger
+- **Edit**: @codebase, @orchestrator, @docs, @blogger, @brutal-critic
 - **Execute**: @codebase, @orchestrator
 - **Search**: All agents can search codebase
-- **Read-Only**: @planner, @review, @em-advisor, @brutal-critic
+- **Read-Only**: @planner, @review, @em-advisor

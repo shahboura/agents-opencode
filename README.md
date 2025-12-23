@@ -41,7 +41,7 @@ Specialized OpenCode agents for intelligent, plan-first development workflows.
 | **@planner** | Primary | Read-only analysis & planning | Detailed implementation plans, architecture analysis (no code changes) |
 | **@codebase** | Primary | Multi-language dev | Direct implementation, bug fixes, code generation |
 | **@blogger** | Primary | Content creation | Tech/finance/leadership blogging, podcast ideation, YouTube scripting |
-| **@brutal-critic** | Primary | Content review | Honest feedback, framework validation, quality assessment |
+| **@brutal-critic** | Subagent | Content review | Honest feedback, framework validation, quality assessment |
 | **@em-advisor** | Primary | Leadership guidance | Strategy, team dynamics, 1-on-1s |
 | **@docs** | Subagent | Documentation | README, API docs, guides |
 | **@review** | Subagent | Security & quality | Audits, performance, best practices |
@@ -49,13 +49,13 @@ Specialized OpenCode agents for intelligent, plan-first development workflows.
 **Note:** All agents automatically add session summaries to AGENTS.md after task completion.
 
 ---
-8 Reusable Prompts
+9 Reusable Prompts
 
 Structured templates for common development tasks:
 
 - **Documentation**: `/api-docs`, `/create-readme`, `/architecture-decision`
 - **Quality**: `/code-review`, `/security-audit`, `/generate-tests`
-- **Development**: `/refactor-plan`
+- **Development**: `/refactor-plan`, `/architecture-review`
 - **Management**: `/1-on-1-prep`
 
 **[👉 View All Prompts](./.opencode/prompts/README.md)**
@@ -74,6 +74,11 @@ No configuration needed. When you edit files, standards activate automatically:
 | `.py` | Python type hints, pytest, black formatting |
 | `.ts` / `.tsx` | TypeScript strict mode, null safety |
 | `.dart` | Flutter Riverpod, freezed models, widget testing |
+| `.go` | Go modules, testing, concurrency patterns |
+| `.js` / `.ts` | Node.js Express, security middleware, async handling |
+| `.jsx` / `.tsx` | React Next.js, accessibility, performance |
+| `.sql` | SQL migrations, safety, data quality |
+| `.md` / `.mdx` | Content creation standards, research validation |
 
 **[👉 View Standards](./docs/instructions.md)**
 

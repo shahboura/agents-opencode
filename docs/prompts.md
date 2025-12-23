@@ -10,11 +10,15 @@ Reusable commands for common tasks.
 
 ## Available Commands
 
+- `/api-docs` - Generate comprehensive API documentation
 - `/create-readme` - Generate professional README
 - `/code-review` - Comprehensive code review
 - `/generate-tests` - Unit test generation
+- `/security-audit` - Conduct security audits
+- `/refactor-plan` - Create refactoring plans
 - `/1-on-1-prep` - Meeting preparation
 - `/architecture-decision` - ADR creation
+- `/architecture-review` - Review architectural decisions
 
 ## Usage
 
@@ -141,6 +145,117 @@ Documents decisions with:
 - Recording major technical decisions
 - Maintaining decision history
 - Onboarding new team members
+
+---
+
+### `/api-docs`
+
+**Generate comprehensive API documentation**
+
+Creates detailed API documentation including:
+
+- Endpoint specifications with parameters
+- Request/response examples
+- Error handling documentation
+- Authentication requirements
+- Usage examples and code samples
+
+**Example:**
+
+```
+/api-docs
+```
+
+**Best for:**
+
+- Documenting REST APIs and microservices
+- Creating developer portals
+- API versioning and maintenance
+- Onboarding new developers
+
+---
+
+### `/security-audit`
+
+**Conduct comprehensive security audits**
+
+Performs security analysis covering:
+
+- Common vulnerabilities (OWASP Top 10)
+- Authentication and authorization flaws
+- Input validation and sanitization
+- Secure coding practices
+- Dependency vulnerabilities
+- Configuration security
+
+**Example:**
+
+```
+/security-audit
+```
+
+**Best for:**
+
+- Pre-deployment security reviews
+- Third-party code audits
+- Compliance requirements
+- Security training and awareness
+
+---
+
+### `/refactor-plan`
+
+**Create refactoring plans for code improvement**
+
+Develops structured plans for code refactoring including:
+
+- Code smell identification
+- Complexity analysis
+- Dependency reduction strategies
+- Testing approach for refactoring
+- Risk assessment and mitigation
+- Step-by-step implementation plan
+
+**Example:**
+
+```
+/refactor-plan
+```
+
+**Best for:**
+
+- Legacy code modernization
+- Technical debt reduction
+- Code maintainability improvements
+- Performance optimization planning
+
+---
+
+### `/architecture-review`
+
+**Review architectural decisions and designs**
+
+Evaluates system architecture including:
+
+- Design pattern appropriateness
+- Scalability and performance considerations
+- Maintainability and extensibility
+- Technology stack alignment
+- Security architecture review
+- Deployment and operational concerns
+
+**Example:**
+
+```
+/architecture-review
+```
+
+**Best for:**
+
+- System design validation
+- Technology selection review
+- Scalability planning
+- Team alignment on architecture
 
 ---
 

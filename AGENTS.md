@@ -95,6 +95,17 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 
 ## Session Summaries
 
+### 2025-12-23 21:00 - Update instructions.md with new language standards
+
+**Agent:** docs  
+**Summary:** Added comprehensive documentation sections for newly supported languages in @codebase agent
+
+- Added Go Standards section with modules, error handling, concurrency, and testing
+- Added Node.js Express Standards section with security, async/await, validation, and logging
+- Added React Next.js Standards section with TypeScript, components, accessibility, and performance
+- Updated overview to mention all supported languages
+- Included code examples and validation commands following existing format
+
 ### 2025-12-23 20:00 - Commit all repository changes
 
 **Agent:** GitHub Copilot  

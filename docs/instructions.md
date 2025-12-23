@@ -6,7 +6,7 @@ nav_order: 6
 
 # Coding Standards
 
-Auto-applied standards by file type.
+Auto-applied standards by file type. Agents automatically detect file extensions and apply the corresponding coding standards from `.opencode/instructions/`.
 
 ## .NET (C#)
 
@@ -29,32 +29,7 @@ Auto-applied standards by file type.
 - Strict null checks
 - Utility types (Pick, Omit, etc.)
 
-## Kotlin (Android)
 
-- MVVM + Clean Architecture
-- Coroutines + Flow for async/state
-- Jetpack Compose for UI
-- Hilt for DI; immutable data classes
-
-## Rust
-
-- Ownership and borrowing best practices
-- Result/Option error handling (no unwrap in prod)
-- Clippy clean; cargo fmt; tests for public APIs
-
-## Java (Spring Boot)
-
-- Constructor injection (no @Autowired fields)
-- Optional for nullable returns
-- Use records for DTOs; @Transactional for services
-- JPA with proper indexing and migrations
-
-## Ruby on Rails
-
-- MVC pattern with RESTful conventions
-- ActiveRecord validations and associations
-- Service objects for complex logic
-- RSpec tests with 90%+ coverage
 
 ## Flutter (Dart)
 
@@ -62,6 +37,27 @@ Auto-applied standards by file type.
 - Freezed for immutable models
 - Result pattern for error handling
 - Provider for dependency injection
+
+## Go
+
+- Go modules and formatting
+- Context passing for I/O
+- Error handling patterns
+- Concurrency with goroutines
+
+## Node.js Express
+
+- Security middleware (helmet, CORS)
+- Async/await error handling
+- Input validation (Joi/Zod)
+- Structured logging
+
+## React Next.js
+
+- TypeScript strict mode
+- Function components and hooks
+- Accessibility standards
+- Performance optimizations
 
 Standards activate automatically when editing matching files.
 
@@ -424,6 +420,234 @@ flutter build apk    # Build APK
 
 ---
 
+## Go Standards
+
+**Applies to:** `.go` files
+
+### Key Standards
+
+#### Go Modules and Formatting
+
+```go
+// go.mod
+module example.com/myproject
+
+go 1.21
+
+require (
+    github.com/gin-gonic/gin v1.9.1
+)
+```
+
+#### Context Passing
+
+```go
+func GetUser(ctx context.Context, id int) (*User, error) {
+    // Pass context to database calls
+    return db.QueryContext(ctx, "SELECT * FROM users WHERE id = ?", id)
+}
+```
+
+#### Error Handling
+
+```go
+func processData(data []byte) error {
+    if len(data) == 0 {
+        return fmt.Errorf("data cannot be empty")
+    }
+    // process...
+    return nil
+}
+```
+
+#### Concurrency
+
+```go
+func worker(ctx context.Context, jobs <-chan Job, results chan<- Result) {
+    for {
+        select {
+        case job := <-jobs:
+            // process job
+            results <- result
+        case <-ctx.Done():
+            return
+        }
+    }
+}
+```
+
+### Validation Commands
+
+```bash
+go mod tidy
+go vet ./...
+golangci-lint run
+go test ./...
+```
+
+---
+
+## Node.js Express Standards
+
+**Applies to:** `.js` and `.ts` files
+
+### Key Standards
+
+#### Security Middleware
+
+```javascript
+import helmet from 'helmet';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+
+app.use(helmet());
+app.use(cors({ origin: process.env.ALLOWED_ORIGINS }));
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+```
+
+#### Async/Await Error Handling
+
+```javascript
+app.get('/users/:id', async (req, res, next) => {
+  try {
+    const user = await userService.getUser(req.params.id);
+    res.json(user);
+  } catch (error) {
+    next(error);
+  }
+});
+```
+
+#### Input Validation
+
+```javascript
+import Joi from 'joi';
+
+const userSchema = Joi.object({
+  email: Joi.string().email().required(),
+  name: Joi.string().min(2).required(),
+});
+
+app.post('/users', (req, res, next) => {
+  const { error } = userSchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+  next();
+});
+```
+
+#### Structured Logging
+
+```javascript
+import pino from 'pino';
+
+const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
+
+app.use((req, res, next) => {
+  logger.info({ method: req.method, url: req.url });
+  next();
+});
+```
+
+### Validation Commands
+
+```bash
+npm ci
+npm run lint
+npm test
+npm run build
+```
+
+---
+
+## React Next.js Standards
+
+**Applies to:** `.tsx` and `.jsx` files
+
+### Key Standards
+
+#### TypeScript Strict Mode
+
+```typescript
+// tsconfig.json
+{
+  "compilerOptions": {
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true
+  }
+}
+```
+
+#### Function Components and Hooks
+
+```typescript
+const UserList: FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    const data = await api.getUsers();
+    setUsers(data);
+    setLoading(false);
+  };
+
+  return (
+    <div>
+      {loading ? <p>Loading...</p> : users.map(user => <UserItem key={user.id} user={user} />)}
+    </div>
+  );
+};
+```
+
+#### Accessibility Standards
+
+```typescript
+<button 
+  aria-label="Close dialog"
+  onClick={onClose}
+  className="close-button"
+>
+  ×
+</button>
+
+<label htmlFor="email">Email Address</label>
+<input 
+  id="email"
+  type="email"
+  aria-describedby="email-help"
+  required
+/>
+<span id="email-help">We'll never share your email.</span>
+```
+
+#### Performance Optimizations
+
+```typescript
+const ExpensiveComponent = memo(({ data }: { data: Data[] }) => {
+  const processedData = useMemo(() => {
+    return data.map(item => expensiveCalculation(item));
+  }, [data]);
+
+  return <div>{processedData.map(item => <Item key={item.id} item={item} />)}</div>;
+});
+```
+
+### Validation Commands
+
+```bash
+npm ci
+npm run lint
+npm test
+npm run build
+```
+
+---
+
 ## Quality Requirements
 
 All files must pass:
@@ -444,6 +668,11 @@ Each standard has comprehensive details:
 - **[Python Best Practices](../.opencode/instructions/python-best-practices.instructions.md)** - Full reference
 - **[TypeScript Strict Mode](../.opencode/instructions/typescript-strict.instructions.md)** - Full reference
 - **[Flutter Best Practices](../.opencode/instructions/flutter.instructions.md)** - Full reference
+- **[Go Best Practices](../.opencode/instructions/go.instructions.md)** - Full reference
+- **[Node.js Express](../.opencode/instructions/node-express.instructions.md)** - Full reference
+- **[React Next.js](../.opencode/instructions/react-next.instructions.md)** - Full reference
+- **[SQL Migrations](../.opencode/instructions/sql-migrations.instructions.md)** - Full reference
+- **[CI/CD Hygiene](../.opencode/instructions/ci-cd-hygiene.instructions.md)** - Full reference
 
 ---
 

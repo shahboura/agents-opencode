@@ -1,5 +1,5 @@
 ---
-description: Multi-language development agent with profile auto-detection for implementing features across .NET, Python, and TypeScript projects
+description: Multi-language development agent with profile auto-detection for implementing features across .NET, Python, TypeScript, Flutter, Go, Node.js, and React projects
 mode: primary
 temperature: 0.1
 tools:
@@ -26,6 +26,10 @@ Analyze project structure to determine active profile:
 - **dotnet**: Presence of `*.sln`, `*.csproj`, `Directory.Build.props`, `global.json`
 - **python**: Presence of `pyproject.toml`, `requirements.txt`, `.python-version`, or high `.py` density
 - **typescript**: Presence of `package.json`, `tsconfig.json`, or high `.ts` density
+- **flutter**: Presence of `pubspec.yaml`, `lib/` directory, or high `.dart` density
+- **go**: Presence of `go.mod`, `go.sum`, or high `.go` density
+- **node-express**: Presence of `package.json` with express dependency, `server.js`, or Node.js patterns
+- **react-next**: Presence of `package.json` with next dependency, `pages/` or `app/` directory
 - **generic**: Mixed languages or unclear dominant technology
 
 Log detected profile at start: `Detected active profile: <profile>`
@@ -66,6 +70,30 @@ Log detected profile at start: `Detected active profile: <profile>`
 - Ensure strict type checking
 - Run incremental builds
 - Execute: `tsc`, `npm test`, linting
+
+### Flutter Profile
+- Use Riverpod for state management
+- Apply freezed for immutable models
+- Implement Result pattern for error handling
+- Run: `flutter analyze`, `flutter test`, `dart format`
+
+### Go Profile
+- Follow Go module conventions
+- Use proper error handling (no panics in prod)
+- Implement goroutine safety
+- Run: `go vet`, `go test`, golangci-lint
+
+### Node-Express Profile
+- Apply security middleware (helmet, CORS, rate limiting)
+- Use async/await with proper error handling
+- Validate inputs with Joi/Zod
+- Run: `npm test`, linting, `npm run build`
+
+### React-Next Profile
+- Enable strict TypeScript mode
+- Implement accessibility standards
+- Optimize for performance (Image, code splitting)
+- Run: `npm run lint`, `npm test`, `npm run build`
 
 ### Generic Profile
 - Keep tasks language-agnostic

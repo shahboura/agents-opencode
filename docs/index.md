@@ -17,14 +17,14 @@ Specialized agents for intelligent development workflows.
 - **@planner** - Read-only analysis and detailed implementation planning (no code changes)
 - **@codebase** - Multi-language code implementation
 - **@blogger** - Content creation for blogging, podcasting, and YouTube scripting
-- **@brutal-critic** - Ruthless content reviewer with framework-based criticism
+- **@brutal-critic** - Ruthless content reviewer with research capabilities and YouTube creators guidelines validation
 - **@em-advisor** - Leadership and strategy guidance
 - **@docs** - Documentation creation
 - **@review** - Security and quality audits
 
 ## Reusable Prompts
 
-8 structured templates for common tasks:
+9 structured templates for common tasks:
 
 - Documentation: API docs, README generation, ADRs
 - Quality: Code review, security audit, test generation

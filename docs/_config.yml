@@ -6,8 +6,8 @@ baseurl: /agents-opencode
 repository: shahboura/agents-opencode
 
 # Theme Configuration
-# Using theme for local builds; remote_theme for GitHub Pages
-remote_theme: just-the-docs/
+# Using remote_theme for GitHub Pages
+remote_theme: just-the-docs/just-the-docs
 
 # Plugins
 plugins:
