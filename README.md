@@ -17,25 +17,25 @@
 ### Global Installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --global
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --global && rm install.js
 ```
 
 ### Project Installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --project /path/to/your/project
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --project /path/to/your/project && rm install.js
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js; node install.js --global
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js; node install.js --global; rm install.js
 ```
 
 ### Linux/macOS (Bash/Zsh)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --project .
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --project . && rm install.js
 ```
 
 ### Uninstall
@@ -43,13 +43,13 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 #### Remove from Current Directory
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall && rm install.js
 ```
 
 #### Remove Global Installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall --global
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall --global && rm install.js
 ```
 
 **Note:** Creates backups of your session history and configurations before removal.
