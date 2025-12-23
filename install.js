@@ -304,8 +304,11 @@ function uninstall() {
             const filesToRemove = ['AGENTS.md', 'opencode.json'];
             const dirsToRemove = ['examples'];
 
+            console.log(`Debug: Checking in directory: ${currentDir}`);
+
             for (const file of filesToRemove) {
                 const filePath = path.join(currentDir, file);
+                console.log(`Debug: Checking file: ${filePath}, exists: ${fs.existsSync(filePath)}`);
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
                     success(`✅ Removed ${file}`);
@@ -315,6 +318,7 @@ function uninstall() {
 
             for (const dir of dirsToRemove) {
                 const dirPath = path.join(currentDir, dir);
+                console.log(`Debug: Checking dir: ${dirPath}, exists: ${fs.existsSync(dirPath)}`);
                 if (fs.existsSync(dirPath)) {
                     fs.rmSync(dirPath, { recursive: true, force: true });
                     success(`✅ Removed ${dir}/`);
