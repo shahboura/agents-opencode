@@ -7,7 +7,6 @@ repository: shahboura/agents-opencode
 
 # Theme Configuration
 # Using remote_theme for GitHub Pages
-# Alternatives considered: minimal-mistakes, beautiful-jekyll, jekyll-theme-chirpy
 remote_theme: pmarsceill/just-the-docs
 
 # Plugins
@@ -15,10 +14,8 @@ plugins:
   - jekyll-feed
   - jekyll-seo-tag
 
-# Color scheme - just-the-docs dark mode
-color_scheme: "auto" # Options: light, dark, auto
-
-# Custom styling (just-the-docs automatically includes _sass/custom.scss)
+# Color scheme - use theme default
+# color_scheme: "light"  # commented out to use theme default
 
 # Logo and branding
 logo: false
@@ -41,80 +38,7 @@ nav_external_links:
     url: https://github.com/shahboura/agents-opencode
 
 # Footer
-footer_content: |
-  <script>
-  // Custom JavaScript for OpenCode Agents documentation
-  document.addEventListener('DOMContentLoaded', function() {
-    // Ctrl+K search shortcut
-    document.addEventListener('keydown', function(event) {
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-        event.preventDefault();
-        const searchInput = document.querySelector('.search-input, input[type="search"], input[placeholder*="search" i]');
-        if (searchInput) {
-          searchInput.focus();
-          searchInput.select();
-        }
-      }
-    });
-
-    // Add search placeholder and hint
-    const searchInput = document.querySelector('.search-input, input[type="search"], input[placeholder*="search" i]');
-    if (searchInput) {
-      // Set placeholder with keyboard shortcut
-      if (!searchInput.placeholder || searchInput.placeholder.length < 10) {
-        searchInput.placeholder = 'Search docs... (Ctrl+K)';
-      }
-
-      // Add search hint
-      const searchContainer = searchInput.closest('.search, .search-input-container') || searchInput.parentElement;
-      if (searchContainer && !searchContainer.querySelector('.search-hint')) {
-        const hint = document.createElement('div');
-        hint.className = 'search-hint';
-        hint.innerHTML = '<kbd>Ctrl</kbd> + <kbd>K</kbd>';
-        hint.style.cssText = 'position:absolute;top:100%;right:0;background:var(--color-scheme-bg);border:1px solid var(--border-color);border-radius:4px;padding:0.25rem 0.5rem;font-size:0.75rem;color:var(--text-muted);opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:1000;margin-top:2px;';
-        searchContainer.style.position = 'relative';
-        searchContainer.appendChild(hint);
-
-        searchInput.addEventListener('focus', function() {
-          hint.style.opacity = '1';
-          setTimeout(() => hint.style.opacity = '0', 3000);
-        });
-      }
-    }
-
-    // Add dark mode toggle if it doesn't exist
-    if (!document.querySelector('.dark-mode-toggle, .color-scheme-toggle')) {
-      const header = document.querySelector('.site-header, header');
-      if (header) {
-        const toggle = document.createElement('button');
-        toggle.className = 'dark-mode-toggle';
-        toggle.innerHTML = '🌓';
-        toggle.title = 'Toggle dark/light mode';
-        toggle.style.cssText = 'background:none;border:none;cursor:pointer;font-size:1.2rem;padding:0.5rem;margin-left:1rem;color:var(--text-color);';
-        toggle.onclick = function() {
-          const html = document.documentElement;
-          const currentTheme = html.getAttribute('data-theme') || 'light';
-          const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-          html.setAttribute('data-theme', newTheme);
-          localStorage.setItem('theme', newTheme);
-          toggle.innerHTML = newTheme === 'dark' ? '☀️' : '🌓';
-        };
-
-        // Load saved theme or detect system preference
-        const savedTheme = localStorage.getItem('theme');
-        const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
-        toggle.innerHTML = theme === 'dark' ? '☀️' : '🌓';
-
-        header.appendChild(toggle);
-      }
-    }
-  });
-  </script>
-  <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-    Copyright &copy; 2025 Shehab Elhadidy. Licensed under the MIT License.
-  </div>
+footer_content: "Copyright &copy; 2025 Shehab Elhadidy. Licensed under the MIT License."
 
 # Aux links
 aux_links:
