@@ -2,7 +2,6 @@
 
 [![Validate Agents & Documentation](https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml/badge.svg)](https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://shahboura.github.io/agents-opencode/)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/shahboura/agents-opencode/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub last commit](https://img.shields.io/github/last-commit/shahboura/agents-opencode)](https://github.com/shahboura/agents-opencode/commits/main)
 [![GitHub Stars](https://img.shields.io/github/stars/shahboura/agents-opencode?style=social)](https://github.com/shahboura/agents-opencode)
