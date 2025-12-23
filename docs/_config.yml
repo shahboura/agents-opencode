@@ -56,10 +56,10 @@ twitter: shahboura
 
 # Site settings are defined above
 
-# Collections
-collections:
-  agents:
-    output: true
+# Collections (commented out for compatibility)
+# collections:
+#   agents:
+#     output: true
 
 # Exclude from processing
 exclude:
