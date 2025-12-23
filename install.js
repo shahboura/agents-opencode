@@ -313,15 +313,17 @@ function uninstall() {
             success('✅ OpenCode Agents uninstalled from current directory!');
             info('Agent configurations removed (can be re-installed).');
 
-            // Remove the install script itself
+            // Remove the install script itself after process exits
             const scriptPath = path.join(currentDir, 'install.js');
             if (fs.existsSync(scriptPath)) {
-                try {
-                    fs.unlinkSync(scriptPath);
-                    success(`✅ Removed installation script`);
-                } catch (err) {
-                    warning(`Could not remove install script: ${err.message}`);
-                }
+                process.on('exit', () => {
+                    try {
+                        fs.unlinkSync(scriptPath);
+                    } catch (err) {
+                        // Silent fail - script may be locked
+                    }
+                });
+                success(`✅ Installation script will be removed`);
             }
         }
 
@@ -382,7 +384,7 @@ FEATURES:
     ✓ Automatic backups of existing installations
     ✓ Preserves user session history (AGENTS.md)
     ✓ Post-installation verification
-    ✓ Includes examples and learning materials
+    ✓ Automatic cleanup (removes installation script)
 
 For more information, visit: https://github.com/shahboura/agents-opencode
 `);
