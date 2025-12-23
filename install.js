@@ -87,6 +87,55 @@ function copyRecursive(src, dest) {
     }
 }
 
+function verifyInstallation(installDir) {
+    try {
+        // Check for essential directories
+        const requiredDirs = ['agent', 'instructions', 'prompts'];
+        for (const dir of requiredDirs) {
+            const dirPath = path.join(installDir, dir);
+            if (!fs.existsSync(dirPath)) {
+                error(`Missing required directory: ${dir}`);
+                return false;
+            }
+        }
+
+        // Check for configuration file
+        const configFile = path.join(path.dirname(installDir), 'opencode.json');
+        if (!fs.existsSync(configFile)) {
+            error('Missing configuration file: opencode.json');
+            return false;
+        }
+
+        // Check for at least one agent
+        const agentDir = path.join(installDir, 'agent');
+        const agents = fs.readdirSync(agentDir).filter(file => file.endsWith('.md'));
+        if (agents.length === 0) {
+            error('No agent files found in agent directory');
+            return false;
+        }
+
+        return true;
+    } catch (err) {
+        error(`Installation verification failed: ${err.message}`);
+        return false;
+    }
+}
+
+function checkVersion(tempDir) {
+    try {
+        const packagePath = path.join(tempDir, 'package.json');
+        if (fs.existsSync(packagePath)) {
+            const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+            const version = packageData.version;
+            info(`Installing OpenCode Agents v${version}`);
+            return version;
+        }
+    } catch (err) {
+        // Ignore version check errors
+    }
+    return null;
+}
+
 function cloneRepository(tempDir) {
     info('Cloning OpenCode Agents repository...');
 
@@ -116,19 +165,33 @@ function installGlobal(tempDir) {
 
     const globalConfigDir = getGlobalConfigDir();
 
+    // Backup existing installation if it exists
+    if (fs.existsSync(globalConfigDir)) {
+        const backupDir = `${globalConfigDir}.backup.${Date.now()}`;
+        try {
+            fs.renameSync(globalConfigDir, backupDir);
+            info(`Backed up existing installation to ${backupDir}`);
+        } catch (err) {
+            warning(`Could not backup existing installation: ${err.message}`);
+        }
+    }
+
     // Copy all OpenCode directories
     const opencodeSrc = path.join(tempDir, '.opencode');
     if (fs.existsSync(opencodeSrc)) {
         const items = fs.readdirSync(opencodeSrc);
+        let copiedCount = 0;
         items.forEach(item => {
             const srcPath = path.join(opencodeSrc, item);
             const destPath = path.join(globalConfigDir, item);
 
             if (fs.statSync(srcPath).isDirectory()) {
                 copyRecursive(srcPath, destPath);
-                success(`Copied ${item} to ${destPath}`);
+                success(`✓ Copied ${item}`);
+                copiedCount++;
             }
         });
+        info(`Installed ${copiedCount} agent components`);
     }
 
     // Copy opencode.json
@@ -136,11 +199,18 @@ function installGlobal(tempDir) {
     if (fs.existsSync(configSrc)) {
         const configDest = path.join(globalConfigDir, 'opencode.json');
         fs.copyFileSync(configSrc, configDest);
-        success(`Copied configuration to ${configDest}`);
+        success(`✓ Configuration installed`);
     }
 
-    success('Global installation completed!');
-    info('Agents are now available in all your projects.');
+    // Verify installation
+    if (verifyInstallation(globalConfigDir)) {
+        success('✅ Global installation completed successfully!');
+        info('Agents are now available in all your projects.');
+        info(`Installation location: ${globalConfigDir}`);
+    } else {
+        error('❌ Installation verification failed. Please check the installation location.');
+        process.exit(1);
+    }
 }
 
 function installProject(tempDir, projectDir) {
@@ -155,32 +225,48 @@ function installProject(tempDir, projectDir) {
     // Check if it's a git repository (optional but recommended)
     const gitDir = path.join(projectDir, '.git');
     if (!fs.existsSync(gitDir)) {
-        warning('Project directory is not a git repository. Consider initializing git first.');
+        warning('Project directory is not a git repository. Agent session logging may be limited.');
     }
 
     // Create .opencode directory
     const opencodeDir = path.join(projectDir, '.opencode');
     ensureDir(opencodeDir);
 
+    // Backup existing .opencode if it exists
+    if (fs.existsSync(opencodeDir) && fs.readdirSync(opencodeDir).length > 0) {
+        const backupDir = `${opencodeDir}.backup.${Date.now()}`;
+        try {
+            fs.renameSync(opencodeDir, backupDir);
+            info(`Backed up existing .opencode to ${backupDir}`);
+            ensureDir(opencodeDir); // Recreate the directory
+        } catch (err) {
+            warning(`Could not backup existing .opencode: ${err.message}`);
+        }
+    }
+
     // Copy all directories from .opencode/
     const opencodeSrc = path.join(tempDir, '.opencode');
     if (fs.existsSync(opencodeSrc)) {
         const items = fs.readdirSync(opencodeSrc);
+        let copiedCount = 0;
         items.forEach(item => {
             const srcPath = path.join(opencodeSrc, item);
             const destPath = path.join(opencodeDir, item);
 
             if (fs.statSync(srcPath).isDirectory()) {
                 copyRecursive(srcPath, destPath);
-                success(`Copied ${item} to ${destPath}`);
+                success(`✓ Copied ${item}`);
+                copiedCount++;
             }
         });
+        info(`Installed ${copiedCount} agent components`);
     }
 
     // Copy opencode.json
     const configSrc = path.join(tempDir, 'opencode.json');
     if (fs.existsSync(configSrc)) {
         fs.copyFileSync(configSrc, path.join(projectDir, 'opencode.json'));
+        success(`✓ Configuration installed`);
     }
 
     // Copy AGENTS.md template if it doesn't exist (preserve user history)
@@ -188,6 +274,9 @@ function installProject(tempDir, projectDir) {
     const agentsMdDest = path.join(projectDir, 'AGENTS.md');
     if (fs.existsSync(agentsMdSrc) && !fs.existsSync(agentsMdDest)) {
         fs.copyFileSync(agentsMdSrc, agentsMdDest);
+        success(`✓ Session log template created`);
+    } else if (fs.existsSync(agentsMdDest)) {
+        info(`✓ Preserved existing session history`);
     }
 
     // Copy examples directory for learning
@@ -195,17 +284,24 @@ function installProject(tempDir, projectDir) {
     if (fs.existsSync(examplesSrc)) {
         const examplesDest = path.join(projectDir, 'examples');
         copyRecursive(examplesSrc, examplesDest);
-        success(`Copied examples to ${examplesDest}`);
+        success(`✓ Examples installed for learning`);
     }
 
-    success('Project installation completed!');
-    info(`Agents configured for: ${projectDir}`);
-    return true;
+    // Verify installation
+    if (verifyInstallation(opencodeDir)) {
+        success('✅ Project installation completed successfully!');
+        info(`Agents configured for: ${projectDir}`);
+        info(`Configuration: ${path.join(projectDir, 'opencode.json')}`);
+        return true;
+    } else {
+        error('❌ Installation verification failed. Please check the project directory.');
+        return false;
+    }
 }
 
 function showUsage() {
     console.log(`
-OpenCode Agents Installation Script
+🤖 OpenCode Agents Installation Script
 
 USAGE:
     node install.js [OPTIONS]
@@ -213,21 +309,70 @@ USAGE:
 OPTIONS:
     -g, --global                Install agents globally (available in all projects)
     -p, --project DIR           Install agents for specific project directory
+    -u, --uninstall             Remove installed agents
+    -v, --version               Show version information
     -h, --help                  Show this help message
 
 EXAMPLES:
     node install.js --global                    # Install globally
     node install.js --project /path/to/project  # Install for specific project
     node install.js --project .                 # Install in current directory
+    node install.js --uninstall                 # Remove installation
 
 PREREQUISITES:
-    - Git
+    - Git (for downloading)
     - Node.js/npm
     - Internet connection
+
+FEATURES:
+    ✓ Cross-platform (Windows/Linux/macOS)
+    ✓ Automatic backups of existing installations
+    ✓ Preserves user session history (AGENTS.md)
+    ✓ Includes examples and documentation
+    ✓ Post-installation verification
 
 For more information, visit: https://github.com/shahboura/agents-opencode
 `);
     process.exit(1);
+}
+
+function uninstall() {
+    info('Uninstalling OpenCode Agents...');
+
+    const globalConfigDir = getGlobalConfigDir();
+
+    if (fs.existsSync(globalConfigDir)) {
+        try {
+            // Create backup before removal
+            const backupDir = `${globalConfigDir}.backup.${Date.now()}`;
+            fs.renameSync(globalConfigDir, backupDir);
+            success(`✅ Agents backed up to: ${backupDir}`);
+            success('✅ OpenCode Agents uninstalled successfully!');
+            info('To completely remove, delete the backup directory manually.');
+        } catch (err) {
+            error(`❌ Failed to uninstall: ${err.message}`);
+            return false;
+        }
+    } else {
+        warning('No OpenCode Agents installation found.');
+    }
+
+    return true;
+}
+
+function showVersion(tempDir) {
+    try {
+        const packagePath = path.join(tempDir, 'package.json');
+        if (fs.existsSync(packagePath)) {
+            const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+            console.log(`OpenCode Agents v${packageData.version}`);
+            console.log(`Repository: ${packageData.repository?.url || 'https://github.com/shahboura/agents-opencode'}`);
+        } else {
+            console.log('OpenCode Agents (version unknown)');
+        }
+    } catch (err) {
+        console.log('OpenCode Agents (version check failed)');
+    }
 }
 
 function main() {
@@ -252,13 +397,23 @@ function main() {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opencode-install-'));
 
     try {
+        info('🚀 Starting OpenCode Agents installation...');
+
         // Clone repository
         if (!cloneRepository(tempDir)) {
+            error('❌ Repository download failed');
             process.exit(1);
+        }
+
+        // Check version
+        const version = checkVersion(tempDir);
+        if (version) {
+            info(`📦 Installing version ${version}`);
         }
 
         // Validate repository
         if (!validateRepository(tempDir)) {
+            error('❌ Repository validation failed');
             process.exit(1);
         }
 
@@ -268,9 +423,11 @@ function main() {
             case '-g':
             case '--global':
                 installGlobal(tempDir);
-                success('OpenCode Agents installation completed!');
-                info("Run 'opencode' to start using the agents.");
-                info("For help, see: https://github.com/shahboura/agents-opencode");
+                info("\n🎯 Next steps:");
+                info("1. Run 'opencode' to start using the agents");
+                info("2. Type '@' to see available agents");
+                info("3. Try: @codebase Create a user API endpoint");
+                info("\n📚 Documentation: https://github.com/shahboura/agents-opencode");
                 break;
             case '-p':
             case '--project':
@@ -279,12 +436,26 @@ function main() {
                     showUsage();
                 }
                 if (!installProject(tempDir, args[1])) {
+                    error('❌ Project installation failed');
                     process.exit(1);
                 } else {
-                    success('OpenCode Agents installation completed!');
-                    info("Run 'opencode' to start using the agents.");
-                    info("For help, see: https://github.com/shahboura/agents-opencode");
+                    const projectPath = path.resolve(args[1]);
+                    info("\n🎯 Next steps:");
+                    info(`1. cd ${projectPath}`);
+                    info("2. Run 'opencode' to start using the agents");
+                    info("3. Type '@' to see available agents");
+                    info("\n📚 Documentation: https://github.com/shahboura/agents-opencode");
                 }
+                break;
+            case '-u':
+            case '--uninstall':
+                if (uninstall()) {
+                    success('Uninstallation completed!');
+                }
+                break;
+            case '-v':
+            case '--version':
+                showVersion(tempDir);
                 break;
             default:
                 error(`Unknown option: ${command}`);

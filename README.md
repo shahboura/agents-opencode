@@ -20,6 +20,12 @@ npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js 
 
 # Or for project-specific installation
 npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project /path/to/your/project
+
+# Check version before installing
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --version
+
+# Uninstall if needed
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --uninstall
 ```
 
 **Alternative for Unix systems (Linux/macOS):**
@@ -34,6 +40,13 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 
 **What happens:** The script automatically downloads the latest agents, instructions,
 and prompts from GitHub - no manual cloning required!
+
+**Features:**
+- ✅ Automatic backups of existing installations
+- ✅ Preserves your session history (AGENTS.md)
+- ✅ Post-installation verification
+- ✅ Cross-platform support (Windows/Linux/macOS)
+- ✅ Includes examples and learning materials
 
 ### Manual Installation (Alternative)
 
