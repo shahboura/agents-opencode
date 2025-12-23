@@ -151,7 +151,8 @@ No configuration needed. When you edit files, standards activate automatically:
 propose architecture
 ```
 
-This agent is read-only and won't make changes. Perfect for getting a comprehensive implementation plan before starting work.
+This agent is read-only and won't make changes. Perfect for getting a comprehensive
+implementation plan before starting work.
 
 ### Direct Implementation
 
