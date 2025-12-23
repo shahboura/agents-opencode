@@ -10,29 +10,21 @@
 
 ---
 
-## ⚡ Quick Install (2 minutes)
+## ⚡ Quick Install (30 seconds)
 
-### Cross-Platform Installation (Windows/Linux/macOS)
-
-```bash
-# Global installation (available in all projects)
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --global
-
-# Or for project-specific installation
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project /path/to/your/project
+### Windows
+```powershell
+# Download and run the installer
+.\install.ps1
 ```
 
-**Alternative for Unix systems (Linux/macOS):**
-
+### Linux/macOS
 ```bash
-# Global installation
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --global
-
-# Project installation
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --project /path/to/your/project
+# Download and run the installer
+./install.sh
 ```
 
-**Prerequisites:** Git and Node.js/npm
+**Prerequisites:** None required
 
 ---
 

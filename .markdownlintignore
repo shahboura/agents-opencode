@@ -1,7 +1,0 @@
-# Markdown lint ignore patterns
-
-# Session summaries file - allow long lines and duplicate headings
-AGENTS.md
-
-# GitHub reference files (not for linting)
-.github/
