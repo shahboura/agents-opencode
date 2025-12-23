@@ -8,6 +8,20 @@ nav_order: 6
 
 Auto-applied standards by file type. Agents automatically detect file extensions and apply the corresponding coding standards from `.opencode/instructions/`.
 
+## Table of Contents
+- [.NET (C#)](#net-c)
+- [Python](#python)
+- [TypeScript](#typescript)
+- [Flutter (Dart)](#flutter-dart)
+- [Go](#go)
+- [Java (Spring Boot)](#java-spring-boot)
+- [Node.js (Express)](#nodejs-express)
+- [React (Next.js)](#react-nextjs)
+- [Ruby on Rails](#ruby-on-rails)
+- [Rust](#rust)
+- [Quality Requirements](#quality-requirements)
+- [View Full Standards](#view-full-standards)
+
 ## .NET (C#)
 
 - Clean Architecture layers
@@ -29,14 +43,54 @@ Auto-applied standards by file type. Agents automatically detect file extensions
 - Strict null checks
 - Utility types (Pick, Omit, etc.)
 
-
-
 ## Flutter (Dart)
 
 - Riverpod for state management
 - Freezed for immutable models
 - Result pattern for error handling
 - Provider for dependency injection
+
+## Go
+
+- Go module conventions
+- Error handling with Result pattern
+- Goroutine safety and channels
+- Interface-based design
+
+## Java (Spring Boot)
+
+- Constructor injection over @Autowired
+- Optional for nullable returns
+- Records for immutable DTOs
+- ControllerAdvice for error handling
+
+## Node.js (Express)
+
+- Security middleware (helmet, CORS, rate limiting)
+- Async/await error handling
+- Input validation with Joi/Zod
+- Structured logging with pino
+
+## React (Next.js)
+
+- TypeScript strict mode
+- Accessibility standards
+- Performance optimizations
+- Component composition patterns
+
+## Ruby on Rails
+
+- MVC pattern with RESTful conventions
+- ActiveRecord validations and associations
+- Service objects for complex logic
+- RSpec testing with factories
+
+## Rust
+
+- Ownership and borrowing principles
+- Result/Option error handling (no unwrap in prod)
+- Zero-cost abstractions
+- Memory safety guarantees
 
 ## Go
 
@@ -665,13 +719,16 @@ All files must pass:
 Each standard has comprehensive details:
 
 - **[.NET Clean Architecture](../.opencode/instructions/dotnet-clean-architecture.instructions.md)** - Full reference
-- **[Python Best Practices](../.opencode/instructions/python-best-practices.instructions.md)** - Full reference
-- **[TypeScript Strict Mode](../.opencode/instructions/typescript-strict.instructions.md)** - Full reference
 - **[Flutter Best Practices](../.opencode/instructions/flutter.instructions.md)** - Full reference
 - **[Go Best Practices](../.opencode/instructions/go.instructions.md)** - Full reference
+- **[Java Spring Boot](../.opencode/instructions/java-spring-boot.instructions.md)** - Full reference
 - **[Node.js Express](../.opencode/instructions/node-express.instructions.md)** - Full reference
+- **[Python Best Practices](../.opencode/instructions/python-best-practices.instructions.md)** - Full reference
 - **[React Next.js](../.opencode/instructions/react-next.instructions.md)** - Full reference
+- **[Ruby on Rails](../.opencode/instructions/ruby-on-rails.instructions.md)** - Full reference
+- **[Rust Best Practices](../.opencode/instructions/rust.instructions.md)** - Full reference
 - **[SQL Migrations](../.opencode/instructions/sql-migrations.instructions.md)** - Full reference
+- **[TypeScript Strict Mode](../.opencode/instructions/typescript-strict.instructions.md)** - Full reference
 - **[CI/CD Hygiene](../.opencode/instructions/ci-cd-hygiene.instructions.md)** - Full reference
 
 ---

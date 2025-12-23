@@ -2,16 +2,19 @@
   "$schema": "https://opencode.ai/config.json",
   "instructions": [
     "AGENTS.md",
+    ".opencode/instructions/blogger.instructions.md",
+    ".opencode/instructions/brutal-critic.instructions.md",
     ".opencode/instructions/ci-cd-hygiene.instructions.md",
     ".opencode/instructions/dotnet-clean-architecture.instructions.md",
     ".opencode/instructions/flutter.instructions.md",
     ".opencode/instructions/go.instructions.md",
+    ".opencode/instructions/java-spring-boot.instructions.md",
     ".opencode/instructions/node-express.instructions.md",
     ".opencode/instructions/python-best-practices.instructions.md",
     ".opencode/instructions/react-next.instructions.md",
+    ".opencode/instructions/ruby-on-rails.instructions.md",
+    ".opencode/instructions/rust.instructions.md",
     ".opencode/instructions/sql-migrations.instructions.md",
-    ".opencode/instructions/typescript-strict.instructions.md",
-    ".opencode/instructions/blogger.instructions.md",
-    ".opencode/instructions/brutal-critic.instructions.md"
+    ".opencode/instructions/typescript-strict.instructions.md"
   ]
 }

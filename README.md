@@ -2,11 +2,30 @@
 
 [![Validate Agents & Documentation](https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml/badge.svg)](https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://shahboura.github.io/agents-opencode/)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/shahboura/agents-opencode/releases)
+[![GitHub release](https://img.shields.io/github/release/shahboura/agents-opencode.svg)](https://github.com/shahboura/agents-opencode/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub last commit](https://img.shields.io/github/last-commit/shahboura/agents-opencode)](https://github.com/shahboura/agents-opencode/commits/main)
 [![GitHub Stars](https://img.shields.io/github/stars/shahboura/agents-opencode?style=social)](https://github.com/shahboura/agents-opencode)
 
 Specialized OpenCode agents for intelligent, plan-first development workflows.
 
 **Agents:** @orchestrator • @planner • @codebase • @docs • @review • @em-advisor • @blogger • @brutal-critic
+
+---
+
+## 🎬 Demo & Examples
+
+### Quick Start Demo
+*Coming soon: Interactive demo showing agent workflow*
+
+### Example Workflows
+- **API Development:** `@orchestrator Build REST API with auth, tests, docs`
+- **Code Review:** `@review Security audit of authentication module`
+- **Content Creation:** `@blogger Write tech post about microservices`
+- **Planning:** `@planner Design user management system architecture`
+
+**[📚 View Full Examples](./examples/)** • **[🎥 Watch Demos](https://github.com/shahboura/agents-opencode/discussions)**
 
 ---
 

@@ -1,0 +1,106 @@
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version type (major, minor, patch)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run validation
+      run: npm run validate:all
+
+    - name: Get current version
+      id: current_version
+      run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+    - name: Determine next version
+      id: next_version
+      run: |
+        current="${{ steps.current_version.outputs.version }}"
+        type="${{ github.event.inputs.version_type || 'patch' }}"
+
+        IFS='.' read -r major minor patch <<< "$current"
+
+        case $type in
+          major)
+            new_version="$((major + 1)).0.0"
+            ;;
+          minor)
+            new_version="$major.$((minor + 1)).0"
+            ;;
+          patch)
+            new_version="$major.$minor.$((patch + 1))"
+            ;;
+        esac
+
+        echo "version=$new_version" >> $GITHUB_OUTPUT
+        echo "Current version: $current"
+        echo "Next version: $new_version"
+        echo "Version type: $type"
+
+    - name: Update package.json version
+      run: |
+        npm version ${{ steps.next_version.outputs.version }} --no-git-tag-version
+        git add package.json
+
+    - name: Create release commit
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -m "chore: release v${{ steps.next_version.outputs.version }}"
+
+    - name: Push changes
+      run: git push
+
+    - name: Create Git tag
+      run: |
+        git tag "v${{ steps.next_version.outputs.version }}"
+        git push origin "v${{ steps.next_version.outputs.version }}"
+
+    - name: Create GitHub release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.next_version.outputs.version }}
+        release_name: Release v${{ steps.next_version.outputs.version }}
+        body: |
+          ## What's Changed
+
+          This release includes updates to the OpenCode Agents system.
+
+          ### Version Triggers
+          - **Major**: New agent added
+          - **Minor**: New instruction or prompt added
+          - **Patch**: Bug fixes and documentation updates
+
+          For full changelog, see [commit history](https://github.com/shahboura/agents-opencode/commits/main).
+        draft: false
+        prerelease: false

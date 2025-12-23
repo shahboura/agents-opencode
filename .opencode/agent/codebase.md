@@ -1,5 +1,5 @@
 ---
-description: Multi-language development agent with profile auto-detection for implementing features across .NET, Python, TypeScript, Flutter, Go, Node.js, and React projects
+description: Multi-language development agent with profile auto-detection for implementing features across .NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, and Rust projects
 mode: primary
 temperature: 0.1
 tools:
@@ -28,8 +28,11 @@ Analyze project structure to determine active profile:
 - **typescript**: Presence of `package.json`, `tsconfig.json`, or high `.ts` density
 - **flutter**: Presence of `pubspec.yaml`, `lib/` directory, or high `.dart` density
 - **go**: Presence of `go.mod`, `go.sum`, or high `.go` density
+- **java-spring**: Presence of `pom.xml` or `build.gradle`, Spring Boot annotations, or high `.java` density
 - **node-express**: Presence of `package.json` with express dependency, `server.js`, or Node.js patterns
 - **react-next**: Presence of `package.json` with next dependency, `pages/` or `app/` directory
+- **ruby-rails**: Presence of `Gemfile` with rails, `config/routes.rb`, or high `.rb` density
+- **rust**: Presence of `Cargo.toml`, `src/` directory, or high `.rs` density
 - **generic**: Mixed languages or unclear dominant technology
 
 Log detected profile at start: `Detected active profile: <profile>`
@@ -90,10 +93,28 @@ Log detected profile at start: `Detected active profile: <profile>`
 - Run: `npm test`, linting, `npm run build`
 
 ### React-Next Profile
-- Enable strict TypeScript mode
+- Enable TypeScript strict mode
 - Implement accessibility standards
 - Optimize for performance (Image, code splitting)
 - Run: `npm run lint`, `npm test`, `npm run build`
+
+### Java-Spring Profile
+- Use constructor injection over @Autowired
+- Apply Bean Validation annotations
+- Implement proper error handling with ControllerAdvice
+- Run: `mvn compile`, `mvn test`, `mvn spring-boot:run`
+
+### Ruby-Rails Profile
+- Follow MVC pattern with RESTful routes
+- Use ActiveRecord associations and validations
+- Extract business logic to service objects
+- Run: `rails test`, `rubocop`, `rails server`
+
+### Rust Profile
+- Follow ownership and borrowing rules
+- Use Result/Option for error handling (no unwrap in prod)
+- Implement proper lifetimes and generics
+- Run: `cargo check`, `cargo test`, `cargo clippy`
 
 ### Generic Profile
 - Keep tasks language-agnostic

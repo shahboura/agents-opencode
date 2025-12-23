@@ -1,5 +1,27 @@
 # FAQ & Troubleshooting
 
+## Keyboard Shortcuts & Tips
+
+### OpenCode Shortcuts
+- **Start Chat:** `Ctrl+Shift+P` → "OpenCode: Start Chat"
+- **New Conversation:** `Ctrl+Shift+P` → "OpenCode: New Conversation"
+- **Agent Selection:** Type `@` in chat to see available agents
+- **Prompt Commands:** Type `/` in chat to see available prompts
+- **Accept Changes:** Click "Accept" button on code suggestions
+- **Reject Changes:** Click "Reject" button or continue typing
+
+### VS Code Integration
+- **Reload Window:** `Ctrl+Shift+P` → "Developer: Reload Window" (if agents not showing)
+- **Open Settings:** `Ctrl+,` → Search for "opencode"
+- **View Output:** `Ctrl+Shift+U` → Select "OpenCode" from dropdown
+
+### Efficiency Tips
+- **Be Specific:** Include file names, function names, and expected behavior
+- **Use Context:** Reference `AGENTS.md` for project-specific patterns
+- **Break Tasks:** Large requests → smaller, focused tasks
+- **Review Plans:** Always check agent proposals before approving
+- **Iterate:** Use feedback to improve subsequent requests
+
 ## Common Issues
 
 ### Agents not showing up
