@@ -7,7 +7,8 @@ repository: shahboura/agents-opencode
 
 # Theme Configuration
 # Using remote_theme for GitHub Pages
-remote_theme: just-the-docs/just-the-docs
+# Alternatives considered: minimal-mistakes, beautiful-jekyll, jekyll-theme-chirpy
+remote_theme: pmarsceill/just-the-docs
 
 # Plugins
 plugins:
