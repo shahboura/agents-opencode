@@ -92,13 +92,6 @@ Auto-applied standards by file type. Agents automatically detect file extensions
 - Zero-cost abstractions
 - Memory safety guarantees
 
-## Go
-
-- Go modules and formatting
-- Context passing for I/O
-- Error handling patterns
-- Concurrency with goroutines
-
 ## Node.js Express
 
 - Security middleware (helmet, CORS)
