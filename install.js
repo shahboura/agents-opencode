@@ -203,44 +203,6 @@ function installGlobal(tempDir) {
     success('✅ Global installation completed successfully!');
     info('Agents are now available in all your projects.');
 }
-    }
-
-    // Copy all OpenCode directories
-    const opencodeSrc = path.join(tempDir, '.opencode');
-    if (fs.existsSync(opencodeSrc)) {
-        const items = fs.readdirSync(opencodeSrc);
-        let copiedCount = 0;
-        items.forEach(item => {
-            const srcPath = path.join(opencodeSrc, item);
-            const destPath = path.join(globalConfigDir, item);
-
-            if (fs.statSync(srcPath).isDirectory()) {
-                copyRecursive(srcPath, destPath);
-                success(`✓ Copied ${item}`);
-                copiedCount++;
-            }
-        });
-        info(`Installed ${copiedCount} agent components`);
-    }
-
-    // Copy opencode.json
-    const configSrc = path.join(tempDir, 'opencode.json');
-    if (fs.existsSync(configSrc)) {
-        const configDest = path.join(globalConfigDir, 'opencode.json');
-        fs.copyFileSync(configSrc, configDest);
-        success(`✓ Configuration installed`);
-    }
-
-    // Verify installation
-    if (verifyInstallation(globalConfigDir)) {
-        success('✅ Global installation completed successfully!');
-        info('Agents are now available in all your projects.');
-        info(`Installation location: ${globalConfigDir}`);
-    } else {
-        error('❌ Installation verification failed. Please check the installation location.');
-        process.exit(1);
-    }
-}
 
 function installProject(tempDir, projectDir) {
     info(`Installing agents for project: ${projectDir}`);
