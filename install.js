@@ -283,13 +283,21 @@ function uninstall() {
     info('Uninstalling OpenCode Agents from current directory...');
 
     const currentDir = process.cwd();
+    console.log(`Debug: Running uninstall in directory: ${currentDir}`);
+
     const opencodeDir = path.join(currentDir, '.opencode');
     const agentsMdPath = path.join(currentDir, 'AGENTS.md');
     const configPath = path.join(currentDir, 'opencode.json');
 
-    // Check if this is a repository (has .opencode source files) vs installation
-    const isRepository = fs.existsSync(path.join(currentDir, '.opencode', 'agent')) &&
-                        fs.existsSync(path.join(currentDir, 'install.js'));
+    // Check if this is a repository (has repository indicators) vs project installation
+    const hasGit = fs.existsSync(path.join(currentDir, '.git'));
+    const hasPackageJson = fs.existsSync(path.join(currentDir, 'package.json'));
+    const hasReadme = fs.existsSync(path.join(currentDir, 'README.md'));
+    const hasAgentDir = fs.existsSync(path.join(currentDir, '.opencode', 'agent'));
+
+    const isRepository = hasGit && hasPackageJson && hasReadme && hasAgentDir;
+
+    console.log(`Debug: git=${hasGit}, pkg=${hasPackageJson}, readme=${hasReadme}, agent=${hasAgentDir}, isRepo=${isRepository}`);
 
     let foundInstallation = false;
 
@@ -423,7 +431,19 @@ function main() {
         showUsage();
     }
 
-    // Check prerequisites
+    // Handle uninstall separately (doesn't need repository clone)
+    const hasUninstall = args.includes('-u') || args.includes('--uninstall');
+    console.log(`Debug main: args=${JSON.stringify(args)}, hasUninstall=${hasUninstall}`);
+    if (hasUninstall) {
+        const isGlobal = args.includes('-g') || args.includes('--global');
+        console.log(`Debug main: isGlobal=${isGlobal}`);
+        if (uninstall(isGlobal)) {
+            success('Uninstallation completed!');
+        }
+        return;
+    }
+
+    // Check prerequisites for install operations
     if (!commandExists('git')) {
         error('Git is required but not installed. Please install git first.');
         process.exit(1);
@@ -488,12 +508,7 @@ function main() {
                     info("\n📚 Documentation: https://github.com/shahboura/agents-opencode");
                 }
                 break;
-            case '-u':
-            case '--uninstall':
-                if (uninstall()) {
-                    success('Uninstallation completed!');
-                }
-                break;
+
             case '-v':
             case '--version':
                 showVersion(tempDir);
