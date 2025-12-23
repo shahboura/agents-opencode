@@ -17,17 +17,17 @@ Get up and running with OpenCode agents in under 5 minutes.
 ## Quick Setup (60 seconds)
 
 ```bash
-# Global installation (available in all projects)
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --global
+# Download and run the installer
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --global
 
 # Project-specific installation
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project /path/to/your/project
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --project /path/to/your/project
 
 # Windows (PowerShell)
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --global
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js; node install.js --global
 
 # Linux/macOS (Bash/Zsh)
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project .
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --project .
 ```
 
 **What happens:** Downloads and installs all agents, instructions, and prompts automatically.
