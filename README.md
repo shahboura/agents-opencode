@@ -6,41 +6,48 @@
 [![GitHub last commit](https://img.shields.io/github/last-commit/shahboura/agents-opencode)](https://github.com/shahboura/agents-opencode/commits/main)
 [![GitHub Stars](https://img.shields.io/github/stars/shahboura/agents-opencode?style=social)](https://github.com/shahboura/agents-opencode)
 
-Specialized OpenCode agents for intelligent, plan-first development workflows.
-
-**Agents:** @orchestrator • @planner • @codebase • @docs • @review • @em-advisor • @blogger • @brutal-critic
+**8 specialized AI agents** for intelligent development workflows with multi-language support and auto-applied coding standards.
 
 ---
 
-## 🎬 Demo & Examples
+## ⚡ Quick Install (2 minutes)
 
-### Quick Start Demo
-*Coming soon: Interactive demo showing agent workflow*
+### Cross-Platform Installation (Windows/Linux/macOS)
 
-### Example Workflows
-- **API Development:** `@orchestrator Build REST API with auth, tests, docs`
-- **Code Review:** `@review Security audit of authentication module`
-- **Content Creation:** `@blogger Write tech post about microservices`
-- **Planning:** `@planner Design user management system architecture`
+```bash
+# Global installation (available in all projects)
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --global
 
-**[📚 View Full Examples](./examples/)** • **[🎥 Watch Demos](https://github.com/shahboura/agents-opencode/discussions)**
+# Or for project-specific installation
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project /path/to/your/project
+```
+
+**Alternative for Unix systems (Linux/macOS):**
+```bash
+# Global installation
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --global
+
+# Project installation
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --project /path/to/your/project
+```
+
+**Prerequisites:** Git and Node.js/npm
 
 ---
 
-## 🚀 Quick Start (60 seconds)
+## 🚀 Get Started (60 seconds)
 
 ### Use an Agent
 
-1. Open OpenCode: `opencode` command
-2. Select an agent: `@orchestrator`, `@codebase`, `@review`, etc.
-3. Describe what you want:
+1. **Open OpenCode:** Run `opencode` command
+2. **Select an agent:** Type `@orchestrator`, `@codebase`, `@review`, etc.
+3. **Describe what you want:**
 
 ```
 @orchestrator Build a user REST API endpoint with JWT authentication
 ```
 
 **The agent will:**
-
 - 📋 Propose a step-by-step plan
 - ⏸️ Wait for your approval (or proceed if you approve execution)
 - 🔨 Implement with validation
@@ -48,36 +55,34 @@ Specialized OpenCode agents for intelligent, plan-first development workflows.
 
 ---
 
-## 📚 Core Concepts
+## 🎯 What You Get
 
-### Agents Overview
+**8 Specialized Agents:**
+- **@orchestrator** - Strategic planning & coordination
+- **@planner** - Read-only analysis & implementation planning
+- **@codebase** - Multi-language code implementation
+- **@blogger** - Content creation & scripting
+- **@brutal-critic** - Content review & validation
+- **@em-advisor** - Leadership & team guidance
+- **@docs** - Documentation generation
+- **@review** - Security & quality audits
 
-| Agent | Type | Purpose | Use For |
-|-------|------|---------|---------|
-| **@orchestrator** | Primary | Strategic planning & coordination | Complex features, risk assessment, multi-phase projects, end-to-end execution |
-| **@planner** | Primary | Read-only analysis & planning | Detailed implementation plans, architecture analysis (no code changes) |
-| **@codebase** | Primary | Multi-language dev | Direct implementation, bug fixes, code generation |
-| **@blogger** | Primary | Content creation | Tech/finance/leadership blogging, podcast ideation, YouTube scripting |
-| **@brutal-critic** | Subagent | Content review | Honest feedback, framework validation, quality assessment |
-| **@em-advisor** | Primary | Leadership guidance | Strategy, team dynamics, 1-on-1s |
-| **@docs** | Subagent | Documentation | README, API docs, guides |
-| **@review** | Subagent | Security & quality | Audits, performance, best practices |
+**15+ Language Standards:**
+.NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, Rust, and more with auto-applied best practices.
 
-**Note:** All agents automatically add session summaries to AGENTS.md after task completion.
+**9 Reusable Prompts:**
+API docs, code review, testing, architecture decisions, and more.
 
 ---
-9 Reusable Prompts
 
-Structured templates for common development tasks:
+## 📚 Examples
 
-- **Documentation**: `/api-docs`, `/create-readme`, `/architecture-decision`
-- **Quality**: `/code-review`, `/security-audit`, `/generate-tests`
-- **Development**: `/refactor-plan`, `/architecture-review`
-- **Management**: `/1-on-1-prep`
+- **API Development:** `@orchestrator Build REST API with auth, tests, docs`
+- **Code Review:** `@review Security audit of authentication module`
+- **Content Creation:** `@blogger Write tech post about microservices`
+- **Planning:** `@planner Design user management system architecture`
 
-**[👉 View All Prompts](./.opencode/prompts/README.md)**
-
-**[👉 Learn More](./docs/prompts.md)**
+**[📚 View Full Examples](./examples/)** • **[🎥 Watch Demos](https://github.com/shahboura/agents-opencode/discussions)**
 
 ---
 
@@ -158,79 +163,7 @@ Agents automatically use this context!
 
 ---
 
-## 📦 Installation & Setup
 
-### Prerequisites
-
-- [OpenCode CLI](https://opencode.ai/docs/cli/) installed
-- Any project (works with existing repos)
-
-### Quick Install (Recommended)
-
-Use our automated installation script for the fastest setup (works on Windows, Linux, and macOS):
-
-```bash
-# Global installation (available in all projects)
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --global
-
-# Or for project-specific installation
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project /path/to/your/project
-```
-
-**Alternative for Unix systems (Linux/macOS):**
-
-```bash
-# Global installation
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --global
-
-# Project installation
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --project /path/to/your/project
-```
-
-### What Gets Installed
-
-The installer copies all necessary files for OpenCode agents:
-
-- **Agent configurations** (`.opencode/agent/`): 8 specialized agents
-- **Language instructions** (`.opencode/instructions/`): 15 coding standards for different languages
-- **Prompt templates** (`.opencode/prompts/`): 9 reusable command templates
-- **Configuration** (`opencode.json`): Agent settings and instruction references
-- **Context template** (`AGENTS.md`): Project context for smarter agents
-- **Examples** (project install only): Sample projects and usage patterns
-
-### Manual Install
-
-1. **Clone this repository:**
-
-```bash
-git clone https://github.com/shahboura/agents-opencode.git
-cd agents-opencode
-```
-
-2. **Copy all OpenCode files:**
-
-```bash
-# For global installation (available in all projects)
-cp -r .opencode/ ~/.config/opencode/
-
-# Or for project-specific installation
-cp -r .opencode/ your-project/.opencode/
-cp opencode.json your-project/
-cp AGENTS.md your-project/  # Optional: for project context
-cp -r examples/ your-project/  # Optional: for learning
-```
-
-**Note:** The `opencode.json` file specifies which instruction files to load and is configured automatically.
-Users do not need to modify it unless adding custom instructions.
-
-### Verify Installation
-
-```bash
-opencode
-# Type @ in chat to see available agents
-```
-
----
 
 ## ❓ FAQ & Troubleshooting
 
