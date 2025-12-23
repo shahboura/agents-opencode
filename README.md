@@ -23,6 +23,7 @@ npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js 
 ```
 
 **Alternative for Unix systems (Linux/macOS):**
+
 ```bash
 # Global installation
 curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --global
@@ -162,8 +163,6 @@ Agents automatically use this context!
 **[👉 Full Customization Guide](./docs/customization.md)**
 
 ---
-
-
 
 ## ❓ FAQ & Troubleshooting
 
