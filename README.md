@@ -187,6 +187,17 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --project /path/to/your/project
 ```
 
+### What Gets Installed
+
+The installer copies all necessary files for OpenCode agents:
+
+- **Agent configurations** (`.opencode/agent/`): 8 specialized agents
+- **Language instructions** (`.opencode/instructions/`): 15 coding standards for different languages
+- **Prompt templates** (`.opencode/prompts/`): 9 reusable command templates
+- **Configuration** (`opencode.json`): Agent settings and instruction references
+- **Context template** (`AGENTS.md`): Project context for smarter agents
+- **Examples** (project install only): Sample projects and usage patterns
+
 ### Manual Install
 
 1. **Clone this repository:**
@@ -196,32 +207,21 @@ git clone https://github.com/shahboura/agents-opencode.git
 cd agents-opencode
 ```
 
-2. **Copy agent configurations:**
+2. **Copy all OpenCode files:**
 
 ```bash
 # For global installation (available in all projects)
-cp -r .opencode/agent/ ~/.config/opencode/agent/
+cp -r .opencode/ ~/.config/opencode/
 
 # Or for project-specific installation
-cp -r .opencode/agent/ your-project/.opencode/agent/
-```
-
-3. **Copy language instructions and configuration:**
-
-```bash
-cp -r .opencode/instructions/ your-project/.opencode/instructions/
+cp -r .opencode/ your-project/.opencode/
 cp opencode.json your-project/
+cp AGENTS.md your-project/  # Optional: for project context
+cp -r examples/ your-project/  # Optional: for learning
 ```
 
 **Note:** The `opencode.json` file specifies which instruction files to load and is configured automatically.
 Users do not need to modify it unless adding custom instructions.
-
-4. **Set up AGENTS.md (optional):**
-
-```bash
-cp AGENTS.md your-project/
-# Edit to match your project
-```
 
 ### Verify Installation
 

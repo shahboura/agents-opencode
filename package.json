@@ -1,7 +1,7 @@
 {
   "name": "agents-opencode",
   "version": "1.0.0",
-  "description": "Intelligent AI agents for streamlined development workflows. Multi-language support with auto-applied coding standards, plan-first execution, and specialized agents for code generation, review, documentation, and content creation.",
+  "description": "OpenCode Agents: Intelligent AI assistants for software development. Features 8 specialized agents, 15+ language standards, automated code review, documentation generation, and cross-platform installation. Supports .NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, and Rust with plan-first execution and context-aware assistance.",
   "private": true,
   "scripts": {
     "install:global": "node install.js --global",
@@ -21,7 +21,23 @@
     "opencode",
     "ai-agents",
     "code-generation",
-    "development-tools"
+    "development-tools",
+    "coding-standards",
+    "code-review",
+    "documentation",
+    "multi-language",
+    "dotnet",
+    "python",
+    "typescript",
+    "flutter",
+    "go",
+    "java",
+    "nodejs",
+    "react",
+    "ruby",
+    "rust",
+    "ci-cd",
+    "automation"
   ],
   "author": "",
   "license": "MIT"

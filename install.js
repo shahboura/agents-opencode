@@ -115,29 +115,20 @@ function installGlobal(tempDir) {
     info('Installing agents globally...');
 
     const globalConfigDir = getGlobalConfigDir();
+    const opencodeSrc = path.join(tempDir, '.opencode');
 
-    // Copy agent configurations
-    const agentSrc = path.join(tempDir, '.opencode', 'agent');
-    if (fs.existsSync(agentSrc)) {
-        const agentDest = path.join(globalConfigDir, 'agent');
-        copyRecursive(agentSrc, agentDest);
-        success(`Copied agent configurations to ${agentDest}`);
-    }
+    // Copy all directories in .opencode/
+    if (fs.existsSync(opencodeSrc)) {
+        const items = fs.readdirSync(opencodeSrc);
+        items.forEach(item => {
+            const srcPath = path.join(opencodeSrc, item);
+            const destPath = path.join(globalConfigDir, item);
 
-    // Copy instructions
-    const instructionsSrc = path.join(tempDir, '.opencode', 'instructions');
-    if (fs.existsSync(instructionsSrc)) {
-        const instructionsDest = path.join(globalConfigDir, 'instructions');
-        copyRecursive(instructionsSrc, instructionsDest);
-        success(`Copied instructions to ${instructionsDest}`);
-    }
-
-    // Copy prompts
-    const promptsSrc = path.join(tempDir, '.opencode', 'prompts');
-    if (fs.existsSync(promptsSrc)) {
-        const promptsDest = path.join(globalConfigDir, 'prompts');
-        copyRecursive(promptsSrc, promptsDest);
-        success(`Copied prompts to ${promptsDest}`);
+            if (fs.statSync(srcPath).isDirectory()) {
+                copyRecursive(srcPath, destPath);
+                success(`Copied ${item} to ${destPath}`);
+            }
+        });
     }
 
     // Copy opencode.json
@@ -167,25 +158,23 @@ function installProject(tempDir, projectDir) {
         warning('Project directory is not a git repository. Consider initializing git first.');
     }
 
-    // Create .opencode directory structure
+    // Create .opencode directory
     const opencodeDir = path.join(projectDir, '.opencode');
-    ensureDir(path.join(opencodeDir, 'agent'));
-    ensureDir(path.join(opencodeDir, 'instructions'));
-    ensureDir(path.join(opencodeDir, 'prompts'));
+    ensureDir(opencodeDir);
 
-    // Copy files from temp directory
-    const agentSrc = path.join(tempDir, '.opencode', 'agent');
-    const instructionsSrc = path.join(tempDir, '.opencode', 'instructions');
-    const promptsSrc = path.join(tempDir, '.opencode', 'prompts');
+    // Copy all directories from .opencode/
+    const opencodeSrc = path.join(tempDir, '.opencode');
+    if (fs.existsSync(opencodeSrc)) {
+        const items = fs.readdirSync(opencodeSrc);
+        items.forEach(item => {
+            const srcPath = path.join(opencodeSrc, item);
+            const destPath = path.join(opencodeDir, item);
 
-    if (fs.existsSync(agentSrc)) {
-        copyRecursive(agentSrc, path.join(opencodeDir, 'agent'));
-    }
-    if (fs.existsSync(instructionsSrc)) {
-        copyRecursive(instructionsSrc, path.join(opencodeDir, 'instructions'));
-    }
-    if (fs.existsSync(promptsSrc)) {
-        copyRecursive(promptsSrc, path.join(opencodeDir, 'prompts'));
+            if (fs.statSync(srcPath).isDirectory()) {
+                copyRecursive(srcPath, destPath);
+                success(`Copied ${item} to ${destPath}`);
+            }
+        });
     }
 
     // Copy opencode.json
@@ -199,6 +188,14 @@ function installProject(tempDir, projectDir) {
     const agentsMdDest = path.join(projectDir, 'AGENTS.md');
     if (fs.existsSync(agentsMdSrc) && !fs.existsSync(agentsMdDest)) {
         fs.copyFileSync(agentsMdSrc, agentsMdDest);
+    }
+
+    // Copy examples directory for learning
+    const examplesSrc = path.join(tempDir, 'examples');
+    if (fs.existsSync(examplesSrc)) {
+        const examplesDest = path.join(projectDir, 'examples');
+        copyRecursive(examplesSrc, examplesDest);
+        success(`Copied examples to ${examplesDest}`);
     }
 
     success('Project installation completed!');
