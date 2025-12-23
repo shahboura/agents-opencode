@@ -12,10 +12,9 @@ remote_theme: daattali/beautiful-jekyll
 markdown: kramdown
 highlighter: rouge
 
-# Plugins
+# Plugins (GitHub Pages compatible)
 plugins:
   - jekyll-feed
-  - jekyll-sitemap
   - jekyll-seo-tag
 
 # Theme colors (light mode)

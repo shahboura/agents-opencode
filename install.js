@@ -315,6 +315,7 @@ function uninstall() {
 
             for (const dir of dirsToRemove) {
                 const dirPath = path.join(currentDir, dir);
+                info(`Checking directory for removal: ${dirPath}`);
                 if (fs.existsSync(dirPath)) {
                     fs.rmSync(dirPath, { recursive: true, force: true });
                     success(`✅ Removed ${dir}/`);
