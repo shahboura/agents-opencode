@@ -287,71 +287,42 @@ function uninstall() {
     const agentsMdPath = path.join(currentDir, 'AGENTS.md');
     const configPath = path.join(currentDir, 'opencode.json');
 
-    // Check if this is a repository (has repository indicators) vs project installation
-    const isRepository = fs.existsSync(path.join(currentDir, '.git')) &&
-                        fs.existsSync(path.join(currentDir, 'package.json')) &&
-                        fs.existsSync(path.join(currentDir, 'README.md')) &&
-                        fs.existsSync(path.join(currentDir, '.opencode', 'agent'));
+
 
     let foundInstallation = false;
 
     try {
-        // Handle repository self-cleanup
-        if (isRepository) {
-            info('Detected repository directory. Performing self-cleanup...');
+        // Check for any OpenCode installation files/directories
+        if (fs.existsSync(opencodeDir) || fs.existsSync(agentsMdPath) || fs.existsSync(configPath)) {
+            foundInstallation = true;
 
-            // Remove generated files but keep source
+            // Backup AGENTS.md with timestamp if it exists
+            if (fs.existsSync(agentsMdPath)) {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                const backupAgentsMd = path.join(currentDir, `AGENTS.md.${timestamp}.bk`);
+                fs.copyFileSync(agentsMdPath, backupAgentsMd);
+                success(`✅ Session history backed up to: AGENTS.md.${timestamp}.bk`);
+            }
+
+            // Remove all OpenCode files and directories
             const filesToRemove = ['AGENTS.md', 'opencode.json'];
-            const dirsToRemove = ['examples'];
 
             for (const file of filesToRemove) {
                 const filePath = path.join(currentDir, file);
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
                     success(`✅ Removed ${file}`);
-                    foundInstallation = true;
                 }
             }
 
-            for (const dir of dirsToRemove) {
-                const dirPath = path.join(currentDir, dir);
-                info(`Checking directory for removal: ${dirPath}`);
-                if (fs.existsSync(dirPath)) {
-                    fs.rmSync(dirPath, { recursive: true, force: true });
-                    success(`✅ Removed ${dir}/`);
-                    foundInstallation = true;
-                }
+            // Remove .opencode directory entirely (no backup needed - can be re-downloaded)
+            if (fs.existsSync(opencodeDir)) {
+                fs.rmSync(opencodeDir, { recursive: true, force: true });
+                success(`✅ Removed agent configurations`);
             }
 
-            if (foundInstallation) {
-                success('✅ Repository self-cleanup completed!');
-            }
-        } else {
-            // Handle project installation removal
-            if (fs.existsSync(opencodeDir) || fs.existsSync(agentsMdPath) || fs.existsSync(configPath)) {
-                foundInstallation = true;
-
-                // Backup AGENTS.md with timestamp if it exists
-                if (fs.existsSync(agentsMdPath)) {
-                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-                    const backupAgentsMd = path.join(currentDir, `AGENTS.md.${timestamp}.bk`);
-                    fs.copyFileSync(agentsMdPath, backupAgentsMd);
-                    success(`✅ Session history backed up to: AGENTS.md.${timestamp}.bk`);
-                }
-
-                // Remove .opencode directory entirely (no backup needed - can be re-downloaded)
-                if (fs.existsSync(opencodeDir)) {
-                    fs.rmSync(opencodeDir, { recursive: true, force: true });
-                    success(`✅ Removed agent configurations`);
-                }
-
-                // Remove other installation files
-                if (fs.existsSync(agentsMdPath)) fs.unlinkSync(agentsMdPath);
-                if (fs.existsSync(configPath)) fs.unlinkSync(configPath);
-
-                success('✅ OpenCode Agents uninstalled from current directory!');
-                info('Session history backed up. Agent configurations removed (can be re-installed).');
-            }
+            success('✅ OpenCode Agents uninstalled from current directory!');
+            info('Session history backed up. Agent configurations removed (can be re-installed).');
         }
 
         if (!foundInstallation) {
@@ -428,8 +399,7 @@ function main() {
     // Handle uninstall separately (doesn't need repository clone)
     const hasUninstall = args.includes('-u') || args.includes('--uninstall');
     if (hasUninstall) {
-        const isGlobal = args.includes('-g') || args.includes('--global');
-        if (uninstall(isGlobal)) {
+        if (uninstall()) {
             success('Uninstallation completed!');
         }
         return;
