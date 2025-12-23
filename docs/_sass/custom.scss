@@ -1,7 +1,7 @@
 ---
 ---
 
-// Custom SCSS for OpenCode Agents documentation with Beautiful Jekyll
+// Custom SCSS for OpenCode Agents documentation
 // This file will be processed by Jekyll and included in the theme
 
 /* Custom styles for OpenCode Agents documentation */
@@ -13,27 +13,13 @@
 }
 
 /* Table styling */
-table {
-  width: 100%;
-  border-collapse: collapse;
+.table-wrapper {
+  overflow-x: auto;
   margin: 1rem 0;
-}
-
-table th,
-table td {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  text-align: left;
-}
-
-table th {
-  background-color: #f8f9fa;
-  font-weight: 600;
 }
 
 /* Agent capability table styling */
 .agent-table th {
-  background-color: #f8f9fa;
   font-weight: 600;
 }
 
@@ -42,50 +28,26 @@ table th {
 }
 
 /* Navigation improvements */
-.navbar {
-  margin-bottom: 2rem;
-}
-
-.navbar-nav li {
+.nav-list .nav-list-item {
   margin-bottom: 0.25rem;
 }
 
 /* Footer styling */
-footer {
-  border-top: 1px solid #ddd;
+.site-footer {
+  border-top: 1px solid var(--border-color);
   margin-top: 3rem;
   padding-top: 1rem;
-  text-align: center;
 }
 
 /* Responsive design improvements */
 @media (max-width: 768px) {
-  .container {
+  .main-content {
     padding: 1rem;
-  }
-
-  table {
-    font-size: 0.9rem;
   }
 
   .agent-table {
     font-size: 0.9rem;
   }
-}
-
-/* Dark mode support for Beautiful Jekyll */
-body.dark {
-  background-color: #1f1f1f;
-  color: #f0f0f0;
-}
-
-body.dark table th {
-  background-color: #2a2a2a;
-  border-color: #444;
-}
-
-body.dark table td {
-  border-color: #444;
 }
 }
 

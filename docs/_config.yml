@@ -1,65 +1,22 @@
-# Beautiful Jekyll Configuration
+# Just the Docs Configuration
 title: OpenCode Agents
 description: Specialized AI agents for intelligent development workflows with multi-language support and auto-applied coding standards
 url: https://shahboura.github.io
 baseurl: /agents-opencode
-repository: shahboura/agents-opencode
 
 # Theme
-remote_theme: daattali/beautiful-jekyll
+remote_theme: pmarsceill/just-the-docs
 
-# Build settings
-markdown: kramdown
-highlighter: rouge
+# Just the Docs settings
+color_scheme: "dark"  # Enable dark mode
 
-# Plugins (GitHub Pages compatible)
-plugins:
-  - jekyll-feed
-  - jekyll-seo-tag
+# Just the Docs navigation
+nav_external_links:
+  - title: GitHub Repository
+    url: https://github.com/shahboura/agents-opencode
 
-# Theme colors (light mode)
-navbar-col: "#EAEAEA"
-navbar-text-col: "#404040"
-navbar-border-col: "#DDDDDD"
-page-col: "#FFFFFF"
-text-col: "#404040"
-link-col: "#008AFF"
-hover-col: "#0085A1"
-footer-col: "#EAEAEA"
-footer-text-col: "#777777"
-footer-link-col: "#404040"
-
-# Dark mode colors
-dark-color-scheme: true
-dark-navbar-col: "#2A2A2A"
-dark-page-col: "#1F1F1F"
-dark-text-col: "#F0F0F0"
-dark-link-col: "#4A9EFF"
-dark-hover-col: "#6BB3FF"
-dark-footer-col: "#2A2A2A"
-dark-footer-text-col: "#AAAAAA"
-dark-footer-link-col: "#CCCCCC"
-
-# Navigation
-navbar-links:
-  Home: "/"
-  Getting Started: "/docs/getting-started"
-  Agent Reference: "/docs/agents/README"
-  Workflows: "/docs/workflows"
-  GitHub: "https://github.com/shahboura/agents-opencode"
-
-# Author and social
-author: Shehab Elhadidy
-github: shahboura
-twitter: shahboura
-# avatar: /assets/images/avatar.png  # Commented out - no avatar image
-
-# Site settings are defined above
-
-# Collections (commented out for compatibility)
-# collections:
-#   agents:
-#     output: true
+# Footer
+footer_content: "Copyright &copy; 2025 Shehab Elhadidy. Licensed under the MIT License."
 
 # Exclude from processing
 exclude:
