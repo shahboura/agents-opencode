@@ -1,102 +1,67 @@
-# Jekyll Configuration for GitHub Pages
+# Beautiful Jekyll Configuration
 title: OpenCode Agents
-description: Specialized agents for intelligent, plan-first development workflows
+description: Specialized AI agents for intelligent development workflows with multi-language support and auto-applied coding standards
 url: https://shahboura.github.io
 baseurl: /agents-opencode
 repository: shahboura/agents-opencode
 
-# Theme Configuration
-# Using remote_theme for GitHub Pages
-# Lightweight alternatives: minimal-mistakes, beautiful-jekyll, jekyll-theme-chirpy
-remote_theme: pmarsceill/just-the-docs
+# Theme
+remote_theme: daattali/beautiful-jekyll
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
 
 # Plugins
 plugins:
   - jekyll-feed
+  - jekyll-sitemap
   - jekyll-seo-tag
 
-# Color scheme - use theme default
-# color_scheme: "light"  # commented out to use theme default
+# Theme colors (light mode)
+navbar-col: "#EAEAEA"
+navbar-text-col: "#404040"
+navbar-border-col: "#DDDDDD"
+page-col: "#FFFFFF"
+text-col: "#404040"
+link-col: "#008AFF"
+hover-col: "#0085A1"
+footer-col: "#EAEAEA"
+footer-text-col: "#777777"
+footer-link-col: "#404040"
 
-# Logo and branding
-logo: false
-
-# Search Configuration
-search_enabled: true
-search:
-  heading_level: 2
-  previews: 3
-  preview_words_before: 5
-  preview_words_after: 10
-  tokenizer_separator: /[\s/]+/
-  rel_url: true
-  button: false
+# Dark mode colors
+dark-color-scheme: true
+dark-navbar-col: "#2A2A2A"
+dark-page-col: "#1F1F1F"
+dark-text-col: "#F0F0F0"
+dark-link-col: "#4A9EFF"
+dark-hover-col: "#6BB3FF"
+dark-footer-col: "#2A2A2A"
+dark-footer-text-col: "#AAAAAA"
+dark-footer-link-col: "#CCCCCC"
 
 # Navigation
-nav_sort: order
-nav_external_links:
-  - title: GitHub Repository
-    url: https://github.com/shahboura/agents-opencode
+navbar-links:
+  Home: "/"
+  Getting Started: "/docs/getting-started"
+  Agent Reference: "/docs/agents/README"
+  Workflows: "/docs/workflows"
+  GitHub: "https://github.com/shahboura/agents-opencode"
 
-# Footer
-footer_content: "Copyright &copy; 2025 Shehab Elhadidy. Licensed under the MIT License."
+# Author and social
+author: Shehab Elhadidy
+github: shahboura
+twitter: shahboura
 
-# Aux links
-aux_links:
-  "View on GitHub":
-    - "https://github.com/shahboura/agents-opencode"
+# Site settings are defined above
 
-aux_links_new_tab: true
-
-# Back to top link
-back_to_top: true
-back_to_top_text: "Back to top"
-
-# Heading anchors
-heading_anchors: true
-
-# Code highlighting
-kramdown:
-  syntax_highlighter_opts:
-    block:
-      line_numbers: false
-
-# SEO Metadata
-lang: en_US
-author:
-  name: "Shehab ElHadidy"
-  twitter: "shahboura"
-
-twitter:
-  username: shahboura
-  card: summary_large_image
-
-social:
-  name: OpenCode Agents
-  links:
-    - https://github.com/shahboura/agents-opencode
-
-# Default SEO tags
-defaults:
-  - scope:
-      path: ""
-    values:
-      image: /assets/images/og-image.png
-
-# Collections for agent pages
+# Collections
 collections:
   agents:
     output: true
 
-# Custom assets
-include:
-  - assets/
-
 # Exclude from processing
 exclude:
-  - node_modules/
-  - vendor/
-  - .sass-cache/
-  - .jekyll-cache/
   - Gemfile
   - Gemfile.lock
