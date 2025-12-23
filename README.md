@@ -26,6 +26,8 @@
 
 **Prerequisites:** None required
 
+**Note:** Installation preserves existing `AGENTS.md` files to maintain your session history and project context.
+
 ---
 
 ## 🚀 Get Started (60 seconds)

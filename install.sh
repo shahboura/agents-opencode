@@ -31,7 +31,8 @@ if [ -f "opencode.json" ]; then
     cp opencode.json "$TARGET_DIR/"
 fi
 
-if [ -f "AGENTS.md" ]; then
+# Copy AGENTS.md template only if it doesn't exist (preserve user history)
+if [ -f "AGENTS.md" ] && [ ! -f "$TARGET_DIR/AGENTS.md" ]; then
     cp AGENTS.md "$TARGET_DIR/"
 fi
 

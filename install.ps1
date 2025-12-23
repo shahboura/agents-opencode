@@ -31,7 +31,8 @@ if (Test-Path "opencode.json") {
     Copy-Item -Path "opencode.json" -Destination $TargetDir -Force
 }
 
-if (Test-Path "AGENTS.md") {
+# Copy AGENTS.md template only if it doesn't exist (preserve user history)
+if ((Test-Path "AGENTS.md") -and (-not (Test-Path "$TargetDir/AGENTS.md"))) {
     Copy-Item -Path "AGENTS.md" -Destination $TargetDir -Force
 }
 
