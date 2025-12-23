@@ -12,20 +12,45 @@
 
 ## ⚡ Quick Install (30 seconds)
 
-### Windows
+**One-command installation - downloads everything automatically!**
+
+```bash
+# Global installation (available in all projects)
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --global
+
+# Or for project-specific installation
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project /path/to/your/project
+```
+
+**Alternative for Unix systems (Linux/macOS):**
+```bash
+# Global installation
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --global
+
+# Project installation
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --project /path/to/your/project
+```
+
+**What happens:** The script automatically downloads the latest agents, instructions, and prompts from GitHub - no manual cloning required!
+
+### Manual Installation (Alternative)
+
+If you prefer to download files first:
+
+#### Windows
 
 ```powershell
-# Download and run the installer (installs to user profile)
+# Download install.ps1, then run:
 .\install.ps1
 
 # Or install to specific project directory
 .\install.ps1 -TargetDir "C:\path\to\your\project\.opencode"
 ```
 
-### Linux/macOS
+#### Linux/macOS
 
 ```bash
-# Download and run the installer (installs to home directory)
+# Download install.sh, then run:
 ./install.sh
 
 # Or install to specific project directory
