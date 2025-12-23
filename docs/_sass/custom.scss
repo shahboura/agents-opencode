@@ -11,13 +11,27 @@
 }
 
 /* Table styling */
-.table-wrapper {
-  overflow-x: auto;
+table {
+  width: 100%;
+  border-collapse: collapse;
   margin: 1rem 0;
+}
+
+table th,
+table td {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
 }
 
 /* Agent capability table styling */
 .agent-table th {
+  background-color: #f8f9fa;
   font-weight: 600;
 }
 
@@ -26,13 +40,13 @@
 }
 
 /* Navigation improvements */
-.nav-list .nav-list-item {
+.nav-list li {
   margin-bottom: 0.25rem;
 }
 
 /* Footer styling */
 .site-footer {
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid #e1e4e8;
   margin-top: 3rem;
   padding-top: 1rem;
 }

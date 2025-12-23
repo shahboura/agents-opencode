@@ -7,8 +7,7 @@ baseurl: /agents-opencode
 # Theme
 remote_theme: pmarsceill/just-the-docs
 
-# Enable dark mode
-color_scheme: "dark"
+# Theme uses default color scheme
 
 # Navigation
 nav_external_links:
