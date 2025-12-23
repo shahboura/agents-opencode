@@ -15,10 +15,11 @@ Get up and running with OpenCode agents in under 5 minutes.
 
 ## Quick Setup (60 seconds)
 
-1. **Copy agents to your project:**
+1. **Copy OpenCode files to your project:**
 
    ```bash
-   cp -r .opencode/agent/ your-project/.opencode/agent/
+   cp -r .opencode/ your-project/.opencode/
+   cp opencode.json your-project/
    ```
 
 2. **Start using:**

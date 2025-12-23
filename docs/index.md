@@ -50,7 +50,8 @@ Specialized agents for intelligent development workflows.
 
 ```bash
 # Copy to your project
-cp -r .opencode/agent/ your-project/.opencode/agent/
+cp -r .opencode/ your-project/.opencode/
+cp opencode.json your-project/
 ```
 
 ## Documentation

@@ -171,6 +171,27 @@ A: Yes! They update `AGENTS.md` automatically with session summaries.
 
 ---
 
+## 🤖 Agent Capabilities Overview
+
+| Agent | Type | Key Capabilities | Best For |
+|-------|------|------------------|----------|
+| **@orchestrator** | Primary | Strategic planning, multi-phase coordination, risk assessment | Complex projects, end-to-end execution |
+| **@planner** | Primary | Read-only analysis, implementation planning, architecture review | Detailed planning without code changes |
+| **@codebase** | Primary | Multi-language implementation, auto-applied standards, testing | Direct coding, bug fixes, features |
+| **@blogger** | Primary | Content creation, podcast ideation, YouTube scripting | Tech writing, content strategy |
+| **@brutal-critic** | Subagent | Content review, framework validation, research validation | Quality assurance, feedback |
+| **@em-advisor** | Primary | Leadership guidance, team dynamics, 1-on-1 prep | Management, career development |
+| **@docs** | Subagent | Documentation generation, README creation, API docs | Technical writing, knowledge sharing |
+| **@review** | Subagent | Security audits, performance analysis, code quality | Quality assurance, compliance |
+
+**All agents support:**
+- Context-aware assistance from `AGENTS.md`
+- Session summary logging
+- Multi-language file handling
+- Integration with other agents
+
+---
+
 ## 📖 Full Documentation
 
 Complete documentation is available at [https://shahboura.github.io/agents-opencode/](https://shahboura.github.io/agents-opencode/)
