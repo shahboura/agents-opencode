@@ -1,0 +1,100 @@
+---
+---
+
+// Custom SCSS for OpenCode Agents documentation
+// This file will be processed by Jekyll and included in the theme
+
+/* Custom styles for OpenCode Agents documentation */
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .dark-mode-toggle {
+    opacity: 0.8;
+  }
+}
+
+/* Code block improvements */
+.highlight {
+  border-radius: 6px;
+  margin: 1rem 0;
+}
+
+/* Table styling */
+.table-wrapper {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+/* Agent capability table styling */
+.agent-table th {
+  background-color: var(--table-head-bg);
+  font-weight: 600;
+}
+
+.agent-table td {
+  vertical-align: top;
+}
+
+/* Navigation improvements */
+.nav-list .nav-list-item {
+  margin-bottom: 0.25rem;
+}
+
+/* Footer styling */
+.site-footer {
+  border-top: 1px solid var(--border-color);
+  margin-top: 3rem;
+  padding-top: 1rem;
+}
+
+/* Responsive design improvements */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+  }
+
+  .agent-table {
+    font-size: 0.9rem;
+  }
+}
+
+/* Search hint styling */
+.search-hint {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--color-scheme-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.search-hint kbd {
+  background: var(--code-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  padding: 0.1rem 0.3rem;
+  font-size: 0.65rem;
+  font-family: monospace;
+}
+
+/* Copy button styling */
+.copy-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--color-scheme-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.25rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-size: 0.8rem;
+}

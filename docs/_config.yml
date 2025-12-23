@@ -14,8 +14,15 @@ plugins:
   - jekyll-feed
   - jekyll-seo-tag
 
-# Color scheme
-color_scheme: light
+# Color scheme - supports dark/light with system preference
+color_scheme: nil # nil enables auto-detection of system preference
+
+# Dark mode configuration
+enable_dark_mode: true
+enable_dark_mode_toggle: true
+dark_mode_toggle_position: "header" # Position of the toggle button
+
+# Custom styling (just-the-docs automatically includes _sass/custom.scss)
 
 # Logo and branding
 logo: false
@@ -86,6 +93,10 @@ defaults:
 collections:
   agents:
     output: true
+
+# Custom assets
+include:
+  - assets/
 
 # Exclude from processing
 exclude:
