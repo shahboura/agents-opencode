@@ -11,7 +11,9 @@ This repository contains customized agents for OpenCode.ai, aligned with Anthrop
 ## Language-Specific Instructions
 
 ### .NET/C# Projects
+
 Apply Clean Architecture principles:
+
 - Follow dependency rules: Domain → Application → Infrastructure → WebAPI
 - Use async/await with CancellationToken
 - Enable nullable reference types
@@ -19,6 +21,7 @@ Apply Clean Architecture principles:
 - Entity Framework with IEntityTypeConfiguration
 
 ### Python Projects
+
 - Always use type hints on function signatures
 - Use context managers for resource management
 - Prefer list comprehensions over loops
@@ -26,6 +29,7 @@ Apply Clean Architecture principles:
 - Google-style docstrings for public APIs
 
 ### TypeScript Projects
+
 - Enable strict mode in tsconfig.json
 - Explicit types, no implicit any
 - Strict null checks with optional chaining
@@ -33,6 +37,7 @@ Apply Clean Architecture principles:
 - Utility types (Pick, Omit, Partial, etc.)
 
 ### Flutter/Dart Projects
+
 - Use Riverpod for state management
 - Feature-based architecture with clean separation
 - Immutable data models with freezed
@@ -43,6 +48,7 @@ Apply Clean Architecture principles:
 ## Agent Usage
 
 Primary agents:
+
 - `codebase` - Multi-language development with profile detection
 - `orchestrator` - Strategic planning and complex workflow coordination
 - `blogger` - Content creation for blogging, podcasting, and YouTube scripting
@@ -50,12 +56,14 @@ Primary agents:
 - `em-advisor` - Engineering management guidance
 
 Subagents:
+
 - `docs` - Documentation creation and maintenance
 - `review` - Code review for security, performance, and best practices
 
 ## Quality Requirements
 
 All code changes must:
+
 - Pass type checking (mypy, tsc --noEmit, flutter analyze)
 - Pass linting (ruff, eslint, dart format)
 - Pass all tests
@@ -67,12 +75,14 @@ All code changes must:
 **All agents MUST summarize sessions upon task completion:**
 
 ### Summary Format
+
 - **Context**: Brief description of what was accomplished
 - **Key Decisions**: Important architectural or implementation choices made
 - **Open Items**: Any follow-up tasks or unresolved issues
 - **Lessons Learned**: Insights or patterns discovered during the session
 
 ### Summary Optimization
+
 - Keep summaries concise and actionable
 - Focus on information that would be valuable for future sessions
 - Avoid redundant information from previous summaries
@@ -80,10 +90,42 @@ All code changes must:
 - Include timestamps for chronological context
 
 ### Summary Location
+
 Summaries should be added to this AGENTS.md file under a "Session Summaries" section for easy reference across sessions.
 
-
 ## Session Summaries
+
+### 2025-12-23 19:45 - Migrate instructions and enhance agent context patterns
+
+**Agent:** orchestrator  
+**Summary:** Migrated 5 missing instruction files and standardized all agent context persistence
+
+- Copied ci-cd-hygiene, go, node-express, react-next, sql-migrations instructions from .github to .opencode
+- Enhanced all 8 agents with structured Context Persistence sections (replaced generic Session Summary Requirements)
+- Standardized timestamp format (YYYY-MM-DD HH:MM), prepend behavior, 3-5 bullet max, 100KB auto-prune
+- Updated opencode.json to reference all 11 instruction files (5 new + 6 existing)
+
+### 2025-12-23 19:30 - Complete migration from Copilot patterns to OpenCode
+
+**Agent:** codebase  
+**Summary:** Migrated best practices from .github (Copilot) to OpenCode agents, added prompts system, CI/CD workflow
+
+- Added @planner agent for read-only analysis and detailed implementation planning
+- Created 8 structured reusable prompts in .opencode/prompts/ (api-docs, code-review, generate-tests, create-readme, architecture-decision, refactor-plan, security-audit, 1-on-1-prep)
+- Optimized validate-agents.ps1 to support both Copilot (.github/agents/*.agent.md) and OpenCode (.opencode/agent/*.md) formats
+- Added GitHub Actions workflow (.github/workflows/validate.yml) for agent validation, doc link checking, and markdown linting
+- Created package.json with markdownlint-cli dependency and npm scripts (validate:agents, validate:docs, lint:md)
+- Updated .gitignore to allow .github/workflows/ while excluding other GitHub files
+- Updated all documentation (README.md, docs/index.md, docs/agents/README.md) to reflect new agents and prompts
+
+### 2025-12-23 18:20 - Ignore .github and commit repo
+
+**Agent:** orchestrator  
+**Summary:** Added .github to gitignore; committed remaining files.
+
+- Phase sequence and agent handoffs used: Implementation (@codebase) → Commit
+- Workflow patterns that worked well: quick ignore rule + batch commit
+- Lessons learned: Confirm tracked state before ignore; `.github` was untracked
 
 ### Session Summary - Mon Dec 22 2025
 

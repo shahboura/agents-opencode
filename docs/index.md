@@ -1,16 +1,37 @@
+---
+layout: default
+title: Home
+nav_order: 1
+permalink: /
+description: Specialized OpenCode agents for intelligent development workflows with multi-language support, auto-applied coding standards, and plan-first execution.
+keywords: opencode, ai agents, code generation, development workflow, .NET, Python, TypeScript, Flutter, code review, documentation
+---
+
 # OpenCode Agents
 
 Specialized agents for intelligent development workflows.
 
 ## Agents
 
-- **@orchestrator** - Planning and multi-phase workflow coordination
+- **@orchestrator** - Strategic planning and multi-phase workflow coordination
+- **@planner** - Read-only analysis and detailed implementation planning (no code changes)
 - **@codebase** - Multi-language code implementation
 - **@blogger** - Content creation for blogging, podcasting, and YouTube scripting
 - **@brutal-critic** - Ruthless content reviewer with framework-based criticism
 - **@em-advisor** - Leadership and strategy guidance
 - **@docs** - Documentation creation
 - **@review** - Security and quality audits
+
+## Reusable Prompts
+
+8 structured templates for common tasks:
+
+- Documentation: API docs, README generation, ADRs
+- Quality: Code review, security audit, test generation
+- Development: Refactoring plans
+- Management: 1-on-1 preparation
+
+[View all prompts](prompts.md)
 
 ## Quick Start
 
@@ -37,4 +58,6 @@ cp -r .opencode/agent/ your-project/.opencode/agent/
 - [Getting Started](getting-started.md)
 - [Agent Details](agents/README.md)
 - [Workflows](workflows.md)
+- [Agent Collaboration](collaboration.md)
+- [Performance Metrics](performance-metrics.md)
 - [Troubleshooting](troubleshooting.md)

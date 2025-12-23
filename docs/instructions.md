@@ -1,32 +1,70 @@
+---
+layout: default
+title: Instructions
+nav_order: 6
+---
+
 # Coding Standards
 
 Auto-applied standards by file type.
 
 ## .NET (C#)
+
 - Clean Architecture layers
 - Async/await with CancellationToken
 - Nullable reference types
 - Constructor dependency injection
 
 ## Python
+
 - Type hints on all functions
 - Context managers for resources
 - List comprehensions over loops
 - Async/await for I/O
 
 ## TypeScript
+
 - Strict mode enabled
 - Explicit types, no implicit any
 - Strict null checks
 - Utility types (Pick, Omit, etc.)
 
+## Kotlin (Android)
+
+- MVVM + Clean Architecture
+- Coroutines + Flow for async/state
+- Jetpack Compose for UI
+- Hilt for DI; immutable data classes
+
+## Rust
+
+- Ownership and borrowing best practices
+- Result/Option error handling (no unwrap in prod)
+- Clippy clean; cargo fmt; tests for public APIs
+
+## Java (Spring Boot)
+
+- Constructor injection (no @Autowired fields)
+- Optional for nullable returns
+- Use records for DTOs; @Transactional for services
+- JPA with proper indexing and migrations
+
+## Ruby on Rails
+
+- MVC pattern with RESTful conventions
+- ActiveRecord validations and associations
+- Service objects for complex logic
+- RSpec tests with 90%+ coverage
+
 ## Flutter (Dart)
+
 - Riverpod for state management
 - Freezed for immutable models
 - Result pattern for error handling
 - Provider for dependency injection
 
 Standards activate automatically when editing matching files.
+
 ```
 Domain → Application → Infrastructure → WebAPI
 ```
@@ -36,6 +74,7 @@ All code follows layered architecture with strict dependency rules.
 ### Key Standards
 
 #### Async/Await with CancellationToken
+
 ```csharp
 // ✅ Always include CancellationToken
 public async Task<User> GetUserAsync(
@@ -50,6 +89,7 @@ public async Task<User> GetUserAsync(
 ```
 
 #### Nullable Reference Types
+
 ```csharp
 // Enabled globally
 <Nullable>enable</Nullable>
@@ -62,6 +102,7 @@ public string? PhoneNumber { get; set; }
 ```
 
 #### Dependency Injection
+
 ```csharp
 public class UserService : IUserService
 {
@@ -79,6 +120,7 @@ public class UserService : IUserService
 ```
 
 #### Entity Framework Core
+
 ```csharp
 // Configuration pattern
 public class UserConfiguration : IEntityTypeConfiguration<User>
@@ -112,6 +154,7 @@ dotnet format         # Format code
 ### Key Standards
 
 #### Type Hints (Required)
+
 ```python
 from typing import Optional, List
 
@@ -127,6 +170,7 @@ async def fetch_users(limit: int = 10) -> List[User]:
 ```
 
 #### Context Managers
+
 ```python
 # Always use 'with' for resource management
 def read_file(filepath: Path) -> str:
@@ -148,6 +192,7 @@ def db_session() -> Iterator[Session]:
 ```
 
 #### List Comprehensions
+
 ```python
 # ✅ Prefer comprehensions
 active_users = [u for u in users if u.is_active]
@@ -161,6 +206,7 @@ for u in users:
 ```
 
 #### Testing with pytest
+
 ```python
 @pytest.fixture
 def user_service() -> UserService:
@@ -191,6 +237,7 @@ pytest --cov=app             # Coverage
 ### Key Standards
 
 #### Strict Type Checking
+
 ```typescript
 // Enable in tsconfig.json
 {
@@ -203,6 +250,7 @@ pytest --cov=app             # Coverage
 ```
 
 #### Explicit Function Types
+
 ```typescript
 // ✅ Good - explicit types
 function getUser(id: number): User | null {
@@ -216,6 +264,7 @@ function getUser(id) {
 ```
 
 #### Null Safety
+
 ```typescript
 // Optional chaining & nullish coalescing
 const email = user?.contact?.email ?? 'no-email@example.com';
@@ -227,6 +276,7 @@ function isUser(value: unknown): value is User {
 ```
 
 #### Generics
+
 ```typescript
 interface ApiResponse<T> {
     data: T;
@@ -241,6 +291,7 @@ class Repository<T extends { id: number }> {
 ```
 
 #### React with TypeScript
+
 ```typescript
 interface ButtonProps {
     label: string;
@@ -273,6 +324,7 @@ npm run build     # Build
 ### Key Standards
 
 #### State Management with Riverpod
+
 ```dart
 // Riverpod provider
 final userProvider = StateNotifierProvider<UserNotifier, User?>((ref) {
@@ -301,6 +353,7 @@ class ProfileScreen extends ConsumerWidget {
 ```
 
 #### Immutable Models with freezed
+
 ```dart
 @freezed
 class User with _$User {
@@ -317,6 +370,7 @@ class User with _$User {
 ```
 
 #### Result Pattern for Error Handling
+
 ```dart
 sealed class Result<T> {
   const Result();
@@ -337,6 +391,7 @@ Future<Result<User>> getUser(int id) async {
 ```
 
 #### Widget Testing
+
 ```dart
 void main() {
   testWidgets('CounterButton increments count on tap',
@@ -389,6 +444,7 @@ Each standard has comprehensive details:
 - **[Python Best Practices](../.opencode/instructions/python-best-practices.instructions.md)** - Full reference
 - **[TypeScript Strict Mode](../.opencode/instructions/typescript-strict.instructions.md)** - Full reference
 - **[Flutter Best Practices](../.opencode/instructions/flutter.instructions.md)** - Full reference
+
 ---
 
 ## Override Standards
@@ -400,6 +456,7 @@ If you need to bypass standards for a specific piece of code:
 3. **Keep scope minimal**
 
 **Example:**
+
 ```python
 # type: ignore - Legacy API returns untyped dict
 result: Any = legacy_api_call()

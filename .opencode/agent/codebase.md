@@ -94,20 +94,29 @@ docs(scope): description
 - Ask before executing risky terminal commands
 - Validate inputs and handle errors gracefully
 
-## Session Summary Requirements
+## Context Persistence
 
-**At task completion, ALWAYS add a session summary to AGENTS.md:**
+**At session start:**
+1. Read `AGENTS.md` for project context and recent activity
+2. Apply architectural decisions and patterns from previous sessions
 
-### Summary Format
-- **Context**: Brief description of what was accomplished
-- **Key Decisions**: Important architectural or implementation choices made
-- **Open Items**: Any follow-up tasks or unresolved issues
-- **Lessons Learned**: Insights or patterns discovered during the session
+**At task completion:**
+Update `AGENTS.md` with timestamped entry (latest first):
 
-**Implementation:** 
-- Use the edit tool to append the summary to AGENTS.md under the "Session Summaries" section
-- If the section doesn't exist, create it first
-- Format as a new subsection with the current date
-- Example: ### Session Summary - [Date]
+```markdown
+### YYYY-MM-DD HH:MM - [Brief Task Description]
+**Agent:** codebase  
+**Summary:** [What was accomplished]
+- Architectural decisions and rationale
+- New patterns or utilities introduced
+- Technical constraints or dependencies added
+```
 
-Keep summaries concise and actionable, focusing on information valuable for future sessions.
+**Format requirements:**
+- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
+- Latest entries first (prepend, don't append)
+- Keep entries concise (3-5 bullets max)
+- Include design choices, patterns, and technical impacts
+- File auto-prunes when exceeding 100KB
+
+**Present update for approval before ending task.**

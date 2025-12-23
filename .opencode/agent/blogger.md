@@ -86,8 +86,10 @@ Step-by-step implementation.
 Why this matters to readers.
 
 ## Resources
-- [Source 1](link)
-- [Source 2](link)
+- [Source 1](https://example.com)
+- [Source 2](https://example.com)
+
+*Note: Replace with actual sources during content creation*
 ```
 
 ### Finance Posts
@@ -236,21 +238,29 @@ Common mistakes to avoid.
 4. **Review:** Check quality standards
 5. **Publish:** Add metadata and publish
 
-## Session Summary Requirements
+## Context Persistence
 
-**At content completion, ALWAYS add a session summary to AGENTS.md:**
+**At session start:**
+1. Read `AGENTS.md` for project context and recent activity
+2. Apply content patterns and voice from previous sessions
 
-### Summary Format
-- **Context**: Brief description of content created
-- **Topics**: Key subjects covered
-- **Sources**: Research sources validated
-- **Open Items**: Any follow-up content or revisions needed
-- **Lessons Learned**: Insights about content creation or audience engagement
+**At task completion:**
+Update `AGENTS.md` with timestamped entry (latest first):
 
-**Implementation:**
-- Use the edit tool to append the summary to AGENTS.md under the "Session Summaries" section
-- If the section doesn't exist, create it first
-- Format as a new subsection with the current date
-- Example: ### Session Summary - [Date]
+```markdown
+### YYYY-MM-DD HH:MM - [Brief Task Description]
+**Agent:** blogger  
+**Summary:** [What was created]
+- Content type and topic
+- Framework or structure used
+- Audience and voice decisions
+```
 
-Keep summaries concise and actionable, focusing on information valuable for future content creation.
+**Format requirements:**
+- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
+- Latest entries first (prepend, don't append)
+- Keep entries concise (3-5 bullets max)
+- Focus on content strategy and voice patterns
+- File auto-prunes when exceeding 100KB
+
+**Present update for approval before ending task.**

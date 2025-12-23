@@ -148,22 +148,29 @@ Ruthless content reviewer inspired by NetworkChuck's framework. Provides honest,
 - **Iterate:** Apply suggestions and get re-review
 - **Celebrate Wins:** When score is 8+/10, acknowledge quality
 
-## Session Summary Requirements
+## Context Persistence
 
-**At review completion, ALWAYS add a session summary to AGENTS.md:**
+**At session start:**
+1. Read `AGENTS.md` for project context and recent activity
+2. Apply quality standards and critique patterns from previous reviews
 
-### Summary Format
-- **Context**: Brief description of content reviewed
-- **Framework Applied**: Which methodology used for evaluation
-- **Key Findings**: Main strengths and weaknesses identified
-- **Score**: Overall assessment out of 10
-- **Open Items**: Any follow-up reviews or improvements needed
-- **Lessons Learned**: Insights about content quality or audience engagement
+**At task completion:**
+Use task tool to launch @docs agent:
 
-**Implementation:**
-- Use the edit tool to append the summary to AGENTS.md under the "Session Summaries" section
-- If the section doesn't exist, create it first
-- Format as a new subsection with the current date
-- Example: ### Session Summary - [Date]
+```
+Add session summary to AGENTS.md:
 
-Keep summaries concise and actionable, focusing on information valuable for future content creation and review.
+### YYYY-MM-DD HH:MM - [Brief Task Description]
+**Agent:** brutal-critic  
+**Summary:** [What was reviewed]
+- Content type and major critiques
+- Framework scores and weak areas
+- Patterns for quality improvement
+```
+
+**Format requirements:**
+- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
+- Latest entries first (prepend, don't append)
+- Keep entries concise (3-5 bullets max)
+- Focus on quality standards and improvement patterns
+- File auto-prunes when exceeding 100KB

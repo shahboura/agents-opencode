@@ -1,0 +1,26 @@
+{
+  "name": "agents-opencode",
+  "version": "1.0.0",
+  "description": "OpenCode.ai agent orchestration system with language-specific development agents",
+  "private": true,
+  "scripts": {
+    "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github",
+    "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --fix",
+    "validate:agents": "pwsh -File scripts/validate-agents.ps1",
+    "validate:docs": "pwsh -File scripts/validate-docs.ps1",
+    "validate:context": "pwsh -File scripts/check-context-size.ps1",
+    "validate:all": "npm run validate:agents && npm run validate:docs && npm run validate:context && npm run lint:md",
+    "test": "npm run validate:all"
+  },
+  "devDependencies": {
+    "markdownlint-cli": "^0.38.0"
+  },
+  "keywords": [
+    "opencode",
+    "ai-agents",
+    "code-generation",
+    "development-tools"
+  ],
+  "author": "",
+  "license": "MIT"
+}

@@ -108,20 +108,29 @@ docs/
 - Validate all links
 - Ensure mobile-friendly formatting
 
-## Session Summary Requirements
+## Context Persistence
 
-**At documentation completion, ALWAYS add a session summary to AGENTS.md:**
+**At session start:**
+1. Read `AGENTS.md` for project context and recent activity
+2. Apply documentation patterns from previous sessions
 
-### Summary Format
-- **Context**: Brief description of what was accomplished
-- **Key Decisions**: Important documentation or structural choices made
-- **Open Items**: Any follow-up documentation tasks or unresolved issues
-- **Lessons Learned**: Insights or patterns discovered during the session
+**At task completion:**
+Use task tool to launch agent with edit permissions:
 
-**Implementation:** 
-- Use the edit tool to append the summary to AGENTS.md under the "Session Summaries" section
-- If the section doesn't exist, create it first
-- Format as a new subsection with the current date
-- Example: ### Session Summary - [Date]
+```
+Add session summary to AGENTS.md:
 
-Keep summaries concise and actionable, focusing on information valuable for future sessions.
+### YYYY-MM-DD HH:MM - [Brief Task Description]
+**Agent:** docs  
+**Summary:** [What was documented]
+- Documentation created or updated
+- Structure and format decisions
+- Patterns established for consistency
+```
+
+**Format requirements:**
+- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
+- Latest entries first (prepend, don't append)
+- Keep entries concise (3-5 bullets max)
+- Focus on documentation strategy and patterns
+- File auto-prunes when exceeding 100KB

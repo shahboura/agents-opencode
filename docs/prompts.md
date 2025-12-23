@@ -1,3 +1,9 @@
+---
+layout: default
+title: Prompts
+nav_order: 5
+---
+
 # Prompts
 
 Reusable commands for common tasks.
@@ -21,40 +27,50 @@ Type `/` in OpenCode to see available prompts, then select one.
 /code-review
 /generate-tests
 ```
+
 ```
 /create-readme
 ```
 
 **Best for:**
+
 - New projects needing documentation
 - Existing projects with missing README
 - Standardizing documentation style
+
 ---
 
 ### `/code-review`
+
 **Perform comprehensive code review**
 
 Audits code for:
+
 - Security vulnerabilities
 - Performance issues
 - Code quality problems
 - Best practices violations
 
 **Example:**
+
 ```
 /code-review
 ```
 
 **Best for:**
+
 - Pulling PRs before merging
 - Auditing critical modules
 - Teaching code quality standards
+
 ---
 
 ### `/generate-tests`
+
 **Generate unit tests**
 
 Creates tests following best practices:
+
 - Happy path scenarios
 - Edge cases & boundaries
 - Error handling
@@ -62,20 +78,25 @@ Creates tests following best practices:
 - Language-specific frameworks (xUnit, pytest, Jest)
 
 **Example:**
+
 ```
 /generate-tests
 ```
 
 **Best for:**
+
 - Adding tests to untested code
 - Increasing code coverage
 - Learning testing best practices
+
 ---
 
 ### `/1-on-1-prep`
+
 **Prepare for 1-on-1 meeting**
 
 Generates agenda and guidance for:
+
 - Opening questions
 - Career development discussions
 - Feedback exchange
@@ -83,20 +104,25 @@ Generates agenda and guidance for:
 - Red flag indicators
 
 **Example:**
+
 ```
 /1-on-1-prep
 ```
 
 **Best for:**
+
 - Team leads & managers
 - Regular 1-on-1s
 - Difficult conversations
+
 ---
 
 ### `/architecture-decision`
+
 **Create Architecture Decision Record (ADR)**
 
 Documents decisions with:
+
 - Context & problem statement
 - Options considered (with pros/cons)
 - Decision rationale
@@ -105,14 +131,17 @@ Documents decisions with:
 - Related decisions
 
 **Example:**
+
 ```
 /architecture-decision
 ```
 
 **Best for:**
+
 - Recording major technical decisions
 - Maintaining decision history
 - Onboarding new team members
+
 ---
 
 ## How to Use
@@ -120,6 +149,7 @@ Documents decisions with:
 1. **Open OpenCode Chat** - `opencode` command
 
 2. **Type the command**
+
     ```
     /create-readme
     ```
@@ -140,16 +170,19 @@ Documents decisions with:
 ## Pro Tips
 
 ### Combine with Agents
+
 ```
 @orchestrator Use /create-readme and /code-review after implementation
 ```
 
 ### Enhance with Context
+
 ```
 /code-review Focus on security issues in payment processing
 ```
 
 ### Chain Prompts
+
 ```
 /generate-tests then @review the tests for quality
 ```
@@ -174,7 +207,9 @@ Description of what this prompt does.
 
 Usage:
 ```
+
 /my-custom-prompt Do something specific
+
 ```
 ```
 

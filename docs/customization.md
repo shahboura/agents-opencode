@@ -1,3 +1,9 @@
+---
+layout: default
+title: Customization
+nav_order: 7
+---
+
 # Customization
 
 ## Project Context
@@ -18,6 +24,7 @@ Tech stack: Node.js, TypeScript, PostgreSQL
 ## Language Standards
 
 Agents auto-apply standards based on file types:
+
 - `.cs` → .NET Clean Architecture
 - `.py` → Python type hints
 - `.ts` → TypeScript strict mode
@@ -25,6 +32,7 @@ Agents auto-apply standards based on file types:
 ## Agent Configuration
 
 Edit `.opencode/agent/[agent].md` to modify behavior:
+
 - Change model settings
 - Adjust permissions
 - Update tools
@@ -61,6 +69,7 @@ Edit `.opencode/agent/[agent].md` to modify behavior:
 
 ## Project Structure
 ```
+
 src/
 ├── api/           # Express routes
 ├── services/      # Business logic
@@ -72,6 +81,7 @@ src/
 config/
 ├── database.js    # DB configuration
 └── app.js         # App configuration
+
 ```
 
 ## Key Files & Standards
@@ -90,18 +100,21 @@ npm run dev        # Starts on :3000
 ```
 
 ### Testing
+
 ```bash
 npm test           # Run all tests
 npm run test:cov   # With coverage
 ```
 
 ### Building
+
 ```bash
 npm run build      # Compile TypeScript
 npm run lint       # Check style
 ```
 
 ## Dependencies to Know About
+
 - **express** - Web framework
 - **sequelize** - ORM for PostgreSQL
 - **joi** - Data validation
@@ -109,6 +122,7 @@ npm run lint       # Check style
 - **jest** - Testing
 
 ## Important Constraints
+
 - Must maintain backward compatibility
 - No external API calls without rate limiting
 - All credentials through environment variables
@@ -116,11 +130,13 @@ npm run lint       # Check style
 - No direct database access from API (always use ORM)
 
 ## Common Patterns in This Project
+
 - Middleware for auth/logging
 - Validation using Joi
 - Error responses with codes: `{ code, message, statusCode }`
 - Async error handling with try/catch
 - Service layer for business logic
+
 ```
 
 ### Step 3: Agents Use It Automatically
@@ -197,7 +213,9 @@ Generate database migration
 
 Usage:
 ```
+
 /database-migration Add user last_login timestamp
+
 ```
 
 ### Step 2: Use in OpenCode Chat
@@ -206,7 +224,9 @@ Usage:
 opencode
 /database-migration Add user last_login timestamp
 ```
+
 /database-migration Add user last_login timestamp
+
 ```
 
 ---
@@ -242,6 +262,7 @@ app.post('/users', asyncHandler(async (req, res) => {
 ```
 
 ## Response Format
+
 ```javascript
 {
   success: boolean,
@@ -251,6 +272,7 @@ app.post('/users', asyncHandler(async (req, res) => {
   statusCode: number
 }
 ```
+
 ```
 
 ---
@@ -326,7 +348,9 @@ For quick setup, use this template:
 ```
 
 ## Key Dependencies
+
 - [Your main libraries]
+
 ```
 
 ---

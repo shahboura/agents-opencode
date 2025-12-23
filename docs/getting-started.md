@@ -1,13 +1,22 @@
+---
+layout: default
+title: Getting Started
+nav_order: 2
+---
+
 # Getting Started
 
 ## Quick Setup
 
 1. **Install OpenCode CLI**
 2. **Copy agents to your project:**
+
    ```bash
    cp -r .opencode/agent/ your-project/.opencode/agent/
    ```
+
 3. **Start using:**
+
    ```bash
    opencode
    @codebase Create a user API endpoint

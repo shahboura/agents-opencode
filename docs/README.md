@@ -1,6 +1,12 @@
+---
+layout: default
+title: Documentation Setup
+nav_exclude: true
+---
+
 # OpenCode Agents Documentation
 
-GitHub Pages is automatically enabled for this repository.
+Documentation using Just the Docs theme.
 
 ## Documentation Structure
 
@@ -15,44 +21,26 @@ The documentation is built from the `docs/` folder:
 - **customization.md** - Adapt to your project
 - **troubleshooting.md** - FAQ and solutions
 
-## Enable GitHub Pages
-
-1. Go to repository **Settings** → **Pages**
-2. Under "Source", select:
-    - Branch: `main`
-    - Folder: `docs/`
-3. Click **Save**
-
-That's it! GitHub Pages will automatically build and deploy.
-
 ## Theme
 
-Configured with Just-the-Docs theme via `docs/_config.yml`:
+Configured with Just the Docs theme via `docs/_config.yml`:
 
 - Clean, professional layout
 - Search functionality
 - Mobile-responsive
 - Navigation sidebar
 
-## Making Changes
+## Local Preview
 
-1. Edit files in `docs/` folder
-2. Commit and push to main branch
-3. GitHub Pages automatically rebuilds (usually within 1-2 minutes)
-
-## Local Preview (Optional)
-
-To preview locally before pushing:
+To preview locally:
 
 ```bash
-# Install Jekyll
-gem install jekyll
-
-# Navigate to docs folder
+# Install dependencies
 cd docs
+bundle install
 
 # Serve locally
-jekyll serve
+bundle exec jekyll serve
 
 # View at http://localhost:4000
 ```

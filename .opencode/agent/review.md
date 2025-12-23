@@ -127,16 +127,29 @@ For each file:
 
 ## Session Summary Requirements
 
-**At review completion, ALWAYS add a session summary to AGENTS.md:**
+## Context Persistence
 
-### Summary Format
-- **Context**: Brief description of what was reviewed
-- **Key Findings**: Critical issues, security concerns, or performance problems identified
-- **Open Items**: Any follow-up fixes or additional reviews needed
-- **Lessons Learned**: Insights or patterns discovered during the review
+**At session start:**
+1. Read `AGENTS.md` for project context and recent activity
+2. Apply security and quality patterns from previous reviews
 
-**Implementation:** 
-- Output the summary text clearly
-- Use the task tool to launch @docs agent with the summary content to add it to AGENTS.md
+**At task completion:**
+Use task tool to launch @docs agent:
 
-Keep summaries concise and actionable, focusing on information valuable for future sessions.
+```
+Add session summary to AGENTS.md:
+
+### YYYY-MM-DD HH:MM - [Brief Task Description]
+**Agent:** review  
+**Summary:** [What was reviewed]
+- Critical issues identified
+- Security or performance concerns
+- Recommendations and patterns established
+```
+
+**Format requirements:**
+- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
+- Latest entries first (prepend, don't append)
+- Keep entries concise (3-5 bullets max)
+- Focus on security, performance, and quality patterns
+- File auto-prunes when exceeding 100KB

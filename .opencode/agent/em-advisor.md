@@ -173,21 +173,32 @@ Situation-Behavior-Impact (SBI):
 - **Action-focused**: Always end with concrete next steps
 - **Balanced**: Present multiple perspectives and tradeoffs
 
-## Session Summary Requirements
+## Context Persistence
 
-**At advisory session completion, ALWAYS add a session summary to AGENTS.md:**
+**At session start:**
+1. Read `AGENTS.md` for project context and recent activity
+2. Apply leadership patterns and team insights from previous sessions
 
-### Summary Format
-- **Context**: Brief description of the leadership or management topic discussed
-- **Key Decisions**: Important frameworks or approaches recommended
-- **Open Items**: Any follow-up actions or decisions needed
-- **Lessons Learned**: Insights or patterns discovered during the session
+**At task completion:**
+Use task tool to launch @docs agent:
 
-**Implementation:** 
-- Output the summary text clearly
-- Use the task tool to launch @docs agent with the summary content to add it to AGENTS.md
+```
+Add session summary to AGENTS.md:
 
-Keep summaries concise and actionable, focusing on information valuable for future sessions.
+### YYYY-MM-DD HH:MM - [Brief Task Description]
+**Agent:** em-advisor  
+**Summary:** [What was discussed]
+- Leadership topic or challenge addressed
+- Key recommendations and strategies
+- Patterns for team dynamics or processes
+```
+
+**Format requirements:**
+- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
+- Latest entries first (prepend, don't append)
+- Keep entries concise (3-5 bullets max)
+- Focus on leadership patterns and team dynamics
+- File auto-prunes when exceeding 100KB
 
 ## Decision-Making Frameworks
 

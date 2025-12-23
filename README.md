@@ -1,8 +1,12 @@
 # OpenCode Custom Agents
 
+[![Validate Agents & Documentation](https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml/badge.svg)](https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://shahboura.github.io/agents-opencode/)
+[![GitHub Stars](https://img.shields.io/github/stars/shahboura/agents-opencode?style=social)](https://github.com/shahboura/agents-opencode)
+
 Specialized OpenCode agents for intelligent, plan-first development workflows.
 
-**Agents:** @orchestrator • @codebase • @docs • @review • @em-advisor • @blogger • @brutal-critic
+**Agents:** @orchestrator • @planner • @codebase • @docs • @review • @em-advisor • @blogger • @brutal-critic
 
 ---
 
@@ -19,6 +23,7 @@ Specialized OpenCode agents for intelligent, plan-first development workflows.
 ```
 
 **The agent will:**
+
 - 📋 Propose a step-by-step plan
 - ⏸️ Wait for your approval (or proceed if you approve execution)
 - 🔨 Implement with validation
@@ -33,6 +38,7 @@ Specialized OpenCode agents for intelligent, plan-first development workflows.
 | Agent | Type | Purpose | Use For |
 |-------|------|---------|---------|
 | **@orchestrator** | Primary | Strategic planning & coordination | Complex features, risk assessment, multi-phase projects, end-to-end execution |
+| **@planner** | Primary | Read-only analysis & planning | Detailed implementation plans, architecture analysis (no code changes) |
 | **@codebase** | Primary | Multi-language dev | Direct implementation, bug fixes, code generation |
 | **@blogger** | Primary | Content creation | Tech/finance/leadership blogging, podcast ideation, YouTube scripting |
 | **@brutal-critic** | Primary | Content review | Honest feedback, framework validation, quality assessment |
@@ -43,16 +49,16 @@ Specialized OpenCode agents for intelligent, plan-first development workflows.
 **Note:** All agents automatically add session summaries to AGENTS.md after task completion.
 
 ---
+8 Reusable Prompts
 
-## ⚡ 5 Reusable Prompts
+Structured templates for common development tasks:
 
-Invoke with `/` in OpenCode:
+- **Documentation**: `/api-docs`, `/create-readme`, `/architecture-decision`
+- **Quality**: `/code-review`, `/security-audit`, `/generate-tests`
+- **Development**: `/refactor-plan`
+- **Management**: `/1-on-1-prep`
 
-- `/create-readme` - Generate professional README
-- `/code-review` - Comprehensive code review
-- `/generate-tests` - Unit test generation
-- `/1-on-1-prep` - EM meeting prep
-- `/architecture-decision` - ADR creation
+**[👉 View All Prompts](./.opencode/prompts/README.md)**
 
 **[👉 Learn More](./docs/prompts.md)**
 
@@ -76,26 +82,33 @@ No configuration needed. When you edit files, standards activate automatically:
 ## 💡 Example Workflows
 
 ### Build Authentication System (End-to-End)
+
 ```
 @orchestrator Build JWT auth with endpoints, tests, security review, and docs
 ```
 
 ### Plan Before Implementing (Design Review)
+
 ```
-@orchestrator Create detailed plan for JWT authentication—analyze current code and propose architecture
+@planner Create detailed plan for JWT authentication—analyze current code and propose architecture
 ```
 
+This agent is read-only and won't make changes. Perfect for getting a comprehensive implementation plan before starting work.
+
 ### Direct Implementation
+
 ```
 @codebase Create user CRUD service with repository pattern and unit tests
 ```
 
 ### Code Review
+
 ```
 @review Security and performance audit of auth module
 ```
 
-**[👉 More Examples](./docs/workflows.md)**
+**[👉 More Examples](./docs/workflows.md)**  
+**[👉 Runnable Examples](./examples/)**
 
 ---
 
@@ -126,18 +139,21 @@ Agents automatically use this context!
 ## 📦 Installation & Setup
 
 ### Prerequisites
+
 - [OpenCode CLI](https://opencode.ai/docs/cli/) installed
 - Any project (works with existing repos)
 
 ### Install Agents
 
 1. **Clone this repository:**
+
 ```bash
-git clone https://github.com/your-username/agents-opencode.git
+git clone https://github.com/shahboura/agents-opencode.git
 cd agents-opencode
 ```
 
 2. **Copy agent configurations:**
+
 ```bash
 # For global installation (available in all projects)
 cp -r .opencode/agent/ ~/.config/opencode/agent/
@@ -147,13 +163,17 @@ cp -r .opencode/agent/ your-project/.opencode/agent/
 ```
 
 3. **Copy language instructions and configuration:**
+
 ```bash
 cp -r .opencode/instructions/ your-project/.opencode/instructions/
 cp opencode.json your-project/
 ```
-**Note:** The `opencode.json` file specifies which instruction files to load and is configured automatically. Users do not need to modify it unless adding custom instructions.
+
+**Note:** The `opencode.json` file specifies which instruction files to load and is configured automatically.
+Users do not need to modify it unless adding custom instructions.
 
 4. **Set up AGENTS.md (optional):**
+
 ```bash
 cp AGENTS.md your-project/
 # Edit to match your project
@@ -219,7 +239,5 @@ Complete documentation is available at [https://shahboura.github.io/agents-openc
 ### 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-
 
 **Ready to get started?** Check out the [Getting Started Guide](./docs/getting-started.md) 🚀
