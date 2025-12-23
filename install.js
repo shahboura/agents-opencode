@@ -338,11 +338,10 @@ function uninstall() {
                     success(`✅ Session history backed up to: AGENTS.md.${timestamp}.bk`);
                 }
 
-                // Create backup of entire installation
-                const backupDir = path.join(currentDir, `.opencode.backup.${Date.now()}`);
+                // Remove .opencode directory entirely (no backup needed - can be re-downloaded)
                 if (fs.existsSync(opencodeDir)) {
-                    fs.renameSync(opencodeDir, backupDir);
-                    success(`✅ Agents backed up to: .opencode.backup.${path.basename(backupDir)}/`);
+                    fs.rmSync(opencodeDir, { recursive: true, force: true });
+                    success(`✅ Removed agent configurations`);
                 }
 
                 // Remove other installation files
@@ -350,7 +349,7 @@ function uninstall() {
                 if (fs.existsSync(configPath)) fs.unlinkSync(configPath);
 
                 success('✅ OpenCode Agents uninstalled from current directory!');
-                info('To completely remove, delete the backup directory manually.');
+                info('Session history backed up. Agent configurations removed (can be re-installed).');
             }
         }
 
