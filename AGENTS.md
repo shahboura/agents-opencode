@@ -74,6 +74,7 @@ All code changes must:
 
 All documentation changes must:
 
+- Pass markdown linting (`npm run lint:md`)
 - Have valid internal/external links (`npm run validate:docs`)
 - Run validation before committing changes
 
