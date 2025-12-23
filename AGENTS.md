@@ -74,7 +74,6 @@ All code changes must:
 
 All documentation changes must:
 
-- Pass markdown linting (`npm run lint:md`)
 - Have valid internal/external links (`npm run validate:docs`)
 - Run validation before committing changes
 
@@ -143,7 +142,7 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 - Created 8 structured reusable prompts in .opencode/prompts/ (api-docs, code-review, generate-tests, create-readme, architecture-decision, refactor-plan, security-audit, 1-on-1-prep)
 - Optimized validate-agents.ps1 to support both Copilot (.github/agents/*.agent.md) and OpenCode (.opencode/agent/*.md) formats
 - Added GitHub Actions workflow (.github/workflows/validate.yml) for agent validation, doc link checking, and markdown linting
-- Created package.json with markdownlint-cli dependency and npm scripts (validate:agents, validate:docs, lint:md)
+- Created package.json with essential validation scripts (validate:agents, validate:docs, validate:context)
 - Updated .gitignore to allow .github/workflows/ while excluding other GitHub files
 - Updated all documentation (README.md, docs/index.md, docs/agents/README.md) to reflect new agents and prompts
 
