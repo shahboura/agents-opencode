@@ -49,9 +49,9 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 ```
 
 **What happens:**
-- **Project installations:** Backs up `.opencode/` and `AGENTS.md`, then removes them
+- **Project installations:** Backs up `AGENTS.md` only, removes `.opencode/` and other files entirely
 - **Repository self-cleanup:** Backs up `AGENTS.md`, removes generated files (`install.js`, `examples/`, etc.)
-- Creates timestamped backups of session history
+- Agent configurations can be re-installed, session history is preserved
 
 #### Remove Global Installation
 

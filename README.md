@@ -52,7 +52,7 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall --global && rm install.js
 ```
 
-**Note:** Creates backups of your session history and configurations before removal.
+**Note:** Backs up session history (AGENTS.md) only. Agent configurations are removed entirely (can be re-installed).
 
 ---
 
