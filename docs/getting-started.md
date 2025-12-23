@@ -42,12 +42,27 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 
 ### Uninstall
 
+#### Remove from Current Directory/Project
+
 ```bash
 node install.js --uninstall
 ```
 
-**What happens:** Downloads and installs all agents, instructions, and prompts automatically.
-Uninstallation creates backups of your session history.
+**What happens:**
+- **Project installations:** Backs up `.opencode/` and `AGENTS.md`, then removes them
+- **Repository self-cleanup:** Backs up `AGENTS.md`, removes generated files (`install.js`, `examples/`, etc.)
+- Creates timestamped backups of session history
+
+#### Remove Global Installation
+
+```bash
+node install.js --uninstall --global
+```
+
+**What happens:**
+- Removes agents from `~/.config/opencode/` (Linux/macOS) or `%APPDATA%\Local\opencode\` (Windows)
+- Backs up session history before removal
+- Safe to run multiple times
 
 ## Your First Agent Interaction
 

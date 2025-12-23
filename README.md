@@ -40,8 +40,16 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 
 ### Uninstall
 
+#### Remove from Current Directory
+
 ```bash
 node install.js --uninstall
+```
+
+#### Remove Global Installation
+
+```bash
+node install.js --uninstall --global
 ```
 
 **Note:** Creates backups of your session history and configurations before removal.
