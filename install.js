@@ -500,7 +500,6 @@ function main() {
                     info("\n📚 Documentation: https://github.com/shahboura/agents-opencode");
                 }
                 break;
-
             case '-v':
             case '--version':
                 showVersion(tempDir);
