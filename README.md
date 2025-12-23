@@ -30,6 +30,7 @@ npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js 
 - ✅ Includes examples and learning materials
 
 **Additional commands:**
+
 ```bash
 # Check version before installing
 npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --version
