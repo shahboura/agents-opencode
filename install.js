@@ -176,6 +176,35 @@ function installGlobal(tempDir) {
         }
     }
 
+    // Copy all .opencode/ contents
+    const opencodeSrc = path.join(tempDir, '.opencode');
+    if (fs.existsSync(opencodeSrc)) {
+        copyRecursive(opencodeSrc, globalConfigDir);
+        success(`✓ Copied all agent configurations`);
+    }
+
+    // Copy opencode.json
+    const configSrc = path.join(tempDir, 'opencode.json');
+    if (fs.existsSync(configSrc)) {
+        fs.copyFileSync(configSrc, path.join(globalConfigDir, 'opencode.json'));
+        success(`✓ Configuration installed`);
+    }
+
+    // Copy AGENTS.md template only if it doesn't exist (preserve user history)
+    const agentsMdSrc = path.join(tempDir, 'AGENTS.md');
+    const agentsMdDest = path.join(globalConfigDir, 'AGENTS.md');
+    if (fs.existsSync(agentsMdSrc) && !fs.existsSync(agentsMdDest)) {
+        fs.copyFileSync(agentsMdSrc, agentsMdDest);
+        success(`✓ Session log template created`);
+    } else if (fs.existsSync(agentsMdDest)) {
+        info(`✓ Preserved existing session history`);
+    }
+
+    success('✅ Global installation completed successfully!');
+    info('Agents are now available in all your projects.');
+}
+    }
+
     // Copy all OpenCode directories
     const opencodeSrc = path.join(tempDir, '.opencode');
     if (fs.existsSync(opencodeSrc)) {
@@ -244,22 +273,11 @@ function installProject(tempDir, projectDir) {
         }
     }
 
-    // Copy all directories from .opencode/
+    // Copy all .opencode/ contents
     const opencodeSrc = path.join(tempDir, '.opencode');
     if (fs.existsSync(opencodeSrc)) {
-        const items = fs.readdirSync(opencodeSrc);
-        let copiedCount = 0;
-        items.forEach(item => {
-            const srcPath = path.join(opencodeSrc, item);
-            const destPath = path.join(opencodeDir, item);
-
-            if (fs.statSync(srcPath).isDirectory()) {
-                copyRecursive(srcPath, destPath);
-                success(`✓ Copied ${item}`);
-                copiedCount++;
-            }
-        });
-        info(`Installed ${copiedCount} agent components`);
+        copyRecursive(opencodeSrc, opencodeDir);
+        success(`✓ Copied all agent configurations`);
     }
 
     // Copy opencode.json
@@ -343,6 +361,15 @@ function uninstall() {
 
     if (fs.existsSync(globalConfigDir)) {
         try {
+            // Backup AGENTS.md with timestamp if it exists
+            const agentsMdPath = path.join(globalConfigDir, 'AGENTS.md');
+            if (fs.existsSync(agentsMdPath)) {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                const backupAgentsMd = path.join(globalConfigDir, `AGENTS.md.${timestamp}.bk`);
+                fs.copyFileSync(agentsMdPath, backupAgentsMd);
+                success(`✅ Session history backed up to: ${backupAgentsMd}`);
+            }
+
             // Create backup before removal
             const backupDir = `${globalConfigDir}.backup.${Date.now()}`;
             fs.renameSync(globalConfigDir, backupDir);
