@@ -19,8 +19,21 @@ if (-not (Test-Path $TargetDir)) {
 
 Write-Host "📁 Installing to: $TargetDir" -ForegroundColor Blue
 
-# Copy agent files
-Copy-Item -Path ".opencode/agent" -Destination $TargetDir -Recurse -Force
+# Copy all OpenCode directories
+Get-ChildItem -Path ".opencode" -Directory | ForEach-Object {
+    $dirName = $_.Name
+    Write-Host "📋 Copying $dirName..." -ForegroundColor Blue
+    Copy-Item -Path $_.FullName -Destination $TargetDir -Recurse -Force
+}
+
+# Copy configuration files
+if (Test-Path "opencode.json") {
+    Copy-Item -Path "opencode.json" -Destination $TargetDir -Force
+}
+
+if (Test-Path "AGENTS.md") {
+    Copy-Item -Path "AGENTS.md" -Destination $TargetDir -Force
+}
 
 Write-Host "✅ Installation complete!" -ForegroundColor Green
 Write-Host ""

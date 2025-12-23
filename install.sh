@@ -17,8 +17,23 @@ mkdir -p "$TARGET_DIR"
 
 echo "📁 Installing to: $TARGET_DIR"
 
-# Copy agent files
-cp -r .opencode/agent "$TARGET_DIR/"
+# Copy all OpenCode directories
+for dir in .opencode/*/; do
+    if [ -d "$dir" ]; then
+        dirname=$(basename "$dir")
+        echo "📋 Copying $dirname..."
+        cp -r "$dir" "$TARGET_DIR/"
+    fi
+done
+
+# Copy configuration files
+if [ -f "opencode.json" ]; then
+    cp opencode.json "$TARGET_DIR/"
+fi
+
+if [ -f "AGENTS.md" ]; then
+    cp AGENTS.md "$TARGET_DIR/"
+fi
 
 echo "✅ Installation complete!"
 echo ""
