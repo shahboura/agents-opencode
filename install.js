@@ -7,7 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync, spawn } = require('child_process');
+const { execSync } = require('child_process');
 const os = require('os');
 
 // Colors for output
@@ -87,6 +87,30 @@ function copyRecursive(src, dest) {
     }
 }
 
+function cloneRepository(tempDir) {
+    info('Cloning OpenCode Agents repository...');
+
+    try {
+        execSync('git clone --depth 1 --quiet https://github.com/shahboura/agents-opencode.git .', {
+            cwd: tempDir,
+            stdio: 'pipe'
+        });
+        return true;
+    } catch (err) {
+        error('Failed to clone repository. Please check your internet connection.');
+        return false;
+    }
+}
+
+function validateRepository(repoDir) {
+    const opencodeDir = path.join(repoDir, '.opencode');
+    if (!fs.existsSync(opencodeDir)) {
+        error('Invalid repository structure. Missing .opencode directory.');
+        return false;
+    }
+    return true;
+}
+
 function verifyInstallation(installDir) {
     try {
         // Check for essential directories
@@ -134,30 +158,6 @@ function checkVersion(tempDir) {
         // Ignore version check errors
     }
     return null;
-}
-
-function cloneRepository(tempDir) {
-    info('Cloning OpenCode Agents repository...');
-
-    try {
-        execSync('git clone https://github.com/shahboura/agents-opencode.git .', {
-            cwd: tempDir,
-            stdio: 'pipe'
-        });
-        return true;
-    } catch (err) {
-        error('Failed to clone repository. Please check your internet connection.');
-        return false;
-    }
-}
-
-function validateRepository(repoDir) {
-    const opencodeDir = path.join(repoDir, '.opencode');
-    if (!fs.existsSync(opencodeDir)) {
-        error('Invalid repository structure. Missing .opencode directory.');
-        return false;
-    }
-    return true;
 }
 
 function installGlobal(tempDir) {
@@ -279,43 +279,6 @@ function installProject(tempDir, projectDir) {
     }
 }
 
-function showUsage() {
-    console.log(`
-🤖 OpenCode Agents Installation Script
-
-USAGE:
-    node install.js [OPTIONS]
-
-OPTIONS:
-    -g, --global                Install agents globally (available in all projects)
-    -p, --project DIR           Install agents for specific project directory
-    -u, --uninstall             Remove installed agents
-    -v, --version               Show version information
-    -h, --help                  Show this help message
-
-EXAMPLES:
-    node install.js --global                    # Install globally
-    node install.js --project /path/to/project  # Install for specific project
-    node install.js --project .                 # Install in current directory
-    node install.js --uninstall                 # Remove installation
-
-PREREQUISITES:
-    - Git (for downloading)
-    - Node.js/npm
-    - Internet connection
-
-FEATURES:
-    ✓ Cross-platform (Windows/Linux/macOS)
-    ✓ Automatic backups of existing installations
-    ✓ Preserves user session history (AGENTS.md)
-    ✓ Includes examples and documentation
-    ✓ Post-installation verification
-
-For more information, visit: https://github.com/shahboura/agents-opencode
-`);
-    process.exit(1);
-}
-
 function uninstall() {
     info('Uninstalling OpenCode Agents...');
 
@@ -355,13 +318,50 @@ function showVersion(tempDir) {
         if (fs.existsSync(packagePath)) {
             const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
             console.log(`OpenCode Agents v${packageData.version}`);
-            console.log(`Repository: ${packageData.repository?.url || 'https://github.com/shahboura/agents-opencode'}`);
+            console.log(`Repository: https://github.com/shahboura/agents-opencode`);
         } else {
             console.log('OpenCode Agents (version unknown)');
         }
     } catch (err) {
         console.log('OpenCode Agents (version check failed)');
     }
+}
+
+function showUsage() {
+    console.log(`
+🤖 OpenCode Agents Installation Script
+
+USAGE:
+    node install.js [OPTIONS]
+
+OPTIONS:
+    -g, --global                Install agents globally (available in all projects)
+    -p, --project DIR           Install agents for specific project directory
+    -u, --uninstall             Remove installed agents
+    -v, --version               Show version information
+    -h, --help                  Show this help message
+
+EXAMPLES:
+    node install.js --global                    # Install globally
+    node install.js --project /path/to/project  # Install for specific project
+    node install.js --project .                 # Install in current directory
+    node install.js --uninstall                 # Remove installation
+
+PREREQUISITES:
+    - Git (for downloading)
+    - Node.js/npm
+    - Internet connection
+
+FEATURES:
+    ✓ Cross-platform (Windows/Linux/macOS)
+    ✓ Automatic backups of existing installations
+    ✓ Preserves user session history (AGENTS.md)
+    ✓ Post-installation verification
+    ✓ Includes examples and learning materials
+
+For more information, visit: https://github.com/shahboura/agents-opencode
+`);
+    process.exit(1);
 }
 
 function main() {
