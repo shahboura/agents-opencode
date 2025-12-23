@@ -293,36 +293,34 @@ function uninstall() {
 
     try {
         // Check for any OpenCode installation files/directories
-        if (fs.existsSync(opencodeDir) || fs.existsSync(agentsMdPath) || fs.existsSync(configPath)) {
+        if (fs.existsSync(opencodeDir) || fs.existsSync(configPath)) {
             foundInstallation = true;
 
-            // Backup AGENTS.md with timestamp if it exists
-            if (fs.existsSync(agentsMdPath)) {
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-                const backupAgentsMd = path.join(currentDir, `AGENTS.md.${timestamp}.bk`);
-                fs.copyFileSync(agentsMdPath, backupAgentsMd);
-                success(`✅ Session history backed up to: AGENTS.md.${timestamp}.bk`);
+            // Remove opencode.json
+            if (fs.existsSync(configPath)) {
+                fs.unlinkSync(configPath);
+                success(`✅ Removed opencode.json`);
             }
 
-            // Remove all OpenCode files and directories
-            const filesToRemove = ['AGENTS.md', 'opencode.json'];
-
-            for (const file of filesToRemove) {
-                const filePath = path.join(currentDir, file);
-                if (fs.existsSync(filePath)) {
-                    fs.unlinkSync(filePath);
-                    success(`✅ Removed ${file}`);
-                }
-            }
-
-            // Remove .opencode directory entirely (no backup needed - can be re-downloaded)
+            // Remove .opencode directory entirely
             if (fs.existsSync(opencodeDir)) {
                 fs.rmSync(opencodeDir, { recursive: true, force: true });
                 success(`✅ Removed agent configurations`);
             }
 
             success('✅ OpenCode Agents uninstalled from current directory!');
-            info('Session history backed up. Agent configurations removed (can be re-installed).');
+            info('Agent configurations removed (can be re-installed).');
+
+            // Remove the install script itself
+            const scriptPath = path.join(currentDir, 'install.js');
+            if (fs.existsSync(scriptPath)) {
+                try {
+                    fs.unlinkSync(scriptPath);
+                    success(`✅ Removed installation script`);
+                } catch (err) {
+                    warning(`Could not remove install script: ${err.message}`);
+                }
+            }
         }
 
         if (!foundInstallation) {

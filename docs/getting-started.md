@@ -45,24 +45,31 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 #### Remove from Current Directory/Project
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall && rm install.js
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
 ```
 
 **What happens:**
-- **Project installations:** Backs up `AGENTS.md` only, removes `.opencode/` and other files entirely
-- **Repository self-cleanup:** Backs up `AGENTS.md`, removes generated files (`install.js`, `examples/`, etc.)
-- Agent configurations can be re-installed, session history is preserved
+- Removes `.opencode/` directory and `opencode.json`
+- Preserves `AGENTS.md` (session history remains intact)
+- Automatically removes the install script itself
+- Agent configurations can be re-installed anytime
 
 #### Remove Global Installation
 
+For global installations, navigate to the global config directory and run:
+
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall --global && rm install.js
+# Linux/macOS
+cd ~/.config/opencode && curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
+
+# Windows
+cd %APPDATA%\Local\opencode && curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
 ```
 
 **What happens:**
-- Removes agents from `~/.config/opencode/` (Linux/macOS) or `%APPDATA%\Local\opencode\` (Windows)
-- Backs up session history before removal
-- Safe to run multiple times
+- Removes `.opencode/` directory and `opencode.json` from the global config location
+- Preserves global `AGENTS.md` (session history remains intact)
+- Automatically removes the install script itself
 
 ## Your First Agent Interaction
 
