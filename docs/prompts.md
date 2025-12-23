@@ -42,7 +42,7 @@ Type `/` in OpenCode to see available prompts, then select one.
 /generate-tests
 ```
 
-```
+```bash
 /create-readme
 ```
 
@@ -56,7 +56,7 @@ Type `/` in OpenCode to see available prompts, then select one.
 
 ### `/code-review`
 
-**Perform comprehensive code review**
+#### Perform comprehensive code review
 
 Audits code for:
 
@@ -67,7 +67,7 @@ Audits code for:
 
 **Example:**
 
-```
+```bash
 /code-review
 ```
 
@@ -81,7 +81,7 @@ Audits code for:
 
 ### `/generate-tests`
 
-**Generate unit tests**
+#### Generate unit tests
 
 Creates tests following best practices:
 
@@ -93,7 +93,7 @@ Creates tests following best practices:
 
 **Example:**
 
-```
+```bash
 /generate-tests
 ```
 
@@ -107,7 +107,7 @@ Creates tests following best practices:
 
 ### `/1-on-1-prep`
 
-**Prepare for 1-on-1 meeting**
+#### Prepare for 1-on-1 meeting
 
 Generates agenda and guidance for:
 
@@ -119,7 +119,7 @@ Generates agenda and guidance for:
 
 **Example:**
 
-```
+```bash
 /1-on-1-prep
 ```
 
@@ -133,7 +133,7 @@ Generates agenda and guidance for:
 
 ### `/architecture-decision`
 
-**Create Architecture Decision Record (ADR)**
+#### Create Architecture Decision Record (ADR)
 
 Documents decisions with:
 
@@ -172,7 +172,7 @@ Creates detailed API documentation including:
 
 **Example:**
 
-```
+```bash
 /api-docs
 ```
 
@@ -187,7 +187,7 @@ Creates detailed API documentation including:
 
 ### `/security-audit`
 
-**Conduct comprehensive security audits**
+#### Conduct comprehensive security audits
 
 Performs security analysis covering:
 
@@ -200,7 +200,7 @@ Performs security analysis covering:
 
 **Example:**
 
-```
+```bash
 /security-audit
 ```
 
@@ -228,7 +228,7 @@ Develops structured plans for code refactoring including:
 
 **Example:**
 
-```
+```bash
 /refactor-plan
 ```
 
@@ -256,7 +256,7 @@ Evaluates system architecture including:
 
 **Example:**
 
-```
+```bash
 /architecture-review
 ```
 

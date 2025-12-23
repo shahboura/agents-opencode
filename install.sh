@@ -3,16 +3,32 @@
 
 set -e
 
+REPO_URL="https://github.com/shahboura/agents-opencode.git"
+TEMP_DIR=$(mktemp -d)
+TARGET_DIR="${1:-$HOME/.opencode}"
+
 echo "🚀 Installing OpenCode Agents..."
 
-# Check if we're in the right directory
+# Download repository
+echo "📥 Downloading repository..."
+if command -v git >/dev/null 2>&1; then
+    git clone --depth 1 --quiet "$REPO_URL" "$TEMP_DIR"
+else
+    echo "❌ Error: git is required but not installed."
+    exit 1
+fi
+
+# Change to downloaded directory
+cd "$TEMP_DIR"
+
+# Verify we have the right files
 if [ ! -d ".opencode/agent" ]; then
-    echo "❌ Error: .opencode/agent directory not found. Please run this script from the agents-opencode repository root."
+    echo "❌ Error: Downloaded repository is missing .opencode/agent directory."
+    rm -rf "$TEMP_DIR"
     exit 1
 fi
 
 # Create target directory if it doesn't exist
-TARGET_DIR="${1:-$HOME/.opencode}"
 mkdir -p "$TARGET_DIR"
 
 echo "📁 Installing to: $TARGET_DIR"
@@ -35,6 +51,10 @@ fi
 if [ -f "AGENTS.md" ] && [ ! -f "$TARGET_DIR/AGENTS.md" ]; then
     cp AGENTS.md "$TARGET_DIR/"
 fi
+
+# Clean up
+cd /
+rm -rf "$TEMP_DIR"
 
 echo "✅ Installation complete!"
 echo ""

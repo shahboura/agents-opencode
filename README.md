@@ -14,17 +14,23 @@
 
 ### Windows
 ```powershell
-# Download and run the installer
+# Download and run the installer (installs to user profile)
 .\install.ps1
+
+# Or install to specific project directory
+.\install.ps1 -TargetDir "C:\path\to\your\project\.opencode"
 ```
 
 ### Linux/macOS
 ```bash
-# Download and run the installer
+# Download and run the installer (installs to home directory)
 ./install.sh
+
+# Or install to specific project directory
+./install.sh /path/to/your/project/.opencode
 ```
 
-**Prerequisites:** None required
+**Prerequisites:** Git must be installed
 
 **Note:** Installation preserves existing `AGENTS.md` files to maintain your session history and project context.
 
