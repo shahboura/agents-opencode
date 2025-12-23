@@ -5,6 +5,7 @@ url: https://shahboura.github.io
 baseurl: /agents-opencode
 
 # Theme
+# Popular alternatives: minimal-mistakes, jekyll-theme-cayman, jekyll-theme-slate, jekyll-theme-tactile
 remote_theme: pmarsceill/just-the-docs
 
 # Just the Docs settings
