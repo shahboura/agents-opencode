@@ -12,34 +12,21 @@
 
 ## ⚡ Quick Install (30 seconds)
 
-**One-command installation - downloads everything automatically!**
+**Prerequisites:** Node.js/npm and Git
 
 ```bash
 # Global installation (available in all projects)
 npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --global
 
-# Or for project-specific installation
+# Project-specific installation
 npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project /path/to/your/project
+
+# Windows (PowerShell)
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --global
+
+# Linux/macOS (Bash/Zsh)
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project .
 ```
-
-**Features:**
-- ✅ Automatic backups of existing installations
-- ✅ Preserves your session history (AGENTS.md)
-- ✅ Post-installation verification
-- ✅ Cross-platform support (Windows/Linux/macOS)
-- ✅ Includes examples and learning materials
-
-**Additional commands:**
-
-```bash
-# Check version before installing
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --version
-
-# Uninstall if needed
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --uninstall
-```
-
-**Prerequisites:** Node.js/npm and Git
 
 ---
 

@@ -11,57 +11,26 @@ Get up and running with OpenCode agents in under 5 minutes.
 ## Prerequisites
 
 - [OpenCode CLI](https://opencode.ai/docs/cli/) installed
-- Node.js/npm and Git (for installation)
+- Node.js/npm and Git
 - Any project (existing repos work perfectly)
 
 ## Quick Setup (60 seconds)
 
-### Automatic Installation (Recommended)
-
-**One-command setup - downloads everything automatically:**
-
 ```bash
-# Install for current project
-npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project .
-
-# Or install globally (available in all projects)
+# Global installation (available in all projects)
 npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --global
+
+# Project-specific installation
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project /path/to/your/project
+
+# Windows (PowerShell)
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --global
+
+# Linux/macOS (Bash/Zsh)
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project .
 ```
 
-**Features:**
-- ✅ Automatic backups of existing installations
-- ✅ Preserves your session history (AGENTS.md)
-- ✅ Post-installation verification
-- ✅ Cross-platform support (Windows/Linux/macOS)
-
-### Manual Installation (Alternative)
-
-If you prefer to download files first:
-
-1. **Download the repository:**
-
-   ```bash
-   git clone https://github.com/shahboura/agents-opencode.git
-   cd agents-opencode
-   ```
-
-2. **Copy files to your project:**
-
-   ```bash
-   # Copy to your project directory
-   cp -r .opencode/ /path/to/your/project/.opencode/
-   cp opencode.json /path/to/your/project/
-   ```
-
-3. **Start using:**
-
-   ```bash
-   cd /path/to/your/project
-   opencode
-   @codebase Create a user API endpoint
-   ```
-
-**Note:** Manual installation requires downloading the full repository first.
+**What happens:** Downloads and installs all agents, instructions, and prompts automatically.
 
 ## Your First Agent Interaction
 
