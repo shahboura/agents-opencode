@@ -45,7 +45,45 @@ nav_external_links:
     url: https://github.com/shahboura/agents-opencode
 
 # Footer
-footer_content: "Copyright &copy; 2025 Shehab Elhadidy. Licensed under the MIT License."
+footer_content: |
+  <script>
+  // Custom JavaScript for OpenCode Agents documentation
+  document.addEventListener('DOMContentLoaded', function() {
+    // Ctrl+K search shortcut
+    document.addEventListener('keydown', function(event) {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+        event.preventDefault();
+        const searchInput = document.querySelector('.search-input, input[type="search"], input[placeholder*="search" i]');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Add search hint
+    const searchContainer = document.querySelector('.search, .search-input-container');
+    if (searchContainer) {
+      const hint = document.createElement('div');
+      hint.className = 'search-hint';
+      hint.innerHTML = '<kbd>Ctrl</kbd> + <kbd>K</kbd> to search';
+      hint.style.cssText = 'position:absolute;top:100%;right:0;background:var(--color-scheme-bg);border:1px solid var(--border-color);border-radius:4px;padding:0.25rem 0.5rem;font-size:0.75rem;color:var(--text-muted);opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:1000;';
+      searchContainer.style.position = 'relative';
+      searchContainer.appendChild(hint);
+
+      const searchInput = searchContainer.querySelector('input');
+      if (searchInput) {
+        searchInput.addEventListener('focus', function() {
+          hint.style.opacity = '1';
+          setTimeout(() => hint.style.opacity = '0', 2000);
+        });
+      }
+    }
+  });
+  </script>
+  <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+    Copyright &copy; 2025 Shehab Elhadidy. Licensed under the MIT License.
+  </div>
 
 # Aux links
 aux_links:
