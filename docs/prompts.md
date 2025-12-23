@@ -16,7 +16,6 @@ Reusable commands for common tasks.
 - [Pro Tips](#pro-tips)
 - [Location](#location)
 - [Create Custom Prompts](#create-custom-prompts)
-  - [Custom Prompts](#custom-prompts)
 - [Next Steps](#next-steps)
 
 ## Available Commands
