@@ -75,7 +75,7 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 
 ## 🤝 Contributing
 
-We welcome contributions! See our [Contributing Guide](./CONTRIBUTING.md) for details.
+We welcome contributions! See our [GitHub Issues](https://github.com/shahboura/agents-opencode/issues) for ways to help.
 
 ---
 
