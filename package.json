@@ -4,6 +4,8 @@
   "description": "Intelligent AI agents for streamlined development workflows. Multi-language support with auto-applied coding standards, plan-first execution, and specialized agents for code generation, review, documentation, and content creation.",
   "private": true,
   "scripts": {
+    "install:global": "node install.js --global",
+    "install:project": "node install.js --project",
     "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github",
     "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --fix",
     "validate:agents": "pwsh -File scripts/validate-agents.ps1",

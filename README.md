@@ -167,13 +167,22 @@ Agents automatically use this context!
 
 ### Quick Install (Recommended)
 
-Use our automated installation script for the fastest setup:
+Use our automated installation script for the fastest setup (works on Windows, Linux, and macOS):
 
 ```bash
 # Global installation (available in all projects)
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --global
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --global
 
 # Or for project-specific installation
+npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js --project /path/to/your/project
+```
+
+**Alternative for Unix systems (Linux/macOS):**
+```bash
+# Global installation
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --global
+
+# Project installation
 curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --project /path/to/your/project
 ```
 
