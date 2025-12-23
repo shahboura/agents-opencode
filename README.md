@@ -13,6 +13,7 @@
 ## ⚡ Quick Install (30 seconds)
 
 ### Windows
+
 ```powershell
 # Download and run the installer (installs to user profile)
 .\install.ps1
@@ -22,6 +23,7 @@
 ```
 
 ### Linux/macOS
+
 ```bash
 # Download and run the installer (installs to home directory)
 ./install.sh
@@ -118,7 +120,8 @@ No configuration needed. When you edit files, standards activate automatically:
 ### Plan Before Implementing (Design Review)
 
 ```
-@planner Create detailed plan for JWT authentication—analyze current code and propose architecture
+@planner Create detailed plan for JWT authentication—analyze current code and
+propose architecture
 ```
 
 This agent is read-only and won't make changes. Perfect for getting a comprehensive implementation plan before starting work.
