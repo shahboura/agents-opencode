@@ -6,7 +6,8 @@ nav_order: 6
 
 # Coding Standards
 
-Auto-applied standards by file type. Agents automatically detect file extensions and apply the corresponding coding standards from `.opencode/instructions/`.
+Auto-applied standards by file type. Agents automatically detect file extensions
+and apply the corresponding coding standards from `.opencode/instructions/`.
 
 ## Table of Contents
 - [.NET (C#)](#net-c)

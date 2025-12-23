@@ -23,6 +23,7 @@ npx https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js 
 ```
 
 **Alternative for Unix systems (Linux/macOS):**
+
 ```bash
 # Global installation
 curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --global
@@ -31,7 +32,8 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --project /path/to/your/project
 ```
 
-**What happens:** The script automatically downloads the latest agents, instructions, and prompts from GitHub - no manual cloning required!
+**What happens:** The script automatically downloads the latest agents, instructions,
+and prompts from GitHub - no manual cloning required!
 
 ### Manual Installation (Alternative)
 
