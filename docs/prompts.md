@@ -8,6 +8,17 @@ nav_order: 5
 
 Reusable commands for common tasks.
 
+## Table of Contents
+- [Available Commands](#available-commands)
+- [Usage](#usage)
+- [Examples](#examples)
+- [How to Use](#how-to-use)
+- [Pro Tips](#pro-tips)
+- [Location](#location)
+- [Create Custom Prompts](#create-custom-prompts)
+  - [Custom Prompts](#custom-prompts)
+- [Next Steps](#next-steps)
+
 ## Available Commands
 
 - `/api-docs` - Generate comprehensive API documentation

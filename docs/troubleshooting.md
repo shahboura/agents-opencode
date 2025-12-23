@@ -1,5 +1,17 @@
 # FAQ & Troubleshooting
 
+## Table of Contents
+- [Keyboard Shortcuts & Tips](#keyboard-shortcuts--tips)
+  - [OpenCode Shortcuts](#opencode-shortcuts)
+  - [VS Code Integration](#vs-code-integration)
+  - [Efficiency Tips](#efficiency-tips)
+- [Common Issues](#common-issues)
+- [Help & Resources](#help--resources)
+- [Advanced Tips](#advanced-tips)
+- [FAQ By Role](#faq-by-role)
+- [Contact & Support](#contact--support)
+- [Next Steps](#next-steps)
+
 ## Keyboard Shortcuts & Tips
 
 ### OpenCode Shortcuts

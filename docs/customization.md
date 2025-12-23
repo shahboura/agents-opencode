@@ -6,6 +6,45 @@ nav_order: 7
 
 # Customization
 
+## Table of Contents
+- [Project Context](#project-context)
+  - [Overview](#overview)
+  - [Tech Stack](#tech-stack)
+  - [Architecture](#architecture)
+  - [Coding Standards](#coding-standards)
+  - [Project Structure](#project-structure)
+  - [Key Files & Standards](#key-files--standards)
+  - [Running the Project](#running-the-project)
+  - [Dependencies to Know About](#dependencies-to-know-about)
+  - [Important Constraints](#important-constraints)
+  - [Common Patterns in This Project](#common-patterns-in-this-project)
+- [Customize Agent Behavior](#customize-agent-behavior)
+- [Our Review Standards](#our-review-standards)
+- [Create Custom Prompts](#create-custom-prompts)
+  - [Custom Prompts](#custom-prompts)
+- [Add Coding Standards for Your Stack](#add-coding-standards-for-your-stack)
+  - [Express Routing](#express-routing)
+  - [Error Handling](#error-handling)
+  - [Response Format](#response-format)
+- [Make Standards Language-Specific](#make-standards-language-specific)
+- [Update Instructions Over Time](#update-instructions-over-time)
+- [Template: Minimal Project Context](#template-minimal-project-context)
+  - [Tech](#tech)
+  - [Standards](#standards)
+  - [Architecture](#architecture)
+  - [How to Run](#how-to-run)
+  - [Key Dependencies](#key-dependencies)
+- [Template: Comprehensive Project Context](#template-comprehensive-project-context)
+  - [Domain Knowledge](#domain-knowledge)
+  - [Performance Requirements](#performance-requirements)
+  - [Security Requirements](#security-requirements)
+  - [Integration Points](#integration-points)
+  - [Deployment Process](#deployment-process)
+  - [Monitoring & Alerts](#monitoring--alerts)
+  - [Team Conventions](#team-conventions)
+- [Troubleshooting Customization](#troubleshooting-customization)
+- [Next Steps](#next-steps)
+
 ## Project Context
 
 Make agents smarter by adding context to `AGENTS.md`:

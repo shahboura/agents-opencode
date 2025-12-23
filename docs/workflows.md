@@ -8,6 +8,23 @@ nav_order: 4
 
 Common patterns for using agents effectively.
 
+## Table of Contents
+- [Basic Workflow](#basic-workflow)
+- [Examples](#examples)
+- [Tips](#tips)
+- [Workflow 2: Refactor Monolith Module (1-2 hours)](#workflow-2-refactor-monolith-module-1-2-hours)
+- [Workflow 3: Create Python Data Pipeline (45 min)](#workflow-3-create-python-data-pipeline-45-min)
+- [Workflow 4: Code Review & Improvement (20 min)](#workflow-4-code-review--improvement-20-min)
+- [Workflow 5: Leadership: Team Issues (30 min)](#workflow-5-leadership-team-issues-30-min)
+- [Workflow 6: Multi-Phase Feature (2-3 hours)](#workflow-6-multi-phase-feature-2-3-hours)
+- [General Patterns](#general-patterns)
+- [Tips for Success](#tips-for-success)
+- [Next Steps](#next-steps)
+- [Microservices Migration](#microservices-migration)
+- [Database Schema Changes](#database-schema-changes)
+- [API Versioning](#api-versioning)
+- [Error Monitoring Setup](#error-monitoring-setup)
+
 ## Basic Workflow
 
 1. **Plan** with @orchestrator

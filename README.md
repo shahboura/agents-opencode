@@ -167,7 +167,19 @@ Agents automatically use this context!
 - [OpenCode CLI](https://opencode.ai/docs/cli/) installed
 - Any project (works with existing repos)
 
-### Install Agents
+### Quick Install (Recommended)
+
+Use our automated installation script for the fastest setup:
+
+```bash
+# Global installation (available in all projects)
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --global
+
+# Or for project-specific installation
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.sh | bash -s -- --project /path/to/your/project
+```
+
+### Manual Install
 
 1. **Clone this repository:**
 
