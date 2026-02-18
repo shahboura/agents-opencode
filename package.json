@@ -14,7 +14,6 @@
   "devDependencies": {
     "markdownlint-cli": "^0.47.0"
   },
-
   "keywords": [
     "opencode",
     "ai-agents",

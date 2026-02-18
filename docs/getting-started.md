@@ -191,7 +191,7 @@ Type `/` in chat for common tasks:
 - **[Workflow Examples](./workflows.md)** - Real-world usage patterns
 - **[Customization](./customization.md)** - Tailor agents to your project
 - **[Troubleshooting](./troubleshooting.md)** - FAQ and common issues
- - **[Prompts](./prompts.md)** - Built-in prompts and available skills
+- **[Prompts](./prompts.md)** - Built-in prompts and available skills
 
 **Ready to build something amazing?** 🚀
 
