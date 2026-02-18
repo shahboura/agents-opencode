@@ -103,6 +103,13 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 
 ## Session Summaries
 
+### 2026-02-18 10:40 - Implement lazy AGENTS.md policy and skills
+
+- **Context**: Implemented lazy AGENTS.md creation policy, simplified install guidance, added skills, and updated language best practices.
+- **Key Decisions**: Removed AGENTS.md from opencode.json instructions and shifted creation to first run (/init); added three focused skills; updated agent context guidance to handle missing AGENTS.md.
+- **Open Items**: None.
+- **Lessons Learned**: Keep install minimal and align docs with OpenCode /init behavior to reduce friction.
+
 ### 2025-12-24 11:00 - Update global config location to match OpenCode standards
 
 **Agent:** opencode
