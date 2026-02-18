@@ -16,6 +16,9 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 
 # Project install (current directory only)
 curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --project . && rm install.js
+
+## Uninstall
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
 ```
 
 Then run:
@@ -25,6 +28,19 @@ opencode
 /init
 @orchestrator Build a REST API with JWT auth
 ```
+
+## Quick Usage
+
+| Agent | Purpose |
+|-------|---------|
+| `@orchestrator` | Planning & coordination |
+| `@planner` | Read-only planning |
+| `@codebase` | Code implementation |
+| `@review` | Security & quality audits |
+| `@docs` | Documentation |
+| `@em-advisor` | Leadership guidance |
+| `@blogger` | Content creation |
+| `@brutal-critic` | Content review |
 
 ## Docs
 

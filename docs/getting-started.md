@@ -71,131 +71,39 @@ cd ~/.config/opencode && curl -fsSL https://raw.githubusercontent.com/shahboura/
 - Preserves global `AGENTS.md` if present (session history remains intact)
 - Automatically removes the install script itself
 
-## Your First Agent Interaction
+## Your First Run
 
-1. **Open OpenCode Chat:**
+1. Open OpenCode:
 
    ```bash
    opencode
    ```
 
-2. **Initialize context (first run):**
+2. Initialize context:
 
    ```
    /init
    ```
 
-3. **Select an agent and describe what you want:**
+3. Ask for help:
 
    ```
    @orchestrator Build a user authentication API with JWT tokens
    ```
 
-    **The agent will:**
-    - 📋 Propose a detailed implementation plan
-    - ⏸️ Wait for your approval before proceeding
-    - 🔨 Implement step-by-step with validation
-    - ✨ Suggest next steps (docs, review, etc.)
+## What gets installed
 
-## Initialize Project Context
+- `.opencode/` agent configs
+- `opencode.json` project config
 
-Run `/init` after launching OpenCode to create `AGENTS.md` and baseline context for the project.
+## Notes
 
-## How It Works
-
-### Plan-First Approach
-Agents never jump straight into coding. They always:
-1. **Analyze** your request and current codebase
-2. **Propose** a structured plan with phases and dependencies
-3. **Wait** for your approval before implementation
-4. **Execute** incrementally with validation at each step
-
-### Multi-Language Support
-Agents automatically detect your tech stack and apply appropriate standards:
-
-| Language | Standards Applied |
-|----------|-------------------|
-| .NET (C#) | Clean Architecture, async/await, nullable types |
-| Python | Type hints, pytest, black formatting |
-| TypeScript | Strict mode, null safety |
-| Flutter (Dart) | Riverpod, freezed models, widget testing |
-| Go | Modules, error handling, concurrency |
-| Node.js (Express) | Security middleware, async patterns |
-| React (Next.js) | Accessibility, performance optimization |
-
-### Context Awareness
-Agents read your `AGENTS.md` file (created on first run or via `/init`) to understand:
-- Your project architecture and patterns
-- Coding standards and conventions
-- Team preferences and constraints
-- Past decisions and implementations
-
-## Available Agents
-
-| Agent | Purpose | Use When |
-|-------|---------|----------|
-| `@orchestrator` | Strategic planning & coordination | Complex features, risk assessment, multi-phase projects |
-| `@planner` | Read-only analysis & planning | Detailed plans without code changes |
-| `@codebase` | Code implementation | Direct implementation, bug fixes, feature development |
-| `@blogger` | Content creation | Tech blogging, podcasting, YouTube scripting |
-| `@brutal-critic` | Content review | Honest feedback, framework validation |
-| `@em-advisor` | Leadership guidance | Team management, 1-on-1 preparation |
-| `@docs` | Documentation | README generation, API docs, guides |
-| `@review` | Security & quality audits | Code review, security checks, performance analysis |
-
-## Essential Tips for Success
-
-### 🎯 Be Specific
-
-```bash
-❌ @codebase Add authentication
-✅ @codebase Add JWT authentication with:
-    - Login endpoint (email/password)
-    - Refresh token mechanism
-    - Password hashing with bcrypt
-    - Rate limiting on login attempts
-```
-
-### 📋 Always Review Plans
-- Agents propose plans before implementing
-- Take time to review and provide feedback
-- Plans can be refined before approval
-
-### 🔄 Use Agent Handoffs
-Don't do everything with one agent. Use sequences:
-
-```
-@orchestrator (plan) → @codebase (implement) → @review (audit) → @docs (document)
-```
-
-### 📚 Leverage Context
-Add project details to `AGENTS.md`:
-
-```markdown
-## My Project
-- Tech: Node.js, TypeScript, PostgreSQL
-- Architecture: Clean Architecture with repository pattern
-- Standards: Async/await everywhere, comprehensive error handling
-```
-
-### ⚡ Use Slash Commands
-Type `/` in chat for common tasks:
-- `/create-readme` - Generate professional documentation
-- `/code-review` - Comprehensive code audit
-- `/generate-tests` - Unit test generation
-- `/security-audit` - Security vulnerability scan
+- `AGENTS.md` is created on first run or via `/init`.
+- Standards auto-apply based on file type.
 
 ## Next Steps
 
-- **[Agent Reference](./agents/README.md)** - Deep dive into each agent's capabilities
-- **[Workflow Examples](./workflows.md)** - Real-world usage patterns
-- **[Customization](./customization.md)** - Tailor agents to your project
-- **[Troubleshooting](./troubleshooting.md)** - FAQ and common issues
-- **[Prompts](./prompts.md)** - Built-in prompts and available skills
-
-**Ready to build something amazing?** 🚀
-
-```bash
-opencode
-@orchestrator What would you like to build?
-```
+- **[Agents](./agents/README.md)**
+- **[Coding Standards](./instructions.md)**
+- **[Prompts & Skills](./prompts.md)**
+- **[Troubleshooting](./troubleshooting.md)**
