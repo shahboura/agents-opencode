@@ -30,6 +30,14 @@ Reusable commands for common tasks.
 - `/architecture-decision` - ADR creation
 - `/architecture-review` - Review architectural decisions
 
+## Available Skills
+
+Skills are reusable behaviors that can be loaded on demand. This repo provides:
+
+- `project-bootstrap` - Create a minimal `AGENTS.md` scaffold
+- `agent-diagnostics` - Validate agent setup and instruction coverage
+- `docs-validation` - Outline docs lint and link checks
+
 ## Usage
 
 Type `/` in OpenCode to see available prompts, then select one.
