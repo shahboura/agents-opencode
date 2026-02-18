@@ -63,7 +63,7 @@ For global installations, navigate to the global config directory and run:
 cd ~/.config/opencode && curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
 
 # Windows
-cd %APPDATA%\Local\opencode && curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
+cd ~/.config/opencode && curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
 ```
 
 **What happens:**

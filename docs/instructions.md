@@ -93,20 +93,6 @@ and apply the corresponding coding standards from `.opencode/instructions/`.
 - Zero-cost abstractions
 - Memory safety guarantees
 
-## Node.js Express
-
-- Security middleware (helmet, CORS)
-- Async/await error handling
-- Input validation (Joi/Zod)
-- Structured logging
-
-## React Next.js
-
-- TypeScript strict mode
-- Function components and hooks
-- Accessibility standards
-- Performance optimizations
-
 Standards activate automatically when editing matching files.
 
 ```

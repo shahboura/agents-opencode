@@ -84,8 +84,8 @@ Yes! Add prompts to agent configurations in `.opencode/agent/`.
 
 **Solution:**
 
-1. Verify files exist: `.github/agents/*.agent.md`
-2. Check file names end with `.agent.md` exactly
+1. Verify files exist: `.opencode/agent/*.md`
+2. Check file names end with `.md` exactly
 3. Reload VS Code: `Ctrl+Shift+P` → "Reload Window"
 4. Restart OpenCode
 
