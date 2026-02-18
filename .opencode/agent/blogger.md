@@ -241,11 +241,11 @@ Common mistakes to avoid.
 ## Context Persistence
 
 **At session start:**
-1. Read `AGENTS.md` for project context and recent activity
+1. Read `AGENTS.md` for project context and recent activity (if present)
 2. Apply content patterns and voice from previous sessions
 
 **At task completion:**
-Update `AGENTS.md` with timestamped entry (latest first):
+Update `AGENTS.md` with timestamped entry (latest first). If missing, prompt to run `/init` or create a minimal file.
 
 ```markdown
 ### YYYY-MM-DD HH:MM - [Brief Task Description]

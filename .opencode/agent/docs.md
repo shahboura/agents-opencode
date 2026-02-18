@@ -111,11 +111,11 @@ docs/
 ## Context Persistence
 
 **At session start:**
-1. Read `AGENTS.md` for project context and recent activity
+1. Read `AGENTS.md` for project context and recent activity (if present)
 2. Apply documentation patterns from previous sessions
 
 **At task completion:**
-Use task tool to launch agent with edit permissions:
+Update AGENTS.md directly (if present). If missing, prompt to run `/init` or create a minimal file first.
 
 ```
 Add session summary to AGENTS.md:

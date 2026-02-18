@@ -170,11 +170,11 @@ Before handing off to @codebase, verify:
 ## Context Persistence
 
 **At session start:**
-1. Read `AGENTS.md` for project context and recent activity
+1. Read `AGENTS.md` for project context and recent activity (if present)
 2. Apply architectural patterns and decisions from previous sessions
 
 **At task completion:**
-Use task tool to launch @docs agent with this prompt:
+Use task tool to launch @docs agent with this prompt. If `AGENTS.md` is missing, prompt to run `/init` or create a minimal file first.
 
 ```
 Add session summary to AGENTS.md:

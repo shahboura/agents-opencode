@@ -53,10 +53,11 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 ## 🌟 Key Features
 
 - **15+ Languages** with auto-applied standards (.NET, Python, TypeScript, Flutter, Go, etc.)
-- **Context Aware** - Learns from your `AGENTS.md` file
+- **Context Aware** - Learns from your `AGENTS.md` file (created on first run or via `/init`)
 - **Session Logging** - Automatic summaries between conversations
 - **Multi-Agent Workflows** - Agents can hand off to each other
 - **Zero Config** - Works out of the box
+- **Skills** - Reusable behaviors (bootstrap, diagnostics, docs validation)
 
 ## 📚 Examples
 

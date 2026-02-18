@@ -50,7 +50,7 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 
 **What happens:**
 - Removes `.opencode/` directory and `opencode.json`
-- Preserves `AGENTS.md` (session history remains intact)
+- Preserves `AGENTS.md` if present (session history remains intact)
 - Automatically removes the install script itself
 - Agent configurations can be re-installed anytime
 
@@ -68,7 +68,7 @@ cd ~/.config/opencode && curl -fsSL https://raw.githubusercontent.com/shahboura/
 
 **What happens:**
 - Removes `.opencode/` directory and `opencode.json` from the global config location
-- Preserves global `AGENTS.md` (session history remains intact)
+- Preserves global `AGENTS.md` if present (session history remains intact)
 - Automatically removes the install script itself
 
 ## Your First Agent Interaction
@@ -79,17 +79,27 @@ cd ~/.config/opencode && curl -fsSL https://raw.githubusercontent.com/shahboura/
    opencode
    ```
 
-2. **Select an agent and describe what you want:**
+2. **Initialize context (first run):**
+
+   ```
+   /init
+   ```
+
+3. **Select an agent and describe what you want:**
 
    ```
    @orchestrator Build a user authentication API with JWT tokens
    ```
 
-   **The agent will:**
-   - 📋 Propose a detailed implementation plan
-   - ⏸️ Wait for your approval before proceeding
-   - 🔨 Implement step-by-step with validation
-   - ✨ Suggest next steps (docs, review, etc.)
+    **The agent will:**
+    - 📋 Propose a detailed implementation plan
+    - ⏸️ Wait for your approval before proceeding
+    - 🔨 Implement step-by-step with validation
+    - ✨ Suggest next steps (docs, review, etc.)
+
+## Initialize Project Context
+
+Run `/init` after launching OpenCode to create `AGENTS.md` and baseline context for the project.
 
 ## How It Works
 
@@ -114,7 +124,7 @@ Agents automatically detect your tech stack and apply appropriate standards:
 | React (Next.js) | Accessibility, performance optimization |
 
 ### Context Awareness
-Agents read your `AGENTS.md` file to understand:
+Agents read your `AGENTS.md` file (created on first run or via `/init`) to understand:
 - Your project architecture and patterns
 - Coding standards and conventions
 - Team preferences and constraints
@@ -181,6 +191,7 @@ Type `/` in chat for common tasks:
 - **[Workflow Examples](./workflows.md)** - Real-world usage patterns
 - **[Customization](./customization.md)** - Tailor agents to your project
 - **[Troubleshooting](./troubleshooting.md)** - FAQ and common issues
+ - **[Prompts](./prompts.md)** - Built-in prompts and available skills
 
 **Ready to build something amazing?** 🚀
 

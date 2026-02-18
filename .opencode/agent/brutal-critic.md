@@ -151,11 +151,11 @@ Ruthless content reviewer inspired by NetworkChuck's framework. Provides honest,
 ## Context Persistence
 
 **At session start:**
-1. Read `AGENTS.md` for project context and recent activity
+1. Read `AGENTS.md` for project context and recent activity (if present)
 2. Apply quality standards and critique patterns from previous reviews
 
 **At task completion:**
-Use task tool to launch @docs agent:
+Use task tool to launch @docs agent. If `AGENTS.md` is missing, prompt to run `/init` or create a minimal file first.
 
 ```
 Add session summary to AGENTS.md:

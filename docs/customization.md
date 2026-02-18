@@ -8,7 +8,7 @@ nav_order: 7
 
 ## Project Context
 
-Make agents smarter by adding context to `AGENTS.md`:
+Make agents smarter by adding context to `AGENTS.md` (created on first run or via `/init`):
 
 ```markdown
 # My Project
@@ -391,7 +391,7 @@ For mature projects:
 ## Troubleshooting Customization
 
 **Q: Agent not using my context?**  
-A: Make sure `AGENTS.md` exists in repository root.
+A: Make sure `AGENTS.md` exists in repository root (run any agent once to create it).
 
 **Q: Agent ignoring my standards?**  
 A: Add standards to `.opencode/instructions/` files with proper `applyTo` patterns.
@@ -407,3 +407,14 @@ A: Verify file is in `.opencode/agent/` with proper format.
 - **[Workflows](./workflows.md)** - See your standards in action
 - **[Agents Guide](./agents/README.md)** - Deep dive into each agent
 - **[FAQ](./troubleshooting.md)** - Common questions
+## Use Skills
+
+Skills are reusable behaviors stored under `.opencode/skills/`.
+
+Available skills in this repo:
+
+- `project-bootstrap` - Create a minimal `AGENTS.md` scaffold
+- `agent-diagnostics` - Validate agent setup and instruction coverage
+- `docs-validation` - Outline docs lint and link checks
+
+Use the `skill` tool to load a skill when needed.

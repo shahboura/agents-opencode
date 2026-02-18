@@ -43,6 +43,6 @@ Effective handoffs and coordination between agents.
 
 ## Tips
 
-- Keep context updated in AGENTS.md
+- Keep context updated in AGENTS.md (created on first run)
 - Approve plans before execution
 - Prefer small, iterative handoffs

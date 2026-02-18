@@ -61,7 +61,7 @@ Common patterns for using agents effectively.
 - Start with @orchestrator for complex tasks
 - Use @codebase for direct implementation
 - Always review plans before approval
-- Add context to AGENTS.md for better results
+- Add context to AGENTS.md for better results (created on first run)
 - Adds comprehensive tests
 - Validates build and tests pass
 

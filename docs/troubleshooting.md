@@ -29,7 +29,7 @@
 
 ### Efficiency Tips
 - **Be Specific:** Include file names, function names, and expected behavior
-- **Use Context:** Reference `AGENTS.md` for project-specific patterns
+- **Use Context:** Reference `AGENTS.md` for project-specific patterns (created on first run)
 - **Break Tasks:** Large requests → smaller, focused tasks
 - **Review Plans:** Always check agent proposals before approving
 - **Iterate:** Use feedback to improve subsequent requests
@@ -64,13 +64,13 @@
 
 ### How do I customize agents?
 
-Edit `AGENTS.md` to add project context.
+Edit `AGENTS.md` (created on first run or via `/init`) to add project context.
 
 **[→ Customization Guide](./customization.md)**
 
 ### Do agents save context between sessions?
 
-**Yes!** They update `AGENTS.md` automatically (with approval).
+**Yes!** They update `AGENTS.md` automatically (with approval). It is created on first run or via `/init`.
 
 ### Can I create custom prompts?
 
@@ -105,7 +105,7 @@ Yes! Add prompts to agent configurations in `.opencode/agent/`.
 
 **Solution:**
 
-1. Create/update `AGENTS.md`
+1. Create/update `AGENTS.md` (run `/init` or any agent once if it doesn't exist)
 2. Include specific examples
 3. Refresh chat context (start new conversation)
 4. Mention standards in your request:
@@ -347,7 +347,7 @@ Don't do:
 
 ### ❌ Not Providing Context
 
-Without `AGENTS.md`, agents use generic patterns.
+Without `AGENTS.md`, agents use generic patterns. Run `/init` or any agent once to create it.
 
 **Provide context!** It makes agents smarter.
 

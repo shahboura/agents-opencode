@@ -186,15 +186,7 @@ function installGlobal(tempDir) {
         success(`✓ Configuration installed`);
     }
 
-    // Copy AGENTS.md template only if it doesn't exist (preserve user history)
-    const agentsMdSrc = path.join(tempDir, 'AGENTS.md');
-    const agentsMdDest = path.join(globalConfigDir, 'AGENTS.md');
-    if (fs.existsSync(agentsMdSrc) && !fs.existsSync(agentsMdDest)) {
-        fs.copyFileSync(agentsMdSrc, agentsMdDest);
-        success(`✓ Session log template created`);
-    } else if (fs.existsSync(agentsMdDest)) {
-        info(`✓ Preserved existing session history`);
-    }
+    // AGENTS.md is created on first agent run (not during install)
 
     success('✅ Global installation completed successfully!');
     info(`Configuration location: ${globalConfigDir}`);
@@ -246,15 +238,7 @@ function installProject(tempDir, projectDir) {
         success(`✓ Configuration installed`);
     }
 
-    // Copy AGENTS.md template if it doesn't exist (preserve user history)
-    const agentsMdSrc = path.join(tempDir, 'AGENTS.md');
-    const agentsMdDest = path.join(projectDir, 'AGENTS.md');
-    if (fs.existsSync(agentsMdSrc) && !fs.existsSync(agentsMdDest)) {
-        fs.copyFileSync(agentsMdSrc, agentsMdDest);
-        success(`✓ Session log template created`);
-    } else if (fs.existsSync(agentsMdDest)) {
-        info(`✓ Preserved existing session history`);
-    }
+    // AGENTS.md is created on first agent run (not during install)
 
 
 
@@ -371,17 +355,17 @@ EXAMPLES:
     node install.js --project .                 # Install in current directory
     node install.js --uninstall                 # Remove from current directory
 
-PREREQUISITES:
-    - Git (for downloading)
-    - Node.js/npm
-    - Internet connection
+ PREREQUISITES:
+     - Git (for downloading)
+     - Node.js
+     - Internet connection
 
  FEATURES:
-    ✓ Cross-platform (Windows/Linux/macOS)
-    ✓ Automatic backups of existing installations
-    ✓ Preserves user session history (AGENTS.md)
-    ✓ Post-installation verification
-    ✓ Automatic cleanup (removes installation script)
+     ✓ Cross-platform (Windows/Linux/macOS)
+     ✓ Automatic backups of existing installations
+     ✓ AGENTS.md created on first agent run
+     ✓ Post-installation verification
+     ✓ Automatic cleanup (removes installation script)
 
  INSTALLATION LOCATIONS:
     Global: ~/.config/opencode/ (Linux/macOS/Windows)
@@ -411,11 +395,6 @@ function main() {
     // Check prerequisites for install operations
     if (!commandExists('git')) {
         error('Git is required but not installed. Please install git first.');
-        process.exit(1);
-    }
-
-    if (!commandExists('npm')) {
-        error('Node.js/npm is required but not installed. Please install Node.js first.');
         process.exit(1);
     }
 

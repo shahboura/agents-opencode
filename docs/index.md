@@ -25,7 +25,7 @@ Specialized agents for intelligent development workflows.
 | **@review** | Subagent | Security audits, performance analysis, code quality | Quality assurance, compliance |
 
 **All agents support:**
-- Context-aware assistance from `AGENTS.md`
+- Context-aware assistance from `AGENTS.md` (created on first run or via `/init`)
 - Session summary logging
 - Multi-language file handling
 - Integration with other agents
