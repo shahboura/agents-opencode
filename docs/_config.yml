@@ -5,9 +5,4 @@ url: https://shahboura.github.io
 baseurl: /agents-opencode
 
 # Theme
-remote_theme: mmistakes/minimal-mistakes
-permalink: /:title/
-
-plugins:
-  - jekyll-include-cache
-  - jekyll-remote-theme
+theme: jekyll-docs-theme
