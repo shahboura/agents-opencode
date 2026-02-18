@@ -37,8 +37,8 @@ Lean agent pack for OpenCode workflows.
 
 ## Docs
 
-- [Getting Started](getting-started.md)
-- [Agents](agents/README.md)
-- [Coding Standards](instructions.md)
-- [Prompts & Skills](prompts.md)
-- [Troubleshooting](troubleshooting.md)
+- [Getting Started](getting-started)
+- [Agents](agents/README)
+- [Coding Standards](instructions)
+- [Prompts & Skills](prompts)
+- [Troubleshooting](troubleshooting)

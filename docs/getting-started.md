@@ -103,7 +103,7 @@ cd ~/.config/opencode && curl -fsSL https://raw.githubusercontent.com/shahboura/
 
 ## Next Steps
 
-- **[Agents](./agents/README.md)**
-- **[Coding Standards](./instructions.md)**
-- **[Prompts & Skills](./prompts.md)**
-- **[Troubleshooting](./troubleshooting.md)**
+- **[Agents](./agents/README)**
+- **[Coding Standards](./instructions)**
+- **[Prompts & Skills](./prompts)**
+- **[Troubleshooting](./troubleshooting)**

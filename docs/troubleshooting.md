@@ -22,6 +22,6 @@
 
 ## Help
 
-- [Getting Started](./getting-started.md)
-- [Agents](./agents/README.md)
-- [Prompts & Skills](./prompts.md)
+- [Getting Started](./getting-started)
+- [Agents](./agents/README)
+- [Prompts & Skills](./prompts)

@@ -38,5 +38,5 @@ Add your own prompt under a **Custom Prompts** section in any agent file.
 
 ## Next Steps
 
-- **[Agents](./agents/README.md)**
-- **[Customization](./customization.md)**
+- **[Agents](./agents/README)**
+- **[Customization](./customization)**

@@ -103,6 +103,13 @@ Summaries should be added to this AGENTS.md file under a "Session Summaries" sec
 
 ## Session Summaries
 
+### 2026-02-18 11:10 - Trim docs site and audit dependencies
+
+- **Context**: Ran npm audit fix, trimmed docs to a lean set, and updated README with uninstall + quick usage table.
+- **Key Decisions**: Removed nonessential docs pages; kept core onboarding, agents, prompts, standards, and troubleshooting.
+- **Open Items**: Decide whether to keep or remove examples folder; consider explicit skills permissions.
+- **Lessons Learned**: Minimal docs reduce maintenance while keeping onboarding clear.
+
 ### 2026-02-18 10:40 - Implement lazy AGENTS.md policy and skills
 
 - **Context**: Implemented lazy AGENTS.md creation policy, simplified install guidance, added skills, and updated language best practices.

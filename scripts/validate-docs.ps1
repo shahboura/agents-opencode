@@ -40,7 +40,27 @@ foreach ($file in $mdFiles) {
         
         $targetPath = [System.IO.Path]::GetFullPath($targetPath)
         
-        if (-not (Test-Path $targetPath)) {
+        $foundTarget = Test-Path $targetPath
+
+        if (-not $foundTarget) {
+            $extension = [System.IO.Path]::GetExtension($targetPath)
+            if ([string]::IsNullOrWhiteSpace($extension)) {
+                $altPaths = @(
+                    "$targetPath.md",
+                    (Join-Path $targetPath "index.md")
+                )
+
+                foreach ($altPath in $altPaths) {
+                    if (Test-Path $altPath) {
+                        $targetPath = $altPath
+                        $foundTarget = $true
+                        break
+                    }
+                }
+            }
+        }
+
+        if (-not $foundTarget) {
             $brokenLinks += [PSCustomObject]@{
                 File = $relPath
                 LinkText = $linkText

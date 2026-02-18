@@ -31,16 +31,16 @@ opencode
 
 ## Quick Usage
 
-| Agent | Purpose |
-|-------|---------|
-| `@orchestrator` | Planning & coordination |
-| `@planner` | Read-only planning |
-| `@codebase` | Code implementation |
-| `@review` | Security & quality audits |
-| `@docs` | Documentation |
-| `@em-advisor` | Leadership guidance |
-| `@blogger` | Content creation |
-| `@brutal-critic` | Content review |
+| Agent | Purpose | Use For |
+|-------|---------|---------|
+| `@orchestrator` | Planning & coordination | Multi-phase work, risk assessment |
+| `@planner` | Read-only planning | Analysis and plans only |
+| `@codebase` | Code implementation | Features, fixes, refactors |
+| `@review` | Security & quality audits | Security, performance, best practices |
+| `@docs` | Documentation | README, API docs, guides |
+| `@em-advisor` | Leadership guidance | Team management, 1-on-1 prep |
+| `@blogger` | Content creation | Tech/blog/podcast scripts |
+| `@brutal-critic` | Content review | Critique, framework validation |
 
 ## Docs
 

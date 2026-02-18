@@ -40,6 +40,6 @@ Skills live in `.opencode/skills/` and can be loaded on demand:
 
 ## Next Steps
 
-- **[Getting Started](./getting-started.md)**
-- **[Agents](./agents/README.md)**
-- **[Coding Standards](./instructions.md)**
+- **[Getting Started](./getting-started)**
+- **[Agents](./agents/README)**
+- **[Coding Standards](./instructions)**

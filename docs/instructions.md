@@ -32,20 +32,9 @@ Auto-applied standards by file type. Edit the instruction files in
 
 ## Full References
 
-- **[.NET Clean Architecture](../.opencode/instructions/dotnet-clean-architecture.instructions.md)**
-- **[Flutter Best Practices](../.opencode/instructions/flutter.instructions.md)**
-- **[Go Best Practices](../.opencode/instructions/go.instructions.md)**
-- **[Java Spring Boot](../.opencode/instructions/java-spring-boot.instructions.md)**
-- **[Node.js Express](../.opencode/instructions/node-express.instructions.md)**
-- **[Python Best Practices](../.opencode/instructions/python-best-practices.instructions.md)**
-- **[React Next.js](../.opencode/instructions/react-next.instructions.md)**
-- **[Ruby on Rails](../.opencode/instructions/ruby-on-rails.instructions.md)**
-- **[Rust Best Practices](../.opencode/instructions/rust.instructions.md)**
-- **[SQL Migrations](../.opencode/instructions/sql-migrations.instructions.md)**
-- **[TypeScript Strict Mode](../.opencode/instructions/typescript-strict.instructions.md)**
-- **[CI/CD Hygiene](../.opencode/instructions/ci-cd-hygiene.instructions.md)**
+For detailed standards, open the corresponding file in `.opencode/instructions/`.
 
 ## Next Steps
 
-- **[Customization](./customization.md)**
-- **[Agents](./agents/README.md)**
+- **[Customization](./customization)**
+- **[Agents](./agents/README)**
