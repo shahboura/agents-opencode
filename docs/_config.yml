@@ -5,4 +5,12 @@ url: https://shahboura.github.io
 baseurl: /agents-opencode
 
 # Theme
-theme: jekyll-docs-theme
+remote_theme: just-the-docs/just-the-docs
+
+# Navigation
+nav_external_links:
+  - title: GitHub Repository
+    url: https://github.com/shahboura/agents-opencode
+
+# Footer
+footer_content: "Copyright &copy; 2025 Shehab Elhadidy. Licensed under the MIT License."
