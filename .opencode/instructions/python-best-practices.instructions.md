@@ -224,6 +224,10 @@ ruff==0.1.0
 # Format code
 black .
 
+# Lint + format (fast)
+ruff check .
+ruff format .
+
 # Lint code
 ruff check .
 

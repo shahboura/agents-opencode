@@ -23,7 +23,7 @@ applyTo: '**/*.{js,ts}'
 - Enable security middleware: helmet, compression (as needed), CORS with explicit origins, rate limiting on sensitive endpoints.
 
 ## Error Handling & Logging
-- Use structured logging (pino/winston) with levels; avoid console.log.
+- Use structured logging (pino/winston) with levels and request IDs; avoid console.log.
 - Normalize errors; avoid leaking stack traces to clients.
 - Wrap async handlers to propagate errors to the error middleware.
 

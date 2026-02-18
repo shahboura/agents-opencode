@@ -65,6 +65,11 @@ let user = find_user(123).ok_or("User not found")?;
 let user = find_user(123).unwrap_or_default();
 ```
 
+**Lint before commit:**
+```bash
+cargo clippy -- -D warnings
+```
+
 ## Structs & Enums
 
 **Use structs for data, enums for variants:**

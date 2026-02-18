@@ -13,6 +13,7 @@ applyTo: '**/*.{ts,tsx}'
   "compilerOptions": {
     "strict": true,
     "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
@@ -74,6 +75,14 @@ function isValidUser(user: User | null): user is User {
 if (isValidUser(user)) {
   // TypeScript knows user is User here
   console.log(user.email);
+}
+
+// Prefer unknown over any
+function parsePayload(payload: unknown): Result<User> {
+  if (typeof payload !== 'object' || payload === null) {
+    return { success: false, error: 'Invalid payload' };
+  }
+  return { success: true, data: payload as User };
 }
 ```
 

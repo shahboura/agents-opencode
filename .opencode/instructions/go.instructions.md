@@ -29,6 +29,7 @@ applyTo: '**/*.go'
 - Use `go test ./...` with table-driven tests; cover error paths.
 - Use golden files sparingly; keep fixtures minimal.
 - Avoid hitting real networks in unit tests; use httptest/fakes.
+- Prefer `go test -race ./...` for concurrency-heavy code when possible.
 
 ## Performance & Observability
 - Measure before optimizing; use pprof/benchmarks when needed.
