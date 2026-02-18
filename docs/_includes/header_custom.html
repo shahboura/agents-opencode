@@ -1,0 +1,35 @@
+<div class="theme-toggle">
+  <button
+    id="theme-toggle"
+    class="btn btn-outline"
+    type="button"
+    aria-label="Toggle color scheme">
+    Toggle theme
+  </button>
+</div>
+
+<script>
+  (function () {
+    const button = document.getElementById('theme-toggle');
+    if (!button || !window.jtd || typeof window.jtd.setTheme !== 'function') {
+      return;
+    }
+
+    const isDark = () => {
+      const dataTheme = document.documentElement.getAttribute('data-theme');
+      if (dataTheme) {
+        return dataTheme === 'dark';
+      }
+      const stored = localStorage.getItem('theme') || localStorage.getItem('jtd-theme');
+      return stored === 'dark';
+    };
+
+    button.textContent = isDark() ? 'Light mode' : 'Dark mode';
+
+    button.addEventListener('click', () => {
+      const nextTheme = isDark() ? 'light' : 'dark';
+      window.jtd.setTheme(nextTheme);
+      button.textContent = nextTheme === 'dark' ? 'Light mode' : 'Dark mode';
+    });
+  })();
+</script>

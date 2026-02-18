@@ -8,7 +8,6 @@ baseurl: /agents-opencode
 remote_theme: just-the-docs/just-the-docs
 
 color_scheme: dark
-color_scheme_toggle: true
 
 # Navigation
 nav_external_links:

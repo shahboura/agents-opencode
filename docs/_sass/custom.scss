@@ -8,6 +8,34 @@
 .highlight {
   border-radius: 6px;
   margin: 1rem 0;
+  padding: 1rem;
+  overflow-x: auto;
+  background-color: #111827;
+  border: 1px solid #1f2937;
+}
+
+.highlight pre,
+.highlight code {
+  color: #e5e7eb;
+  background: transparent;
+  font-size: 0.9rem;
+}
+
+code {
+  background-color: rgba(17, 24, 39, 0.08);
+  border-radius: 4px;
+  padding: 0.1rem 0.25rem;
+}
+
+@media (prefers-color-scheme: light) {
+  .highlight {
+    background-color: #0f172a;
+    border-color: #1e293b;
+  }
+}
+
+[data-theme="dark"] code {
+  background-color: rgba(148, 163, 184, 0.15);
 }
 
 /* Table styling */
@@ -29,10 +57,23 @@ table th {
   font-weight: 600;
 }
 
+[data-theme="dark"] table th {
+  background-color: #111827;
+}
+
+[data-theme="dark"] table th,
+[data-theme="dark"] table td {
+  border-color: #1f2937;
+}
+
 /* Agent capability table styling */
 .agent-table th {
   background-color: #f8f9fa;
   font-weight: 600;
+}
+
+[data-theme="dark"] .agent-table th {
+  background-color: #111827;
 }
 
 .agent-table td {
@@ -49,6 +90,16 @@ table th {
   border-top: 1px solid #e1e4e8;
   margin-top: 3rem;
   padding-top: 1rem;
+}
+
+[data-theme="dark"] .site-footer {
+  border-top-color: #1f2937;
+}
+
+.theme-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
 }
 
 /* Responsive design improvements */
