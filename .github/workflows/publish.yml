@@ -1,0 +1,70 @@
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate agents
+        run: node scripts/validate-agents.js
+
+      - name: Check context size
+        run: node scripts/check-context-size.js
+
+      - name: Validate documentation links
+        run: node scripts/validate-docs.js
+
+      - name: Lint markdown
+        run: npm run lint:md
+
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Verify version matches tag
+        run: |
+          PACKAGE_VERSION="v$(node -p "require('./package.json').version")"
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          echo "Package version: $PACKAGE_VERSION"
+          echo "Release tag: $TAG_NAME"
+          if [ "$PACKAGE_VERSION" != "$TAG_NAME" ]; then
+            echo "::error::Version mismatch: package.json=$PACKAGE_VERSION, tag=$TAG_NAME"
+            echo "Run 'npm version <major|minor|patch>' locally, commit, push, then create the release."
+            exit 1
+          fi
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
