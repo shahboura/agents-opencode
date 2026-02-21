@@ -16,60 +16,50 @@ Get up and running with OpenCode agents in under 5 minutes.
 
 ## Quick Setup (60 seconds)
 
-### Global Installation
+### Via npx (Recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --global && rm install.js
+# Global install
+npx agents-opencode --global
+
+# Project install
+npx agents-opencode --project .
+
+# Install with specific languages only
+npx agents-opencode --global --languages python,typescript
+
+# Update existing installation
+npx agents-opencode --update
 ```
 
-### Project Installation
+### Via curl
+
+#### Global Installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --project /path/to/your/project && rm install.js
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js \
+  -o install.js && node install.js --global && rm install.js
 ```
 
-### Windows (PowerShell)
+#### Project Installation
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js \
+  -o install.js && node install.js --project /path/to/your/project && rm install.js
+```
+
+#### Windows (PowerShell)
 
 ```powershell
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js; node install.js --global; rm install.js
-```
-
-### Linux/macOS (Bash/Zsh)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --project . && rm install.js
+curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js `
+  -o install.js; node install.js --global; rm install.js
 ```
 
 ### Uninstall
 
-#### Remove from Current Directory/Project
-
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
+npx agents-opencode --uninstall
 ```
-
-**What happens:**
-- Removes `.opencode/` directory and `opencode.json`
-- Preserves `AGENTS.md` if present (session history remains intact)
-- Automatically removes the install script itself
-- Agent configurations can be re-installed anytime
-
-#### Remove Global Installation
-
-For global installations, navigate to the global config directory and run:
-
-```bash
-# Linux/macOS
-cd ~/.config/opencode && curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
-
-# Windows
-cd ~/.config/opencode && curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
-```
-
-**What happens:**
-- Removes `.opencode/` directory and `opencode.json` from the global config location
-- Preserves global `AGENTS.md` if present (session history remains intact)
-- Automatically removes the install script itself
 
 ## Your First Run
 
@@ -99,7 +89,8 @@ cd ~/.config/opencode && curl -fsSL https://raw.githubusercontent.com/shahboura/
 ## Notes
 
 - `AGENTS.md` is created on first run or via `/init`.
-- Standards auto-apply based on file type.
+- Coding standards in `.opencode/instructions/` are available as
+  reference for agents.
 
 ## Next Steps
 

@@ -6,13 +6,8 @@ nav_order: 6
 
 # Coding Standards
 
-Auto-applied standards by file type. Agents automatically detect file extensions
-and apply the corresponding coding standards from `.opencode/instructions/`.
-
-# Standards
-
-Auto-applied standards by file type. Edit the instruction files in
-`.opencode/instructions/` to customize.
+Reference standards for each language. Available in `.opencode/instructions/`
+and loaded on demand by agents when working on matching file types.
 
 ## Coverage
 

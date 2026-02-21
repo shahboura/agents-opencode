@@ -28,7 +28,8 @@ Edit `.opencode/agent/[agent].md` to adjust behavior (model, permissions, tools)
 
 ## Custom Commands
 
-Add command files to `.opencode/commands/` with frontmatter (`description`, `agent`). Type `/command-name` in the TUI to run.
+Add command files to `.opencode/commands/` with frontmatter (`description`, `agent`).
+Type `/command-name` in the TUI to run.
 
 ## Skills
 
