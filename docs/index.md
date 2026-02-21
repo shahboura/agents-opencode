@@ -3,7 +3,7 @@ layout: default
 title: Home
 nav_order: 1
 permalink: /
-description: Lean OpenCode agents pack with auto-applied coding standards and plan-first execution.
+description: Lean OpenCode agents pack with 8 specialized agents, 14 coding standards, and slash commands.
 keywords: opencode, ai agents, code generation, development workflow, .NET, Python, TypeScript, Flutter, code review, documentation
 ---
 
@@ -13,7 +13,12 @@ Lean agent pack for OpenCode workflows.
 
 ## Quick Start
 
-1. Install (see [Getting Started](getting-started.md))
+1. Install:
+
+   ```bash
+   npx agents-opencode --global
+   ```
+
 2. Run:
 
    ```

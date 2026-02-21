@@ -2,6 +2,14 @@
   "name": "agents-opencode",
   "version": "1.0.0",
   "description": "OpenCode Agents: Intelligent AI assistants for software development. Features 8 specialized agents, 15+ language standards, automated code review, documentation generation, and cross-platform installation. Supports .NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, and Rust with plan-first execution and context-aware assistance.",
+  "files": [
+    "install.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shahboura/agents-opencode.git"
+  },
+  "homepage": "https://shahboura.github.io/agents-opencode/",
   "bin": {
     "agents-opencode": "install.js"
   },
@@ -38,6 +46,6 @@
     "ci-cd",
     "automation"
   ],
-  "author": "",
+  "author": "shahboura",
   "license": "MIT"
 }

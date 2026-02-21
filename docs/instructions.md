@@ -23,6 +23,7 @@ and loaded on demand by agents when working on matching file types.
 | React | Accessibility, performance, hooks |
 | Ruby | MVC, ActiveRecord, RSpec |
 | Rust | Ownership, Result/Option, clippy |
+| CI/CD | Fail-fast gates, security, caching |
 | SQL | Safe migrations, constraints, indexes |
 
 ## Full References
