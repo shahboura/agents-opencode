@@ -1,6 +1,6 @@
 # Just the Docs Configuration
 title: OpenCode Agents
-description: Specialized AI agents for intelligent development workflows with multi-language support and auto-applied coding standards
+description: Lean agent pack with 8 specialized agents, 14 coding standards, and slash commands for OpenCode workflows
 url: https://shahboura.github.io
 baseurl: /agents-opencode
 
@@ -16,4 +16,4 @@ nav_external_links:
     url: https://github.com/shahboura/agents-opencode
 
 # Footer
-footer_content: "Copyright &copy; 2025 Shehab Elhadidy. Licensed under the MIT License."
+footer_content: "Copyright &copy; 2025-2026 Shehab Elhadidy. Licensed under the MIT License."
