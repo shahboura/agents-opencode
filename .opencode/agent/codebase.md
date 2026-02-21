@@ -55,71 +55,22 @@ Log detected profile at start: `Detected active profile: <profile>`
 - Summarize what was implemented
 - Suggest handoffs to documentation or review agents
 
-## Profile-Specific Adaptations
+## Profile Validation Commands
 
-### Dotnet Profile
-- Enforce Clean Architecture layers (Domain → Application → Infrastructure → WebAPI)
-- Use async/await with CancellationToken
-- Apply nullable reference types
-- Run: `dotnet build`, `dotnet test`, `dotnet format`
+| Profile | Build/Check | Test | Lint/Format |
+|---------|------------|------|-------------|
+| dotnet | `dotnet build` | `dotnet test` | `dotnet format` |
+| python | — | `pytest` | `mypy`, `ruff` |
+| typescript | `tsc --noEmit` | `npm test` | `eslint` |
+| flutter | `flutter analyze` | `flutter test` | `dart format` |
+| go | `go vet` | `go test ./...` | `golangci-lint run` |
+| java-spring | `mvn compile` | `mvn test` | — |
+| node-express | `npm run build` | `npm test` | `eslint` |
+| react-next | `npm run build` | `npm test` | `npm run lint` |
+| ruby-rails | — | `rails test` | `rubocop` |
+| rust | `cargo check` | `cargo test` | `cargo clippy` |
 
-### Python Profile
-- Check virtual environment presence
-- Validate dependencies (pip/poetry/uv)
-- Use type hints
-- Run: `pytest`, `mypy`, linting if configured
-
-### TypeScript Profile
-- Ensure strict type checking
-- Run incremental builds
-- Execute: `tsc`, `npm test`, linting
-
-### Flutter Profile
-- Use Riverpod for state management
-- Apply freezed for immutable models
-- Implement Result pattern for error handling
-- Run: `flutter analyze`, `flutter test`, `dart format`
-
-### Go Profile
-- Follow Go module conventions
-- Use proper error handling (no panics in prod)
-- Implement goroutine safety
-- Run: `go vet`, `go test`, golangci-lint
-
-### Node-Express Profile
-- Apply security middleware (helmet, CORS, rate limiting)
-- Use async/await with proper error handling
-- Validate inputs with Joi/Zod
-- Run: `npm test`, linting, `npm run build`
-
-### React-Next Profile
-- Enable TypeScript strict mode
-- Implement accessibility standards
-- Optimize for performance (Image, code splitting)
-- Run: `npm run lint`, `npm test`, `npm run build`
-
-### Java-Spring Profile
-- Use constructor injection over @Autowired
-- Apply Bean Validation annotations
-- Implement proper error handling with ControllerAdvice
-- Run: `mvn compile`, `mvn test`, `mvn spring-boot:run`
-
-### Ruby-Rails Profile
-- Follow MVC pattern with RESTful routes
-- Use ActiveRecord associations and validations
-- Extract business logic to service objects
-- Run: `rails test`, `rubocop`, `rails server`
-
-### Rust Profile
-- Follow ownership and borrowing rules
-- Use Result/Option for error handling (no unwrap in prod)
-- Implement proper lifetimes and generics
-- Run: `cargo check`, `cargo test`, `cargo clippy`
-
-### Generic Profile
-- Keep tasks language-agnostic
-- Focus on portable patterns
-- Minimal assumptions
+Language-specific patterns and best practices are in the corresponding instruction files under `.opencode/instructions/`.
 
 ## Code Standards
 - Write modular, functional code following language conventions
@@ -143,29 +94,4 @@ docs(scope): description
 - Ask before executing risky terminal commands
 - Validate inputs and handle errors gracefully
 
-## Context Persistence
 
-**At session start:**
-1. Read `AGENTS.md` for project context and recent activity (if present)
-2. Apply architectural decisions and patterns from previous sessions
-
-**At task completion:**
-Update `AGENTS.md` with timestamped entry (latest first). If missing, prompt to run `/init` or create a minimal file.
-
-```markdown
-### YYYY-MM-DD HH:MM - [Brief Task Description]
-**Agent:** codebase  
-**Summary:** [What was accomplished]
-- Architectural decisions and rationale
-- New patterns or utilities introduced
-- Technical constraints or dependencies added
-```
-
-**Format requirements:**
-- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
-- Latest entries first (prepend, don't append)
-- Keep entries concise (3-5 bullets max)
-- Include design choices, patterns, and technical impacts
-- File auto-prunes when exceeding 100KB
-
-**Present update for approval before ending task.**

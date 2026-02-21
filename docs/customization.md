@@ -26,9 +26,9 @@ Create or update `AGENTS.md` (created on first run or via `/init`) with a short 
 
 Edit `.opencode/agent/[agent].md` to adjust behavior (model, permissions, tools).
 
-## Custom Prompts
+## Custom Commands
 
-Add prompts under a **Custom Prompts** section in any agent file.
+Add command files to `.opencode/commands/` with frontmatter (`description`, `agent`). Type `/command-name` in the TUI to run.
 
 ## Skills
 

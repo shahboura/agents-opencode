@@ -1,6 +1,5 @@
 ---
 description: SQL and database migration best practices
-applyTo: '**/*.sql'
 ---
 
 # SQL & Database Migrations Instructions

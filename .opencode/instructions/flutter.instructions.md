@@ -1,6 +1,5 @@
 ---
 description: Flutter/Dart best practices with state management, widget architecture, and testing
-applyTo: '**/*.{dart}'
 ---
 
 # Flutter Best Practices Instructions

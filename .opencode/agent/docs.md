@@ -108,29 +108,4 @@ docs/
 - Validate all links
 - Ensure mobile-friendly formatting
 
-## Context Persistence
 
-**At session start:**
-1. Read `AGENTS.md` for project context and recent activity (if present)
-2. Apply documentation patterns from previous sessions
-
-**At task completion:**
-Update AGENTS.md directly (if present). If missing, prompt to run `/init` or create a minimal file first.
-
-```
-Add session summary to AGENTS.md:
-
-### YYYY-MM-DD HH:MM - [Brief Task Description]
-**Agent:** docs  
-**Summary:** [What was documented]
-- Documentation created or updated
-- Structure and format decisions
-- Patterns established for consistency
-```
-
-**Format requirements:**
-- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
-- Latest entries first (prepend, don't append)
-- Keep entries concise (3-5 bullets max)
-- Focus on documentation strategy and patterns
-- File auto-prunes when exceeding 100KB

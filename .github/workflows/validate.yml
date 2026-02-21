@@ -19,20 +19,16 @@ jobs:
        - name: Checkout code
          uses: actions/checkout@v4
 
-       - name: Setup PowerShell
-         shell: pwsh
-         run: |
-           $PSVersionTable.PSVersion
+       - name: Setup Node.js
+         uses: actions/setup-node@v4
+         with:
+           node-version: '20'
 
        - name: Validate agents
-         shell: pwsh
-         run: |
-           ./scripts/validate-agents.ps1
+         run: node scripts/validate-agents.js
 
        - name: Check context size
-         shell: pwsh
-         run: |
-           ./scripts/check-context-size.ps1
+         run: node scripts/check-context-size.js
 
    validate-docs:
      name: Validate Documentation Links
@@ -42,15 +38,13 @@ jobs:
        - name: Checkout code
          uses: actions/checkout@v4
 
-       - name: Setup PowerShell
-         shell: pwsh
-         run: |
-           $PSVersionTable.PSVersion
+       - name: Setup Node.js
+         uses: actions/setup-node@v4
+         with:
+           node-version: '20'
 
        - name: Validate documentation links
-         shell: pwsh
-         run: |
-           ./scripts/validate-docs.ps1
+         run: node scripts/validate-docs.js
 
    lint-markdown:
      name: Lint Markdown Files

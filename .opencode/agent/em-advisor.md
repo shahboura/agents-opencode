@@ -173,32 +173,7 @@ Situation-Behavior-Impact (SBI):
 - **Action-focused**: Always end with concrete next steps
 - **Balanced**: Present multiple perspectives and tradeoffs
 
-## Context Persistence
 
-**At session start:**
-1. Read `AGENTS.md` for project context and recent activity (if present)
-2. Apply leadership patterns and team insights from previous sessions
-
-**At task completion:**
-Use task tool to launch @docs agent. If `AGENTS.md` is missing, prompt to run `/init` or create a minimal file first.
-
-```
-Add session summary to AGENTS.md:
-
-### YYYY-MM-DD HH:MM - [Brief Task Description]
-**Agent:** em-advisor  
-**Summary:** [What was discussed]
-- Leadership topic or challenge addressed
-- Key recommendations and strategies
-- Patterns for team dynamics or processes
-```
-
-**Format requirements:**
-- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
-- Latest entries first (prepend, don't append)
-- Keep entries concise (3-5 bullets max)
-- Focus on leadership patterns and team dynamics
-- File auto-prunes when exceeding 100KB
 
 ## Decision-Making Frameworks
 

@@ -1,6 +1,5 @@
 ---
 description: Go best practices for modules, testing, and concurrency
-applyTo: '**/*.go'
 ---
 
 # Go Instructions

@@ -110,7 +110,7 @@ function validateRepository(repoDir) {
 function verifyInstallation(installDir) {
     try {
         // Check for essential directories
-        const requiredDirs = ['agent', 'instructions', 'prompts'];
+        const requiredDirs = ['agent', 'instructions', 'commands'];
         for (const dir of requiredDirs) {
             const dirPath = path.join(installDir, dir);
             if (!fs.existsSync(dirPath)) {
@@ -320,6 +320,79 @@ function uninstall() {
     return true;
 }
 
+// Language-to-instruction file mapping
+const LANGUAGE_MAP = {
+    dotnet: 'dotnet-clean-architecture.instructions.md',
+    python: 'python-best-practices.instructions.md',
+    typescript: 'typescript-strict.instructions.md',
+    flutter: 'flutter.instructions.md',
+    go: 'go.instructions.md',
+    java: 'java-spring-boot.instructions.md',
+    node: 'node-express.instructions.md',
+    react: 'react-next.instructions.md',
+    ruby: 'ruby-on-rails.instructions.md',
+    rust: 'rust.instructions.md',
+    sql: 'sql-migrations.instructions.md',
+    cicd: 'ci-cd-hygiene.instructions.md',
+};
+
+// Content-focused instruction files that are always kept
+const ALWAYS_KEEP = [
+    'blogger.instructions.md',
+    'brutal-critic.instructions.md',
+];
+
+function filterLanguages(installDir, languages) {
+    const instructionsDir = path.join(installDir, 'instructions');
+    if (!fs.existsSync(instructionsDir)) {
+        warning('No instructions directory found — skipping language filter.');
+        return;
+    }
+
+    // Validate requested languages
+    const validLanguages = Object.keys(LANGUAGE_MAP);
+    const requested = languages.split(',').map(l => l.trim().toLowerCase()).filter(Boolean);
+    const invalid = requested.filter(l => !validLanguages.includes(l));
+    if (invalid.length > 0) {
+        warning(`Unknown language(s): ${invalid.join(', ')}`);
+        info(`Available: ${validLanguages.join(', ')}`);
+    }
+
+    // Build set of files to keep
+    const keepFiles = new Set(ALWAYS_KEEP);
+    for (const lang of requested) {
+        if (LANGUAGE_MAP[lang]) {
+            keepFiles.add(LANGUAGE_MAP[lang]);
+        }
+    }
+
+    // Scan and remove non-matching instruction files
+    const allFiles = fs.readdirSync(instructionsDir);
+    const kept = [];
+    const removed = [];
+
+    for (const file of allFiles) {
+        if (keepFiles.has(file)) {
+            kept.push(file);
+        } else {
+            const filePath = path.join(instructionsDir, file);
+            try {
+                fs.unlinkSync(filePath);
+                removed.push(file);
+            } catch (err) {
+                warning(`Could not remove ${file}: ${err.message}`);
+            }
+        }
+    }
+
+    if (kept.length > 0) {
+        success(`✓ Kept ${kept.length} instruction file(s): ${kept.join(', ')}`);
+    }
+    if (removed.length > 0) {
+        info(`Removed ${removed.length} instruction file(s): ${removed.join(', ')}`);
+    }
+}
+
 function showVersion(tempDir) {
     try {
         const packagePath = path.join(tempDir, 'package.json');
@@ -345,15 +418,21 @@ USAGE:
 OPTIONS:
     -g, --global                Install agents globally (available in all projects)
     -p, --project DIR           Install agents for specific project directory
+    -U, --update                Update existing installation to latest version
+    -l, --languages LANGS       Only install specified language standards (comma-separated)
+                                Available: dotnet,python,typescript,flutter,go,java,node,react,ruby,rust,sql,cicd
     -u, --uninstall             Remove agents from current directory
     -v, --version               Show version information
     -h, --help                  Show this help message
 
 EXAMPLES:
-    node install.js --global                    # Install globally
-    node install.js --project /path/to/project  # Install for specific project
-    node install.js --project .                 # Install in current directory
-    node install.js --uninstall                 # Remove from current directory
+    node install.js --global                                    # Install globally
+    node install.js --project /path/to/project                  # Install for specific project
+    node install.js --project .                                 # Install in current directory
+    node install.js --update                                    # Update existing installation
+    node install.js --global --languages python,typescript      # Install with specific languages only
+    node install.js --uninstall                                 # Remove from current directory
+    npx agents-opencode --global                                # Install via npx
 
  PREREQUISITES:
      - Git (for downloading)
@@ -377,7 +456,7 @@ For more information, visit: https://github.com/shahboura/agents-opencode
 }
 
 function main() {
-    const args = process.argv.slice(2);
+    let args = process.argv.slice(2);
 
     if (args.length === 0 || args[0] === '-h' || args[0] === '--help') {
         showUsage();
@@ -388,6 +467,84 @@ function main() {
     if (hasUninstall) {
         if (uninstall()) {
             success('Uninstallation completed!');
+        }
+        return;
+    }
+
+    // Parse --languages flag (can appear anywhere in args)
+    let languages = null;
+    const langIdx = args.findIndex(a => a === '-l' || a === '--languages');
+    if (langIdx !== -1) {
+        if (langIdx + 1 >= args.length) {
+            error('--languages requires a comma-separated list of languages.');
+            info(`Available: ${Object.keys(LANGUAGE_MAP).join(', ')}`);
+            process.exit(1);
+        }
+        languages = args[langIdx + 1];
+        // Remove the flag and its value from args so they don't interfere with command parsing
+        args.splice(langIdx, 2);
+    }
+
+    // Handle --update (needs repository clone but auto-detects install location)
+    const hasUpdate = args.includes('-U') || args.includes('--update');
+    if (hasUpdate) {
+        const globalConfigDir = getGlobalConfigDir();
+        const localOpencodeDir = path.join(process.cwd(), '.opencode');
+
+        const hasGlobal = fs.existsSync(globalConfigDir);
+        const hasLocal = fs.existsSync(localOpencodeDir);
+
+        if (!hasGlobal && !hasLocal) {
+            error('No existing installation found. Use --global or --project to install.');
+            process.exit(1);
+        }
+
+        // Check prerequisites
+        if (!commandExists('git')) {
+            error('Git is required but not installed. Please install git first.');
+            process.exit(1);
+        }
+
+        // Create temporary directory
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opencode-install-'));
+
+        try {
+            info('🔄 Updating OpenCode Agents installation...');
+
+            if (!cloneRepository(tempDir)) {
+                error('❌ Repository download failed');
+                process.exit(1);
+            }
+
+            const version = checkVersion(tempDir);
+            if (version) {
+                info(`📦 Updating to version ${version}`);
+            }
+
+            if (!validateRepository(tempDir)) {
+                error('❌ Repository validation failed');
+                process.exit(1);
+            }
+
+            if (hasGlobal) {
+                installGlobal(tempDir);
+                if (languages) {
+                    filterLanguages(globalConfigDir, languages);
+                }
+                info('✅ Global installation updated.');
+            } else if (hasLocal) {
+                installProject(tempDir, process.cwd());
+                if (languages) {
+                    filterLanguages(localOpencodeDir, languages);
+                }
+                info('✅ Project installation updated.');
+            }
+        } finally {
+            try {
+                fs.rmSync(tempDir, { recursive: true, force: true });
+            } catch (err) {
+                warning(`Failed to clean up temporary directory: ${tempDir}`);
+            }
         }
         return;
     }
@@ -428,6 +585,9 @@ function main() {
             case '-g':
             case '--global':
                 installGlobal(tempDir);
+                if (languages) {
+                    filterLanguages(getGlobalConfigDir(), languages);
+                }
                 info("\n🎯 Next steps:");
                 info("1. Run 'opencode' to start using the agents");
                 info("2. Type '@' to see available agents");
@@ -445,6 +605,9 @@ function main() {
                     process.exit(1);
                 } else {
                     const projectPath = path.resolve(args[1]);
+                    if (languages) {
+                        filterLanguages(path.join(projectPath, '.opencode'), languages);
+                    }
                     info("\n🎯 Next steps:");
                     info(`1. cd ${projectPath}`);
                     info("2. Run 'opencode' to start using the agents");

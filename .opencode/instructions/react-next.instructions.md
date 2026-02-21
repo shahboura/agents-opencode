@@ -1,6 +1,5 @@
 ---
 description: React / Next.js frontend best practices with TypeScript and accessibility
-applyTo: '**/*.{tsx,jsx}'
 ---
 
 # React & Next.js Instructions

@@ -1,6 +1,5 @@
 ---
 description: Rust best practices with ownership, error handling, and performance
-applyTo: '**/*.rs'
 ---
 
 # Rust Instructions

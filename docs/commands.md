@@ -1,14 +1,14 @@
 ---
 layout: default
-title: Prompts
+title: Commands & Skills
 nav_order: 5
 ---
 
-# Prompts
+# Commands & Skills
 
-Reusable commands for common tasks.
+## Commands
 
-## Available Commands
+Type `/command-name` in the OpenCode TUI to run.
 
 - `/api-docs` - Generate comprehensive API documentation
 - `/create-readme` - Generate professional README
@@ -20,21 +20,26 @@ Reusable commands for common tasks.
 - `/architecture-decision` - ADR creation
 - `/architecture-review` - Review architectural decisions
 
-## Available Skills
+## Skills
 
-Skills are reusable behaviors that can be loaded on demand. This repo provides:
+Skills are reusable behaviors loaded on demand:
 
 - `project-bootstrap` - Create a minimal `AGENTS.md` scaffold
 - `agent-diagnostics` - Validate agent setup and instruction coverage
 - `docs-validation` - Outline docs lint and link checks
 
-## Usage
+## Custom Commands
 
-Type `/` in OpenCode to see available prompts, then select one.
+Add command files to `.opencode/commands/` with frontmatter:
 
-## Custom Prompts
+```yaml
+---
+description: What this command does
+agent: recommended-agent
+---
+```
 
-Add your own prompt under a **Custom Prompts** section in any agent file.
+See [OpenCode Commands docs](https://opencode.ai/docs/commands/) for full reference.
 
 ## Next Steps
 

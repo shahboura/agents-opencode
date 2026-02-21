@@ -1,6 +1,5 @@
 ---
 description: Java Spring Boot best practices with dependency injection, validation, and testing
-applyTo: '**/*.{java,kt}'
 ---
 
 # Java Spring Boot Instructions

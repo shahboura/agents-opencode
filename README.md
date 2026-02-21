@@ -11,14 +11,23 @@ Minimal OpenCode agents pack for project workflows.
 **Requires:** Node.js + Git
 
 ```bash
-# Global install (available in all projects)
+# Via npx (recommended)
+npx agents-opencode --global
+
+# Or curl + node
 curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --global && rm install.js
 
 # Project install (current directory only)
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --project . && rm install.js
+npx agents-opencode --project .
 
-## Uninstall
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --uninstall
+# Install with specific languages only
+npx agents-opencode --global --languages python,typescript
+
+# Update existing installation
+npx agents-opencode --update
+
+# Uninstall
+npx agents-opencode --uninstall
 ```
 
 Then run:
@@ -29,7 +38,7 @@ opencode
 @orchestrator Build a REST API with JWT auth
 ```
 
-## Quick Usage
+## Agents
 
 | Agent | Purpose | Use For |
 |-------|---------|---------|
@@ -41,6 +50,22 @@ opencode
 | `@em-advisor` | Leadership guidance | Team management, 1-on-1 prep |
 | `@blogger` | Content creation | Tech/blog/podcast scripts |
 | `@brutal-critic` | Content review | Critique, framework validation |
+
+## Commands
+
+Type `/command-name` in the TUI to run:
+
+| Command | Description |
+|---------|-------------|
+| `/api-docs` | Generate API documentation |
+| `/code-review` | Comprehensive code review |
+| `/generate-tests` | Unit test generation |
+| `/security-audit` | Security audit |
+| `/refactor-plan` | Refactoring plan |
+| `/create-readme` | Generate README |
+| `/architecture-decision` | ADR creation |
+| `/architecture-review` | Architecture review |
+| `/1-on-1-prep` | Meeting preparation |
 
 ## Docs
 

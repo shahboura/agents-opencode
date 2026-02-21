@@ -32,7 +32,7 @@ pip install -r requirements.txt
 
 ## Agent Workflow
 
-See [PROMPTS.md](PROMPTS.md) for exact prompts to use.
+See [COMMANDS.md](COMMANDS.md) for exact prompts to use.
 
 ## Running the Result
 

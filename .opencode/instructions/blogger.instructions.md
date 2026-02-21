@@ -1,6 +1,5 @@
 ---
 description: Concise blogging agent for tech, finance, and leadership content with fact validation
-applyTo: '**/*.{md,mdx}'
 ---
 
 # Blogger Agent Instructions

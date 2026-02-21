@@ -1,6 +1,5 @@
 ---
 description: CI/CD hygiene, validation gates, and security checks
-applyTo: '.github/workflows/**/*.{yml,yaml}'
 ---
 
 # CI/CD Hygiene Instructions

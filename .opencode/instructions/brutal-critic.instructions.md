@@ -1,6 +1,5 @@
 ---
 description: Ruthless content reviewer with framework-based criticism for quality improvement
-applyTo: '**/*.{md,mdx,txt}'
 ---
 
 # Brutal Critic Agent Instructions

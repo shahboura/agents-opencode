@@ -1,6 +1,5 @@
 ---
 description: Apply .NET Clean Architecture principles and C# best practices
-applyTo: '**/*.{cs,csproj}'
 ---
 
 # .NET Clean Architecture Instructions

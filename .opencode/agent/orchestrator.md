@@ -170,29 +170,4 @@ orchestrator → @codebase (implement + tests)
 - Run end-to-end tests when applicable
 - Don't proceed if critical issues found
 
-## Context Persistence
 
-**At session start:**
-1. Read `AGENTS.md` for project context and recent activity (if present)
-2. Apply successful orchestration patterns from previous sessions
-
-**At task completion:**
-Update `AGENTS.md` with timestamped entry (latest first). If missing, prompt to run `/init` or create a minimal file.
-
-```markdown
-### YYYY-MM-DD HH:MM - [Brief Task Description]
-**Agent:** orchestrator  
-**Summary:** [What was coordinated]
-- Phase sequence and agent handoffs used
-- Workflow patterns that worked well
-- Lessons learned for future orchestration
-```
-
-**Format requirements:**
-- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
-- Latest entries first (prepend, don't append)
-- Keep entries concise (3-5 bullets max)
-- Include orchestration patterns and coordination approaches
-- File auto-prunes when exceeding 100KB
-
-**Present update for approval before ending task.**

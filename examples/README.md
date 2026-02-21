@@ -25,7 +25,7 @@ Runnable examples demonstrating multi-agent workflows.
 
 Each example includes:
 - **BEFORE.md**: Initial code state
-- **PROMPTS.md**: Exact agent prompts to use
+- **COMMANDS.md**: Exact agent commands/prompts to use
 - **EXPECTED.md**: What the result should look like
 - **README.md**: Setup and run instructions
 
@@ -50,7 +50,7 @@ Want to add an example? Follow this structure:
 examples/your-example/
 ├── README.md          (Setup, dependencies, run steps)
 ├── BEFORE.md          (Initial state)
-├── PROMPTS.md         (Agent prompts)
+├── COMMANDS.md         (Agent commands/prompts)
 ├── EXPECTED.md        (Expected outcome)
 ├── src/               (Source code)
 └── tests/             (Tests)

@@ -1,6 +1,5 @@
 ---
 description: Node.js + Express best practices for services and APIs
-applyTo: '**/*.{js,ts}'
 ---
 
 # Node.js + Express Instructions

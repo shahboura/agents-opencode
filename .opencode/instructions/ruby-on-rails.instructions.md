@@ -1,6 +1,5 @@
 ---
 description: Ruby on Rails best practices with MVC, ActiveRecord, and testing
-applyTo: '**/*.rb'
 ---
 
 # Ruby on Rails Instructions

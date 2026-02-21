@@ -16,12 +16,12 @@
 ### Tests failing after changes
 - Ask the agent to fix with error output
 
-### Prompts not showing
-- Verify prompts in `.opencode/agent/*.md`
+### Commands not showing
+- Verify command files in `.opencode/commands/*.md`
 - Reload OpenCode
 
 ## Help
 
 - [Getting Started](./getting-started)
 - [Agents](./agents/README)
-- [Prompts & Skills](./prompts)
+- [Commands & Skills](./commands)

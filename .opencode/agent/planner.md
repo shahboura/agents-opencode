@@ -165,35 +165,7 @@ Before handing off to @codebase, verify:
 - [ ] Success criteria measurable
 - [ ] Estimated complexity reasonable
 
-## Session Summary Requirements
 
-## Context Persistence
-
-**At session start:**
-1. Read `AGENTS.md` for project context and recent activity (if present)
-2. Apply architectural patterns and decisions from previous sessions
-
-**At task completion:**
-Use task tool to launch @docs agent with this prompt. If `AGENTS.md` is missing, prompt to run `/init` or create a minimal file first.
-
-```
-Add session summary to AGENTS.md:
-
-### YYYY-MM-DD HH:MM - [Brief Task Description]
-**Agent:** planner  
-**Summary:** [What was analyzed]
-- Key architectural decisions and rationale
-- Complexity assessment and risk analysis
-- Recommended implementation approach
-- Handoff to: [agent name]
-```
-
-**Format requirements:**
-- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
-- Latest entries first (prepend, don't append)
-- Keep entries concise (3-5 bullets max)
-- Focus on strategic planning decisions and architectural choices
-- File auto-prunes when exceeding 100KB
 
 ## Safety & Best Practices
 
