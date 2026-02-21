@@ -1,8 +1,8 @@
 name: Publish to npm
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
 
 permissions:
   contents: read
@@ -52,19 +52,23 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Verify version matches tag
+      - name: Check if version already published
+        id: check
         run: |
-          PACKAGE_VERSION="v$(node -p "require('./package.json').version")"
-          TAG_NAME="${{ github.event.release.tag_name }}"
-          echo "Package version: $PACKAGE_VERSION"
-          echo "Release tag: $TAG_NAME"
-          if [ "$PACKAGE_VERSION" != "$TAG_NAME" ]; then
-            echo "::error::Version mismatch: package.json=$PACKAGE_VERSION, tag=$TAG_NAME"
-            echo "Run 'npm version <major|minor|patch>' locally, commit, push, then create the release."
-            exit 1
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+          if npm view agents-opencode@$PACKAGE_VERSION version 2>/dev/null; then
+            echo "published=true" >> $GITHUB_OUTPUT
+            echo "v$PACKAGE_VERSION already on npm — skipping publish"
+          else
+            echo "published=false" >> $GITHUB_OUTPUT
+            echo "v$PACKAGE_VERSION not on npm — will publish"
           fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm
+        if: steps.check.outputs.published == 'false'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
