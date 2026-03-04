@@ -66,6 +66,9 @@ Type `/command-name` in the TUI to run:
 | `/create-readme` | Generate README |
 | `/architecture-decision` | ADR creation |
 | `/architecture-review` | Architecture review |
+| `/blog-post` | Blog post creation |
+| `/content-review` | Content quality scoring |
+| `/plan-project` | Multi-phase project planning |
 | `/1-on-1-prep` | Meeting preparation |
 
 ## Docs

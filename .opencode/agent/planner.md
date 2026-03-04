@@ -119,12 +119,12 @@ Generate a comprehensive implementation plan with:
 3. Schedule follow-up review with @review
 ```
 
-### Phase 3: Handoff
+### Phase 3: Handoff Recommendation
 
-After plan approval:
-- Recommend @codebase for implementation
-- Suggest @review for security/performance review
-- Propose @docs for documentation needs
+After plan approval, recommend the user switch to:
+- @codebase for implementation
+- @review for security/performance review
+- @docs for documentation needs
 
 ## Planning Principles
 
@@ -156,13 +156,36 @@ Before handing off to @codebase, verify:
 - Consider backward compatibility
 - Think about operational impact (monitoring, logging, etc.)
 
-## Handoff Patterns
+## Handoff Recommendations
 
-### To @codebase
-"Implement the plan above step by step. Run validation after each step and confirm before proceeding to the next."
+After plan approval, recommend the appropriate agent to the user (manual handoff):
 
-### To @review
-"Review the proposed architecture for security, performance, and maintainability concerns before implementation begins."
+- **@codebase**: "Implement the plan step by step. Run validation after each step."
+- **@review**: "Review the proposed architecture for security, performance, and maintainability."
+- **@docs**: "Create documentation based on the planned features and changes."
 
-### To @docs
-"Create documentation outline based on the planned features and changes."
+## Context Persistence
+
+**At session start:**
+1. Read `AGENTS.md` for project context and recent activity
+2. Review prior planning decisions and patterns
+
+**At task completion:**
+Update `AGENTS.md` with timestamped entry (latest first):
+
+```markdown
+### YYYY-MM-DD HH:MM - [Brief Task Description]
+**Agent:** planner
+**Summary:** [What was analyzed/planned]
+- Key findings and recommendations
+- Risks identified
+- Recommended implementation sequence
+```
+
+**Format requirements:**
+- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
+- Latest entries first (prepend, don't append)
+- Keep entries concise (3-5 bullets max)
+- File auto-prunes when exceeding 100KB
+
+**Present update for approval before ending task.**

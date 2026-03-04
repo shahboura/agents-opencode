@@ -19,6 +19,8 @@ permission:
   edit: "ask"
   bash: "ask"
   "rm -rf *": "deny"
+  "git push --force*": "deny"
+  "git push * --force*": "deny"
   task:
     "*": "deny"
     "explore": "allow"

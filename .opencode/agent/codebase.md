@@ -62,7 +62,7 @@ Log detected profile at start: `Detected active profile: <profile>`
 2. After each step:
    - Run appropriate build/type check for detected profile
    - Execute tests if test directory exists
-   - Request approval before next step
+   - Pause only if a step fails validation or introduces unexpected complexity
 
 ### Phase 3: Completion
 - Summarize what was implemented

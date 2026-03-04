@@ -223,5 +223,4 @@ What to avoid.
 - [ ] Images optimized
 - [ ] Tags/categories added
 - [ ] Social media snippets ready
-- [ ] Related posts linked</content>
-<parameter name="filePath">.opencode/instructions/blogger.instructions.md
+- [ ] Related posts linked

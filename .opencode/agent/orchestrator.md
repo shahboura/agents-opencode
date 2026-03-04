@@ -139,6 +139,11 @@ For each approved phase:
 - Code quality checks
 - Best practices validation
 
+**@planner** - Use for:
+- Read-only codebase analysis
+- Detailed implementation planning
+- Risk assessment before implementation
+
 **@blogger** - Use for:
 - Blog post creation
 - YouTube script writing
