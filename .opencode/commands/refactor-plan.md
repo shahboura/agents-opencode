@@ -1,6 +1,7 @@
 ---
 description: Create a refactoring plan for improving code quality without changing behavior
 agent: planner
+subtask: true
 ---
 
 # Refactoring Plan Prompt

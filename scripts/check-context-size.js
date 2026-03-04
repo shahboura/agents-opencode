@@ -26,6 +26,8 @@ function log(color, message) {
 function main() {
   const MAX_SIZE_KB = 100;
   const PRUNE_TO_KB = 75;
+  const args = process.argv.slice(2);
+  const checkOnly = args.includes('--check') || args.includes('--dry-run');
 
   // Check for global installation first, then local
   const globalContextFile = path.join(os.homedir(), '.config', 'opencode', 'AGENTS.md');
@@ -60,6 +62,11 @@ function main() {
 
   if (sizeKB > MAX_SIZE_KB) {
     log(colors.yellow, `\n⚠️  Context file exceeds ${MAX_SIZE_KB} KB - Pruning required!`);
+
+    if (checkOnly) {
+      log(colors.yellow, 'Running in check-only mode (--check/--dry-run). No changes made.');
+      process.exit(1);
+    }
 
     let content;
     try {

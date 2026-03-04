@@ -1,6 +1,7 @@
 ---
 description: Generate comprehensive API documentation from code
 agent: docs
+subtask: true
 ---
 
 # API Documentation Generation

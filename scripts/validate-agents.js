@@ -78,20 +78,20 @@ function main() {
 
     const frontmatter = frontmatterMatch[1];
 
-    // Check required fields
+    // Check required fields (anchored to reject commented-out lines)
     for (const field of requiredFields) {
-      const fieldRegex = new RegExp(`^${field}\\s*:`, 'm');
+      const fieldRegex = new RegExp(`^(?!\\s*#)\\s*${field}\\s*:`, 'm');
       if (!fieldRegex.test(frontmatter)) {
         errors.push(`${file.name}: Missing required field '${field}'`);
       }
     }
 
-    // Check mode value
-    const modeMatch = frontmatter.match(/^mode\s*:\s*(.+)/m);
+    // Check mode value (anchored to reject commented-out lines)
+    const modeMatch = frontmatter.match(/^(?!\s*#)\s*mode\s*:\s*(.+)/m);
     if (modeMatch) {
       const mode = modeMatch[1].trim();
       if (!validModes.includes(mode)) {
-        warnings.push(`${file.name}: Unusual mode value: '${mode}' (expected: primary, secondary, or utility)`);
+        warnings.push(`${file.name}: Unusual mode value: '${mode}' (expected: primary, secondary, utility, or subagent)`);
       }
     }
 

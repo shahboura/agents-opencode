@@ -21,11 +21,19 @@ Custom commands for common development tasks. Type `/command-name` in the OpenCo
 | `/security-audit` | Conduct comprehensive security audits | review |
 | `/architecture-review` | Validate system/feature design for robustness and scalability | review |
 
+### Content Creation
+
+| Command | Description | Agent |
+|---------|-------------|-------|
+| `/blog-post` | Write a blog post with research and fact validation | blogger |
+| `/content-review` | Review content with harsh but constructive criticism | brutal-critic |
+
 ### Development
 
 | Command | Description | Agent |
 |---------|-------------|-------|
 | `/refactor-plan` | Create refactoring plans for improving code quality | planner |
+| `/plan-project` | Plan and coordinate a complex multi-phase project | orchestrator |
 
 ### Management
 
@@ -47,6 +55,8 @@ Pass arguments with `$ARGUMENTS`:
 
 ```
 /architecture-review Context: Migrating from monolith to microservices
+/blog-post How to build REST APIs with Go
+/plan-project Add authentication system with OAuth2
 ```
 
 ## Creating New Commands
@@ -57,9 +67,12 @@ Pass arguments with `$ARGUMENTS`:
    ---
    description: What this command does
    agent: recommended-agent
+   subtask: true
    ---
    ```
 3. Write the prompt template as markdown body
 4. Test with `/your-command` in the TUI
+
+All commands use `subtask: true` for faster execution with less context overhead.
 
 See [OpenCode Commands docs](https://opencode.ai/docs/commands/) for full reference.

@@ -2,16 +2,22 @@
 description: Documentation and wiki generation specialist for creating comprehensive project documentation
 mode: subagent
 temperature: 0.1
+steps: 30
 tools:
-  write: true
   edit: true
-  read: true
-  grep: true
   glob: true
+  grep: true
+  read: true
+  skill: true
+  task: true
   webfetch: true
+  write: true
 permission:
   edit: "allow"
   bash: "deny"
+  task:
+    "*": "deny"
+    "explore": "allow"
 ---
 
 # Documentation Agent
@@ -107,5 +113,4 @@ docs/
 - Test all code examples
 - Validate all links
 - Ensure mobile-friendly formatting
-
 

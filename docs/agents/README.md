@@ -3,6 +3,7 @@ layout: default
 title: Agents
 nav_order: 3
 has_children: false
+description: Overview of the 8 built-in OpenCode agents and their recommended workflow.
 ---
 # Agents
 
@@ -29,3 +30,9 @@ Lean reference for the built-in agents.
 → @review (audit)
 → @docs (document)
 ```
+
+## Next Steps
+
+- **[Commands & Skills](../commands)**
+- **[Coding Standards](../instructions)**
+- **[Customization](../customization)**

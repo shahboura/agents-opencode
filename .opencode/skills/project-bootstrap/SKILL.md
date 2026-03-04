@@ -17,7 +17,16 @@ metadata:
 Use this when starting a new project or when `AGENTS.md` is missing.
 Ask clarifying questions about tech stack and standards before writing.
 
-## Output expectations
+## Key Rules
 - Keep the template short and practical
 - Prefer bullet points over long paragraphs
-- Include a brief "Session Summaries" section placeholder
+- Include a brief "Milestones" section placeholder
+- Ask about tech stack and conventions before generating content
+- Do not add language-specific rules; those belong in skills
+
+## Validation Commands
+```bash
+# No automated validation — manual review
+# [ ] AGENTS.md exists and has project context
+# [ ] Structure matches repository conventions
+```

@@ -1,6 +1,7 @@
 ---
 description: Document an architectural decision with context, options, and rationale
 agent: docs
+subtask: true
 ---
 
 # Architecture Decision Record (ADR)

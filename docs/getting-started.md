@@ -2,6 +2,7 @@
 layout: default
 title: Getting Started
 nav_order: 2
+description: Install and configure OpenCode agents in under 5 minutes with npx or curl.
 ---
 
 # Getting Started

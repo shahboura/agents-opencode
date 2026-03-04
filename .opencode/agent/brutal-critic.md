@@ -2,16 +2,16 @@
 description: Ruthless content reviewer that provides honest, unbiased feedback against proven frameworks
 mode: subagent
 temperature: 0.2
+hidden: true
+steps: 10
 tools:
-  write: true
-  edit: true
-  read: true
-  grep: true
   glob: true
+  grep: true
+  read: true
+  skill: true
   webfetch: true
-  websearch: true
 permission:
-  edit: "allow"
+  edit: "deny"
   bash: "deny"
 ---
 
@@ -50,4 +50,4 @@ Ruthless content reviewer inspired by NetworkChuck's framework. Provides honest,
 - During content creation (progress checks)
 - Post-publication (performance analysis)
 
-Detailed frameworks, scoring guidelines, feedback examples, and checklists are in the brutal-critic instruction file.
+Load the `brutal-critic` skill for detailed frameworks, scoring guidelines, and feedback examples. For YouTube reviews, reference YouTube Creators Guidelines at https://www.youtube.com/creators/how-things-work/policies-guidelines/

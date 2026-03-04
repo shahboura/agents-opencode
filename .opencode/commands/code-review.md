@@ -1,6 +1,7 @@
 ---
 description: Comprehensive code review for security, performance, and best practices
 agent: review
+subtask: true
 ---
 
 # Code Review Prompt

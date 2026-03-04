@@ -1,6 +1,7 @@
 ---
 description: Create comprehensive README documentation for a project
 agent: docs
+subtask: true
 ---
 
 # Create README Prompt

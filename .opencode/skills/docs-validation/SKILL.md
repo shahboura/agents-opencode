@@ -16,7 +16,15 @@ metadata:
 ## When to use me
 Use this before merging documentation changes.
 
-## Output expectations
-- Provide exact commands to run
-- Call out any repo-specific rules
+## Key Rules
+- Run markdown linting before committing docs changes
+- Validate internal and external links
+- Check for duplicate headings within the same file
+- Ensure proper heading hierarchy (single H1, sequential H2/H3)
 - Keep it concise and action-oriented
+
+## Validation Commands
+```bash
+npm run lint:md
+npm run validate:docs
+```

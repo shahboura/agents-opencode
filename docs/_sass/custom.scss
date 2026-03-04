@@ -20,12 +20,12 @@ table {
 table th,
 table td {
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color, #444);
   text-align: left;
 }
 
 table th {
-  background-color: #f8f9fa;
+  background-color: var(--table-header-bg, #2d333b);
   font-weight: 600;
 }
 
@@ -36,7 +36,7 @@ table th {
 
 /* Footer styling */
 .site-footer {
-  border-top: 1px solid #e1e4e8;
+  border-top: 1px solid var(--border-color, #444);
   margin-top: 3rem;
   padding-top: 1rem;
 }

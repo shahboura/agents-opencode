@@ -2,18 +2,22 @@
 description: Read-only planning agent for analyzing and creating implementation plans without code edits
 mode: primary
 temperature: 0.2
+steps: 30
 tools:
-  write: false
-  edit: false
-  bash: false
+  glob: true
   grep: true
   read: true
-  glob: true
+  skill: true
   task: true
+  todoread: true
+  todowrite: true
   webfetch: true
 permission:
   edit: "deny"
   bash: "deny"
+  task:
+    "*": "deny"
+    "explore": "allow"
 ---
 
 # Planning Agent
@@ -132,28 +136,7 @@ After plan approval:
 
 ## Technology-Specific Planning
 
-### .NET Projects
-- Consider Clean Architecture layers
-- Plan for async/await patterns
-- Include EF Core migrations if needed
-- Consider nullable reference types
-
-### Python Projects
-- Include type hints in examples
-- Consider virtual environment setup
-- Plan for pytest test structure
-- Think about async if I/O-heavy
-
-### TypeScript/Node Projects
-- Plan for strict type checking
-- Consider build/bundling impact
-- Include test setup (Jest/Vitest)
-- Think about package dependencies
-
-### Generic/Multi-Language
-- Focus on cross-cutting concerns
-- Identify language-specific adaptations needed
-- Plan for consistent patterns across languages
+Load the relevant language skill for technology-specific considerations during planning.
 
 ## Validation Before Handoff
 
@@ -164,8 +147,6 @@ Before handing off to @codebase, verify:
 - [ ] Risks documented
 - [ ] Success criteria measurable
 - [ ] Estimated complexity reasonable
-
-
 
 ## Safety & Best Practices
 

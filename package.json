@@ -1,7 +1,7 @@
 {
   "name": "agents-opencode",
   "version": "1.0.0",
-  "description": "OpenCode Agents: Intelligent AI assistants for software development. Features 8 specialized agents, 15+ language standards, automated code review, documentation generation, and cross-platform installation. Supports .NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, and Rust with plan-first execution and context-aware assistance.",
+  "description": "OpenCode Agents: Intelligent AI assistants for software development. Features 8 specialized agents, 14 coding standards, automated code review, documentation generation, and cross-platform installation. Supports .NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, and Rust with plan-first execution and context-aware assistance.",
   "files": [
     "install.js"
   ],
@@ -22,7 +22,7 @@
     "validate:all": "npm run validate:agents && npm run validate:docs && npm run validate:context && npm run lint:md"
   },
   "devDependencies": {
-    "markdownlint-cli": "^0.47.0"
+    "markdownlint-cli": "^0.48.0"
   },
   "keywords": [
     "opencode",

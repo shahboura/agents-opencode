@@ -220,15 +220,9 @@ ruff==0.1.0
 
 **Run these before committing:**
 ```bash
-# Format code
-black .
-
-# Lint + format (fast)
+# Lint + format
 ruff check .
 ruff format .
-
-# Lint code
-ruff check .
 
 # Type checking
 mypy .

@@ -8,42 +8,14 @@ This repository contains customized agents for OpenCode.ai, aligned with Anthrop
 - `docs/` - Documentation for agents and usage
 - `AGENTS.md` - This file with project instructions
 
-## Language-Specific Instructions
+## Language & Domain Skills
 
-### .NET/C# Projects
+Language-specific rules are loaded on-demand via skills (not eagerly). Available skills:
+`dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ruby-rails`, `rust`, `sql-migrations`, `blogger`, `brutal-critic`
 
-Apply Clean Architecture principles:
+Utility skills: `project-bootstrap`, `docs-validation`, `agent-diagnostics`
 
-- Follow dependency rules: Domain → Application → Infrastructure → WebAPI
-- Use async/await with CancellationToken
-- Enable nullable reference types
-- Constructor injection for dependencies
-- Entity Framework with IEntityTypeConfiguration
-
-### Python Projects
-
-- Always use type hints on function signatures
-- Use context managers for resource management
-- Prefer list comprehensions over loops
-- Async/await for I/O operations
-- Google-style docstrings for public APIs
-
-### TypeScript Projects
-
-- Enable strict mode in tsconfig.json
-- Explicit types, no implicit any
-- Strict null checks with optional chaining
-- Generics for reusable code
-- Utility types (Pick, Omit, Partial, etc.)
-
-### Flutter/Dart Projects
-
-- Use Riverpod for state management
-- Feature-based architecture with clean separation
-- Immutable data models with freezed
-- Result pattern for error handling
-- Provider pattern for dependency injection
-- Widget testing for all UI components
+Load a skill with the `skill` tool when working on a specific language or domain.
 
 ## Agent Usage
 
@@ -51,6 +23,7 @@ Primary agents:
 
 - `codebase` - Multi-language development with profile detection
 - `orchestrator` - Strategic planning and complex workflow coordination
+- `planner` - Read-only analysis and implementation planning
 - `blogger` - Content creation for blogging, podcasting, and YouTube scripting
 - `brutal-critic` - Ruthless content reviewer with framework-based criticism
 - `em-advisor` - Engineering management guidance
@@ -78,35 +51,46 @@ All documentation changes must:
 - Have valid internal/external links (`npm run validate:docs`)
 - Run validation before committing changes
 
-<!-- Session history managed by OpenCode's built-in memory. Only significant milestones logged here. -->
+<!-- Session history managed by OpenCode's built-in memory. Only significant milestones logged here. Auto-prunes at 100KB. -->
 
 ## Milestones
 
+### 2026-03-04 - Audit-driven fixes: factual errors, stale refs, CI hardening
+
+- Fixed 3 factual errors in skills: Rust Go-isms (`fmt::Errorf`, goroutine), Java-Spring .NET annotation (`@ProducesResponseType`)
+- Fixed stale tool references in blogger instructions (`websearch`/`codesearch` → `webfetch`/`grep`)
+- Removed redundant `black .` from Python skill and instruction (superseded by `ruff format`)
+- Updated GitHub Actions: `checkout` v4.2.2→v6.0.2, `setup-node` v4.1.0→v6.3.0, added `persist-credentials: false`
+- Fixed AGENTS.md prune threshold comment (50KB → 100KB to match `check-context-size.js`)
+- Renamed default branch from `master` to `main` (aligns with workflow triggers)
+
+### 2026-03-04 - OpenCode platform-specific agent optimization (8 phases)
+
+- Enhanced `opencode.json` with global permissions (`external_directory`, `doom_loop` deny) and instruction glob loading
+- Added `skill` tool to all 8 agents (closing critical gap — 3 skills existed but no agent could load them)
+- Added `todowrite`/`todoread` to 5 workflow agents (codebase, orchestrator, planner, em-advisor, blogger)
+- Added `steps` limits to all agents (10–75 based on role), `hidden: true` to brutal-critic
+- Added `task` permission controls with agent-specific glob restrictions (e.g., blogger → brutal-critic only)
+- Hardened bash permissions: denied `rm -rf *` and `git push --force*` on all bash-enabled agents
+- Extended context persistence (AGENTS.md pattern) to orchestrator and codebase agents
+- Added `subtask: true` to all 12 commands; created 3 new commands (`/blog-post`, `/content-review`, `/plan-project`)
+- Updated orchestrator Agent Selection Guide to include blogger and brutal-critic
+- Added `webfetch` to review agent; fixed blogger references from websearch/codesearch to webfetch/grep
+
+### 2026-03-04 - Comprehensive repository optimization (6 phases)
+
+- Enhanced em-advisor agent with file operations, PDF analysis, and context persistence
+- Hardened CI/CD: SHA-pinned actions, timeouts, concurrency, push trigger, shell injection fix
+- Fixed factual inaccuracies (package.json "15+" → "14", instructions.md missing rows, validate-agents.js warning)
+- Standardized all 8 agent configs: alphabetical tool order, correct permissions, removed non-existent tools
+- Improved scripts: --check flag for CI, showUsage exit code, filterLanguages edge case, backup logic, regex anchoring
+- Documentation: sequential nav_order, dark-theme SCSS, SEO descriptions, expanded troubleshooting, skill usage docs
+
 ### 2026-02-21 - Context optimization, commands migration, and installer modernization
 
-- Reduced per-session context by ~70%: removed eager instruction loading (~73 KB), de-duplicated agents, pruned AGENTS.md
-- Migrated 9 prompts → commands (`.opencode/commands/`), renamed examples to match
-- Replaced 3 PowerShell scripts with Node.js validators; added `npx`, `--update`, `--languages` to installer
-- Stripped non-functional `applyTo` frontmatter from 14 instruction files
-- Migrated to OpenCode's native memory for session recall
+- Reduced per-session context by ~70%; migrated 9 prompts to commands; modernized installer
 
-### 2026-02-18 - Trim docs site and audit dependencies
+### 2025-12 to 2026-02 - Foundation
 
-- Ran npm audit fix, trimmed docs to lean set
-- Removed nonessential docs pages; kept core onboarding, agents, prompts, standards
-
-### 2026-02-18 - Implement lazy AGENTS.md policy and skills
-
-- Shifted AGENTS.md creation to first run (/init); added three focused skills
-- Updated agent context guidance to handle missing AGENTS.md
-
-### 2025-12-24 - Update global config location to match OpenCode standards
-
-- Modified getGlobalConfigDir() to use ~/.config/opencode/ on all platforms
-- Updated README.md and install.js help text
-
-### 2025-12-23 - Initial repository setup and migration from Copilot
-
-- Migrated from .github/Copilot to .opencode/OpenCode format
-- Created 8 agents, 14 instruction files, 8 prompts, CI/CD workflow
-- Committed 54 files; full validation suite passed
+- Initial repository setup; migration from Copilot; created 8 agents, 14 instruction files
+- Lazy AGENTS.md policy; docs site trimming; global config standardization

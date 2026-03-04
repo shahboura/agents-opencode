@@ -1,6 +1,7 @@
 ---
 description: Generate comprehensive unit tests for selected code
 agent: codebase
+subtask: true
 ---
 
 # Generate Tests Prompt

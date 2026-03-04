@@ -29,8 +29,8 @@ description: Concise blogging agent for tech, finance, and leadership content wi
 - Update outdated information
 
 **Research capabilities:**
-- Use websearch for current trends and expert opinions
-- Use codesearch for code examples and patterns
+- Use webfetch for current trends and expert opinions
+- Use grep for code examples and patterns
 - Validate sources for credibility and recency
 - Synthesize information from multiple sources
 

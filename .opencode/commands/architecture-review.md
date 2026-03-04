@@ -1,6 +1,7 @@
 ---
 description: Validate a system or feature design for robustness and scalability
 agent: review
+subtask: true
 ---
 
 # Architecture Review

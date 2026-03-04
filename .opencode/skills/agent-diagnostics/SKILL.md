@@ -16,7 +16,14 @@ metadata:
 ## When to use me
 Use this when agents are not loading, instructions seem ignored, or setup is inconsistent.
 
-## Output expectations
-- Provide a short checklist of issues
-- Include exact files/paths to fix
-- Suggest validation commands when available
+## Key Rules
+- Verify agent files exist in `.opencode/agent/` for each expected agent
+- Check that `opencode.json` instruction globs resolve to actual files
+- Confirm skill directories have a `SKILL.md` with valid frontmatter
+- Look for stale references to renamed or removed files
+- Cross-check AGENTS.md skill/agent lists against actual filesystem
+
+## Validation Commands
+```bash
+node scripts/validate-agents.js
+```

@@ -1,13 +1,17 @@
 ---
 layout: default
 title: Instructions
-nav_order: 6
+nav_order: 5
+description: Coding standards for 14 languages and frameworks loaded on demand by agents.
 ---
 
 # Coding Standards
 
-Reference standards for each language. Available in `.opencode/instructions/`
-and loaded on demand by agents when working on matching file types.
+Reference standards for each language. Available as on-demand skills in `.opencode/skills/`
+and as detailed reference files in `.opencode/instructions/`.
+
+Agents load the relevant skill automatically when working on matching file types.
+Only `ci-cd-hygiene` is loaded globally; all other standards are on-demand.
 
 ## Coverage
 
@@ -25,6 +29,8 @@ and loaded on demand by agents when working on matching file types.
 | Rust | Ownership, Result/Option, clippy |
 | CI/CD | Fail-fast gates, security, caching |
 | SQL | Safe migrations, constraints, indexes |
+| Blogger | Content style, SEO, research validation |
+| Brutal Critic | Framework-based scoring, review process |
 
 ## Full References
 

@@ -1,6 +1,7 @@
 ---
 description: Perform comprehensive security audit of code and infrastructure
 agent: review
+subtask: true
 ---
 
 # Security Audit Prompt

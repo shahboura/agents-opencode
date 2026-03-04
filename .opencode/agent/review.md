@@ -2,14 +2,20 @@
 description: Code review specialist focusing on security, performance, and best practices
 mode: subagent
 temperature: 0.1
+steps: 20
 tools:
-  read: true
-  grep: true
   glob: true
+  grep: true
+  read: true
+  skill: true
   task: true
+  webfetch: true
 permission:
   edit: "deny"
   bash: "deny"
+  task:
+    "*": "deny"
+    "explore": "allow"
 ---
 
 # Code Review Agent
@@ -90,26 +96,7 @@ For each file:
 
 ## Language-Specific Checks
 
-### .NET/C#
-- Nullable reference types usage
-- IDisposable implementation
-- Async suffixes on methods
-- ConfigureAwait usage
-- Dependency injection patterns
-
-### Python
-- Type hints usage
-- Context managers (with statements)
-- List comprehensions vs loops
-- Exception handling patterns
-- Virtual environment dependencies
-
-### TypeScript/JavaScript
-- Type safety (any usage)
-- Promise handling
-- Null/undefined checks
-- Immutability patterns
-- Module exports
+Load the relevant language skill for technology-specific review criteria.
 
 ## Review Guidelines
 - Be constructive and specific
@@ -124,5 +111,4 @@ For each file:
 - Summarize key findings
 - Suggest priority of fixes
 - Offer to help implement critical changes
-
 

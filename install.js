@@ -208,21 +208,20 @@ function installProject(tempDir, projectDir) {
         warning('Project directory is not a git repository. Agent session logging may be limited.');
     }
 
-    // Create .opencode directory
+    // Create .opencode directory (backup first if non-empty)
     const opencodeDir = path.join(projectDir, '.opencode');
-    ensureDir(opencodeDir);
 
-    // Backup existing .opencode if it exists
     if (fs.existsSync(opencodeDir) && fs.readdirSync(opencodeDir).length > 0) {
         const backupDir = `${opencodeDir}.backup.${Date.now()}`;
         try {
             fs.renameSync(opencodeDir, backupDir);
             info(`Backed up existing .opencode to ${backupDir}`);
-            ensureDir(opencodeDir); // Recreate the directory
         } catch (err) {
             warning(`Could not backup existing .opencode: ${err.message}`);
         }
     }
+
+    ensureDir(opencodeDir);
 
     // Copy all .opencode/ contents
     const opencodeSrc = path.join(tempDir, '.opencode');
@@ -239,8 +238,6 @@ function installProject(tempDir, projectDir) {
     }
 
     // AGENTS.md is created on first agent run (not during install)
-
-
 
     // Verify installation
     if (verifyInstallation(opencodeDir)) {
@@ -261,8 +258,6 @@ function uninstall() {
     const opencodeDir = path.join(currentDir, '.opencode');
     const agentsMdPath = path.join(currentDir, 'AGENTS.md');
     const configPath = path.join(currentDir, 'opencode.json');
-
-
 
     let foundInstallation = false;
 
@@ -358,9 +353,15 @@ function filterLanguages(installDir, languages) {
         info(`Available: ${validLanguages.join(', ')}`);
     }
 
+    const valid = requested.filter(l => validLanguages.includes(l));
+    if (valid.length === 0) {
+        warning('No valid languages specified — keeping all instruction files.');
+        return;
+    }
+
     // Build set of files to keep
     const keepFiles = new Set(ALWAYS_KEEP);
-    for (const lang of requested) {
+    for (const lang of valid) {
         if (LANGUAGE_MAP[lang]) {
             keepFiles.add(LANGUAGE_MAP[lang]);
         }
@@ -452,7 +453,7 @@ EXAMPLES:
 
 For more information, visit: https://github.com/shahboura/agents-opencode
 `);
-    process.exit(1);
+    process.exit(0);
 }
 
 function main() {
