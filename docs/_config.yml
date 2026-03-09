@@ -5,7 +5,10 @@ url: https://shahboura.github.io
 baseurl: /agents-opencode
 
 # Theme
-remote_theme: just-the-docs/just-the-docs
+theme: just-the-docs
+
+plugins:
+  - jekyll-seo-tag
 
 color_scheme: dark
 
