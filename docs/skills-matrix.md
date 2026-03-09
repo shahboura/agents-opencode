@@ -9,6 +9,11 @@ description: Agent-to-skill allowlist matrix for OpenCode least-privilege config
 
 This table reflects `permission.skill` allowlists in `.opencode/agent/*.md`.
 
+Quick read:
+- Most agents follow `"*": "deny"` + explicit allowlist.
+- Language-heavy agents get language/domain skills.
+- Docs/content/EM agents stay intentionally narrow.
+
 | Agent | Allowed skills |
 |---|---|
 | `codebase` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ruby-rails`, `rust`, `sql-migrations` |
@@ -25,3 +30,8 @@ This table reflects `permission.skill` allowlists in `.opencode/agent/*.md`.
 - Baseline rule for all agents with skill access: `"*": "deny"`.
 - Skills load on demand via the `skill` tool.
 - Keep allowlists narrow by role to reduce context/tool noise.
+
+## Skill Scope Policy (Current)
+
+- Keep the current core-only skill set.
+- Expand only when demand, gap, ownership, and licensing checks are all satisfied.

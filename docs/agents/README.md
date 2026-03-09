@@ -9,18 +9,26 @@ description: Overview of the 8 built-in OpenCode agents and their recommended wo
 
 Lean reference for the built-in agents.
 
+## Why these agents
+
+- **Clear separation of roles** so you can pick the right depth quickly.
+- **Safer behavior by default** through scoped skill allowlists.
+- **Faster handoffs** across planning, implementation, review, and docs.
+
 ## Agent Overview
 
-| Agent | Purpose | Use For |
-|-------|---------|---------|
-| `@orchestrator` | Planning & coordination | Multi-phase work, risk assessment |
-| `@planner` | Read-only planning | Analysis and plans only |
-| `@codebase` | Code implementation | Features, fixes, refactors |
-| `@review` | Quality audits | Security, performance, best practices |
-| `@docs` | Documentation | README, API docs, guides |
-| `@em-advisor` | Leadership guidance | Team management, 1-on-1 prep |
-| `@blogger` | Content creation | Tech/blog/podcast scripts |
-| `@brutal-critic` | Content review | Critique, framework validation |
+| Agent | Best For | Allocated Skills (summary) |
+|-------|----------|----------------------------|
+| `@orchestrator` | Multi-phase coordination | Language skills + utility skills + `blogger`/`brutal-critic` |
+| `@planner` | Read-only architecture/planning | Language skills + utility skills |
+| `@codebase` | Feature implementation | Language skills + `sql-migrations` |
+| `@review` | Security/performance/code quality | Language skills + `docs-validation` + `agent-diagnostics` |
+| `@docs` | Documentation updates | `docs-validation` + `project-bootstrap` + `agent-diagnostics` |
+| `@em-advisor` | Engineering leadership guidance | `project-bootstrap` + `docs-validation` + `agent-diagnostics` |
+| `@blogger` | Blog/video/podcast drafts | `blogger` + `brutal-critic` |
+| `@brutal-critic` | Final content quality gate | `brutal-critic` + `blogger` |
+
+See exact allowlists in the [Skills Matrix](../skills-matrix).
 
 ## Suggested Flow
 
@@ -43,6 +51,11 @@ Lean reference for the built-in agents.
 - Agents use `permission.skill` rules to restrict which skills can load.
 - Recommended baseline is `"*": "deny"` with explicit per-skill allows.
 - This enforces least privilege and keeps agent behavior domain-scoped.
+
+## Skill Scope Policy (Current)
+
+- Keep current **core-only** skill scope.
+- Add skills only with repeat demand, clear gap, owner, and clean licensing/provenance.
 
 ## Next Steps
 

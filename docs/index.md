@@ -11,6 +11,15 @@ keywords: opencode, ai agents, code generation, development workflow, .NET, Pyth
 
 Lean agent pack for OpenCode workflows.
 
+## Why this pack
+
+- **Fast setup:** install and run in minutes.
+- **Clear workflow:** orchestrate → implement → review → document.
+- **Safe skill model:** on-demand loading + least-privilege allowlists.
+- **Release-ready defaults:** validation and CI/CD hygiene included.
+
+Quick jump: [Agents](agents/README) · [Skills Matrix](skills-matrix) · [Commands](commands)
+
 ## Quick Start
 
 1. Install:
@@ -29,16 +38,18 @@ Lean agent pack for OpenCode workflows.
 
 ## Agents
 
-| Agent | Purpose |
-|-------|---------|
-| `@orchestrator` | Planning & coordination |
-| `@planner` | Read-only planning |
-| `@codebase` | Code implementation |
-| `@review` | Security & quality audits |
-| `@docs` | Documentation |
-| `@em-advisor` | Leadership guidance |
-| `@blogger` | Content creation |
-| `@brutal-critic` | Content review |
+| Agent | Best For | Allocated Skills (summary) |
+|-------|----------|----------------------------|
+| `@orchestrator` | Multi-phase coordination | Language skills + utility skills + `blogger`/`brutal-critic` |
+| `@planner` | Read-only architecture/planning | Language skills + utility skills |
+| `@codebase` | Feature implementation | Language skills + `sql-migrations` |
+| `@review` | Security/performance/code quality | Language skills + `docs-validation` + `agent-diagnostics` |
+| `@docs` | Documentation updates | `docs-validation` + `project-bootstrap` + `agent-diagnostics` |
+| `@em-advisor` | EM/leadership guidance | `project-bootstrap` + `docs-validation` + `agent-diagnostics` |
+| `@blogger` | Blog/video/podcast drafting | `blogger` + `brutal-critic` |
+| `@brutal-critic` | Final content quality gate | `brutal-critic` + `blogger` |
+
+For exact allowlists, use the [Skills Matrix](skills-matrix).
 
 ## Docs
 
@@ -54,3 +65,8 @@ Lean agent pack for OpenCode workflows.
 - Skills live under `.opencode/skills/`.
 - Agents load skills on demand via the `skill` tool.
 - Keep to one relevant skill per phase unless cross-domain work requires more.
+
+## Skill Scope Policy (Current)
+
+- Keep core-only scope for now.
+- Add new skills only when there is clear demand, a real gap, ownership, and clean licensing.

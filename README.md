@@ -5,7 +5,16 @@
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://shahboura.github.io/agents-opencode/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Minimal OpenCode agents pack for project workflows.
+Lean OpenCode agent pack for fast setup, safer skill loading, and production-ready workflows.
+
+## Why this pack
+
+- **Fast onboarding:** install in minutes with `npx`.
+- **Clear execution flow:** plan, implement, review, and document with purpose-built agents.
+- **Safer defaults:** on-demand skills + deny-by-default skill permissions.
+- **Operationally ready:** built-in validation and release automation.
+
+Quick jump: [Agents](#agents) · [Skills Matrix](./docs/skills-matrix.md) · [Commands](#commands) · [Full Docs](https://shahboura.github.io/agents-opencode/)
 
 ## Quick Start
 
@@ -41,16 +50,18 @@ opencode
 
 ## Agents
 
-| Agent | Purpose | Use For |
-|-------|---------|---------|
-| `@orchestrator` | Planning & coordination | Multi-phase work, risk assessment |
-| `@planner` | Read-only planning | Analysis and plans only |
-| `@codebase` | Code implementation | Features, fixes, refactors |
-| `@review` | Security & quality audits | Security, performance, best practices |
-| `@docs` | Documentation | README, API docs, guides |
-| `@em-advisor` | Leadership guidance | Team management, 1-on-1 prep |
-| `@blogger` | Content creation | Tech/blog/podcast scripts |
-| `@brutal-critic` | Content review | Critique, framework validation |
+| Agent | Best For | Allocated Skills (summary) |
+|-------|----------|----------------------------|
+| `@orchestrator` | Multi-phase coordination | Language skills + utility skills + `blogger`/`brutal-critic` |
+| `@planner` | Read-only architecture/planning | Language skills + utility skills |
+| `@codebase` | Feature implementation | Language skills + `sql-migrations` |
+| `@review` | Security/performance/code quality | Language skills + `docs-validation` + `agent-diagnostics` |
+| `@docs` | Documentation updates | `docs-validation` + `project-bootstrap` + `agent-diagnostics` |
+| `@em-advisor` | EM/leadership guidance | `project-bootstrap` + `docs-validation` + `agent-diagnostics` |
+| `@blogger` | Blog/video/podcast drafting | `blogger` + `brutal-critic` |
+| `@brutal-critic` | Final content quality gate | `brutal-critic` + `blogger` |
+
+See full allowlists: [Skills Matrix](./docs/skills-matrix.md)
 
 ## Skill Loading (OpenCode)
 
@@ -59,15 +70,11 @@ opencode
 - Use one relevant skill per task/phase by default; add another only for clear cross-domain work.
 - If stack/domain is unclear, ask for clarification before loading.
 
-## Skill Scope Policy (Current)
+## Skill Scope Policy (Keep it)
 
-- This package currently ships a **core-only** skill set (no optional skill packs).
-- New skills are added only when they clear all gates:
-  - repeated user demand,
-  - clear gap versus existing core skills,
-  - a named maintenance owner,
-  - clean licensing/provenance.
-- For externally inspired proprietary skills, use a **clean-room rewrite** (no verbatim copying).
+- **Yes, keep this policy.** It keeps the pack focused and safe.
+- Current scope is **core-only** skills (no optional skill packs).
+- Additions should pass demand, clear-gap, ownership, and licensing/provenance checks.
 
 ## Skill Permissions (Least Privilege)
 
