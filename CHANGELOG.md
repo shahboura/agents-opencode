@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/shahboura/agents-opencode/compare/agents-opencode-v1.2.1...agents-opencode-v1.2.2) (2026-03-09)
+
+
+### Bug Fixes
+
+* trigger post-concurrency release publish cycle ([874038e](https://github.com/shahboura/agents-opencode/commit/874038e20ad3b32b52a28d1205855635c4b0744a))
+
 ## [1.2.1](https://github.com/shahboura/agents-opencode/compare/agents-opencode-v1.2.0...agents-opencode-v1.2.1) (2026-03-09)
 
 
