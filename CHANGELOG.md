@@ -2,7 +2,6 @@
 
 ## [1.2.0](https://github.com/shahboura/agents-opencode/compare/agents-opencode-v1.1.2...agents-opencode-v1.2.0) (2026-03-09)
 
-
 ### Features
 
 * add back markdown linting with stable version ([0fae9c2](https://github.com/shahboura/agents-opencode/commit/0fae9c2625eea44b1fedb62c6ae0b0d2f42d1fac))
@@ -20,7 +19,6 @@
 * update installation scripts to download from git ([4a4e932](https://github.com/shahboura/agents-opencode/commit/4a4e9327a438c7ebe44b9b03bc6b6bc08650a8c7))
 * Update uninstall to work on current directory with self-cleanup ([909e5b4](https://github.com/shahboura/agents-opencode/commit/909e5b48ed8f25e164b2909d4057fb0493640e09))
 * upgrade markdownlint-cli to latest version (0.47.0) ([de19bb8](https://github.com/shahboura/agents-opencode/commit/de19bb8236b519ed69f230fff60ae3e97e5391d3))
-
 
 ### Bug Fixes
 
