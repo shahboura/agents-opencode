@@ -60,8 +60,8 @@ jobs:
     environment:
       name: github-pages-pr
     steps:
-      - name: Mark github-pages environment for PR updates
-        run: echo "PR event linked to github-pages environment"
+      - name: Mark github-pages-pr environment for PR updates
+        run: echo "PR event linked to github-pages-pr environment"
 
   deploy:
     if: github.event_name == 'push'
