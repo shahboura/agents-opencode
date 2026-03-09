@@ -112,7 +112,7 @@ jobs:
           persist-credentials: false
 
       - name: Lint workflows with actionlint
-        uses: raven-actions/actionlint@2f2d79d405a8446a2fffcda68f8128f9f2481641 # v2.0.1
+        uses: raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8 # v2.1.2
 
   validation-summary:
     name: Validation Summary
