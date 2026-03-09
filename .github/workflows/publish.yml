@@ -58,12 +58,12 @@ jobs:
         id: check
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
-          if npm view agents-opencode@$PACKAGE_VERSION version 2>/dev/null; then
-            echo "published=true" >> $GITHUB_OUTPUT
+          echo "version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+          if npm view "agents-opencode@$PACKAGE_VERSION" version 2>/dev/null; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
             echo "v$PACKAGE_VERSION already on npm — skipping publish"
           else
-            echo "published=false" >> $GITHUB_OUTPUT
+            echo "published=false" >> "$GITHUB_OUTPUT"
             echo "v$PACKAGE_VERSION not on npm — will publish"
           fi
 
