@@ -1,22 +1,50 @@
-name: Publish to npm
+name: Release & Publish to npm
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
-  id-token: write # Required for npm trusted publishing (OIDC)
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Validate
+  release:
+    name: Release Please
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    needs: release
+    if: ${{ needs.release.outputs.release_created == 'true' }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing (OIDC)
+    environment:
+      name: npm-publish
 
     steps:
       - name: Checkout code
@@ -29,44 +57,19 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run unified validation gate
+      - name: Validate before publish
         run: npm run validate:all
 
-  publish:
-    name: Publish to npm
-    runs-on: ubuntu-latest
-    needs: validate
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-        with:
-          node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Check if version already published
-        id: check
+      - name: Show release context
         run: |
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          echo "version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
-          if npm view "agents-opencode@$PACKAGE_VERSION" version 2>/dev/null; then
-            echo "published=true" >> "$GITHUB_OUTPUT"
-            echo "v$PACKAGE_VERSION already on npm — skipping publish"
-          else
-            echo "published=false" >> "$GITHUB_OUTPUT"
-            echo "v$PACKAGE_VERSION not on npm — will publish"
-          fi
+          echo "release_created=${{ needs.release.outputs.release_created }}"
+          echo "tag_name=${{ needs.release.outputs.tag_name }}"
+          echo "version=${{ needs.release.outputs.version }}"
 
       - name: Publish to npm
-        if: steps.check.outputs.published == 'false'
         run: npm publish --access public
