@@ -29,6 +29,7 @@ Use this when building or maintaining Node.js services with Express.
 - Set timeouts on all external calls; add retries with exponential backoff where appropriate
 - Centralize configuration — avoid sprinkling `process.env` reads throughout the codebase
 - Close resources and streams in `finally` blocks
+- Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
 ```bash

@@ -13,6 +13,21 @@ tools:
 permission:
   edit: "deny"
   bash: "deny"
+  skill:
+    "*": "deny"
+    "dotnet": "allow"
+    "python": "allow"
+    "typescript": "allow"
+    "flutter": "allow"
+    "go": "allow"
+    "java-spring": "allow"
+    "node-express": "allow"
+    "react-next": "allow"
+    "ruby-rails": "allow"
+    "rust": "allow"
+    "sql-migrations": "allow"
+    "docs-validation": "allow"
+    "agent-diagnostics": "allow"
   task:
     "*": "deny"
     "explore": "allow"
@@ -96,7 +111,11 @@ For each file:
 
 ## Language-Specific Checks
 
-Load the relevant language skill for technology-specific review criteria.
+## Skill Activation Policy
+
+- Load skills on demand when review criteria depend on language/framework conventions.
+- Use one relevant language skill by default; add another only for multi-stack reviews.
+- If stack is ambiguous, infer from files first, then ask a clarifying question.
 
 ## Review Guidelines
 - Be constructive and specific
@@ -111,4 +130,3 @@ Load the relevant language skill for technology-specific review criteria.
 - Summarize key findings
 - Suggest priority of fixes
 - Offer to help implement critical changes
-

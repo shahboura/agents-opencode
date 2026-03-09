@@ -30,6 +30,7 @@ Use this when working on TypeScript projects that require strict type safety.
 - Enum values should be string-valued (`Role = 'ADMIN'`), not numeric
 - Custom error classes must extend `Error` and set `this.name`
 - Never use `!` (non-null assertion) without an adjacent comment explaining why it's safe
+- Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
 ```bash

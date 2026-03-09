@@ -21,6 +21,19 @@ permission:
   "rm -rf *": "deny"
   "git push --force*": "deny"
   "git push * --force*": "deny"
+  skill:
+    "*": "deny"
+    "dotnet": "allow"
+    "python": "allow"
+    "typescript": "allow"
+    "flutter": "allow"
+    "go": "allow"
+    "java-spring": "allow"
+    "node-express": "allow"
+    "react-next": "allow"
+    "ruby-rails": "allow"
+    "rust": "allow"
+    "sql-migrations": "allow"
   task:
     "*": "deny"
     "review": "allow"
@@ -83,7 +96,11 @@ Log detected profile at start: `Detected active profile: <profile>`
 | ruby-rails | — | `rails test` | `rubocop` |
 | rust | `cargo check` | `cargo test` | `cargo clippy` |
 
-Load the corresponding language skill (e.g., `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ruby-rails`, `rust`) for language-specific patterns and best practices.
+## Skill Activation Policy
+
+- Load skills on demand only when work clearly maps to a stack.
+- Use one relevant language skill by default; load a second only for explicit cross-domain dependencies.
+- If stack choice is unclear, ask a short clarification question before loading.
 
 ## Code Standards
 - Write modular, functional code following language conventions
@@ -132,4 +149,3 @@ Update `AGENTS.md` with timestamped entry (latest first):
 - Only log significant implementations (skip trivial edits)
 
 **Present update for approval before ending task.**
-

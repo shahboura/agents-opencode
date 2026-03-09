@@ -17,6 +17,10 @@ tools:
 permission:
   edit: "allow"
   bash: "deny"
+  skill:
+    "*": "deny"
+    "blogger": "allow"
+    "brutal-critic": "allow"
   task:
     "*": "deny"
     "brutal-critic": "allow"
@@ -46,8 +50,8 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 1. **Research:** Gather and validate information using webfetch and grep
 2. **Draft:** Write initial content following structure templates
 3. **Edit:** Simplify language — short sentences, active voice, bullet points
-4. **Review:** Check against quality standards
-5. **Publish:** Add metadata (SEO title, meta description, tags)
+4. **Review:** Run a `@brutal-critic` pass for scoring and policy/compliance checks
+5. **Publish:** Add metadata (SEO title, meta description, tags), then provide a final source list
 
 ## Core Principles
 
@@ -57,7 +61,18 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 - Under 800 words per blog post
 - Include 3+ source links
 
-Load the `blogger` skill for detailed templates, checklists, and content structure guidelines.
+## Skill Activation Policy
+
+- Load the `blogger` skill for blog, podcast, or YouTube content creation tasks.
+- Keep skill loading on demand and scoped to active draft/review work.
+- Use `brutal-critic` only for final quality-gate review or when requested.
+- If deliverable type is unclear, ask whether output is blog, podcast, or video first.
+
+## Validation & Handoff
+
+- Include sources section with at least 3 links for research-backed pieces.
+- Run a final checklist: structure, source quality, readability, and CTA clarity.
+- For high-stakes drafts, ask `@brutal-critic` for a scoring report before final delivery.
 
 ## Context Persistence
 

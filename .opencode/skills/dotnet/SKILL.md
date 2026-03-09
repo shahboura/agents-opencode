@@ -28,6 +28,7 @@ Use this when working on .NET/C# projects that follow Clean Architecture pattern
 - Use `required` keyword (C# 11+) for required properties instead of constructor enforcement
 - Prefer `is not null` over `!= null`; use `nameof()` in exception parameter names
 - Interfaces belong in the Application layer; implementations in Infrastructure
+- Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
 ```bash

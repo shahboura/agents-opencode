@@ -30,6 +30,7 @@ Use this when working on Java Spring Boot projects.
 - Keep controllers thin: no business logic, only HTTP mapping and delegation to services
 - Use `ResponseEntity` with explicit status codes and `@ApiResponse` annotations (Springdoc/Swagger)
 - Background jobs via `@Async` or Spring `ApplicationEvent` — not raw threads
+- Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
 ```bash

@@ -23,6 +23,7 @@ Ask clarifying questions about tech stack and standards before writing.
 - Include a brief "Milestones" section placeholder
 - Ask about tech stack and conventions before generating content
 - Do not add language-specific rules; those belong in skills
+- Respect repository scope decisions (if policy is core-only, do not suggest optional skill packs by default)
 
 ## Validation Commands
 ```bash

@@ -30,6 +30,7 @@ Use this when reviewing content drafts, scripts, or outlines before publication.
 - Common issues to check: weak hooks, information dumps without breaks, theory without application, vague CTAs
 - Validate against platform policies (YouTube monetization, SEO requirements, copyright)
 - Praise only when standards are genuinely met — never sugarcoat
+- For repo governance content, flag inconsistencies between stated scope and docs (e.g., core-only vs optional-pack language)
 
 ## Validation Commands
 ```bash

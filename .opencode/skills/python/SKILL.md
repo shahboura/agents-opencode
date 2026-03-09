@@ -29,6 +29,7 @@ Use this when working on Python projects that require strict typing and code qua
 - Prefer `Optional[T]` (or `T | None` on 3.10+) — never leave nullable returns untyped
 - Custom context managers via `@contextmanager` for resource lifecycle patterns
 - Use `pytest` fixtures with type annotations; mark async tests with `@pytest.mark.asyncio`
+- Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
 ```bash

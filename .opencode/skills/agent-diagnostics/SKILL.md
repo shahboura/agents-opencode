@@ -22,6 +22,8 @@ Use this when agents are not loading, instructions seem ignored, or setup is inc
 - Confirm skill directories have a `SKILL.md` with valid frontmatter
 - Look for stale references to renamed or removed files
 - Cross-check AGENTS.md skill/agent lists against actual filesystem
+- Enforce current distribution scope: core-only skills (flag docs or guidance that imply optional packs)
+- Flag references to non-existent/non-core skills unless explicitly marked as future roadmap
 
 ## Validation Commands
 ```bash

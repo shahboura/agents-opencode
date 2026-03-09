@@ -30,6 +30,7 @@ Use this when building or maintaining Rust projects.
 - Release profile: enable LTO, set `codegen-units = 1`, `panic = "abort"` for production binaries
 - Use `#[cfg(test)]` module for unit tests; `tokio::test` for async tests
 - Document public APIs with `///` rustdoc comments including `# Examples` sections
+- Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
 ```bash

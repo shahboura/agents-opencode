@@ -22,10 +22,68 @@ function log(color, message) {
   console.log(`${color}${message}${colors.reset}`);
 }
 
+function getKnownSkills() {
+  const skillsDir = path.join(process.cwd(), '.opencode', 'skills');
+  const skills = new Set();
+
+  if (!fs.existsSync(skillsDir)) {
+    return skills;
+  }
+
+  const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const skillFile = path.join(skillsDir, entry.name, 'SKILL.md');
+    if (fs.existsSync(skillFile)) {
+      skills.add(entry.name);
+    }
+  }
+
+  return skills;
+}
+
+function extractPermissionSkillBlock(frontmatter) {
+  const permissionSectionMatch = frontmatter.match(
+    /^permission\s*:\s*\n([\s\S]*?)(?=^\S|(?![\s\S]))/m
+  );
+  if (!permissionSectionMatch) return null;
+
+  const permissionBlock = permissionSectionMatch[1];
+  const skillSectionMatch = permissionBlock.match(
+    /^\s{2}skill\s*:\s*\n([\s\S]*?)(?=^\s{2}\S|(?![\s\S]))/m
+  );
+
+  if (!skillSectionMatch) return null;
+  return skillSectionMatch[1];
+}
+
+function parsePermissionMap(block, indent = 4) {
+  const map = new Map();
+  const lines = block.split('\n');
+
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    if (/^\s*#/.test(line)) continue;
+
+    const indentRegex = new RegExp(`^\\s{${indent},}`);
+    if (!indentRegex.test(line)) continue;
+
+    const match = line.match(/^\s{4,}([^:]+):\s*(.+)\s*$/);
+    if (!match) continue;
+
+    const key = match[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+    const value = match[2].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+    map.set(key, value);
+  }
+
+  return map;
+}
+
 function main() {
   const errors = [];
   const warnings = [];
   const agentDir = path.join(process.cwd(), '.opencode', 'agent');
+  const knownSkills = getKnownSkills();
 
   log(colors.cyan, 'Validating Agent Configurations...');
 
@@ -36,6 +94,11 @@ function main() {
   }
 
   log(colors.green, 'Found OpenCode agents directory');
+  if (knownSkills.size > 0) {
+    log(colors.green, `Discovered ${knownSkills.size} project skills`);
+  } else {
+    warnings.push('No skills discovered in .opencode/skills (skill allowlist name validation skipped)');
+  }
 
   // Find agent .md files, excluding README.md
   let agentFiles;
@@ -103,8 +166,49 @@ function main() {
     // Check for a meaningful introductory heading in body
     // Accept: Role, Description, Responsibilities, Core Responsibilities,
     //         Review Areas, Profile Detection, When to Use, Core Principle, etc.
-    if (!/^##?\s+\w/m.test(content.replace(/^---[\s\S]+?---/, ''))) {
+    const body = content.replace(/^---[\s\S]+?---/, '');
+    if (!/^##?\s+\w/m.test(body)) {
       warnings.push(`${file.name}: Missing content headings`);
+    }
+
+    // If skill tool is enabled, require explicit activation policy guidance
+    const hasSkillTool = /^\s*tools\s*:[\s\S]*?^\s*skill\s*:\s*true\s*$/m.test(frontmatter);
+    if (hasSkillTool && !/^##\s+Skill Activation Policy\s*$/m.test(body)) {
+      warnings.push(`${file.name}: Missing '## Skill Activation Policy' section (recommended when skill tool is enabled)`);
+    }
+
+    // Enforce least-privilege allowlist when skill tool is enabled
+    const permissionSkillBlock = extractPermissionSkillBlock(frontmatter);
+    if (hasSkillTool && !permissionSkillBlock) {
+      warnings.push(`${file.name}: Missing 'permission.skill' allowlist (recommended when skill tool is enabled)`);
+    }
+
+    if (hasSkillTool && permissionSkillBlock) {
+      const permissionMap = parsePermissionMap(permissionSkillBlock, 4);
+
+      // Require deny-by-default rule
+      if (permissionMap.get('*') !== 'deny') {
+        errors.push(`${file.name}: permission.skill must include "*": "deny" (deny-by-default)`);
+      }
+
+      const allowedSkills = [...permissionMap.entries()]
+        .filter(([skillName, decision]) => skillName !== '*' && decision === 'allow')
+        .map(([skillName]) => skillName);
+
+      if (allowedSkills.length === 0) {
+        warnings.push(`${file.name}: permission.skill has no explicit allow entries`);
+      }
+
+      // Validate explicit allow names against discovered project skills
+      if (knownSkills.size > 0) {
+        for (const allowedSkill of allowedSkills) {
+          // Wildcards are valid patterns; skip strict existence check
+          if (allowedSkill.includes('*')) continue;
+          if (!knownSkills.has(allowedSkill)) {
+            errors.push(`${file.name}: permission.skill allow entry '${allowedSkill}' does not match any .opencode/skills/<name>/SKILL.md`);
+          }
+        }
+      }
     }
 
     log(colors.green, '  ✓ Basic structure valid');

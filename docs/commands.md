@@ -59,6 +59,30 @@ agent to use it:
 
 Skills cannot be called directly from the TUI — they are invoked through agents.
 
+### Skill Selection Guardrails
+
+- Load skills on demand for matching tasks only.
+- Use one relevant skill by default; add a second only for clear cross-domain need.
+- If technology/domain is ambiguous, ask for clarification before loading.
+
+### Skill Permission Hardening
+
+OpenCode supports skill-level permissions. Use these in agent frontmatter:
+
+```yaml
+permission:
+  skill:
+    "*": "deny"
+    "docs-validation": "allow"
+    "agent-diagnostics": "allow"
+```
+
+Pattern notes:
+
+- `"*": "deny"` first, then explicit allows.
+- Use wildcard patterns for groups (for example, `"internal-*": "allow"`).
+- Prefer narrow allowlists per agent role for least privilege.
+
 ## Custom Commands
 
 Add command files to `.opencode/commands/` with frontmatter:

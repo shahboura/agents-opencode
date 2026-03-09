@@ -17,6 +17,21 @@ Utility skills: `project-bootstrap`, `docs-validation`, `agent-diagnostics`
 
 Load a skill with the `skill` tool when working on a specific language or domain.
 
+### Skill Activation Policy (OpenCode)
+
+- Skills are loaded on demand; do not preload unrelated skills.
+- Prefer 1 relevant skill per task/phase; load a second only for clear cross-domain dependencies.
+- If stack/domain is unclear, ask for clarification before loading a skill.
+- Keep skills scoped to active work to minimize context impact.
+
+### Skill Verification Checklist
+
+- [ ] Agent has `skill: true` only when needed by its role
+- [ ] Agent guidance explains *when* to load skills (not just that it can)
+- [ ] Agent `permission.skill` uses deny-by-default + explicit allowlist
+- [ ] On-demand behavior is documented in user-facing docs
+- [ ] Validation scripts and CI run agent/doc checks on each PR
+
 ## Agent Usage
 
 Primary agents:
@@ -54,6 +69,22 @@ All documentation changes must:
 <!-- Session history managed by OpenCode's built-in memory. Only significant milestones logged here. Auto-prunes at 100KB. -->
 
 ## Milestones
+
+### 2026-03-09 21:54 - Core-only skill policy propagation across docs
+
+**Agent:** orchestrator
+**Summary:** Coordinated a repository-wide documentation consistency pass to keep skill distribution explicitly core-only and avoid optional-pack ambiguity.
+- Propagated core-only policy language across README and key docs pages (index, getting-started, customization, commands, agents, instructions, troubleshooting, skills matrix).
+- Applied a conservative governance gate for future skill additions (demand, gap, ownership, licensing/provenance).
+- Validated integration with `npm run validate:all` to ensure links, markdown linting, agent validation, and context checks remained green.
+- Workflow pattern that worked: plan policy once, propagate to all user-facing docs, then run full validation before closing.
+
+### 2026-03-09 00:00 - Skill activation hardening and validation updates
+
+- Added explicit "Skill Activation Policy" sections across all 8 agents with on-demand guardrails
+- Added validator warning for agents missing `## Skill Activation Policy` when `skill: true` is enabled
+- Updated docs to clarify lazy/on-demand skill loading and OpenCode-specific invocation model
+- Kept `validate.yml` as a split validation matrix and reused `npm run validate:all` in publish gating
 
 ### 2026-03-04 - Audit-driven fixes: factual errors, stale refs, CI hardening
 

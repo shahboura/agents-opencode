@@ -30,6 +30,7 @@ Use this when creating blog posts, podcast outlines, or YouTube scripts for tech
 - Meta descriptions under 160 characters
 - Finance posts must include risk assessment, historical context, and source attribution with dates
 - Leadership posts must draw from real experience — avoid generic advice
+- For repository/process posts, do not introduce optional skill-pack claims unless explicitly present in current repo policy
 
 ## Validation Commands
 ```bash

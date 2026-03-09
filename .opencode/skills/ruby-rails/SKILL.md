@@ -30,6 +30,7 @@ Use this when building or maintaining Ruby on Rails applications.
 - Use eager loading (`includes`, `preload`) to prevent N+1 queries
 - Callbacks should be simple — use `deliver_later` for mailers, never `deliver_now` in callbacks
 - Migrations must have both `up` and `down` (or reversible `change`); add indexes on foreign keys
+- Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
 ```bash

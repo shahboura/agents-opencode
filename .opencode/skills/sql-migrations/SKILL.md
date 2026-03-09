@@ -30,6 +30,7 @@ Use this when writing database migrations, schema changes, or data transformatio
 - Backfill data in batches — never use single massive statements that lock tables
 - Avoid `SELECT *` in views and procedures; specify columns explicitly
 - Avoid long-running blocking migrations during peak traffic; prefer phased rollouts
+- Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
 ```bash

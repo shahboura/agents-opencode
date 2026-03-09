@@ -10,8 +10,23 @@ description: Coding standards for 14 languages and frameworks loaded on demand b
 Reference standards for each language. Available as on-demand skills in `.opencode/skills/`
 and as detailed reference files in `.opencode/instructions/`.
 
-Agents load the relevant skill automatically when working on matching file types.
-Only `ci-cd-hygiene` is loaded globally; all other standards are on-demand.
+Agents load relevant skills on demand through the `skill` tool when work clearly
+matches a language/domain. Skills are not preloaded eagerly.
+Only `ci-cd-hygiene` is loaded globally; other standards remain on-demand.
+
+## Skill Activation Policy (OpenCode)
+
+- Load skills on demand only when the task clearly matches a domain.
+- Use one relevant skill by default; load a second only for explicit cross-domain dependencies.
+- If stack/domain is unclear, clarify before loading.
+
+## Skill Permission Policy
+
+Agents using `skill: true` should define `permission.skill` with least-privilege rules:
+
+- Start with `"*": "deny"`
+- Add explicit `"<skill-name>": "allow"` entries
+- Use wildcard patterns only when group-level access is required
 
 ## Coverage
 

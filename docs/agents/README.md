@@ -31,6 +31,19 @@ Lean reference for the built-in agents.
 → @docs (document)
 ```
 
+## Skill Usage Guardrails
+
+- All built-in agents support the `skill` tool.
+- Skills are loaded on demand (not eagerly).
+- Use one relevant skill per phase by default; add another only for clear cross-domain dependencies.
+- If stack/domain is unclear, clarify before loading.
+
+## Skill Permission Model
+
+- Agents use `permission.skill` rules to restrict which skills can load.
+- Recommended baseline is `"*": "deny"` with explicit per-skill allows.
+- This enforces least privilege and keeps agent behavior domain-scoped.
+
 ## Next Steps
 
 - **[Commands & Skills](../commands)**

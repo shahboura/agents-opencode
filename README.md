@@ -52,6 +52,37 @@ opencode
 | `@blogger` | Content creation | Tech/blog/podcast scripts |
 | `@brutal-critic` | Content review | Critique, framework validation |
 
+## Skill Loading (OpenCode)
+
+- Skills live in `.opencode/skills/<name>/SKILL.md`.
+- Skills are loaded on demand via the `skill` tool.
+- Use one relevant skill per task/phase by default; add another only for clear cross-domain work.
+- If stack/domain is unclear, ask for clarification before loading.
+
+## Skill Scope Policy (Current)
+
+- This package currently ships a **core-only** skill set (no optional skill packs).
+- New skills are added only when they clear all gates:
+  - repeated user demand,
+  - clear gap versus existing core skills,
+  - a named maintenance owner,
+  - clean licensing/provenance.
+- For externally inspired proprietary skills, use a **clean-room rewrite** (no verbatim copying).
+
+## Skill Permissions (Least Privilege)
+
+Use `permission.skill` allowlists in agent frontmatter to prevent unrelated skill loads.
+
+```yaml
+permission:
+  skill:
+    "*": "deny"
+    "python": "allow"
+    "sql-migrations": "allow"
+```
+
+This keeps skills focused by agent role and reduces accidental context bloat.
+
 ## Commands
 
 Type `/command-name` in the TUI to run:

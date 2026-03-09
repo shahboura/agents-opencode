@@ -48,6 +48,16 @@ description: Common issues and solutions for OpenCode agent configurations.
 - Skills are invoked through agents, not directly from the TUI
 - Ask an agent to use the skill by name (e.g., "Use the project-bootstrap skill")
 - Verify skill files exist in `.opencode/skills/[skill-name]/SKILL.md`
+- Confirm the requested skill matches the active task domain (skills load on demand)
+- If stack/domain is unclear, clarify the target language before asking for skill usage
+- Note: this repository currently ships **core-only skills**; if you request a non-core skill, it will not be available.
+
+### Skill permission denied
+
+- Check `permission.skill` in the agent file
+- Ensure `"*": "deny"` is followed by explicit allow rules for required skills
+- Verify skill name matches directory and frontmatter `name`
+- Confirm the agent still has `tools.skill: true`
 
 ### Context file too large
 

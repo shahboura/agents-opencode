@@ -15,6 +15,11 @@ tools:
 permission:
   edit: "allow"
   bash: "deny"
+  skill:
+    "*": "deny"
+    "docs-validation": "allow"
+    "project-bootstrap": "allow"
+    "agent-diagnostics": "allow"
   task:
     "*": "deny"
     "explore": "allow"
@@ -107,10 +112,15 @@ docs/
 - Document breaking changes
 - Maintain changelog
 
+## Skill Activation Policy
+
+- Load skills on demand when docs work needs domain-specific guidance.
+- Use `docs-validation` for docs quality checks.
+- Add one extra domain skill only when content is tightly tied to that domain.
+
 ## Quality Checks
 - Spell check all content
 - Verify technical accuracy
 - Test all code examples
 - Validate all links
 - Ensure mobile-friendly formatting
-

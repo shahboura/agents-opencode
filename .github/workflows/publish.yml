@@ -33,17 +33,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate agents
-        run: node scripts/validate-agents.js
-
-      - name: Check context size
-        run: node scripts/check-context-size.js --check
-
-      - name: Validate documentation links
-        run: node scripts/validate-docs.js
-
-      - name: Lint markdown
-        run: npm run lint:md
+      - name: Run unified validation gate
+        run: npm run validate:all
 
   publish:
     name: Publish to npm

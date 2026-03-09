@@ -31,6 +31,7 @@ Use this when building or maintaining React or Next.js frontend applications.
 - Mock network calls in tests; never hit real backends in unit tests
 - Use Next/Image or CDN for images; apply code-splitting with dynamic imports for heavy modules
 - Keep styling consistent (CSS modules, Tailwind, or chosen system) — no mixed ad hoc patterns
+- Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
 ```bash

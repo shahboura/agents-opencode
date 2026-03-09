@@ -47,3 +47,10 @@ Lean agent pack for OpenCode workflows.
 - [Coding Standards](instructions)
 - [Commands & Skills](commands)
 - [Troubleshooting](troubleshooting)
+- [Skills Matrix](skills-matrix)
+
+## Skill Loading Model
+
+- Skills live under `.opencode/skills/`.
+- Agents load skills on demand via the `skill` tool.
+- Keep to one relevant skill per phase unless cross-domain work requires more.

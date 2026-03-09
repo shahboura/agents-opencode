@@ -15,98 +15,134 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-   validate-agents:
-     name: Validate Agent Configurations
-     runs-on: ubuntu-latest
-     timeout-minutes: 10
+  validate-agents:
+    name: Validate Agent Configurations
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
-     steps:
-       - name: Checkout code
-         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-         with:
-           persist-credentials: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
-       - name: Setup Node.js
-         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-         with:
-           node-version: '20'
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '20'
 
-       - name: Validate agents
-         run: node scripts/validate-agents.js
+      - name: Validate agents
+        run: node scripts/validate-agents.js
 
-       - name: Check context size
-         run: node scripts/check-context-size.js --check
+  validate-docs:
+    name: Validate Documentation Links
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
-   validate-docs:
-     name: Validate Documentation Links
-     runs-on: ubuntu-latest
-     timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
-     steps:
-       - name: Checkout code
-         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-         with:
-           persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '20'
 
-       - name: Setup Node.js
-         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-         with:
-           node-version: '20'
+      - name: Validate documentation links
+        run: node scripts/validate-docs.js
 
-       - name: Validate documentation links
-         run: node scripts/validate-docs.js
+  validate-context:
+    name: Validate Context Size
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
-   lint-markdown:
-     name: Lint Markdown Files
-     runs-on: ubuntu-latest
-     timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
-     steps:
-       - name: Checkout code
-         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-         with:
-           persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '20'
 
-       - name: Setup Node.js
-         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-         with:
-           node-version: '20'
-           cache: 'npm'
+      - name: Check context size
+        run: node scripts/check-context-size.js --check
 
-       - name: Install dependencies
-         run: npm ci
+  lint-markdown:
+    name: Lint Markdown Files
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
-       - name: Lint markdown
-         run: npm run lint:md
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
-       - name: Check for markdown lint issues
-         if: failure()
-         run: |
-           echo "::warning::Markdown linting failed. Run 'npm run lint:md:fix' to auto-fix issues."
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-   validation-summary:
-     name: Validation Summary
-     runs-on: ubuntu-latest
-     timeout-minutes: 5
-     needs: [validate-agents, validate-docs, lint-markdown]
-     if: always()
+      - name: Install dependencies
+        run: npm ci
 
-     steps:
-       - name: Check validation results
-         env:
-           AGENTS_RESULT: ${{ needs.validate-agents.result }}
-           DOCS_RESULT: ${{ needs.validate-docs.result }}
-           LINT_RESULT: ${{ needs.lint-markdown.result }}
-         run: |
-           echo "Agent Validation: ${AGENTS_RESULT}"
-           echo "Documentation Validation: ${DOCS_RESULT}"
-           echo "Markdown Linting: ${LINT_RESULT}"
+      - name: Lint markdown
+        run: npm run lint:md
 
-           if [ "${AGENTS_RESULT}" != "success" ] || \
-              [ "${DOCS_RESULT}" != "success" ] || \
-              [ "${LINT_RESULT}" != "success" ]; then
-             echo "::error::One or more validation checks failed"
-             exit 1
-           fi
+      - name: Check for markdown lint issues
+        if: failure()
+        run: |
+          echo "::warning::Markdown linting failed. Run 'npm run lint:md:fix' to auto-fix issues."
 
-           echo "✅ All validation checks passed!"
+  lint-workflows:
+    name: Lint GitHub Workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Lint workflows with actionlint
+        uses: raven-actions/actionlint@2f2d79d405a8446a2fffcda68f8128f9f2481641 # v2.0.1
+
+  validation-summary:
+    name: Validation Summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [validate-agents, validate-docs, validate-context, lint-markdown, lint-workflows]
+    if: always()
+
+    steps:
+      - name: Check validation results
+        env:
+          AGENTS_RESULT: ${{ needs.validate-agents.result }}
+          DOCS_RESULT: ${{ needs.validate-docs.result }}
+          CONTEXT_RESULT: ${{ needs.validate-context.result }}
+          LINT_RESULT: ${{ needs.lint-markdown.result }}
+          WORKFLOW_LINT_RESULT: ${{ needs.lint-workflows.result }}
+        run: |
+          echo "Agent Validation: ${AGENTS_RESULT}"
+          echo "Documentation Validation: ${DOCS_RESULT}"
+          echo "Context Validation: ${CONTEXT_RESULT}"
+          echo "Markdown Linting: ${LINT_RESULT}"
+          echo "Workflow Linting: ${WORKFLOW_LINT_RESULT}"
+
+          if [ "${AGENTS_RESULT}" != "success" ] || \
+             [ "${DOCS_RESULT}" != "success" ] || \
+             [ "${CONTEXT_RESULT}" != "success" ] || \
+             [ "${LINT_RESULT}" != "success" ] || \
+             [ "${WORKFLOW_LINT_RESULT}" != "success" ]; then
+            echo "::error::One or more validation checks failed"
+            exit 1
+          fi
+
+          echo "✅ All validation checks passed!"

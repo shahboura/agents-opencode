@@ -29,6 +29,7 @@ Use this when working on Flutter/Dart projects with Riverpod state management.
 - Wrap async calls in try/catch at the repository layer; return `Result`, not raw exceptions
 - Widget tests required for all UI components; use `ProviderScope` overrides for test isolation
 - Use `super.key` in widget constructors (Dart 3+), not `Key? key` with `super(key: key)`
+- Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
 ```bash

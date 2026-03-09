@@ -15,6 +15,22 @@ tools:
 permission:
   edit: "deny"
   bash: "deny"
+  skill:
+    "*": "deny"
+    "dotnet": "allow"
+    "python": "allow"
+    "typescript": "allow"
+    "flutter": "allow"
+    "go": "allow"
+    "java-spring": "allow"
+    "node-express": "allow"
+    "react-next": "allow"
+    "ruby-rails": "allow"
+    "rust": "allow"
+    "sql-migrations": "allow"
+    "project-bootstrap": "allow"
+    "docs-validation": "allow"
+    "agent-diagnostics": "allow"
   task:
     "*": "deny"
     "explore": "allow"
@@ -136,7 +152,11 @@ After plan approval, recommend the user switch to:
 
 ## Technology-Specific Planning
 
-Load the relevant language skill for technology-specific considerations during planning.
+## Skill Activation Policy
+
+- Load skills on demand only when planning needs language/domain-specific standards.
+- Use one relevant skill by default; load a second only with clear cross-domain rationale.
+- If technology choice is unclear, confirm stack assumptions before loading.
 
 ## Validation Before Handoff
 

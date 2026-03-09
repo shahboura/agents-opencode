@@ -30,6 +30,7 @@ Use this when working on Go projects using Go modules.
 - Prefer `go test -race ./...` for concurrency-heavy code
 - Use structured logging (slog/zerolog) with correlation IDs — not `fmt.Println` or `log.Println`
 - Format with `gofmt`; lint with `go vet` and `golangci-lint`
+- Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
 ```bash

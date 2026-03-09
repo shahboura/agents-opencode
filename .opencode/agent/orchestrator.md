@@ -21,6 +21,24 @@ permission:
   "rm -rf *": "deny"
   "git push --force*": "deny"
   "git push * --force*": "deny"
+  skill:
+    "*": "deny"
+    "dotnet": "allow"
+    "python": "allow"
+    "typescript": "allow"
+    "flutter": "allow"
+    "go": "allow"
+    "java-spring": "allow"
+    "node-express": "allow"
+    "react-next": "allow"
+    "ruby-rails": "allow"
+    "rust": "allow"
+    "sql-migrations": "allow"
+    "project-bootstrap": "allow"
+    "docs-validation": "allow"
+    "agent-diagnostics": "allow"
+    "blogger": "allow"
+    "brutal-critic": "allow"
   task:
     "*": "allow"
 ---
@@ -154,6 +172,12 @@ For each approved phase:
 - Framework-based scoring
 - Pre-publish validation
 
+## Skill Activation Policy
+
+- Load skills on demand at the phase where they are needed.
+- Use one relevant skill per phase by default; add another only for explicit cross-domain justification.
+- If phase scope is ambiguous, confirm assumptions before loading.
+
 ## Coordination Patterns
 
 ### Pattern 1: Implementation Cycle
@@ -220,4 +244,3 @@ Update `AGENTS.md` with timestamped entry (latest first):
 - File auto-prunes when exceeding 100KB
 
 **Present update for approval before ending task.**
-

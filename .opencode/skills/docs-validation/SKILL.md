@@ -22,6 +22,8 @@ Use this before merging documentation changes.
 - Check for duplicate headings within the same file
 - Ensure proper heading hierarchy (single H1, sequential H2/H3)
 - Keep it concise and action-oriented
+- Keep skill distribution statements consistent with repository policy (currently core-only)
+- Ensure skill names listed in docs match `.opencode/skills/*/SKILL.md` exactly
 
 ## Validation Commands
 ```bash
