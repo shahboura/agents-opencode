@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/shahboura/agents-opencode/compare/agents-opencode-v1.2.0...agents-opencode-v1.2.1) (2026-03-09)
+
+
+### Bug Fixes
+
+* trigger release pipeline for next patch ([40b26e2](https://github.com/shahboura/agents-opencode/commit/40b26e29789da0c8d723e33a95fc730644ec5c7f))
+
 ## [1.2.0](https://github.com/shahboura/agents-opencode/compare/agents-opencode-v1.1.2...agents-opencode-v1.2.0) (2026-03-09)
 
 ### Features
