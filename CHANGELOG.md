@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/shahboura/agents-opencode/compare/v1.3.0...v1.3.1) (2026-03-12)
+
+
+### Bug Fixes
+
+* remove redundant package entrypoint files ([7438b49](https://github.com/shahboura/agents-opencode/commit/7438b4932022ff4266ce714a0024a8ff62dfeb69))
+
 ## [1.3.0](https://github.com/shahboura/agents-opencode/compare/v1.2.2...v1.3.0) (2026-03-12)
 
 
