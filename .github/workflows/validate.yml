@@ -117,7 +117,7 @@ jobs:
           go-version: 'stable'
 
       - name: Install actionlint
-        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.8
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.11
 
       - name: Lint workflows with actionlint
         run: "$(go env GOPATH)/bin/actionlint"
