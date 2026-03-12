@@ -70,6 +70,15 @@ All documentation changes must:
 
 ## Milestones
 
+### 2026-03-12 09:22 - Package-based installer flow and command routing clarity
+
+**Agent:** orchestrator
+**Summary:** Coordinated a cross-cutting cleanup to make installs deterministic from npm artifacts and improve command-to-agent usability/documentation consistency.
+- Updated installer + package metadata to remove git clone dependency and install from published package contents.
+- Added argument-hint conventions and `$ARGUMENTS` scoping across commands, then synchronized README/docs/skills routing matrix.
+- Strengthened validation with command frontmatter + agent-target checks to catch routing/config drift early.
+- Coordination pattern that worked: implement core behavior, propagate docs/metadata in one sweep, then validate and prepare release-ready commit.
+
 ### 2026-03-09 21:54 - Core-only skill policy propagation across docs
 
 **Agent:** orchestrator
