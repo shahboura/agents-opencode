@@ -1,10 +1,13 @@
 ---
 description: Document an architectural decision with context, options, and rationale
 agent: docs
+argument-hint: "[decision topic or system name]"
 subtask: true
 ---
 
 # Architecture Decision Record (ADR)
+
+Decision scope: $ARGUMENTS
 
 Document significant architectural decisions using the ADR format. This creates a historical record of why decisions were made.
 

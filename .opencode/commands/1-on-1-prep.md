@@ -1,10 +1,13 @@
 ---
 description: Prepare for upcoming 1-on-1 meetings with talking points and action items
 agent: em-advisor
+argument-hint: "[person] [context]"
 subtask: true
 ---
 
 # 1-on-1 Preparation Prompt
+
+Meeting scope: $ARGUMENTS
 
 Prepare comprehensive talking points and structure for effective 1-on-1 meetings with team members, focusing on growth, feedback, and alignment.
 
@@ -413,4 +416,3 @@ Example:
 - ✅ Continuous feedback loop
 - ✅ Goal alignment
 - ✅ Higher retention
-

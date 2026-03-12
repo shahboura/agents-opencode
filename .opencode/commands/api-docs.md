@@ -1,10 +1,13 @@
 ---
 description: Generate comprehensive API documentation from code
 agent: docs
+argument-hint: "[module, file, or endpoint path]"
 subtask: true
 ---
 
 # API Documentation Generation
+
+Target scope: $ARGUMENTS
 
 Generate detailed API documentation by analyzing the codebase and extracting API endpoints, parameters, and responses.
 

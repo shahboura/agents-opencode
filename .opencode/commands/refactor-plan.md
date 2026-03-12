@@ -1,10 +1,13 @@
 ---
 description: Create a refactoring plan for improving code quality without changing behavior
 agent: planner
+argument-hint: "[target module, file, or scope]"
 subtask: true
 ---
 
 # Refactoring Plan Prompt
+
+Refactor target: $ARGUMENTS
 
 Create a comprehensive refactoring plan that improves code quality, maintainability, and performance while preserving existing behavior.
 

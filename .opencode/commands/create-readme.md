@@ -1,10 +1,13 @@
 ---
 description: Create comprehensive README documentation for a project
 agent: docs
+argument-hint: "[project name or path]"
 subtask: true
 ---
 
 # Create README Prompt
+
+README scope: $ARGUMENTS
 
 Generate a complete, professional README.md file for the project based on codebase analysis.
 

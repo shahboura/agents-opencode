@@ -18,14 +18,14 @@ Quick jump: [Agents](#agents) · [Skills Matrix](./docs/skills-matrix.md) · [Co
 
 ## Quick Start
 
-**Requires:** Node.js + Git
+**Requires:** Node.js
 
 ```bash
 # Via npx (recommended)
 npx agents-opencode --global
 
-# Or curl + node
-curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/install.js -o install.js && node install.js --global && rm install.js
+# Alternative (direct npm install)
+npm install -g agents-opencode && agents-opencode --global
 
 # Project install (current directory only)
 npx agents-opencode --project .
@@ -39,6 +39,9 @@ npx agents-opencode --update
 # Uninstall
 npx agents-opencode --uninstall
 ```
+
+Install behavior note:
+- `npx`/`npm` installs from the published npm package version (deterministic release artifact).
 
 Then run:
 
@@ -65,7 +68,8 @@ See full allowlists: [Skills Matrix](./docs/skills-matrix.md)
 
 ## Skill Loading (OpenCode)
 
-- Skills live in `.opencode/skills/<name>/SKILL.md`.
+- Instruction files live in `.opencode/instructions/*.instructions.md`.
+- Reusable skill packs live in `.opencode/skills/<name>/SKILL.md`.
 - Skills are loaded on demand via the `skill` tool.
 - Use one relevant skill per task/phase by default; add another only for clear cross-domain work.
 - If stack/domain is unclear, ask for clarification before loading.

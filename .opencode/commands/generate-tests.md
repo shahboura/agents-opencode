@@ -1,10 +1,13 @@
 ---
 description: Generate comprehensive unit tests for selected code
 agent: codebase
+argument-hint: "[file, class, or function name]"
 subtask: true
 ---
 
 # Generate Tests Prompt
+
+Test target: $ARGUMENTS
 
 Generate unit tests for the selected code following these guidelines:
 

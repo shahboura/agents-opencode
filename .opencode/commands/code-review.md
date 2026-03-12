@@ -1,10 +1,13 @@
 ---
 description: Comprehensive code review for security, performance, and best practices
 agent: review
+argument-hint: "[file, PR, or scope — blank for current changes]"
 subtask: true
 ---
 
 # Code Review Prompt
+
+Review scope: $ARGUMENTS
 
 Perform a thorough code review of the selected code or recent changes, focusing on security, performance, maintainability, and best practices.
 

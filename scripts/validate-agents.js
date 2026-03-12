@@ -79,11 +79,100 @@ function parsePermissionMap(block, indent = 4) {
   return map;
 }
 
+function getKnownAgents() {
+  const agentsDir = path.join(process.cwd(), '.opencode', 'agent');
+  const agents = new Set();
+
+  if (!fs.existsSync(agentsDir)) {
+    return agents;
+  }
+
+  const files = fs.readdirSync(agentsDir)
+    .filter(f => f.endsWith('.md') && f !== 'README.md')
+    .map(f => path.basename(f, '.md'));
+
+  for (const file of files) {
+    agents.add(file);
+  }
+
+  return agents;
+}
+
+function getBody(content) {
+  return content.replace(/^---\s*\n[\s\S]+?\n---\s*\n?/, '');
+}
+
+function validateCommands(errors, warnings, knownAgents) {
+  const commandsDir = path.join(process.cwd(), '.opencode', 'commands');
+  if (!fs.existsSync(commandsDir)) {
+    warnings.push('No commands directory found (.opencode/commands)');
+    return;
+  }
+
+  const commandFiles = fs.readdirSync(commandsDir)
+    .filter(f => f.endsWith('.md') && f !== 'README.md')
+    .map(f => ({ name: f, fullPath: path.join(commandsDir, f) }));
+
+  for (const file of commandFiles) {
+    let content;
+    try {
+      content = fs.readFileSync(file.fullPath, 'utf8');
+    } catch (err) {
+      errors.push(`.opencode/commands/${file.name}: Failed to read file - ${err.message}`);
+      continue;
+    }
+
+    const frontmatterMatch = content.match(/^---\s*\n([\s\S]+?)\n---/);
+    if (!frontmatterMatch) {
+      errors.push(`.opencode/commands/${file.name}: Missing frontmatter (---...---)`);
+      continue;
+    }
+
+    const frontmatter = frontmatterMatch[1];
+    const body = getBody(content);
+
+    const hasField = (field) => new RegExp(`^(?!\\s*#)\\s*${field}\\s*:`, 'm').test(frontmatter);
+    const parseField = (field) => {
+      const m = frontmatter.match(new RegExp(`^(?!\\s*#)\\s*${field}\\s*:\\s*(.+)$`, 'm'));
+      return m ? m[1].trim().replace(/^"|"$/g, '') : null;
+    };
+
+    if (!hasField('description')) {
+      errors.push(`.opencode/commands/${file.name}: Missing required field 'description'`);
+    }
+    if (!hasField('agent')) {
+      errors.push(`.opencode/commands/${file.name}: Missing required field 'agent'`);
+    }
+    if (!hasField('subtask')) {
+      warnings.push(`.opencode/commands/${file.name}: Missing recommended field 'subtask'`);
+    }
+
+    const targetAgent = parseField('agent');
+    if (targetAgent && !knownAgents.has(targetAgent)) {
+      errors.push(`.opencode/commands/${file.name}: Unknown agent '${targetAgent}' (known: ${[...knownAgents].join(', ')})`);
+    }
+
+    if (!hasField('argument-hint')) {
+      warnings.push(`.opencode/commands/${file.name}: Missing 'argument-hint' field`);
+    }
+
+    if (body.includes('$ARGUMENTS') && !hasField('argument-hint')) {
+      warnings.push(`.opencode/commands/${file.name}: Uses $ARGUMENTS but missing 'argument-hint' field`);
+    }
+
+    const bodyLines = body.split('\n').filter(l => l.trim().length > 0);
+    if (bodyLines.length <= 1) {
+      warnings.push(`.opencode/commands/${file.name}: Command body is trivial (<= 1 non-empty line)`);
+    }
+  }
+}
+
 function main() {
   const errors = [];
   const warnings = [];
   const agentDir = path.join(process.cwd(), '.opencode', 'agent');
   const knownSkills = getKnownSkills();
+  const knownAgents = getKnownAgents();
 
   log(colors.cyan, 'Validating Agent Configurations...');
 
@@ -213,6 +302,8 @@ function main() {
 
     log(colors.green, '  ✓ Basic structure valid');
   }
+
+  validateCommands(errors, warnings, knownAgents);
 
   // Results
   console.log('');

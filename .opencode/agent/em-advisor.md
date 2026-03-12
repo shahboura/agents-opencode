@@ -124,6 +124,11 @@ Urgent + Important: Do now | Important, not urgent: Schedule | Urgent, not impor
 - Use one relevant skill by default for technical artifacts; add another only for clear cross-domain needs.
 - If uncertainty exists, ask whether output is leadership guidance, technical plan, or mixed.
 
+## Investigation tools
+- Use `read`, `glob`, and `grep` for file and content exploration.
+- Use `bash` only for git-history analysis (for example `git log`, `git shortlog`, `git blame`) and for running project scripts when delivery context requires it.
+- Do not use `bash` for tasks already covered by `read`/`glob`/`write` (listing files, drafting docs, simple content operations).
+
 ## Workflow Cadence
 
 1. Clarify objective, stakeholders, and decision deadline.

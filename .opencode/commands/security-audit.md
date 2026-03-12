@@ -1,10 +1,13 @@
 ---
 description: Perform comprehensive security audit of code and infrastructure
 agent: review
+argument-hint: "[scope, file, component, or 'full project']"
 subtask: true
 ---
 
 # Security Audit Prompt
+
+Audit scope: $ARGUMENTS
 
 Conduct a thorough security review of the codebase, infrastructure, and deployment practices to identify vulnerabilities and security risks.
 

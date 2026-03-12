@@ -72,5 +72,3 @@ Return feedback in this order:
 - Load additional skills only when requested or clearly needed by review scope.
 - If content type is unclear, confirm whether draft is blog, podcast, or YouTube first.
 - Use `blogger` only when rewrite examples are required after critique.
-
-Load the `brutal-critic` skill for detailed frameworks, scoring guidelines, and feedback examples. For YouTube reviews, reference YouTube Creators Guidelines at https://www.youtube.com/creators/how-things-work/policies-guidelines/

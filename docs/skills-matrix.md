@@ -35,3 +35,23 @@ Quick read:
 
 - Keep the current core-only skill set.
 - Expand only when demand, gap, ownership, and licensing checks are all satisfied.
+
+## Command Routing Matrix
+
+OpenCode commands delegate directly to a target agent.
+Arguments passed in `/command-name [argument]` are forwarded to the command body via `$ARGUMENTS`.
+
+| Command | Target agent | Argument hint | Purpose |
+|---|---|---|---|
+| `/api-docs` | `docs` | `[module, file, or endpoint path]` | Generate API reference documentation |
+| `/architecture-decision` | `docs` | `[decision topic or system name]` | Create an ADR |
+| `/architecture-review` | `review` | `[system, component, or design document]` | Review design for quality attributes |
+| `/code-review` | `review` | `[file, PR, or scope — blank for current changes]` | Security, performance, and style review |
+| `/content-review` | `brutal-critic` | `[content text, file path, or topic]` | Score and critique content quality |
+| `/create-readme` | `docs` | `[project name or path]` | Generate or improve a README |
+| `/generate-tests` | `codebase` | `[file, class, or function name]` | Generate targeted tests |
+| `/1-on-1-prep` | `em-advisor` | `[person] [context]` | Prepare for a focused 1-on-1 |
+| `/plan-project` | `orchestrator` | `[feature, objective, or epic]` | Multi-phase implementation plan |
+| `/refactor-plan` | `planner` | `[target module, file, or scope]` | Safe staged refactor strategy |
+| `/security-audit` | `review` | `[scope, file, component, or 'full project']` | Security-focused code and config review |
+| `/blog-post` | `blogger` | `[topic or title]` | Draft a blog post |

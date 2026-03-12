@@ -11,32 +11,23 @@ description: Slash commands and reusable skills for OpenCode agent workflows.
 
 Type `/command-name` in the OpenCode TUI to run.
 
-### Documentation
+Most commands accept an optional argument to scope the task:
+`/command-name [argument]` — the argument is passed directly to the target agent.
 
-- `/api-docs` - Generate comprehensive API documentation
-- `/create-readme` - Generate professional README
-- `/architecture-decision` - ADR creation
-
-### Testing & Quality
-
-- `/generate-tests` - Unit test generation
-- `/code-review` - Comprehensive code review
-- `/security-audit` - Conduct security audits
-- `/architecture-review` - Review architectural decisions
-
-### Content Creation
-
-- `/blog-post` - Write a blog post with research and fact validation
-- `/content-review` - Review content with framework-based criticism
-
-### Development & Planning
-
-- `/refactor-plan` - Create refactoring plans
-- `/plan-project` - Plan and coordinate multi-phase projects
-
-### Management
-
-- `/1-on-1-prep` - Meeting preparation
+| Command | Argument hint | Purpose |
+|---|---|---|
+| `/api-docs` | `[module, file, or endpoint path]` | Generate API reference docs |
+| `/architecture-decision` | `[decision topic or system name]` | Create an ADR |
+| `/architecture-review` | `[system, component, or design document]` | Review design for quality attributes |
+| `/blog-post` | `[topic or title]` | Write a blog post |
+| `/code-review` | `[file, PR, or scope — blank for current changes]` | Security, perf, and style review |
+| `/content-review` | `[content text, file path, or topic]` | Score and critique content quality |
+| `/create-readme` | `[project name or path]` | Generate or improve a README |
+| `/generate-tests` | `[file, class, or function name]` | Generate targeted tests |
+| `/plan-project` | `[feature, objective, or epic]` | Multi-phase implementation plan |
+| `/refactor-plan` | `[target module, file, or scope]` | Safe staged refactor strategy |
+| `/security-audit` | `[scope, file, component, or 'full project']` | Security-focused code review |
+| `/1-on-1-prep` | `[person] [context]` | Prepare for a 1-on-1 meeting |
 
 ## Skills
 

@@ -162,6 +162,11 @@ For each approved phase:
 - Detailed implementation planning
 - Risk assessment before implementation
 
+**@em-advisor** - Use for:
+- Engineering leadership guidance
+- Stakeholder communication strategy
+- Team execution and prioritization support
+
 **@blogger** - Use for:
 - Blog post creation
 - YouTube script writing
