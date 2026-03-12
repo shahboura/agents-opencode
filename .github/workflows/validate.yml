@@ -111,8 +111,16 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v5.0.2
+        with:
+          go-version: 'stable'
+
+      - name: Install actionlint
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.8
+
       - name: Lint workflows with actionlint
-        uses: raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8 # v2.1.2
+        run: "$(go env GOPATH)/bin/actionlint"
 
   validation-summary:
     name: Validation Summary
