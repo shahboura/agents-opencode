@@ -120,7 +120,9 @@ jobs:
         run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.11
 
       - name: Lint workflows with actionlint
-        run: "$(go env GOPATH)/bin/actionlint"
+        run: |
+          GOPATH="$(go env GOPATH)"
+          "$GOPATH/bin/actionlint"
 
   validation-summary:
     name: Validation Summary

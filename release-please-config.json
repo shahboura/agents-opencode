@@ -3,7 +3,8 @@
   "packages": {
     ".": {
       "release-type": "node",
-      "package-name": "agents-opencode"
+      "package-name": "agents-opencode",
+      "component": "agents-opencode"
     }
   },
   "release-type": "node",
