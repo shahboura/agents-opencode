@@ -42,6 +42,12 @@ npx agents-opencode --uninstall
 
 Install behavior note:
 - `npx`/`npm` installs from the published npm package version (deterministic release artifact).
+- npm package and installer command: `agents-opencode`
+- OpenCode CLI runtime command: `opencode`
+
+Uninstall behavior:
+- `npx agents-opencode --uninstall` removes `.opencode/` and `opencode.json` from the current directory.
+- If `AGENTS.md` exists, it is backed up as `AGENTS.<timestamp>.bk.md`.
 
 Then run:
 
@@ -74,10 +80,9 @@ See full allowlists: [Skills Matrix](./docs/skills-matrix.md)
 - Use one relevant skill per task/phase by default; add another only for clear cross-domain work.
 - If stack/domain is unclear, ask for clarification before loading.
 
-## Skill Scope Policy (Keep it)
+## Skill Scope Policy
 
-- **Yes, keep this policy.** It keeps the pack focused and safe.
-- Current scope is **core-only** skills (no optional skill packs).
+- Scope remains **core-only** skills (no optional skill packs).
 - Additions should pass demand, clear-gap, ownership, and licensing/provenance checks.
 
 ## Skill Permissions (Least Privilege)

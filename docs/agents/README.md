@@ -52,7 +52,7 @@ See exact allowlists in the [Skills Matrix](../skills-matrix).
 - Recommended baseline is `"*": "deny"` with explicit per-skill allows.
 - This enforces least privilege and keeps agent behavior domain-scoped.
 
-## Skill Scope Policy (Current)
+## Skill Scope Policy
 
 - Keep current **core-only** skill scope.
 - Add skills only with repeat demand, clear gap, owner, and clean licensing/provenance.

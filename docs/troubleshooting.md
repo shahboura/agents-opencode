@@ -39,8 +39,8 @@ description: Common issues and solutions for OpenCode agent configurations.
 
 ### Installation fails
 
-- Ensure Git and Node.js are installed
-- Check internet connectivity for repository clone
+- Ensure Node.js/npm is installed
+- Check internet connectivity for npm registry access
 - Try `npx agents-opencode --global` instead of curl
 
 ### Skills not loading

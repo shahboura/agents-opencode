@@ -28,6 +28,8 @@ Quick jump: [Agents](agents/README) · [Skills Matrix](skills-matrix) · [Comman
    npx agents-opencode --global
    ```
 
+   Installer package/command: `agents-opencode`
+
 2. Run:
 
    ```
@@ -35,6 +37,8 @@ Quick jump: [Agents](agents/README) · [Skills Matrix](skills-matrix) · [Comman
    /init
    @orchestrator Build a user API
    ```
+
+   OpenCode runtime command: `opencode`
 
 ## Agents
 
@@ -66,7 +70,7 @@ For exact allowlists, use the [Skills Matrix](skills-matrix).
 - Agents load skills on demand via the `skill` tool.
 - Keep to one relevant skill per phase unless cross-domain work requires more.
 
-## Skill Scope Policy (Current)
+## Skill Scope Policy
 
 - Keep core-only scope for now.
 - Add new skills only when there is clear demand, a real gap, ownership, and clean licensing.

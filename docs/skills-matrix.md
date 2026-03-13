@@ -31,7 +31,7 @@ Quick read:
 - Skills load on demand via the `skill` tool.
 - Keep allowlists narrow by role to reduce context/tool noise.
 
-## Skill Scope Policy (Current)
+## Skill Scope Policy
 
 - Keep the current core-only skill set.
 - Expand only when demand, gap, ownership, and licensing checks are all satisfied.

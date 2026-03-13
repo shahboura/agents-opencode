@@ -12,7 +12,7 @@ Get up and running with OpenCode agents in under 5 minutes.
 ## Prerequisites
 
 - [OpenCode CLI](https://opencode.ai/docs/cli/) installed
-- Node.js/npm and Git
+- Node.js/npm
 - Any project (existing repos work perfectly)
 
 ## Quick Setup (60 seconds)
@@ -62,6 +62,10 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 npx agents-opencode --uninstall
 ```
 
+- Applies to the **current directory** only.
+- Removes `.opencode/` and `opencode.json`.
+- Backs up `AGENTS.md` as `AGENTS.<timestamp>.bk.md` when present.
+
 ## Your First Run
 
 1. Open OpenCode:
@@ -89,6 +93,9 @@ npx agents-opencode --uninstall
 
 ## Notes
 
+- Package/installer command: `agents-opencode`
+- OpenCode runtime command: `opencode`
+- Git is not required for `npx`/`npm` installs.
 - `AGENTS.md` is created on first run or via `/init`.
 - Coding standards in `.opencode/instructions/` are available as
   reference for agents.

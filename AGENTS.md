@@ -70,6 +70,15 @@ All documentation changes must:
 
 ## Milestones
 
+### 2026-03-13 12:22 - Docs clarity pass for naming, uninstall behavior, and skill-policy wording
+
+**Agent:** orchestrator
+**Summary:** Coordinated a focused docs consistency sweep across README and docs pages to reduce install/uninstall ambiguity while preserving core-skill governance.
+- Clarified command naming consistently (`agents-opencode` installer/package vs `opencode` runtime CLI) in README + getting-started + docs index.
+- Verified uninstall behavior from `install.js` and documented current-directory scope, `.opencode/` + `opencode.json` removal, and timestamped `AGENTS.md` backup.
+- Harmonized policy headers by renaming `Skill Scope Policy (Current/Keep it)` to `Skill Scope Policy` across key docs while keeping core-only criteria unchanged.
+- Coordination pattern that worked: source verification first, then propagate concise wording updates across all relevant docs paths.
+
 ### 2026-03-12 09:22 - Package-based installer flow and command routing clarity
 
 **Agent:** orchestrator
