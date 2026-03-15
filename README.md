@@ -62,7 +62,14 @@ Uninstall behavior:
 - `npx agents-opencode --uninstall` targets the **current project** by default.
 - Use `--global` or `--all` for explicit scope control.
 - Uninstall removes installer-managed files via install manifest tracking.
-- Backups are stored under `.backups/<timestamp>--<operation>--<scope>/` with `backup-manifest.json`.
+- Project backups: `<project>/.opencode/.backups/<timestamp>--<operation>--<scope>/`
+- Global backups: `~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/`
+- Backup retention: latest 10 sessions and sessions newer than 30 days.
+
+Restore from backup:
+1. Open the latest backup session folder.
+2. Review `backup-manifest.json` for file paths.
+3. Copy files back to their original paths.
 
 Update behavior:
 - `npx agents-opencode --update` auto-detects and updates installed scopes (global and/or current project).

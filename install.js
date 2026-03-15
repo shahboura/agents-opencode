@@ -90,10 +90,32 @@ function removeDirectoryIfExists(dirPath) {
     fs.rmSync(dirPath, { recursive: true, force: true });
 }
 
+function getBackupRoot(paths) {
+    return paths.scope === 'project'
+        ? path.join(paths.opencodeDir, BACKUP_DIR)
+        : path.join(paths.rootDir, BACKUP_DIR);
+}
+
+function resolveUniqueBackupLocation(backupRoot, baseBackupId) {
+    let backupId = baseBackupId;
+    let backupDir = path.join(backupRoot, backupId);
+    let counter = 1;
+
+    while (fs.existsSync(backupDir)) {
+        backupId = `${baseBackupId}--${String(counter).padStart(2, '0')}`;
+        backupDir = path.join(backupRoot, backupId);
+        counter += 1;
+    }
+
+    return { backupId, backupDir };
+}
+
 function pruneBackupRetention(backupRoot, maxBackups = 10, maxAgeDays = 30) {
     if (!fs.existsSync(backupRoot)) {
-        return;
+        return 0;
     }
+
+    let prunedCount = 0;
 
     const cutoffMs = Date.now() - (maxAgeDays * 24 * 60 * 60 * 1000);
     const backupDirs = fs.readdirSync(backupRoot, { withFileTypes: true })
@@ -104,6 +126,7 @@ function pruneBackupRetention(backupRoot, maxBackups = 10, maxAgeDays = 30) {
 
     for (const dirName of backupDirs.slice(maxBackups)) {
         removeDirectoryIfExists(path.join(backupRoot, dirName));
+        prunedCount += 1;
     }
 
     const remainingDirs = fs.readdirSync(backupRoot, { withFileTypes: true })
@@ -116,21 +139,22 @@ function pruneBackupRetention(backupRoot, maxBackups = 10, maxAgeDays = 30) {
             const stat = fs.statSync(backupPath);
             if (stat.mtimeMs < cutoffMs) {
                 removeDirectoryIfExists(backupPath);
+                prunedCount += 1;
             }
         } catch {
             // ignore retention errors
         }
     }
+
+    return prunedCount;
 }
 
 function createBackupSession(paths, operation) {
     const createdAt = new Date();
     const stamp = formatBackupTimestamp(createdAt);
-    const backupId = `${stamp}--${operation}--${paths.scope}`;
-    const backupRoot = paths.scope === 'project'
-        ? path.join(paths.opencodeDir, BACKUP_DIR)
-        : path.join(paths.rootDir, BACKUP_DIR);
-    const backupDir = path.join(backupRoot, backupId);
+    const baseBackupId = `${stamp}--${operation}--${paths.scope}`;
+    const backupRoot = getBackupRoot(paths);
+    const { backupId, backupDir } = resolveUniqueBackupLocation(backupRoot, baseBackupId);
     const entries = [];
     const seen = new Set();
 
@@ -155,7 +179,7 @@ function createBackupSession(paths, operation) {
     function finalize() {
         if (entries.length === 0) {
             removeDirectoryIfExists(backupDir);
-            return { created: false, backupDir: null, backupId: null, count: 0 };
+            return { created: false, backupDir: null, backupId: null, count: 0, prunedCount: 0 };
         }
 
         const manifest = {
@@ -168,17 +192,25 @@ function createBackupSession(paths, operation) {
             files: entries,
         };
         writeJsonFile(path.join(backupDir, 'backup-manifest.json'), manifest);
-        pruneBackupRetention(backupRoot);
+        const prunedCount = pruneBackupRetention(backupRoot);
 
         return {
             created: true,
             backupDir,
             backupId,
             count: entries.length,
+            prunedCount,
         };
     }
 
     return { backupFile, finalize };
+}
+
+function printBackupRestoreHint(backupResult) {
+    if (!backupResult || !backupResult.created) {
+        return;
+    }
+    info(`Restore hint: review ${path.join(backupResult.backupDir, 'backup-manifest.json')} and copy files back to original paths.`);
 }
 
 function validatePackageContents(sourceDir) {
@@ -782,6 +814,10 @@ function installScope(options) {
     const backupResult = backupSession.finalize();
     if (backupResult.created) {
         info(`Backup saved: ${backupResult.backupDir} (${backupResult.count} file(s))`);
+        printBackupRestoreHint(backupResult);
+        if (backupResult.prunedCount > 0) {
+            info(`Pruned ${backupResult.prunedCount} old backup session(s) by retention policy.`);
+        }
     }
 
     if (treeResult.backupCount > 0) {
@@ -905,13 +941,17 @@ function uninstallScope(options) {
 
     if (scope === 'project') {
         if (backupAndRemoveAgentsMdIfPresent(paths.agentsMdPath, backupSession)) {
-            success('✅ Session history backed up and removed from project root.');
+            success('✅ Backed up AGENTS.md and removed installer session file from project root.');
         }
     }
 
     const backupResult = backupSession.finalize();
     if (backupResult.created) {
         info(`Backup saved: ${backupResult.backupDir} (${backupResult.count} file(s))`);
+        printBackupRestoreHint(backupResult);
+        if (backupResult.prunedCount > 0) {
+            info(`Pruned ${backupResult.prunedCount} old backup session(s) by retention policy.`);
+        }
     }
 
     if (removedConfigFile) {
@@ -1171,7 +1211,9 @@ INSTALLATION LOCATIONS:
 NOTES:
     - Config updates are merged safely (non-destructive).
     - Uninstall removes only installer-managed files using a manifest.
-    - Backup snapshots are stored in .backups/<timestamp>--<operation>--<scope>/.
+    - Project backups: <project>/.opencode/.backups/<timestamp>--<operation>--<scope>/
+    - Global backups:  ~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/
+    - Retention: keeps latest 10 sessions and prunes sessions older than 30 days.
     - --languages filters instruction reference files; skill loading remains on-demand.
 
 For more information, visit: https://github.com/shahboura/agents-opencode

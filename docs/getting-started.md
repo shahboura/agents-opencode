@@ -80,9 +80,13 @@ npx agents-opencode --status
 - Default uninstall applies to the **current project scope**.
 - Use `--global` or `--all` to target non-project scope.
 - Removes installer-managed files using install manifest tracking.
-- Stores backups under `.backups/<timestamp>--<operation>--<scope>/` with `backup-manifest.json`.
+- Project backups: `<project>/.opencode/.backups/<timestamp>--<operation>--<scope>/`
+- Global backups: `~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/`
+- Backup retention: latest 10 sessions and sessions newer than 30 days.
 - Installer only merges missing permission defaults into existing `opencode.json`.
 - Existing provider/model/instruction configuration remains unchanged.
+
+To restore files, use `backup-manifest.json` from a backup session and copy the files back to their original paths.
 
 ## Your First Run
 
