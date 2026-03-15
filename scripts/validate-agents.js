@@ -42,34 +42,27 @@ function getKnownSkills() {
   return skills;
 }
 
-function extractPermissionSkillBlock(frontmatter) {
+function extractPermissionBlock(frontmatter, key) {
   const permissionSectionMatch = frontmatter.match(
     /^permission\s*:\s*\n([\s\S]*?)(?=^\S|(?![\s\S]))/m
   );
   if (!permissionSectionMatch) return null;
 
   const permissionBlock = permissionSectionMatch[1];
-  const skillSectionMatch = permissionBlock.match(
-    /^\s{2}skill\s*:\s*\n([\s\S]*?)(?=^\s{2}\S|(?![\s\S]))/m
+  const sectionMatch = permissionBlock.match(
+    new RegExp(`^\\s{2}${key}\\s*:\\s*\\n([\\s\\S]*?)(?=^\\s{2}\\S|(?![\\s\\S]))`, 'm')
   );
 
-  if (!skillSectionMatch) return null;
-  return skillSectionMatch[1];
+  if (!sectionMatch) return null;
+  return sectionMatch[1];
+}
+
+function extractPermissionSkillBlock(frontmatter) {
+  return extractPermissionBlock(frontmatter, 'skill');
 }
 
 function extractPermissionTaskBlock(frontmatter) {
-  const permissionSectionMatch = frontmatter.match(
-    /^permission\s*:\s*\n([\s\S]*?)(?=^\S|(?![\s\S]))/m
-  );
-  if (!permissionSectionMatch) return null;
-
-  const permissionBlock = permissionSectionMatch[1];
-  const taskSectionMatch = permissionBlock.match(
-    /^\s{2}task\s*:\s*\n([\s\S]*?)(?=^\s{2}\S|(?![\s\S]))/m
-  );
-
-  if (!taskSectionMatch) return null;
-  return taskSectionMatch[1];
+  return extractPermissionBlock(frontmatter, 'task');
 }
 
 function parsePermissionMap(block, indent = 4) {
@@ -83,7 +76,7 @@ function parsePermissionMap(block, indent = 4) {
     const indentRegex = new RegExp(`^\\s{${indent},}`);
     if (!indentRegex.test(line)) continue;
 
-    const match = line.match(/^\s{4,}([^:]+):\s*(.+)\s*$/);
+    const match = line.match(new RegExp(`^\\s{${indent},}([^:]+):\\s*(.+)\\s*$`));
     if (!match) continue;
 
     const key = match[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
@@ -94,56 +87,39 @@ function parsePermissionMap(block, indent = 4) {
   return map;
 }
 
-function getKnownAgents() {
-  const agentsDir = path.join(process.cwd(), '.opencode', 'agent');
-  const agents = new Set();
+function loadAgentRecords(agentFiles, errors) {
+  const records = [];
 
-  if (!fs.existsSync(agentsDir)) {
-    return agents;
-  }
-
-  const files = fs.readdirSync(agentsDir)
-    .filter(f => f.endsWith('.md') && f !== 'README.md')
-    .map(f => path.basename(f, '.md'));
-
-  for (const file of files) {
-    agents.add(file);
-  }
-
-  return agents;
-}
-
-function getKnownAgentModes() {
-  const agentsDir = path.join(process.cwd(), '.opencode', 'agent');
-  const modes = new Map();
-
-  if (!fs.existsSync(agentsDir)) {
-    return modes;
-  }
-
-  const files = fs.readdirSync(agentsDir)
-    .filter(f => f.endsWith('.md') && f !== 'README.md');
-
-  for (const file of files) {
-    const filePath = path.join(agentsDir, file);
+  for (const file of agentFiles) {
+    let content;
     try {
-      const content = fs.readFileSync(filePath, 'utf8');
-      const frontmatterMatch = content.match(/^---\s*\n([\s\S]+?)\n---/);
-      if (!frontmatterMatch) continue;
-
-      const frontmatter = frontmatterMatch[1];
-      const modeMatch = frontmatter.match(/^(?!\s*#)\s*mode\s*:\s*(.+)$/m);
-      if (!modeMatch) continue;
-
-      const name = path.basename(file, '.md');
-      const mode = modeMatch[1].trim();
-      modes.set(name, mode);
-    } catch {
-      // ignore per-file parse issues for mode discovery
+      content = fs.readFileSync(file.fullPath, 'utf8');
+    } catch (err) {
+      errors.push(`${file.name}: Failed to read file - ${err.message}`);
+      continue;
     }
+
+    const frontmatterMatch = content.match(/^---\s*\n([\s\S]+?)\n---/);
+    if (!frontmatterMatch) {
+      errors.push(`${file.name}: Missing frontmatter (---...---)`);
+      records.push({
+        ...file,
+        content,
+        frontmatter: null,
+        body: getBody(content),
+      });
+      continue;
+    }
+
+    records.push({
+      ...file,
+      content,
+      frontmatter: frontmatterMatch[1],
+      body: getBody(content),
+    });
   }
 
-  return modes;
+  return records;
 }
 
 function getBody(content) {
@@ -220,16 +196,6 @@ function main() {
   const warnings = [];
   const agentDir = path.join(process.cwd(), '.opencode', 'agent');
   const knownSkills = getKnownSkills();
-  const knownAgents = getKnownAgents();
-  const knownAgentModes = getKnownAgentModes();
-  const builtinTaskSubagents = new Set(['general', 'explore']);
-  const knownTaskSubagents = new Set([...builtinTaskSubagents]);
-
-  for (const [agentName, mode] of knownAgentModes.entries()) {
-    if (mode === 'subagent' || mode === 'all') {
-      knownTaskSubagents.add(agentName);
-    }
-  }
 
   log(colors.cyan, 'Validating Agent Configurations...');
 
@@ -262,30 +228,39 @@ function main() {
     process.exit(1);
   }
 
+  const knownAgents = new Set(agentFiles.map(f => path.basename(f.name, '.md')));
+  const agentRecords = loadAgentRecords(agentFiles, errors);
+
+  const knownAgentModes = new Map();
+  for (const record of agentRecords) {
+    if (!record.frontmatter) continue;
+    const modeMatch = record.frontmatter.match(/^(?!\s*#)\s*mode\s*:\s*(.+)$/m);
+    if (!modeMatch) continue;
+    knownAgentModes.set(path.basename(record.name, '.md'), modeMatch[1].trim());
+  }
+
+  const builtinTaskSubagents = new Set(['general', 'explore']);
+  const knownTaskSubagents = new Set([...builtinTaskSubagents]);
+  for (const [agentName, mode] of knownAgentModes.entries()) {
+    if (mode === 'subagent' || mode === 'all') {
+      knownTaskSubagents.add(agentName);
+    }
+  }
+
   log(colors.green, `Found ${agentFiles.length} agent files\n`);
 
   const requiredFields = ['description', 'mode'];
   const validModes = ['primary', 'secondary', 'utility', 'subagent'];
 
-  for (const file of agentFiles) {
+  for (const record of agentRecords) {
+    const file = { name: record.name, fullPath: record.fullPath };
     log(colors.yellow, `Validating: ${file.name}`);
 
-    let content;
-    try {
-      content = fs.readFileSync(file.fullPath, 'utf8');
-    } catch (err) {
-      errors.push(`${file.name}: Failed to read file - ${err.message}`);
+    if (!record.frontmatter) {
       continue;
     }
 
-    // Check for frontmatter delimited by ---
-    const frontmatterMatch = content.match(/^---\s*\n([\s\S]+?)\n---/);
-    if (!frontmatterMatch) {
-      errors.push(`${file.name}: Missing frontmatter (---...---)`);
-      continue;
-    }
-
-    const frontmatter = frontmatterMatch[1];
+    const frontmatter = record.frontmatter;
 
     // Check required fields (anchored to reject commented-out lines)
     for (const field of requiredFields) {
@@ -312,7 +287,7 @@ function main() {
     // Check for a meaningful introductory heading in body
     // Accept: Role, Description, Responsibilities, Core Responsibilities,
     //         Review Areas, Profile Detection, When to Use, Core Principle, etc.
-    const body = content.replace(/^---[\s\S]+?---/, '');
+    const body = record.body;
     if (!/^##?\s+\w/m.test(body)) {
       warnings.push(`${file.name}: Missing content headings`);
     }

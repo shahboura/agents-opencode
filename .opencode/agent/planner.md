@@ -146,9 +146,9 @@ Generate a comprehensive implementation plan with:
 
 ## Skill Activation Policy
 
-- Load skills on demand only when planning needs language/domain-specific standards.
-- Use one relevant skill by default; load a second only with clear cross-domain rationale.
-- If technology choice is unclear, confirm stack assumptions before loading.
+- Load skills on demand only for active task/phase requirements.
+- Use one relevant skill by default; add a second only for explicit cross-domain needs.
+- If scope is ambiguous, ask a clarifying question before loading.
 - For responsive UX planning across phone/tablet/desktop, load `ux-responsive` on demand.
 
 ## Validation Before Handoff

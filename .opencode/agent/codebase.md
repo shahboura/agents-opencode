@@ -99,9 +99,9 @@ Log detected profile at start: `Detected active profile: <profile>`
 
 ## Skill Activation Policy
 
-- Load skills on demand only when work clearly maps to a stack.
-- Use one relevant language skill by default; load a second only for explicit cross-domain dependencies.
-- If stack choice is unclear, ask a short clarification question before loading.
+- Load skills on demand only for active task/phase requirements.
+- Use one relevant skill by default; add a second only for explicit cross-domain needs.
+- If scope is ambiguous, ask a clarifying question before loading.
 - For CI/CD tasks, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For responsive UI/UX tasks across phone/tablet/desktop, load `ux-responsive` on demand.
 

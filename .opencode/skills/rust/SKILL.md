@@ -34,8 +34,8 @@ Use this when building or maintaining Rust projects.
 
 ## Validation Commands
 ```bash
+cargo fmt --check
+cargo clippy --all-targets --all-features -- -D warnings
 cargo check
 cargo test
-cargo clippy
-cargo fmt
 ```

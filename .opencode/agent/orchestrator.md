@@ -180,9 +180,9 @@ For each approved phase:
 
 ## Skill Activation Policy
 
-- Load skills on demand at the phase where they are needed.
-- Use one relevant skill per phase by default; add another only for explicit cross-domain justification.
-- If phase scope is ambiguous, confirm assumptions before loading.
+- Load skills on demand only for active task/phase requirements.
+- Use one relevant skill by default; add a second only for explicit cross-domain needs.
+- If scope is ambiguous, ask a clarifying question before loading.
 - For CI/CD phases, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For cross-device UX/responsive phases, load `ux-responsive` on demand.
 

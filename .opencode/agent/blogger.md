@@ -63,10 +63,11 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 
 ## Skill Activation Policy
 
-- Load the `blogger` skill for blog, podcast, or YouTube content creation tasks.
-- Keep skill loading on demand and scoped to active draft/review work.
+- Load skills on demand only for active task/phase requirements.
+- Use one relevant skill by default; add a second only for explicit cross-domain needs.
+- If scope is ambiguous, ask a clarifying question before loading.
+- Load `blogger` for blog, podcast, or YouTube content creation tasks.
 - Use `brutal-critic` only for final quality-gate review or when requested.
-- If deliverable type is unclear, ask whether output is blog, podcast, or video first.
 
 ## Validation & Handoff
 

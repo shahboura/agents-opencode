@@ -36,5 +36,5 @@ Use this when working on Flutter/Dart projects with Riverpod state management.
 flutter analyze
 flutter test
 flutter test --coverage
-dart format .
+dart format --set-exit-if-changed .
 ```

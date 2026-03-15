@@ -217,11 +217,10 @@ function toManagedPath(scope, relativeOpencodeFile) {
     return path.join('.opencode', relativeOpencodeFile);
 }
 
-function installManagedTree(sourceOpencodeDir, destinationOpencodeDir) {
+function installManagedTree(sourceOpencodeDir, sourceFiles, destinationOpencodeDir) {
     ensureDir(destinationOpencodeDir);
 
     const timestamp = sanitizeTimestamp();
-    const sourceFiles = getManagedSourceFiles(sourceOpencodeDir);
 
     let copiedCount = 0;
     let skippedCount = 0;
@@ -259,8 +258,7 @@ function installManagedTree(sourceOpencodeDir, destinationOpencodeDir) {
     };
 }
 
-function buildManagedFilesFromSource(scope, sourceOpencodeDir, paths) {
-    const sourceFiles = getManagedSourceFiles(sourceOpencodeDir);
+function buildManagedFilesFromSource(scope, sourceFiles, paths) {
     const managedFiles = [];
 
     for (const relativeFile of sourceFiles) {
@@ -582,6 +580,7 @@ function installScope(options) {
     const {
         sourceConfig,
         sourceOpencodeDir,
+        sourceManagedFiles,
         sourceVersion,
         scope,
         projectDir,
@@ -600,7 +599,7 @@ function installScope(options) {
 
     info(`Installing ${PACKAGE_NAME} (${scope}) at ${paths.rootDir}`);
 
-    const treeResult = installManagedTree(sourceOpencodeDir, paths.opencodeDir);
+    const treeResult = installManagedTree(sourceOpencodeDir, sourceManagedFiles, paths.opencodeDir);
     success(`✓ Installed/updated ${treeResult.copiedCount} file(s); ${treeResult.skippedCount} unchanged`);
     if (treeResult.backupCount > 0) {
         info(`Created ${treeResult.backupCount} backup file(s) for overwritten content.`);
@@ -623,7 +622,7 @@ function installScope(options) {
 
     fs.writeFileSync(paths.versionPath, `${sourceVersion || 'unknown'}\n`);
 
-    const managedFiles = buildManagedFilesFromSource(scope, sourceOpencodeDir, paths);
+    const managedFiles = buildManagedFilesFromSource(scope, sourceManagedFiles, paths);
     const manifest = {
         schemaVersion: 1,
         package: PACKAGE_NAME,
@@ -660,6 +659,7 @@ function uninstallScope(options) {
     const {
         sourceConfig,
         sourceOpencodeDir,
+        sourceManagedFiles,
         scope,
         projectDir,
     } = options;
@@ -704,7 +704,7 @@ function uninstallScope(options) {
     } else {
         warning(`No install manifest found for ${scope}. Attempting safe legacy cleanup.`);
 
-        const legacyManagedFiles = getManagedSourceFiles(sourceOpencodeDir)
+        const legacyManagedFiles = sourceManagedFiles
             .map(relative => toManagedPath(scope, relative));
 
         for (const legacyManagedPath of legacyManagedFiles) {
@@ -1039,6 +1039,8 @@ function main() {
         process.exit(1);
     }
 
+    const sourceManagedFiles = getManagedSourceFiles(sourceOpencodeDir);
+
     const sourceConfig = loadSourceConfig(sourceDir);
 
     if (parsed.status) {
@@ -1060,7 +1062,7 @@ function main() {
         for (const scope of scopes) {
             const projectDir = scope === 'project' ? (parsed.project || process.cwd()) : null;
             info(`Uninstalling ${PACKAGE_NAME} from ${scope} scope...`);
-            const ok = uninstallScope({ sourceConfig, sourceOpencodeDir, scope, projectDir });
+            const ok = uninstallScope({ sourceConfig, sourceOpencodeDir, sourceManagedFiles, scope, projectDir });
             if (!ok) {
                 process.exit(1);
             }
@@ -1089,6 +1091,7 @@ function main() {
             const ok = installScope({
                 sourceConfig,
                 sourceOpencodeDir,
+                sourceManagedFiles,
                 sourceVersion: version,
                 scope,
                 projectDir,
@@ -1124,6 +1127,7 @@ function main() {
         const ok = installScope({
             sourceConfig,
             sourceOpencodeDir,
+            sourceManagedFiles,
             sourceVersion: version,
             scope: 'global',
             projectDir: null,
@@ -1136,6 +1140,7 @@ function main() {
         const ok = installScope({
             sourceConfig,
             sourceOpencodeDir,
+            sourceManagedFiles,
             sourceVersion: version,
             scope: 'project',
             projectDir: parsed.project || process.cwd(),

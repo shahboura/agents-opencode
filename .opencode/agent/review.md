@@ -112,9 +112,9 @@ For each file:
 
 ## Skill Activation Policy
 
-- Load skills on demand when review criteria depend on language/framework conventions.
-- Use one relevant language skill by default; add another only for multi-stack reviews.
-- If stack is ambiguous, infer from files first, then ask a clarifying question.
+- Load skills on demand only for active task/phase requirements.
+- Use one relevant skill by default; add a second only for explicit cross-domain needs.
+- If scope is ambiguous, ask a clarifying question before loading.
 - For CI/CD workflow reviews, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For responsive/accessibility checks across breakpoints and input modes, load `ux-responsive` on demand.
 

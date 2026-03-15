@@ -36,5 +36,5 @@ Use this when working on TypeScript projects that require strict type safety.
 ```bash
 tsc --noEmit
 eslint . --ext .ts,.tsx
-vitest run
+npm test  # or project-configured test runner (e.g., vitest)
 ```

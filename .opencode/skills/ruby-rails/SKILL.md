@@ -34,7 +34,7 @@ Use this when building or maintaining Ruby on Rails applications.
 
 ## Validation Commands
 ```bash
-rspec
+rails test  # or project-configured test runner (e.g., rspec)
 rubocop
 brakeman
 bundle audit

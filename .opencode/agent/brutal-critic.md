@@ -67,8 +67,8 @@ Return feedback in this order:
 
 ## Skill Activation Policy
 
-- Load the `brutal-critic` skill for structured scoring, framework checks, and actionable criticism.
-- Keep loading on demand and scoped to content review tasks.
-- Load additional skills only when requested or clearly needed by review scope.
-- If content type is unclear, confirm whether draft is blog, podcast, or YouTube first.
+- Load skills on demand only for active task/phase requirements.
+- Use one relevant skill by default; add a second only for explicit cross-domain needs.
+- If scope is ambiguous, ask a clarifying question before loading.
+- Load `brutal-critic` for structured scoring, framework checks, and actionable criticism.
 - Use `blogger` only when rewrite examples are required after critique.
