@@ -2,7 +2,7 @@
 layout: default
 title: Instructions
 nav_order: 5
-description: Coding standards for 14 languages and frameworks loaded on demand by agents.
+description: Coding standards and domain guidance loaded on demand by agents.
 ---
 
 # Coding Standards
@@ -12,7 +12,7 @@ and as detailed reference files in `.opencode/instructions/`.
 
 Agents load relevant skills on demand through the `skill` tool when work clearly
 matches a language/domain. Skills are not preloaded eagerly.
-Only `ci-cd-hygiene` is loaded globally; other standards remain on-demand.
+Runtime behavior should prefer skills; instruction files remain a static reference layer.
 
 ## Skill Activation Policy (OpenCode)
 
@@ -40,6 +40,7 @@ Agents using `skill: true` should define `permission.skill` with least-privilege
 | Java | Spring Boot DI, validation, records |
 | Node.js | Security middleware, validation, structured logs |
 | React | Accessibility, performance, hooks |
+| UX Responsive | Breakpoints, reflow, touch/pointer and keyboard accessibility |
 | Ruby | MVC, ActiveRecord, RSpec |
 | Rust | Ownership, Result/Option, clippy |
 | CI/CD | Fail-fast gates, security, caching |

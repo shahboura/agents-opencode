@@ -25,17 +25,44 @@ Use this when building or maintaining Rust projects.
 - Use traits for polymorphism; keep trait bounds narrow — define interfaces on consumers, not providers
 - Use builder pattern for structs with many optional fields
 - Prefer iterators (`.filter()`, `.map()`, `.collect()`) over manual loops
-- Async/await with tokio — cancel tasks, close channels, avoid spawned task leaks
+- If using Tokio, cancel tasks, close channels, and avoid spawned task leaks
 - Run `cargo clippy -- -D warnings` before every commit — treat all warnings as errors
-- Release profile: enable LTO, set `codegen-units = 1`, `panic = "abort"` for production binaries
-- Use `#[cfg(test)]` module for unit tests; `tokio::test` for async tests
+- Tune release profile (`lto`, `codegen-units`, panic strategy) based on profiling and operational requirements
+- Use `#[cfg(test)]` modules for unit tests; if using Tokio, use `tokio::test` for async tests
 - Document public APIs with `///` rustdoc comments including `# Examples` sections
 - Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
+## Naming Conventions
+- `snake_case` for functions/modules/variables
+- `PascalCase` for structs/enums/traits
+- `SCREAMING_SNAKE_CASE` for constants/statics
+- Error types should be explicit and domain-oriented (`OrderError`, `AuthError`)
+
+## Common Pitfalls
+- Hidden clones that bypass ownership intent
+- `unwrap()` in production paths
+- Public APIs exposing implementation-heavy types unnecessarily
+- Async tasks spawned without cancellation/cleanup strategy
+
+## Example Patterns
+```rust
+#[derive(Debug)]
+pub enum AppError {
+    NotFound,
+    Validation(String),
+}
+
+pub fn parse_id(input: &str) -> Result<u64, AppError> {
+    input.parse::<u64>().map_err(|_| AppError::Validation("invalid id".into()))
+}
+```
+
 ## Validation Commands
+Prefer project scripts when present; use defaults below otherwise.
+
 ```bash
+cargo fmt --check
+cargo clippy --all-targets --all-features -- -D warnings
 cargo check
 cargo test
-cargo clippy
-cargo fmt
 ```

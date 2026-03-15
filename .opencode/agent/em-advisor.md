@@ -119,10 +119,10 @@ Urgent + Important: Do now | Important, not urgent: Schedule | Urgent, not impor
 
 ## Skill Activation Policy
 
-- Use the `skill` tool selectively for domain-specific artifacts tied to engineering workflows.
+- Load skills on demand only for active task/phase requirements.
+- Use one relevant skill by default; add a second only for explicit cross-domain needs.
+- If scope is ambiguous, ask a clarifying question before loading.
 - Skip skill loading for pure people/leadership coaching unless a concrete template is needed.
-- Use one relevant skill by default for technical artifacts; add another only for clear cross-domain needs.
-- If uncertainty exists, ask whether output is leadership guidance, technical plan, or mixed.
 
 ## Investigation tools
 - Use `read`, `glob`, and `grep` for file and content exploration.

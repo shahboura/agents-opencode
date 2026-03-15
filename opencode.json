@@ -1,8 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": [
-    ".opencode/instructions/ci-cd-hygiene.instructions.md"
-  ],
   "permission": {
     "external_directory": "deny",
     "doom_loop": "deny"

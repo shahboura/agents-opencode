@@ -114,9 +114,10 @@ docs/
 
 ## Skill Activation Policy
 
-- Load skills on demand when docs work needs domain-specific guidance.
+- Load skills on demand only for active task/phase requirements.
+- Use one relevant skill by default; add a second only for explicit cross-domain needs.
+- If scope is ambiguous, ask a clarifying question before loading.
 - Use `docs-validation` for docs quality checks.
-- Add one extra domain skill only when content is tightly tied to that domain.
 
 ## Quality Checks
 - Spell check all content

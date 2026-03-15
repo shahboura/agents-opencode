@@ -17,18 +17,18 @@ Lean reference for the built-in agents.
 
 ## Agent Overview
 
-| Agent | Best For | Allocated Skills (summary) |
-|-------|----------|----------------------------|
-| `@orchestrator` | Multi-phase coordination | Language skills + utility skills + `blogger`/`brutal-critic` |
-| `@planner` | Read-only architecture/planning | Language skills + utility skills |
-| `@codebase` | Feature implementation | Language skills + `sql-migrations` |
-| `@review` | Security/performance/code quality | Language skills + `docs-validation` + `agent-diagnostics` |
-| `@docs` | Documentation updates | `docs-validation` + `project-bootstrap` + `agent-diagnostics` |
-| `@em-advisor` | Engineering leadership guidance | `project-bootstrap` + `docs-validation` + `agent-diagnostics` |
-| `@blogger` | Blog/video/podcast drafts | `blogger` + `brutal-critic` |
-| `@brutal-critic` | Final content quality gate | `brutal-critic` + `blogger` |
+| Agent | Best For |
+|-------|----------|
+| `@orchestrator` | Multi-phase coordination |
+| `@planner` | Read-only architecture/planning |
+| `@codebase` | Feature implementation |
+| `@review` | Security/performance/code quality |
+| `@docs` | Documentation updates |
+| `@em-advisor` | Engineering leadership guidance |
+| `@blogger` | Blog/video/podcast drafts |
+| `@brutal-critic` | Final content quality gate |
 
-See exact allowlists in the [Skills Matrix](../skills-matrix).
+Canonical source for exact allowlists and skill triggers: [Skills Matrix](../skills-matrix).
 
 ## Suggested Flow
 
@@ -51,6 +51,12 @@ See exact allowlists in the [Skills Matrix](../skills-matrix).
 - Agents use `permission.skill` rules to restrict which skills can load.
 - Recommended baseline is `"*": "deny"` with explicit per-skill allows.
 - This enforces least privilege and keeps agent behavior domain-scoped.
+
+## Task Permission Model
+
+- Agents with Task access should use `permission.task` with deny-by-default and explicit allows.
+- Keep subagent invocation scoped to role-appropriate handoffs.
+- Rules are matched in order; last matching rule wins.
 
 ## Skill Scope Policy
 

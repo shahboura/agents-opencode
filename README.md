@@ -30,24 +30,47 @@ npm install -g agents-opencode && agents-opencode --global
 # Project install (current directory only)
 npx agents-opencode --project .
 
-# Install with specific languages only
+# Filter language instruction references for a lighter install
 npx agents-opencode --global --languages python,typescript
 
 # Update existing installation
 npx agents-opencode --update
 
-# Uninstall
+# Force update both global + current project scopes
+npx agents-opencode --update --all
+
+# Uninstall current project scope (default)
 npx agents-opencode --uninstall
+
+# Uninstall global scope only
+npx agents-opencode --uninstall --global
+
+# Uninstall both global + current project scopes
+npx agents-opencode --uninstall --all
+
+# Check detected installation scopes
+npx agents-opencode --status
 ```
 
 Install behavior note:
 - `npx`/`npm` installs from the published npm package version (deterministic release artifact).
 - npm package and installer command: `agents-opencode`
 - OpenCode CLI runtime command: `opencode`
+- `--languages` filters language instruction reference files; runtime skill loading remains on-demand per agent allowlists.
 
 Uninstall behavior:
-- `npx agents-opencode --uninstall` removes `.opencode/` and `opencode.json` from the current directory.
-- If `AGENTS.md` exists, it is backed up as `AGENTS.<timestamp>.bk.md`.
+- `npx agents-opencode --uninstall` targets the **current project** by default.
+- Use `--global` or `--all` for explicit scope control.
+- Uninstall removes installer-managed files via install manifest tracking.
+- If `AGENTS.md` exists in project scope, it is backed up as `AGENTS.<timestamp>.bk.md`.
+
+Update behavior:
+- `npx agents-opencode --update` auto-detects and updates installed scopes (global and/or current project).
+- Use `--all`, `--global`, or `--project [dir]` to force explicit update scope.
+
+Configuration behavior:
+- Installer merges only missing global permission defaults (`external_directory`, `doom_loop`) into `opencode.json`.
+- Existing provider/model/instructions settings are preserved and never overwritten by installer defaults.
 
 Then run:
 
@@ -59,24 +82,24 @@ opencode
 
 ## Agents
 
-| Agent | Best For | Allocated Skills (summary) |
-|-------|----------|----------------------------|
-| `@orchestrator` | Multi-phase coordination | Language skills + utility skills + `blogger`/`brutal-critic` |
-| `@planner` | Read-only architecture/planning | Language skills + utility skills |
-| `@codebase` | Feature implementation | Language skills + `sql-migrations` |
-| `@review` | Security/performance/code quality | Language skills + `docs-validation` + `agent-diagnostics` |
-| `@docs` | Documentation updates | `docs-validation` + `project-bootstrap` + `agent-diagnostics` |
-| `@em-advisor` | EM/leadership guidance | `project-bootstrap` + `docs-validation` + `agent-diagnostics` |
-| `@blogger` | Blog/video/podcast drafting | `blogger` + `brutal-critic` |
-| `@brutal-critic` | Final content quality gate | `brutal-critic` + `blogger` |
+| Agent | Best For |
+|-------|----------|
+| `@orchestrator` | Multi-phase coordination |
+| `@planner` | Read-only architecture/planning |
+| `@codebase` | Feature implementation |
+| `@review` | Security/performance/code quality |
+| `@docs` | Documentation updates |
+| `@em-advisor` | EM/leadership guidance |
+| `@blogger` | Blog/video/podcast drafting |
+| `@brutal-critic` | Final content quality gate |
 
-See full allowlists: [Skills Matrix](./docs/skills-matrix.md)
+Canonical source for exact allowlists and skill triggers: [Skills Matrix](./docs/skills-matrix.md)
 
 ## Skill Loading (OpenCode)
 
-- Instruction files live in `.opencode/instructions/*.instructions.md`.
+- Instruction files live in `.opencode/instructions/*.instructions.md` as reference material.
 - Reusable skill packs live in `.opencode/skills/<name>/SKILL.md`.
-- Skills are loaded on demand via the `skill` tool.
+- Skills are the primary runtime mechanism and are loaded on demand via the `skill` tool.
 - Use one relevant skill per task/phase by default; add another only for clear cross-domain work.
 - If stack/domain is unclear, ask for clarification before loading.
 
@@ -98,6 +121,23 @@ permission:
 ```
 
 This keeps skills focused by agent role and reduces accidental context bloat.
+
+## Task Permissions (Subagent Hardening)
+
+Use `permission.task` allowlists to control which subagents each agent can invoke.
+
+```yaml
+permission:
+  task:
+    "*": "deny"
+    "explore": "allow"
+    "review": "allow"
+```
+
+Pattern notes:
+- Start with `"*": "deny"`, then add explicit allows.
+- Keep allowlists narrow by role.
+- Rules are matched in order and the last matching rule wins.
 
 ## Commands
 

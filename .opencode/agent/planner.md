@@ -25,6 +25,7 @@ permission:
     "java-spring": "allow"
     "node-express": "allow"
     "react-next": "allow"
+    "ux-responsive": "allow"
     "ruby-rails": "allow"
     "rust": "allow"
     "sql-migrations": "allow"
@@ -135,13 +136,6 @@ Generate a comprehensive implementation plan with:
 3. Schedule follow-up review with @review
 ```
 
-### Phase 3: Handoff Recommendation
-
-After plan approval, recommend the user switch to:
-- @codebase for implementation
-- @review for security/performance review
-- @docs for documentation needs
-
 ## Planning Principles
 
 1. **Be Specific**: Include exact file paths, function names, and line numbers when possible
@@ -150,13 +144,12 @@ After plan approval, recommend the user switch to:
 4. **Think Testing**: Include test requirements in every step
 5. **Document Decisions**: Explain why this approach over alternatives
 
-## Technology-Specific Planning
-
 ## Skill Activation Policy
 
-- Load skills on demand only when planning needs language/domain-specific standards.
-- Use one relevant skill by default; load a second only with clear cross-domain rationale.
-- If technology choice is unclear, confirm stack assumptions before loading.
+- Load skills on demand only for active task/phase requirements.
+- Use one relevant skill by default; add a second only for explicit cross-domain needs.
+- If scope is ambiguous, ask a clarifying question before loading.
+- For responsive UX planning across phone/tablet/desktop, load `ux-responsive` on demand.
 
 ## Validation Before Handoff
 

@@ -26,12 +26,17 @@ npx agents-opencode --global
 # Project install
 npx agents-opencode --project .
 
-# Install with specific languages only
+# Filter language instruction references for a lighter install
 npx agents-opencode --global --languages python,typescript
 
 # Update existing installation
 npx agents-opencode --update
+
+# Force update both global + current project scopes
+npx agents-opencode --update --all
 ```
+
+`--languages` filters language instruction reference files. Runtime skills still load on demand via agent skill allowlists.
 
 ### Via curl
 
@@ -59,12 +64,25 @@ curl -fsSL https://raw.githubusercontent.com/shahboura/agents-opencode/main/inst
 ### Uninstall
 
 ```bash
+# Current project scope (default)
 npx agents-opencode --uninstall
+
+# Global scope only
+npx agents-opencode --uninstall --global
+
+# Both global + current project scopes
+npx agents-opencode --uninstall --all
+
+# Check detected install scopes
+npx agents-opencode --status
 ```
 
-- Applies to the **current directory** only.
-- Removes `.opencode/` and `opencode.json`.
-- Backs up `AGENTS.md` as `AGENTS.<timestamp>.bk.md` when present.
+- Default uninstall applies to the **current project scope**.
+- Use `--global` or `--all` to target non-project scope.
+- Removes installer-managed files using install manifest tracking.
+- Backs up `AGENTS.md` as `AGENTS.<timestamp>.bk.md` for project-scope uninstall.
+- Installer only merges missing permission defaults into existing `opencode.json`.
+- Existing provider/model/instruction configuration remains unchanged.
 
 ## Your First Run
 

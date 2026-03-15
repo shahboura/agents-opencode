@@ -3,7 +3,7 @@ layout: default
 title: Home
 nav_order: 1
 permalink: /
-description: Lean OpenCode agents pack with 8 specialized agents, 14 coding standards, and slash commands.
+description: Lean OpenCode agents pack with 8 specialized agents, core language/domain skills, and slash commands.
 keywords: opencode, ai agents, code generation, development workflow, .NET, Python, TypeScript, Flutter, code review, documentation
 ---
 
@@ -42,18 +42,18 @@ Quick jump: [Agents](agents/README) · [Skills Matrix](skills-matrix) · [Comman
 
 ## Agents
 
-| Agent | Best For | Allocated Skills (summary) |
-|-------|----------|----------------------------|
-| `@orchestrator` | Multi-phase coordination | Language skills + utility skills + `blogger`/`brutal-critic` |
-| `@planner` | Read-only architecture/planning | Language skills + utility skills |
-| `@codebase` | Feature implementation | Language skills + `sql-migrations` |
-| `@review` | Security/performance/code quality | Language skills + `docs-validation` + `agent-diagnostics` |
-| `@docs` | Documentation updates | `docs-validation` + `project-bootstrap` + `agent-diagnostics` |
-| `@em-advisor` | EM/leadership guidance | `project-bootstrap` + `docs-validation` + `agent-diagnostics` |
-| `@blogger` | Blog/video/podcast drafting | `blogger` + `brutal-critic` |
-| `@brutal-critic` | Final content quality gate | `brutal-critic` + `blogger` |
+| Agent | Best For |
+|-------|----------|
+| `@orchestrator` | Multi-phase coordination |
+| `@planner` | Read-only architecture/planning |
+| `@codebase` | Feature implementation |
+| `@review` | Security/performance/code quality |
+| `@docs` | Documentation updates |
+| `@em-advisor` | EM/leadership guidance |
+| `@blogger` | Blog/video/podcast drafting |
+| `@brutal-critic` | Final content quality gate |
 
-For exact allowlists, use the [Skills Matrix](skills-matrix).
+Canonical source for exact allowlists and skill triggers: [Skills Matrix](skills-matrix).
 
 ## Docs
 

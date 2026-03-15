@@ -3,11 +3,20 @@
 /**
  * OpenCode Agents Installation Script
  * Cross-platform installer for Windows, Linux, and macOS
+ *
+ * Hardening goals:
+ * - Scope-aware install/update/uninstall (global/project/all)
+ * - Non-destructive global updates (no wholesale config dir replacement)
+ * - Manifest-based uninstall to remove only installer-managed files
  */
 
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+
+const PACKAGE_NAME = 'agents-opencode';
+const MANIFEST_FILE = '.agents-opencode-manifest.json';
+const VERSION_FILE = '.opencode-agents-version';
 
 // Colors for output
 const colors = {
@@ -15,7 +24,7 @@ const colors = {
     green: '\x1b[32m',
     yellow: '\x1b[33m',
     blue: '\x1b[34m',
-    reset: '\x1b[0m'
+    reset: '\x1b[0m',
 };
 
 function log(color, prefix, message) {
@@ -38,14 +47,12 @@ function error(message) {
     log(colors.red, 'ERROR', message);
 }
 
-// Cross-platform path handling
 function getHomeDir() {
     return os.homedir();
 }
 
 function getGlobalConfigDir() {
-    const home = getHomeDir();
-    return path.join(home, '.config', 'opencode');
+    return path.join(getHomeDir(), '.config', 'opencode');
 }
 
 function ensureDir(dirPath) {
@@ -54,56 +61,436 @@ function ensureDir(dirPath) {
     }
 }
 
-function copyRecursive(src, dest) {
-    if (!fs.existsSync(src)) return;
+function isObject(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
 
-    const stats = fs.statSync(src);
-    if (stats.isDirectory()) {
-        ensureDir(dest);
-        const files = fs.readdirSync(src);
-        files.forEach(file => {
-            const srcPath = path.join(src, file);
-            const destPath = path.join(dest, file);
-            copyRecursive(srcPath, destPath);
-        });
-    } else {
-        fs.copyFileSync(src, dest);
+function readJsonFile(filePath, labelForError) {
+    try {
+        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch (err) {
+        warning(`Could not parse ${labelForError}: ${err.message}`);
+        return null;
     }
+}
+
+function writeJsonFile(filePath, data) {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n');
+}
+
+function sanitizeTimestamp(date = new Date()) {
+    return date.toISOString().replace(/[:.]/g, '-');
 }
 
 function validatePackageContents(sourceDir) {
     const opencodeDir = path.join(sourceDir, '.opencode');
     if (!fs.existsSync(opencodeDir)) {
-        error('Invalid repository structure. Missing .opencode directory.');
+        error('Invalid package structure. Missing .opencode directory.');
         return false;
     }
+
+    const configPath = path.join(sourceDir, 'opencode.json');
+    if (!fs.existsSync(configPath)) {
+        error('Invalid package structure. Missing opencode.json.');
+        return false;
+    }
+
     return true;
 }
 
-function verifyInstallation(installDir) {
+function checkVersion(sourceDir) {
     try {
-        // Check for essential directories
+        const packagePath = path.join(sourceDir, 'package.json');
+        if (fs.existsSync(packagePath)) {
+            const packageData = readJsonFile(packagePath, 'package.json');
+            if (packageData && packageData.version) {
+                info(`Installing OpenCode Agents v${packageData.version}`);
+                return packageData.version;
+            }
+        }
+    } catch {
+        // ignore version check errors
+    }
+    return null;
+}
+
+function showVersion(sourceDir) {
+    try {
+        const packagePath = path.join(sourceDir, 'package.json');
+        if (fs.existsSync(packagePath)) {
+            const packageData = readJsonFile(packagePath, 'package.json');
+            if (packageData && packageData.version) {
+                console.log(`OpenCode Agents v${packageData.version}`);
+                console.log('Repository: https://github.com/shahboura/agents-opencode');
+                return;
+            }
+        }
+        console.log('OpenCode Agents (version unknown)');
+    } catch {
+        console.log('OpenCode Agents (version check failed)');
+    }
+}
+
+function listFilesRecursive(rootDir) {
+    const files = [];
+
+    function walk(currentDir, relativeBase = '') {
+        const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+        for (const entry of entries) {
+            const relativePath = relativeBase ? path.join(relativeBase, entry.name) : entry.name;
+            const absolutePath = path.join(currentDir, entry.name);
+
+            if (entry.isDirectory()) {
+                walk(absolutePath, relativePath);
+            } else if (entry.isFile()) {
+                files.push(relativePath);
+            }
+        }
+    }
+
+    walk(rootDir);
+    return files;
+}
+
+function getManagedSourceFiles(sourceOpencodeDir) {
+    const allFiles = listFilesRecursive(sourceOpencodeDir);
+    return allFiles.filter((relativePath) => {
+        // Never manage transient dependency installs from local development
+        if (relativePath.includes(`node_modules${path.sep}`) || relativePath === 'node_modules') {
+            return false;
+        }
+
+        // Avoid re-managing backup artifacts if present
+        if (/\.backup\./.test(relativePath)) {
+            return false;
+        }
+
+        return true;
+    });
+}
+
+function filesEqual(pathA, pathB) {
+    try {
+        const statA = fs.statSync(pathA);
+        const statB = fs.statSync(pathB);
+        if (statA.size !== statB.size) {
+            return false;
+        }
+        const contentA = fs.readFileSync(pathA);
+        const contentB = fs.readFileSync(pathB);
+        return contentA.equals(contentB);
+    } catch {
+        return false;
+    }
+}
+
+function getScopePaths(scope, projectDir) {
+    if (scope === 'global') {
+        const rootDir = getGlobalConfigDir();
+        return {
+            scope,
+            rootDir,
+            opencodeDir: rootDir,
+            manifestPath: path.join(rootDir, MANIFEST_FILE),
+            versionPath: path.join(rootDir, VERSION_FILE),
+            configPath: path.join(rootDir, 'opencode.json'),
+            agentsMdPath: null,
+        };
+    }
+
+    const resolvedProjectDir = path.resolve(projectDir || process.cwd());
+    return {
+        scope,
+        rootDir: resolvedProjectDir,
+        opencodeDir: path.join(resolvedProjectDir, '.opencode'),
+        manifestPath: path.join(resolvedProjectDir, '.opencode', MANIFEST_FILE),
+        versionPath: path.join(resolvedProjectDir, VERSION_FILE),
+        configPath: path.join(resolvedProjectDir, 'opencode.json'),
+        agentsMdPath: path.join(resolvedProjectDir, 'AGENTS.md'),
+    };
+}
+
+function toManagedPath(scope, relativeOpencodeFile) {
+    if (scope === 'global') {
+        return relativeOpencodeFile;
+    }
+    return path.join('.opencode', relativeOpencodeFile);
+}
+
+function installManagedTree(sourceOpencodeDir, sourceFiles, destinationOpencodeDir) {
+    ensureDir(destinationOpencodeDir);
+
+    const timestamp = sanitizeTimestamp();
+
+    let copiedCount = 0;
+    let skippedCount = 0;
+    let backupCount = 0;
+
+    for (const relativeFile of sourceFiles) {
+        const src = path.join(sourceOpencodeDir, relativeFile);
+        const dest = path.join(destinationOpencodeDir, relativeFile);
+        const destParent = path.dirname(dest);
+        ensureDir(destParent);
+
+        if (fs.existsSync(dest)) {
+            if (filesEqual(src, dest)) {
+                skippedCount += 1;
+                continue;
+            }
+
+            const backupPath = `${dest}.backup.${timestamp}`;
+            try {
+                fs.copyFileSync(dest, backupPath);
+                backupCount += 1;
+            } catch (err) {
+                warning(`Could not back up existing file ${dest}: ${err.message}`);
+            }
+        }
+
+        fs.copyFileSync(src, dest);
+        copiedCount += 1;
+    }
+
+    return {
+        copiedCount,
+        skippedCount,
+        backupCount,
+    };
+}
+
+function buildManagedFilesFromSource(scope, sourceFiles, paths) {
+    const managedFiles = [];
+
+    for (const relativeFile of sourceFiles) {
+        const managedPath = toManagedPath(scope, relativeFile);
+        const absoluteManagedPath = path.join(paths.rootDir, managedPath);
+        if (fs.existsSync(absoluteManagedPath)) {
+            managedFiles.push(managedPath);
+        }
+    }
+
+    return managedFiles;
+}
+
+function mergeInstallerConfig(targetConfigPath, sourceConfig) {
+    const patch = {
+        createdFile: false,
+        addedPermissionKeys: [],
+        createdSchema: false,
+        skipped: false,
+        changed: false,
+    };
+
+    const sourceConfigForInstall = {
+        ...(sourceConfig || {}),
+    };
+    delete sourceConfigForInstall.instructions;
+
+    if (!fs.existsSync(targetConfigPath)) {
+        writeJsonFile(targetConfigPath, sourceConfigForInstall);
+        patch.createdFile = true;
+        patch.changed = true;
+        if (isObject(sourceConfigForInstall.permission)) {
+            patch.addedPermissionKeys = Object.keys(sourceConfigForInstall.permission);
+        }
+        patch.createdSchema = !!sourceConfigForInstall.$schema;
+        return patch;
+    }
+
+    const existing = readJsonFile(targetConfigPath, `existing config at ${targetConfigPath}`);
+    if (!existing || !isObject(existing)) {
+        warning(`Skipping config merge for ${targetConfigPath} because existing config is invalid JSON.`);
+        patch.skipped = true;
+        return patch;
+    }
+
+    if (isObject(sourceConfigForInstall.permission)) {
+        if (existing.permission === undefined) {
+            existing.permission = {};
+        }
+
+        if (!isObject(existing.permission)) {
+            warning(`Skipping permission merge for ${targetConfigPath}; existing permission is not an object.`);
+        } else {
+            for (const [key, value] of Object.entries(sourceConfigForInstall.permission)) {
+                if (!(key in existing.permission)) {
+                    existing.permission[key] = value;
+                    patch.addedPermissionKeys.push(key);
+                    patch.changed = true;
+                }
+            }
+        }
+    }
+
+    if (patch.changed) {
+        writeJsonFile(targetConfigPath, existing);
+    }
+
+    return patch;
+}
+
+function mergeConfigPatches(existingPatch, currentPatch) {
+    const base = {
+        createdFile: false,
+        addedPermissionKeys: [],
+        createdSchema: false,
+        skipped: false,
+        changed: false,
+    };
+
+    const prior = isObject(existingPatch) ? existingPatch : {};
+    const next = isObject(currentPatch) ? currentPatch : {};
+
+    const permissionKeys = new Set([
+        ...(Array.isArray(prior.addedPermissionKeys) ? prior.addedPermissionKeys : []),
+        ...(Array.isArray(next.addedPermissionKeys) ? next.addedPermissionKeys : []),
+    ]);
+
+    return {
+        ...base,
+        ...prior,
+        ...next,
+        createdFile: Boolean(prior.createdFile || next.createdFile),
+        addedPermissionKeys: [...permissionKeys],
+        createdSchema: Boolean(prior.createdSchema || next.createdSchema || prior.addedSchema || next.addedSchema),
+        skipped: Boolean(prior.skipped || next.skipped),
+        changed: Boolean(prior.changed || next.changed),
+    };
+}
+
+function revertInstallerConfig(targetConfigPath, configPatch, sourceConfig) {
+    if (!configPatch) {
+        return { changed: false, removedFile: false };
+    }
+
+    if (!fs.existsSync(targetConfigPath)) {
+        return { changed: false, removedFile: false };
+    }
+
+    if (configPatch.createdFile) {
+        fs.unlinkSync(targetConfigPath);
+        return { changed: true, removedFile: true };
+    }
+
+    const existing = readJsonFile(targetConfigPath, `existing config at ${targetConfigPath}`);
+    if (!existing || !isObject(existing)) {
+        warning(`Could not revert config changes for ${targetConfigPath}; invalid JSON.`);
+        return { changed: false, removedFile: false };
+    }
+
+    let changed = false;
+
+    if (Array.isArray(configPatch.addedPermissionKeys) && isObject(existing.permission)) {
+        for (const key of configPatch.addedPermissionKeys) {
+            if (!(key in existing.permission)) {
+                continue;
+            }
+
+            const sourceValue = sourceConfig && isObject(sourceConfig.permission) ? sourceConfig.permission[key] : undefined;
+            if (sourceValue !== undefined && JSON.stringify(existing.permission[key]) !== JSON.stringify(sourceValue)) {
+                warning(`Keeping modified permission key '${key}' in ${targetConfigPath}; value differs from installer default.`);
+                continue;
+            }
+
+            delete existing.permission[key];
+            changed = true;
+        }
+
+        if (Object.keys(existing.permission).length === 0) {
+            delete existing.permission;
+            changed = true;
+        }
+    }
+
+    const schemaWasCreatedByInstaller = Boolean(configPatch.createdSchema || configPatch.addedSchema);
+    if (schemaWasCreatedByInstaller && sourceConfig && sourceConfig.$schema && existing.$schema === sourceConfig.$schema) {
+        delete existing.$schema;
+        changed = true;
+    }
+
+    if (changed) {
+        writeJsonFile(targetConfigPath, existing);
+    }
+
+    return { changed, removedFile: false };
+}
+
+function writeManifest(manifestPath, manifest) {
+    ensureDir(path.dirname(manifestPath));
+    writeJsonFile(manifestPath, manifest);
+}
+
+function readManifest(manifestPath) {
+    if (!fs.existsSync(manifestPath)) {
+        return null;
+    }
+    const manifest = readJsonFile(manifestPath, `manifest at ${manifestPath}`);
+    if (!manifest || !isObject(manifest)) {
+        return null;
+    }
+    return manifest;
+}
+
+function removeIfExists(filePath) {
+    if (!fs.existsSync(filePath)) {
+        return false;
+    }
+    fs.unlinkSync(filePath);
+    return true;
+}
+
+function pruneEmptyDirectories(directories, stopAtDirectory) {
+    const sorted = [...directories].sort((a, b) => b.length - a.length);
+    let prunedCount = 0;
+
+    for (const dirPath of sorted) {
+        if (!fs.existsSync(dirPath)) {
+            continue;
+        }
+        if (path.resolve(dirPath) === path.resolve(stopAtDirectory)) {
+            continue;
+        }
+
+        try {
+            const entries = fs.readdirSync(dirPath);
+            if (entries.length === 0) {
+                fs.rmdirSync(dirPath);
+                prunedCount += 1;
+            }
+        } catch {
+            // ignore pruning errors
+        }
+    }
+
+    return prunedCount;
+}
+
+function backupAgentsMdIfPresent(agentsMdPath) {
+    if (!agentsMdPath || !fs.existsSync(agentsMdPath)) {
+        return null;
+    }
+
+    const timestamp = sanitizeTimestamp().replace(/\.\d{3}Z$/, '');
+    const backupPath = path.join(path.dirname(agentsMdPath), `AGENTS.${timestamp}.bk.md`);
+    fs.renameSync(agentsMdPath, backupPath);
+    return path.basename(backupPath);
+}
+
+function verifyInstallation(opencodeDir, scope) {
+    try {
         const requiredDirs = ['agent', 'instructions', 'commands'];
         for (const dir of requiredDirs) {
-            const dirPath = path.join(installDir, dir);
+            const dirPath = path.join(opencodeDir, dir);
             if (!fs.existsSync(dirPath)) {
-                error(`Missing required directory: ${dir}`);
+                error(`Missing required directory '${dir}' in ${scope} installation.`);
                 return false;
             }
         }
 
-        // Check for configuration file
-        const configFile = path.join(path.dirname(installDir), 'opencode.json');
-        if (!fs.existsSync(configFile)) {
-            error('Missing configuration file: opencode.json');
-            return false;
-        }
-
-        // Check for at least one agent
-        const agentDir = path.join(installDir, 'agent');
+        const agentDir = path.join(opencodeDir, 'agent');
         const agents = fs.readdirSync(agentDir).filter(file => file.endsWith('.md'));
         if (agents.length === 0) {
-            error('No agent files found in agent directory');
+            error(`No agent files found in ${agentDir}`);
             return false;
         }
 
@@ -114,159 +501,285 @@ function verifyInstallation(installDir) {
     }
 }
 
-function checkVersion(sourceDir) {
-    try {
-        const packagePath = path.join(sourceDir, 'package.json');
-        if (fs.existsSync(packagePath)) {
-            const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-            const version = packageData.version;
-            info(`Installing OpenCode Agents v${version}`);
-            return version;
-        }
-    } catch (err) {
-        // Ignore version check errors
+function legacyConfigCleanup(configPath, sourceConfig) {
+    if (!fs.existsSync(configPath)) {
+        return { changed: false, removedFile: false };
     }
-    return null;
+
+    const existing = readJsonFile(configPath, `existing config at ${configPath}`);
+    if (!existing || !isObject(existing)) {
+        warning(`Skipping legacy config cleanup; invalid JSON at ${configPath}.`);
+        return { changed: false, removedFile: false };
+    }
+
+    if (JSON.stringify(existing) === JSON.stringify(sourceConfig)) {
+        fs.unlinkSync(configPath);
+        return { changed: true, removedFile: true };
+    }
+
+    let changed = false;
+
+    if (isObject(sourceConfig.permission) && isObject(existing.permission)) {
+        for (const [key, sourceValue] of Object.entries(sourceConfig.permission)) {
+            if (!(key in existing.permission)) {
+                continue;
+            }
+            if (JSON.stringify(existing.permission[key]) === JSON.stringify(sourceValue)) {
+                delete existing.permission[key];
+                changed = true;
+            }
+        }
+        if (Object.keys(existing.permission).length === 0) {
+            delete existing.permission;
+            changed = true;
+        }
+    }
+
+    if (changed) {
+        writeJsonFile(configPath, existing);
+    }
+
+    return { changed, removedFile: false };
 }
 
-function installGlobal(sourceDir) {
-    info('Installing agents globally...');
-
-    const globalConfigDir = getGlobalConfigDir();
-
-    // Backup existing installation if it exists
-    if (fs.existsSync(globalConfigDir)) {
-        const backupDir = `${globalConfigDir}.backup.${Date.now()}`;
-        try {
-            fs.renameSync(globalConfigDir, backupDir);
-            info(`Backed up existing installation to ${backupDir}`);
-        } catch (err) {
-            warning(`Could not backup existing installation: ${err.message}`);
-        }
+function loadSourceConfig(sourceDir) {
+    const sourceConfigPath = path.join(sourceDir, 'opencode.json');
+    const sourceConfig = readJsonFile(sourceConfigPath, 'package opencode.json');
+    if (!sourceConfig || !isObject(sourceConfig)) {
+        error('Could not parse package opencode.json.');
+        process.exit(1);
     }
-
-    // Copy all .opencode/ contents
-    const opencodeSrc = path.join(sourceDir, '.opencode');
-    if (fs.existsSync(opencodeSrc)) {
-        copyRecursive(opencodeSrc, globalConfigDir);
-        success(`✓ Copied all agent configurations`);
-    }
-
-    // Copy opencode.json
-    const configSrc = path.join(sourceDir, 'opencode.json');
-    if (fs.existsSync(configSrc)) {
-        fs.copyFileSync(configSrc, path.join(globalConfigDir, 'opencode.json'));
-        success(`✓ Configuration installed`);
-    }
-
-    // AGENTS.md is created on first agent run (not during install)
-
-    success('✅ Global installation completed successfully!');
-    info(`Configuration location: ${globalConfigDir}`);
-    info('Agents are now available in all your projects.');
+    return sourceConfig;
 }
 
-function installProject(sourceDir, projectDir) {
-    info(`Installing agents for project: ${projectDir}`);
-
-    // Check if project directory exists
-    if (!fs.existsSync(projectDir)) {
-        error(`Project directory does not exist: ${projectDir}`);
+function configLooksManaged(configPath, sourceConfig) {
+    if (!fs.existsSync(configPath)) {
         return false;
     }
 
-    // Create .opencode directory (backup first if non-empty)
-    const opencodeDir = path.join(projectDir, '.opencode');
+    const config = readJsonFile(configPath, `config at ${configPath}`);
+    if (!config || !isObject(config)) {
+        return false;
+    }
 
-    if (fs.existsSync(opencodeDir) && fs.readdirSync(opencodeDir).length > 0) {
-        const backupDir = `${opencodeDir}.backup.${Date.now()}`;
-        try {
-            fs.renameSync(opencodeDir, backupDir);
-            info(`Backed up existing .opencode to ${backupDir}`);
-        } catch (err) {
-            warning(`Could not backup existing .opencode: ${err.message}`);
+    if (isObject(sourceConfig.permission) && isObject(config.permission)) {
+        for (const [key, sourceValue] of Object.entries(sourceConfig.permission)) {
+            if (!(key in config.permission)) {
+                continue;
+            }
+            if (JSON.stringify(config.permission[key]) === JSON.stringify(sourceValue)) {
+                return true;
+            }
         }
     }
 
-    ensureDir(opencodeDir);
+    return false;
+}
 
-    // Copy all .opencode/ contents
-    const opencodeSrc = path.join(sourceDir, '.opencode');
-    if (fs.existsSync(opencodeSrc)) {
-        copyRecursive(opencodeSrc, opencodeDir);
-        success(`✓ Copied all agent configurations`);
+function installScope(options) {
+    const {
+        sourceConfig,
+        sourceOpencodeDir,
+        sourceManagedFiles,
+        sourceVersion,
+        scope,
+        projectDir,
+        languages,
+    } = options;
+
+    const paths = getScopePaths(scope, projectDir);
+    const existingManifest = readManifest(paths.manifestPath);
+
+    if (scope === 'project' && !fs.existsSync(paths.rootDir)) {
+        error(`Project directory does not exist: ${paths.rootDir}`);
+        return false;
     }
 
-    // Copy opencode.json
-    const configSrc = path.join(sourceDir, 'opencode.json');
-    if (fs.existsSync(configSrc)) {
-        fs.copyFileSync(configSrc, path.join(projectDir, 'opencode.json'));
-        success(`✓ Configuration installed`);
+    ensureDir(paths.opencodeDir);
+
+    info(`Installing ${PACKAGE_NAME} (${scope}) at ${paths.rootDir}`);
+
+    const treeResult = installManagedTree(sourceOpencodeDir, sourceManagedFiles, paths.opencodeDir);
+    success(`✓ Installed/updated ${treeResult.copiedCount} file(s); ${treeResult.skippedCount} unchanged`);
+    if (treeResult.backupCount > 0) {
+        info(`Created ${treeResult.backupCount} backup file(s) for overwritten content.`);
     }
 
-    // AGENTS.md is created on first agent run (not during install)
+    if (languages) {
+        filterLanguages(paths.opencodeDir, languages);
+    }
 
-    // Verify installation
-    if (verifyInstallation(opencodeDir)) {
-        success('✅ Project installation completed successfully!');
-        info(`Agents configured for: ${projectDir}`);
-        info(`Configuration: ${path.join(projectDir, 'opencode.json')}`);
-        return true;
+    const configPatch = mergeInstallerConfig(paths.configPath, sourceConfig);
+    if (configPatch.skipped) {
+        warning('Config merge skipped due to invalid existing JSON; continuing with agent files only.');
+    } else if (configPatch.createdFile) {
+        success(`✓ Created config: ${paths.configPath}`);
+    } else if (configPatch.changed) {
+        success(`✓ Updated config safely: ${paths.configPath}`);
     } else {
-        error('❌ Installation verification failed. Please check the project directory.');
+        info(`No config changes needed in ${paths.configPath}`);
+    }
+
+    fs.writeFileSync(paths.versionPath, `${sourceVersion || 'unknown'}\n`);
+
+    const managedFiles = buildManagedFilesFromSource(scope, sourceManagedFiles, paths);
+    const manifest = {
+        schemaVersion: 1,
+        package: PACKAGE_NAME,
+        scope,
+        rootDir: paths.rootDir,
+        sourceVersion: sourceVersion || 'unknown',
+        updatedAt: new Date().toISOString(),
+        managedFiles,
+        configPatch,
+    };
+
+    const effectiveConfigPatch = mergeConfigPatches(existingManifest ? existingManifest.configPatch : null, configPatch);
+
+    if (existingManifest && existingManifest.installedAt) {
+        manifest.installedAt = existingManifest.installedAt;
+    } else {
+        manifest.installedAt = manifest.updatedAt;
+    }
+    manifest.configPatch = effectiveConfigPatch;
+
+    writeManifest(paths.manifestPath, manifest);
+
+    if (!verifyInstallation(paths.opencodeDir, scope)) {
+        error(`❌ ${scope} installation verification failed.`);
         return false;
     }
+
+    success(`✅ ${scope} installation completed successfully.`);
+    info(`Manifest: ${paths.manifestPath}`);
+    return true;
 }
 
-function uninstall() {
-    info('Uninstalling OpenCode Agents from current directory...');
+function uninstallScope(options) {
+    const {
+        sourceConfig,
+        sourceOpencodeDir,
+        sourceManagedFiles,
+        scope,
+        projectDir,
+    } = options;
 
-    const currentDir = process.cwd();
-    const opencodeDir = path.join(currentDir, '.opencode');
-    const agentsMdPath = path.join(currentDir, 'AGENTS.md');
-    const configPath = path.join(currentDir, 'opencode.json');
+    const paths = getScopePaths(scope, projectDir);
+    const manifest = readManifest(paths.manifestPath);
 
-    let foundInstallation = false;
+    let removedFiles = 0;
+    let prunedDirs = 0;
+    let configChanged = false;
+    let removedConfigFile = false;
+    const touchedDirectories = new Set();
 
-    try {
-        // Check for any OpenCode installation files/directories
-        if (fs.existsSync(opencodeDir) || fs.existsSync(configPath) || fs.existsSync(agentsMdPath)) {
-            foundInstallation = true;
+    const removeManagedFile = (absolutePath) => {
+        if (!fs.existsSync(absolutePath)) {
+            return;
+        }
+        fs.unlinkSync(absolutePath);
+        removedFiles += 1;
+        touchedDirectories.add(path.dirname(absolutePath));
+    };
 
-            // Backup AGENTS.md with timestamp
-            if (fs.existsSync(agentsMdPath)) {
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-                const backupAgentsMd = path.join(currentDir, `AGENTS.${timestamp}.bk.md`);
-                fs.renameSync(agentsMdPath, backupAgentsMd);
-                success(`✅ Session history backed up to: AGENTS.${timestamp}.bk.md`);
-            }
+    if (manifest && Array.isArray(manifest.managedFiles)) {
+        info(`Using manifest uninstall for ${scope} scope.`);
 
-            // Remove opencode.json
-            if (fs.existsSync(configPath)) {
-                fs.unlinkSync(configPath);
-                success(`✅ Removed opencode.json`);
-            }
-
-            // Remove .opencode directory entirely
-            if (fs.existsSync(opencodeDir)) {
-                fs.rmSync(opencodeDir, { recursive: true, force: true });
-                success(`✅ Removed agent configurations`);
-            }
-
-            success('✅ OpenCode Agents uninstalled from current directory!');
-            info('Agent configurations removed (can be re-installed).');
+        for (const managedPath of manifest.managedFiles) {
+            const absolutePath = path.join(paths.rootDir, managedPath);
+            removeManagedFile(absolutePath);
         }
 
-        if (!foundInstallation) {
-            warning('No OpenCode Agents installation found in current directory.');
+        const revertResult = revertInstallerConfig(paths.configPath, manifest.configPatch, sourceConfig);
+        configChanged = revertResult.changed;
+        removedConfigFile = revertResult.removedFile;
+
+        if (removeIfExists(paths.versionPath)) {
+            removedFiles += 1;
+        }
+        if (removeIfExists(paths.manifestPath)) {
+            removedFiles += 1;
+            touchedDirectories.add(path.dirname(paths.manifestPath));
+        }
+    } else {
+        warning(`No install manifest found for ${scope}. Attempting safe legacy cleanup.`);
+
+        const legacyManagedFiles = sourceManagedFiles
+            .map(relative => toManagedPath(scope, relative));
+
+        for (const legacyManagedPath of legacyManagedFiles) {
+            const absolutePath = path.join(paths.rootDir, legacyManagedPath);
+            removeManagedFile(absolutePath);
         }
 
-    } catch (err) {
-        error(`❌ Failed to uninstall: ${err.message}`);
-        return false;
+        const legacyConfigResult = legacyConfigCleanup(paths.configPath, sourceConfig);
+        configChanged = legacyConfigResult.changed;
+        removedConfigFile = legacyConfigResult.removedFile;
+
+        if (removeIfExists(paths.versionPath)) {
+            removedFiles += 1;
+        }
+    }
+
+    prunedDirs += pruneEmptyDirectories(touchedDirectories, paths.rootDir);
+
+    if (scope === 'project' && fs.existsSync(paths.opencodeDir)) {
+        try {
+            const entries = fs.readdirSync(paths.opencodeDir);
+            if (entries.length === 0) {
+                fs.rmdirSync(paths.opencodeDir);
+                prunedDirs += 1;
+            }
+        } catch {
+            // ignore
+        }
+    }
+
+    if (removedFiles === 0 && !configChanged && !removedConfigFile) {
+        warning(`No ${PACKAGE_NAME} installation artifacts found for ${scope} scope at ${paths.rootDir}.`);
+        return true;
+    }
+
+    if (scope === 'project') {
+        const backupName = backupAgentsMdIfPresent(paths.agentsMdPath);
+        if (backupName) {
+            success(`✅ Session history backed up to: ${backupName}`);
+        }
+    }
+
+    if (removedConfigFile) {
+        success(`✅ Removed config file: ${paths.configPath}`);
+    } else if (configChanged) {
+        success(`✅ Reverted installer-managed config entries in: ${paths.configPath}`);
+    }
+
+    success(`✅ Removed ${removedFiles} managed file(s) for ${scope} scope.`);
+    if (prunedDirs > 0) {
+        info(`Pruned ${prunedDirs} empty directory(ies).`);
     }
 
     return true;
+}
+
+function isInstalled(scope, projectDir, sourceConfig) {
+    const paths = getScopePaths(scope, projectDir);
+    const manifestExists = fs.existsSync(paths.manifestPath);
+
+    if (manifestExists) {
+        return true;
+    }
+
+    return fs.existsSync(path.join(paths.opencodeDir, 'agent')) || configLooksManaged(paths.configPath, sourceConfig);
+}
+
+function showStatus(sourceConfig) {
+    const globalInstalled = isInstalled('global', undefined, sourceConfig);
+    const projectInstalled = isInstalled('project', process.cwd(), sourceConfig);
+
+    console.log('OpenCode Agents installation status:\n');
+    console.log(`- Global (~/.config/opencode): ${globalInstalled ? 'installed' : 'not installed'}`);
+    console.log(`- Project (${process.cwd()}): ${projectInstalled ? 'installed' : 'not installed'}`);
+    console.log('\nConfig precedence reminder: project config overrides global config.');
 }
 
 // Language-to-instruction file mapping
@@ -291,6 +804,7 @@ const LANGUAGE_INSTRUCTIONS = new Set(Object.values(LANGUAGE_MAP));
 const ALWAYS_KEEP = [
     'blogger.instructions.md',
     'brutal-critic.instructions.md',
+    'ci-cd-hygiene.instructions.md',
 ];
 
 function filterLanguages(installDir, languages) {
@@ -300,10 +814,10 @@ function filterLanguages(installDir, languages) {
         return;
     }
 
-    // Validate requested languages
     const validLanguages = Object.keys(LANGUAGE_MAP);
     const requested = languages.split(',').map(l => l.trim().toLowerCase()).filter(Boolean);
     const invalid = requested.filter(l => !validLanguages.includes(l));
+
     if (invalid.length > 0) {
         warning(`Unknown language(s): ${invalid.join(', ')}`);
         info(`Available: ${validLanguages.join(', ')}`);
@@ -315,7 +829,6 @@ function filterLanguages(installDir, languages) {
         return;
     }
 
-    // Build set of files to keep
     const keepFiles = new Set(ALWAYS_KEEP);
     for (const lang of valid) {
         if (LANGUAGE_MAP[lang]) {
@@ -323,46 +836,131 @@ function filterLanguages(installDir, languages) {
         }
     }
 
-    // Scan and remove non-matching instruction files
     const allFiles = fs.readdirSync(instructionsDir);
-    const kept = [];
     const removed = [];
 
     for (const file of allFiles) {
         if (keepFiles.has(file) || !LANGUAGE_INSTRUCTIONS.has(file)) {
-            kept.push(file);
-        } else {
-            const filePath = path.join(instructionsDir, file);
-            try {
-                fs.unlinkSync(filePath);
-                removed.push(file);
-            } catch (err) {
-                warning(`Could not remove ${file}: ${err.message}`);
-            }
+            continue;
+        }
+        try {
+            fs.unlinkSync(path.join(instructionsDir, file));
+            removed.push(file);
+        } catch (err) {
+            warning(`Could not remove ${file}: ${err.message}`);
         }
     }
 
-    if (kept.length > 0) {
-        success(`✓ Kept ${kept.length} instruction file(s): ${kept.join(', ')}`);
-    }
+    success(`✓ Applied language filter: ${valid.join(', ')}`);
     if (removed.length > 0) {
         info(`Removed ${removed.length} instruction file(s): ${removed.join(', ')}`);
     }
 }
 
-function showVersion(sourceDir) {
-    try {
-        const packagePath = path.join(sourceDir, 'package.json');
-        if (fs.existsSync(packagePath)) {
-            const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-            console.log(`OpenCode Agents v${packageData.version}`);
-            console.log(`Repository: https://github.com/shahboura/agents-opencode`);
-        } else {
-            console.log('OpenCode Agents (version unknown)');
+function parseArgs(argv) {
+    const parsed = {
+        global: false,
+        project: null,
+        update: false,
+        uninstall: false,
+        all: false,
+        languages: null,
+        status: false,
+        version: false,
+        help: false,
+    };
+
+    const args = [...argv];
+    for (let i = 0; i < args.length; i += 1) {
+        const arg = args[i];
+        switch (arg) {
+            case '-g':
+            case '--global':
+                parsed.global = true;
+                break;
+            case '-p':
+            case '--project': {
+                const next = args[i + 1];
+                if (!next || next.startsWith('-')) {
+                    parsed.project = process.cwd();
+                } else {
+                    parsed.project = next;
+                    i += 1;
+                }
+                break;
+            }
+            case '--all':
+                parsed.all = true;
+                break;
+            case '-U':
+            case '--update':
+                parsed.update = true;
+                break;
+            case '-u':
+            case '--uninstall':
+                parsed.uninstall = true;
+                break;
+            case '-l':
+            case '--languages': {
+                const next = args[i + 1];
+                if (!next || next.startsWith('-')) {
+                    throw new Error('--languages requires a comma-separated language list');
+                }
+                parsed.languages = next;
+                i += 1;
+                break;
+            }
+            case '--status':
+                parsed.status = true;
+                break;
+            case '-v':
+            case '--version':
+                parsed.version = true;
+                break;
+            case '-h':
+            case '--help':
+                parsed.help = true;
+                break;
+            default:
+                throw new Error(`Unknown option: ${arg}`);
         }
-    } catch (err) {
-        console.log('OpenCode Agents (version check failed)');
     }
+
+    return parsed;
+}
+
+function getRequestedScopes(parsed, mode, sourceConfig) {
+    const scopes = [];
+
+    if (parsed.all) {
+        scopes.push('global');
+        scopes.push('project');
+    } else {
+        if (parsed.global) {
+            scopes.push('global');
+        }
+        if (parsed.project !== null) {
+            scopes.push('project');
+        }
+    }
+
+    if (scopes.length === 0) {
+        if (mode === 'uninstall') {
+            return ['project']; // backward-compatible default
+        }
+        if (mode === 'update') {
+            const inferred = [];
+            if (isInstalled('global', undefined, sourceConfig)) {
+                inferred.push('global');
+            }
+            if (isInstalled('project', process.cwd(), sourceConfig)) {
+                inferred.push('project');
+            }
+            return inferred;
+        }
+    }
+
+    return [...new Set(scopes)];
 }
 
 function showUsage(exitCode = 0) {
@@ -372,42 +970,42 @@ function showUsage(exitCode = 0) {
 USAGE:
     node install.js [OPTIONS]
 
-OPTIONS:
+INSTALL OPTIONS:
     -g, --global                Install agents globally (available in all projects)
-    -p, --project DIR           Install agents for specific project directory
-    -U, --update                Update existing installation to latest version
-    -l, --languages LANGS       Only install specified language standards (comma-separated)
-                                Available: dotnet,python,typescript,flutter,go,java,node,react,ruby,rust,sql,cicd
-    -u, --uninstall             Remove agents from current directory
+    -p, --project [DIR]         Install agents for project directory (defaults to current directory)
+    -l, --languages LANGS       Filter language instruction reference files (comma-separated)
+
+LIFECYCLE OPTIONS:
+    -U, --update                Update existing installation(s)
+    -u, --uninstall             Uninstall installation(s)
+    --all                       Target both global and project scopes (for update/uninstall)
+    --status                    Show whether global/project installations are detected
+
+GENERAL:
     -v, --version               Show version information
     -h, --help                  Show this help message
 
 EXAMPLES:
-    node install.js --global                                    # Install globally
-    node install.js --project /path/to/project                  # Install for specific project
-    node install.js --project .                                 # Install in current directory
-    node install.js --update                                    # Update existing installation
-    node install.js --global --languages python,typescript      # Install with specific languages only
-    node install.js --uninstall                                 # Remove from current directory
-    npx agents-opencode --global                                # Install via npx
+    node install.js --global
+    node install.js --project .
+    node install.js --global --languages python,typescript
+    node install.js --update                    # updates detected installs (global and/or current project)
+    node install.js --update --all              # force update both scopes
+    node install.js --uninstall                 # uninstall current project scope (default)
+    node install.js --uninstall --global        # uninstall global scope
+    node install.js --uninstall --all           # uninstall both scopes
+    node install.js --status
+    npx agents-opencode --global
 
- PREREQUISITES:
-     - Node.js
+INSTALLATION LOCATIONS:
+    Global:  ~/.config/opencode/
+    Project: <project>/.opencode/
 
- NOTES:
-     - npx/npm install downloads a published package version
-     - Git is not required
-
- FEATURES:
-     ✓ Cross-platform (Windows/Linux/macOS)
-     ✓ Automatic backups of existing installations
-     ✓ AGENTS.md created on first agent run
-     ✓ Post-installation verification
-     ✓ Deterministic installs from published package contents
-
- INSTALLATION LOCATIONS:
-    Global: ~/.config/opencode/ (Linux/macOS/Windows)
-    Project: ./.opencode/ in your project directory
+NOTES:
+    - Config updates are merged safely (non-destructive).
+    - Uninstall removes only installer-managed files using a manifest.
+    - If AGENTS.md exists in project scope, it is backed up on uninstall.
+    - --languages filters instruction reference files; skill loading remains on-demand.
 
 For more information, visit: https://github.com/shahboura/agents-opencode
 `);
@@ -415,136 +1013,149 @@ For more information, visit: https://github.com/shahboura/agents-opencode
 }
 
 function main() {
-    let args = process.argv.slice(2);
     const sourceDir = __dirname;
+    const sourceOpencodeDir = path.join(sourceDir, '.opencode');
+    let parsed;
 
-    if (args.length === 0 || args.includes('-h') || args.includes('--help')) {
-        showUsage(0);
-    }
-
-    // Handle uninstall separately (no install source needed)
-    const hasUninstall = args.includes('-u') || args.includes('--uninstall');
-    if (hasUninstall) {
-        if (uninstall()) {
-            success('Uninstallation completed!');
-        }
+    try {
+        parsed = parseArgs(process.argv.slice(2));
+    } catch (err) {
+        error(err.message);
+        showUsage(1);
         return;
     }
 
-    // Parse --languages flag (can appear anywhere in args)
-    let languages = null;
-    const langIdx = args.findIndex(a => a === '-l' || a === '--languages');
-    if (langIdx !== -1) {
-        if (langIdx + 1 >= args.length) {
-            error('--languages requires a comma-separated list of languages.');
-            info(`Available: ${Object.keys(LANGUAGE_MAP).join(', ')}`);
-            process.exit(1);
-        }
-        languages = args[langIdx + 1];
-        // Remove the flag and its value from args so they don't interfere with command parsing
-        args.splice(langIdx, 2);
+    if (parsed.help || process.argv.slice(2).length === 0) {
+        showUsage(0);
+        return;
     }
 
-    // Handle --update (auto-detect install location)
-    const hasUpdate = args.includes('-U') || args.includes('--update');
-    if (hasUpdate) {
-        const globalConfigDir = getGlobalConfigDir();
-        const localOpencodeDir = path.join(process.cwd(), '.opencode');
+    if (parsed.version) {
+        showVersion(sourceDir);
+        return;
+    }
 
-        const hasGlobal = fs.existsSync(globalConfigDir);
-        const hasLocal = fs.existsSync(localOpencodeDir);
+    if (!validatePackageContents(sourceDir)) {
+        process.exit(1);
+    }
 
-        if (!hasGlobal && !hasLocal) {
-            error('No existing installation found. Use --global or --project to install.');
+    const sourceManagedFiles = getManagedSourceFiles(sourceOpencodeDir);
+
+    const sourceConfig = loadSourceConfig(sourceDir);
+
+    if (parsed.status) {
+        showStatus(sourceConfig);
+        return;
+    }
+
+    if (parsed.uninstall && parsed.update) {
+        error('Cannot combine --uninstall and --update.');
+        process.exit(1);
+    }
+
+    if (parsed.uninstall) {
+        if (parsed.languages) {
+            warning('--languages is ignored during uninstall.');
+        }
+
+        const scopes = getRequestedScopes(parsed, 'uninstall', sourceConfig);
+        for (const scope of scopes) {
+            const projectDir = scope === 'project' ? (parsed.project || process.cwd()) : null;
+            info(`Uninstalling ${PACKAGE_NAME} from ${scope} scope...`);
+            const ok = uninstallScope({ sourceConfig, sourceOpencodeDir, sourceManagedFiles, scope, projectDir });
+            if (!ok) {
+                process.exit(1);
+            }
+        }
+
+        success('Uninstallation completed!');
+        return;
+    }
+
+    if (parsed.update) {
+        const version = checkVersion(sourceDir);
+        const scopes = getRequestedScopes(parsed, 'update', sourceConfig);
+
+        if (scopes.length === 0) {
+            error('No existing installation found. Use --global or --project to install first.');
             process.exit(1);
         }
 
         info('🔄 Updating OpenCode Agents installation...');
-
-        const version = checkVersion(sourceDir);
         if (version) {
             info(`📦 Updating to version ${version}`);
         }
 
-        if (!validatePackageContents(sourceDir)) {
-            error('❌ Package validation failed');
-            process.exit(1);
+        for (const scope of scopes) {
+            const projectDir = scope === 'project' ? (parsed.project || process.cwd()) : null;
+            const ok = installScope({
+                sourceConfig,
+                sourceOpencodeDir,
+                sourceManagedFiles,
+                sourceVersion: version,
+                scope,
+                projectDir,
+                languages: parsed.languages,
+            });
+            if (!ok) {
+                process.exit(1);
+            }
         }
 
-        if (hasGlobal) {
-            installGlobal(sourceDir);
-            if (languages) {
-                filterLanguages(globalConfigDir, languages);
-            }
-            info('✅ Global installation updated.');
-        } else if (hasLocal) {
-            installProject(sourceDir, process.cwd());
-            if (languages) {
-                filterLanguages(localOpencodeDir, languages);
-            }
-            info('✅ Project installation updated.');
-        }
+        success('Update completed!');
         return;
     }
 
-    info('🚀 Starting OpenCode Agents installation...');
+    // install mode
+    if (parsed.global && parsed.project !== null) {
+        error('Choose one install target: --global or --project (not both).');
+        process.exit(1);
+    }
+    if (!parsed.global && parsed.project === null) {
+        error('Install target required: use --global or --project [DIR].');
+        showUsage(1);
+        return;
+    }
 
-    // Check version
     const version = checkVersion(sourceDir);
+    info('🚀 Starting OpenCode Agents installation...');
     if (version) {
         info(`📦 Installing version ${version}`);
     }
 
-    // Validate package contents
-    if (!validatePackageContents(sourceDir)) {
-        error('❌ Package validation failed');
-        process.exit(1);
+    if (parsed.global) {
+        const ok = installScope({
+            sourceConfig,
+            sourceOpencodeDir,
+            sourceManagedFiles,
+            sourceVersion: version,
+            scope: 'global',
+            projectDir: null,
+            languages: parsed.languages,
+        });
+        if (!ok) {
+            process.exit(1);
+        }
+    } else {
+        const ok = installScope({
+            sourceConfig,
+            sourceOpencodeDir,
+            sourceManagedFiles,
+            sourceVersion: version,
+            scope: 'project',
+            projectDir: parsed.project || process.cwd(),
+            languages: parsed.languages,
+        });
+        if (!ok) {
+            process.exit(1);
+        }
     }
 
-    // Parse arguments and install
-    const command = args[0];
-    switch (command) {
-        case '-g':
-        case '--global':
-            installGlobal(sourceDir);
-            if (languages) {
-                filterLanguages(getGlobalConfigDir(), languages);
-            }
-            info("\n🎯 Next steps:");
-            info("1. Run 'opencode' to start using the agents");
-            info("2. Type '@' to see available agents");
-            info("3. Try: @codebase Create a user API endpoint");
-            info("\n📚 Documentation: https://github.com/shahboura/agents-opencode");
-            break;
-        case '-p':
-        case '--project':
-            if (args.length < 2) {
-                error('Project directory required');
-                showUsage(1);
-            }
-            if (!installProject(sourceDir, args[1])) {
-                error('❌ Project installation failed');
-                process.exit(1);
-            } else {
-                const projectPath = path.resolve(args[1]);
-                if (languages) {
-                    filterLanguages(path.join(projectPath, '.opencode'), languages);
-                }
-                info("\n🎯 Next steps:");
-                info(`1. cd ${projectPath}`);
-                info("2. Run 'opencode' to start using the agents");
-                info("3. Type '@' to see available agents");
-                info("\n📚 Documentation: https://github.com/shahboura/agents-opencode");
-            }
-            break;
-        case '-v':
-        case '--version':
-            showVersion(sourceDir);
-            break;
-        default:
-            error(`Unknown option: ${command}`);
-            showUsage(1);
-    }
+    info('\n🎯 Next steps:');
+    info("1. Run 'opencode' to start using the agents");
+    info("2. Type '@' to see available agents");
+    info("3. Try: @codebase Create a user API endpoint");
+    info('\n📚 Documentation: https://github.com/shahboura/agents-opencode');
 }
 
 if (require.main === module) {
