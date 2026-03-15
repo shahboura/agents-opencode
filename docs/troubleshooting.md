@@ -51,6 +51,14 @@ description: Common issues and solutions for OpenCode agent configurations.
 - Use `npx agents-opencode --uninstall --all` to remove both global and project scopes
 - If global is still installed, OpenCode may continue loading global agents/config
 
+### How do I restore from installer backups?
+
+- Project scope backups are in `<project>/.opencode/.backups/`
+- Global scope backups are in `~/.config/opencode/.backups/`
+- Open the latest session folder and inspect `backup-manifest.json`
+- Copy the backed-up files back to their original paths listed in the manifest
+- Retention keeps the latest 10 sessions and sessions newer than 30 days
+
 ### Existing provider/model config changed unexpectedly
 
 - Installer only adds missing permission defaults (`external_directory`, `doom_loop`).

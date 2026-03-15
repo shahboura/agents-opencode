@@ -17,6 +17,7 @@ const os = require('os');
 const PACKAGE_NAME = 'agents-opencode';
 const MANIFEST_FILE = '.agents-opencode-manifest.json';
 const VERSION_FILE = '.opencode-agents-version';
+const BACKUP_DIR = '.backups';
 
 // Colors for output
 const colors = {
@@ -78,8 +79,138 @@ function writeJsonFile(filePath, data) {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n');
 }
 
-function sanitizeTimestamp(date = new Date()) {
-    return date.toISOString().replace(/[:.]/g, '-');
+function formatBackupTimestamp(date = new Date()) {
+    return date.toISOString().replace('T', '_').replace(/:/g, '-').replace(/\.\d{3}Z$/, 'Z');
+}
+
+function removeDirectoryIfExists(dirPath) {
+    if (!fs.existsSync(dirPath)) {
+        return;
+    }
+    fs.rmSync(dirPath, { recursive: true, force: true });
+}
+
+function getBackupRoot(paths) {
+    return paths.scope === 'project'
+        ? path.join(paths.opencodeDir, BACKUP_DIR)
+        : path.join(paths.rootDir, BACKUP_DIR);
+}
+
+function resolveUniqueBackupLocation(backupRoot, baseBackupId) {
+    let backupId = baseBackupId;
+    let backupDir = path.join(backupRoot, backupId);
+    let counter = 1;
+
+    while (fs.existsSync(backupDir)) {
+        backupId = `${baseBackupId}--${String(counter).padStart(2, '0')}`;
+        backupDir = path.join(backupRoot, backupId);
+        counter += 1;
+    }
+
+    return { backupId, backupDir };
+}
+
+function pruneBackupRetention(backupRoot, maxBackups = 10, maxAgeDays = 30) {
+    if (!fs.existsSync(backupRoot)) {
+        return 0;
+    }
+
+    let prunedCount = 0;
+
+    const cutoffMs = Date.now() - (maxAgeDays * 24 * 60 * 60 * 1000);
+    const backupDirs = fs.readdirSync(backupRoot, { withFileTypes: true })
+        .filter(entry => entry.isDirectory())
+        .map(entry => entry.name)
+        .sort()
+        .reverse();
+
+    for (const dirName of backupDirs.slice(maxBackups)) {
+        removeDirectoryIfExists(path.join(backupRoot, dirName));
+        prunedCount += 1;
+    }
+
+    const remainingDirs = fs.readdirSync(backupRoot, { withFileTypes: true })
+        .filter(entry => entry.isDirectory())
+        .map(entry => entry.name);
+
+    for (const dirName of remainingDirs) {
+        const backupPath = path.join(backupRoot, dirName);
+        try {
+            const stat = fs.statSync(backupPath);
+            if (stat.mtimeMs < cutoffMs) {
+                removeDirectoryIfExists(backupPath);
+                prunedCount += 1;
+            }
+        } catch {
+            // ignore retention errors
+        }
+    }
+
+    return prunedCount;
+}
+
+function createBackupSession(paths, operation) {
+    const createdAt = new Date();
+    const stamp = formatBackupTimestamp(createdAt);
+    const baseBackupId = `${stamp}--${operation}--${paths.scope}`;
+    const backupRoot = getBackupRoot(paths);
+    const { backupId, backupDir } = resolveUniqueBackupLocation(backupRoot, baseBackupId);
+    const entries = [];
+    const seen = new Set();
+
+    function backupFile(absolutePath, relativePathFromRoot) {
+        if (!fs.existsSync(absolutePath)) {
+            return false;
+        }
+
+        const normalizedRelativePath = relativePathFromRoot || path.relative(paths.rootDir, absolutePath);
+        if (!normalizedRelativePath || seen.has(normalizedRelativePath)) {
+            return false;
+        }
+
+        const targetPath = path.join(backupDir, normalizedRelativePath);
+        ensureDir(path.dirname(targetPath));
+        fs.copyFileSync(absolutePath, targetPath);
+        entries.push({ path: normalizedRelativePath });
+        seen.add(normalizedRelativePath);
+        return true;
+    }
+
+    function finalize() {
+        if (entries.length === 0) {
+            removeDirectoryIfExists(backupDir);
+            return { created: false, backupDir: null, backupId: null, count: 0, prunedCount: 0 };
+        }
+
+        const manifest = {
+            schemaVersion: 1,
+            package: PACKAGE_NAME,
+            operation,
+            scope: paths.scope,
+            createdAt: createdAt.toISOString(),
+            rootDir: paths.rootDir,
+            files: entries,
+        };
+        writeJsonFile(path.join(backupDir, 'backup-manifest.json'), manifest);
+        const prunedCount = pruneBackupRetention(backupRoot);
+
+        return {
+            created: true,
+            backupDir,
+            backupId,
+            count: entries.length,
+            prunedCount,
+        };
+    }
+
+    return { backupFile, finalize };
+}
+
+function printBackupRestoreHint(backupResult) {
+    if (!backupResult || !backupResult.created) {
+        return;
+    }
+    info(`Restore hint: review ${path.join(backupResult.backupDir, 'backup-manifest.json')} and copy files back to original paths.`);
 }
 
 function validatePackageContents(sourceDir) {
@@ -160,6 +291,11 @@ function getManagedSourceFiles(sourceOpencodeDir) {
             return false;
         }
 
+        // Never treat backup snapshots as source-managed content
+        if (relativePath === BACKUP_DIR || relativePath.startsWith(`${BACKUP_DIR}${path.sep}`)) {
+            return false;
+        }
+
         // Avoid re-managing backup artifacts if present
         if (/\.backup\./.test(relativePath)) {
             return false;
@@ -217,10 +353,8 @@ function toManagedPath(scope, relativeOpencodeFile) {
     return path.join('.opencode', relativeOpencodeFile);
 }
 
-function installManagedTree(sourceOpencodeDir, sourceFiles, destinationOpencodeDir) {
+function installManagedTree(sourceOpencodeDir, sourceFiles, destinationOpencodeDir, scope, backupSession) {
     ensureDir(destinationOpencodeDir);
-
-    const timestamp = sanitizeTimestamp();
 
     let copiedCount = 0;
     let skippedCount = 0;
@@ -238,10 +372,10 @@ function installManagedTree(sourceOpencodeDir, sourceFiles, destinationOpencodeD
                 continue;
             }
 
-            const backupPath = `${dest}.backup.${timestamp}`;
             try {
-                fs.copyFileSync(dest, backupPath);
-                backupCount += 1;
+                if (backupSession && backupSession.backupFile(dest, toManagedPath(scope, relativeFile))) {
+                    backupCount += 1;
+                }
             } catch (err) {
                 warning(`Could not back up existing file ${dest}: ${err.message}`);
             }
@@ -272,7 +406,7 @@ function buildManagedFilesFromSource(scope, sourceFiles, paths) {
     return managedFiles;
 }
 
-function mergeInstallerConfig(targetConfigPath, sourceConfig) {
+function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite) {
     const patch = {
         createdFile: false,
         addedPermissionKeys: [],
@@ -323,6 +457,9 @@ function mergeInstallerConfig(targetConfigPath, sourceConfig) {
     }
 
     if (patch.changed) {
+        if (typeof onBeforeWrite === 'function') {
+            onBeforeWrite();
+        }
         writeJsonFile(targetConfigPath, existing);
     }
 
@@ -358,7 +495,7 @@ function mergeConfigPatches(existingPatch, currentPatch) {
     };
 }
 
-function revertInstallerConfig(targetConfigPath, configPatch, sourceConfig) {
+function revertInstallerConfig(targetConfigPath, configPatch, sourceConfig, onBeforeMutate) {
     if (!configPatch) {
         return { changed: false, removedFile: false };
     }
@@ -368,6 +505,9 @@ function revertInstallerConfig(targetConfigPath, configPatch, sourceConfig) {
     }
 
     if (configPatch.createdFile) {
+        if (typeof onBeforeMutate === 'function') {
+            onBeforeMutate();
+        }
         fs.unlinkSync(targetConfigPath);
         return { changed: true, removedFile: true };
     }
@@ -409,6 +549,9 @@ function revertInstallerConfig(targetConfigPath, configPatch, sourceConfig) {
     }
 
     if (changed) {
+        if (typeof onBeforeMutate === 'function') {
+            onBeforeMutate();
+        }
         writeJsonFile(targetConfigPath, existing);
     }
 
@@ -465,15 +608,16 @@ function pruneEmptyDirectories(directories, stopAtDirectory) {
     return prunedCount;
 }
 
-function backupAgentsMdIfPresent(agentsMdPath) {
+function backupAndRemoveAgentsMdIfPresent(agentsMdPath, backupSession) {
     if (!agentsMdPath || !fs.existsSync(agentsMdPath)) {
-        return null;
+        return false;
     }
 
-    const timestamp = sanitizeTimestamp().replace(/\.\d{3}Z$/, '');
-    const backupPath = path.join(path.dirname(agentsMdPath), `AGENTS.${timestamp}.bk.md`);
-    fs.renameSync(agentsMdPath, backupPath);
-    return path.basename(backupPath);
+    if (backupSession) {
+        backupSession.backupFile(agentsMdPath, 'AGENTS.md');
+    }
+    fs.unlinkSync(agentsMdPath);
+    return true;
 }
 
 function verifyInstallation(opencodeDir, scope) {
@@ -501,7 +645,7 @@ function verifyInstallation(opencodeDir, scope) {
     }
 }
 
-function legacyConfigCleanup(configPath, sourceConfig) {
+function legacyConfigCleanup(configPath, sourceConfig, onBeforeMutate) {
     if (!fs.existsSync(configPath)) {
         return { changed: false, removedFile: false };
     }
@@ -513,6 +657,9 @@ function legacyConfigCleanup(configPath, sourceConfig) {
     }
 
     if (JSON.stringify(existing) === JSON.stringify(sourceConfig)) {
+        if (typeof onBeforeMutate === 'function') {
+            onBeforeMutate();
+        }
         fs.unlinkSync(configPath);
         return { changed: true, removedFile: true };
     }
@@ -536,6 +683,9 @@ function legacyConfigCleanup(configPath, sourceConfig) {
     }
 
     if (changed) {
+        if (typeof onBeforeMutate === 'function') {
+            onBeforeMutate();
+        }
         writeJsonFile(configPath, existing);
     }
 
@@ -582,6 +732,7 @@ function installScope(options) {
         sourceOpencodeDir,
         sourceManagedFiles,
         sourceVersion,
+        operation,
         scope,
         projectDir,
         languages,
@@ -599,17 +750,26 @@ function installScope(options) {
 
     info(`Installing ${PACKAGE_NAME} (${scope}) at ${paths.rootDir}`);
 
-    const treeResult = installManagedTree(sourceOpencodeDir, sourceManagedFiles, paths.opencodeDir);
+    const backupSession = createBackupSession(paths, operation || 'install');
+
+    const treeResult = installManagedTree(sourceOpencodeDir, sourceManagedFiles, paths.opencodeDir, scope, backupSession);
     success(`✓ Installed/updated ${treeResult.copiedCount} file(s); ${treeResult.skippedCount} unchanged`);
-    if (treeResult.backupCount > 0) {
-        info(`Created ${treeResult.backupCount} backup file(s) for overwritten content.`);
-    }
 
     if (languages) {
         filterLanguages(paths.opencodeDir, languages);
     }
 
-    const configPatch = mergeInstallerConfig(paths.configPath, sourceConfig);
+    let configBackedUp = false;
+    const backupConfigBeforeWrite = () => {
+        if (configBackedUp || !fs.existsSync(paths.configPath)) {
+            return;
+        }
+        if (backupSession.backupFile(paths.configPath, 'opencode.json')) {
+            configBackedUp = true;
+        }
+    };
+
+    const configPatch = mergeInstallerConfig(paths.configPath, sourceConfig, backupConfigBeforeWrite);
     if (configPatch.skipped) {
         warning('Config merge skipped due to invalid existing JSON; continuing with agent files only.');
     } else if (configPatch.createdFile) {
@@ -620,6 +780,9 @@ function installScope(options) {
         info(`No config changes needed in ${paths.configPath}`);
     }
 
+    if (fs.existsSync(paths.versionPath)) {
+        backupSession.backupFile(paths.versionPath, path.relative(paths.rootDir, paths.versionPath));
+    }
     fs.writeFileSync(paths.versionPath, `${sourceVersion || 'unknown'}\n`);
 
     const managedFiles = buildManagedFilesFromSource(scope, sourceManagedFiles, paths);
@@ -643,7 +806,23 @@ function installScope(options) {
     }
     manifest.configPatch = effectiveConfigPatch;
 
+    if (fs.existsSync(paths.manifestPath)) {
+        backupSession.backupFile(paths.manifestPath, path.relative(paths.rootDir, paths.manifestPath));
+    }
     writeManifest(paths.manifestPath, manifest);
+
+    const backupResult = backupSession.finalize();
+    if (backupResult.created) {
+        info(`Backup saved: ${backupResult.backupDir} (${backupResult.count} file(s))`);
+        printBackupRestoreHint(backupResult);
+        if (backupResult.prunedCount > 0) {
+            info(`Pruned ${backupResult.prunedCount} old backup session(s) by retention policy.`);
+        }
+    }
+
+    if (treeResult.backupCount > 0) {
+        info(`Backed up ${treeResult.backupCount} overwritten managed file(s).`);
+    }
 
     if (!verifyInstallation(paths.opencodeDir, scope)) {
         error(`❌ ${scope} installation verification failed.`);
@@ -658,7 +837,6 @@ function installScope(options) {
 function uninstallScope(options) {
     const {
         sourceConfig,
-        sourceOpencodeDir,
         sourceManagedFiles,
         scope,
         projectDir,
@@ -672,11 +850,23 @@ function uninstallScope(options) {
     let configChanged = false;
     let removedConfigFile = false;
     const touchedDirectories = new Set();
+    const backupSession = createBackupSession(paths, 'uninstall');
+    let configBackedUp = false;
 
-    const removeManagedFile = (absolutePath) => {
+    const backupConfigBeforeMutate = () => {
+        if (configBackedUp || !fs.existsSync(paths.configPath)) {
+            return;
+        }
+        if (backupSession.backupFile(paths.configPath, 'opencode.json')) {
+            configBackedUp = true;
+        }
+    };
+
+    const removeManagedFile = (absolutePath, relativePathFromRoot) => {
         if (!fs.existsSync(absolutePath)) {
             return;
         }
+        backupSession.backupFile(absolutePath, relativePathFromRoot || path.relative(paths.rootDir, absolutePath));
         fs.unlinkSync(absolutePath);
         removedFiles += 1;
         touchedDirectories.add(path.dirname(absolutePath));
@@ -687,15 +877,21 @@ function uninstallScope(options) {
 
         for (const managedPath of manifest.managedFiles) {
             const absolutePath = path.join(paths.rootDir, managedPath);
-            removeManagedFile(absolutePath);
+            removeManagedFile(absolutePath, managedPath);
         }
 
-        const revertResult = revertInstallerConfig(paths.configPath, manifest.configPatch, sourceConfig);
+        const revertResult = revertInstallerConfig(paths.configPath, manifest.configPatch, sourceConfig, backupConfigBeforeMutate);
         configChanged = revertResult.changed;
         removedConfigFile = revertResult.removedFile;
 
+        if (fs.existsSync(paths.versionPath)) {
+            backupSession.backupFile(paths.versionPath, path.relative(paths.rootDir, paths.versionPath));
+        }
         if (removeIfExists(paths.versionPath)) {
             removedFiles += 1;
+        }
+        if (fs.existsSync(paths.manifestPath)) {
+            backupSession.backupFile(paths.manifestPath, path.relative(paths.rootDir, paths.manifestPath));
         }
         if (removeIfExists(paths.manifestPath)) {
             removedFiles += 1;
@@ -709,13 +905,16 @@ function uninstallScope(options) {
 
         for (const legacyManagedPath of legacyManagedFiles) {
             const absolutePath = path.join(paths.rootDir, legacyManagedPath);
-            removeManagedFile(absolutePath);
+            removeManagedFile(absolutePath, legacyManagedPath);
         }
 
-        const legacyConfigResult = legacyConfigCleanup(paths.configPath, sourceConfig);
+        const legacyConfigResult = legacyConfigCleanup(paths.configPath, sourceConfig, backupConfigBeforeMutate);
         configChanged = legacyConfigResult.changed;
         removedConfigFile = legacyConfigResult.removedFile;
 
+        if (fs.existsSync(paths.versionPath)) {
+            backupSession.backupFile(paths.versionPath, path.relative(paths.rootDir, paths.versionPath));
+        }
         if (removeIfExists(paths.versionPath)) {
             removedFiles += 1;
         }
@@ -741,9 +940,17 @@ function uninstallScope(options) {
     }
 
     if (scope === 'project') {
-        const backupName = backupAgentsMdIfPresent(paths.agentsMdPath);
-        if (backupName) {
-            success(`✅ Session history backed up to: ${backupName}`);
+        if (backupAndRemoveAgentsMdIfPresent(paths.agentsMdPath, backupSession)) {
+            success('✅ Backed up AGENTS.md and removed installer session file from project root.');
+        }
+    }
+
+    const backupResult = backupSession.finalize();
+    if (backupResult.created) {
+        info(`Backup saved: ${backupResult.backupDir} (${backupResult.count} file(s))`);
+        printBackupRestoreHint(backupResult);
+        if (backupResult.prunedCount > 0) {
+            info(`Pruned ${backupResult.prunedCount} old backup session(s) by retention policy.`);
         }
     }
 
@@ -1004,7 +1211,9 @@ INSTALLATION LOCATIONS:
 NOTES:
     - Config updates are merged safely (non-destructive).
     - Uninstall removes only installer-managed files using a manifest.
-    - If AGENTS.md exists in project scope, it is backed up on uninstall.
+    - Project backups: <project>/.opencode/.backups/<timestamp>--<operation>--<scope>/
+    - Global backups:  ~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/
+    - Retention: keeps latest 10 sessions and prunes sessions older than 30 days.
     - --languages filters instruction reference files; skill loading remains on-demand.
 
 For more information, visit: https://github.com/shahboura/agents-opencode
@@ -1062,7 +1271,7 @@ function main() {
         for (const scope of scopes) {
             const projectDir = scope === 'project' ? (parsed.project || process.cwd()) : null;
             info(`Uninstalling ${PACKAGE_NAME} from ${scope} scope...`);
-            const ok = uninstallScope({ sourceConfig, sourceOpencodeDir, sourceManagedFiles, scope, projectDir });
+            const ok = uninstallScope({ sourceConfig, sourceManagedFiles, scope, projectDir });
             if (!ok) {
                 process.exit(1);
             }
@@ -1093,6 +1302,7 @@ function main() {
                 sourceOpencodeDir,
                 sourceManagedFiles,
                 sourceVersion: version,
+                operation: 'update',
                 scope,
                 projectDir,
                 languages: parsed.languages,
@@ -1129,6 +1339,7 @@ function main() {
             sourceOpencodeDir,
             sourceManagedFiles,
             sourceVersion: version,
+            operation: 'install',
             scope: 'global',
             projectDir: null,
             languages: parsed.languages,
@@ -1142,6 +1353,7 @@ function main() {
             sourceOpencodeDir,
             sourceManagedFiles,
             sourceVersion: version,
+            operation: 'install',
             scope: 'project',
             projectDir: parsed.project || process.cwd(),
             languages: parsed.languages,
