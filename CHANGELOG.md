@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/shahboura/agents-opencode/compare/v1.3.1...v1.4.0) (2026-03-15)
+
+
+### Features
+
+* harden installer lifecycle and adopt skill-first instruction model ([#11](https://github.com/shahboura/agents-opencode/issues/11)) ([dddcf8c](https://github.com/shahboura/agents-opencode/commit/dddcf8c338d1bfa38cac62f100886d57b1d9a5d5))
+
 ## [1.3.1](https://github.com/shahboura/agents-opencode/compare/v1.3.0...v1.3.1) (2026-03-13)
 
 
