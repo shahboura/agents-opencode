@@ -32,9 +32,17 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n');
 }
 
-function listAgentsBackups(projectDir) {
-  if (!fs.existsSync(projectDir)) return [];
-  return fs.readdirSync(projectDir).filter((name) => /^AGENTS\..+\.bk\.md$/.test(name));
+function listProjectBackupSessions(projectDir) {
+  const backupRoot = path.join(projectDir, '.opencode', '.backups');
+  if (!fs.existsSync(backupRoot)) return [];
+  return fs.readdirSync(backupRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(backupRoot, entry.name))
+    .sort();
+}
+
+function hasBackedUpFile(sessionDir, relativePath) {
+  return fs.existsSync(path.join(sessionDir, relativePath));
 }
 
 function createDir(dirPath) {
@@ -49,7 +57,7 @@ function testNoopUninstallDoesNotBackupAgents(tmpRoot) {
   runInstaller(['--uninstall', '--project', '.'], { cwd: projectDir });
 
   assert(fs.existsSync(path.join(projectDir, 'AGENTS.md')), 'AGENTS.md should remain for no-op uninstall');
-  assert(listAgentsBackups(projectDir).length === 0, 'No AGENTS backup should be created for no-op uninstall');
+  assert(listProjectBackupSessions(projectDir).length === 0, 'No backup session should be created for no-op uninstall');
 }
 
 function testProjectInstallAndUninstall(tmpRoot) {
@@ -65,8 +73,16 @@ function testProjectInstallAndUninstall(tmpRoot) {
   runInstaller(['--uninstall', '--project', '.'], { cwd: projectDir });
 
   assert(!fs.existsSync(manifestPath), 'Project manifest should be removed after uninstall');
-  assert(!fs.existsSync(path.join(projectDir, 'AGENTS.md')), 'AGENTS.md should be renamed to backup on real uninstall');
-  assert(listAgentsBackups(projectDir).length >= 1, 'AGENTS backup should be created on real uninstall');
+  assert(!fs.existsSync(path.join(projectDir, 'AGENTS.md')), 'AGENTS.md should be removed from project root on real uninstall');
+
+  const sessions = listProjectBackupSessions(projectDir);
+  assert(sessions.length >= 1, 'Backup session should be created on real uninstall');
+
+  const latestSession = sessions[sessions.length - 1];
+  const sessionName = path.basename(latestSession);
+  assert(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}Z--uninstall--project$/.test(sessionName), 'Backup session folder should be readable and sortable');
+  assert(hasBackedUpFile(latestSession, 'AGENTS.md'), 'Backup session should include AGENTS.md');
+  assert(hasBackedUpFile(latestSession, 'backup-manifest.json'), 'Backup session should include backup-manifest.json');
 }
 
 function testConfigMergePreservesUserData(tmpRoot) {

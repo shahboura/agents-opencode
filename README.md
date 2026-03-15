@@ -62,7 +62,7 @@ Uninstall behavior:
 - `npx agents-opencode --uninstall` targets the **current project** by default.
 - Use `--global` or `--all` for explicit scope control.
 - Uninstall removes installer-managed files via install manifest tracking.
-- If `AGENTS.md` exists in project scope, it is backed up as `AGENTS.<timestamp>.bk.md`.
+- Backups are stored under `.backups/<timestamp>--<operation>--<scope>/` with `backup-manifest.json`.
 
 Update behavior:
 - `npx agents-opencode --update` auto-detects and updates installed scopes (global and/or current project).

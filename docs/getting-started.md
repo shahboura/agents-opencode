@@ -80,7 +80,7 @@ npx agents-opencode --status
 - Default uninstall applies to the **current project scope**.
 - Use `--global` or `--all` to target non-project scope.
 - Removes installer-managed files using install manifest tracking.
-- Backs up `AGENTS.md` as `AGENTS.<timestamp>.bk.md` for project-scope uninstall.
+- Stores backups under `.backups/<timestamp>--<operation>--<scope>/` with `backup-manifest.json`.
 - Installer only merges missing permission defaults into existing `opencode.json`.
 - Existing provider/model/instruction configuration remains unchanged.
 
