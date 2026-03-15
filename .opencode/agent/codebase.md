@@ -102,6 +102,12 @@ Log detected profile at start: `Detected active profile: <profile>`
 - Use one relevant language skill by default; load a second only for explicit cross-domain dependencies.
 - If stack choice is unclear, ask a short clarification question before loading.
 
+## CI/CD Guidance (On Demand)
+
+- For CI/CD tasks (workflows, pipelines, release/deploy gates), read and apply:
+  - `.opencode/instructions/ci-cd-hygiene.instructions.md`
+- Treat it as a task-scoped checklist, not a globally-loaded default.
+
 ## Code Standards
 - Write modular, functional code following language conventions
 - Add minimal, high-signal comments

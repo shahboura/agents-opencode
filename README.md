@@ -36,8 +36,20 @@ npx agents-opencode --global --languages python,typescript
 # Update existing installation
 npx agents-opencode --update
 
-# Uninstall
+# Force update both global + current project scopes
+npx agents-opencode --update --all
+
+# Uninstall current project scope (default)
 npx agents-opencode --uninstall
+
+# Uninstall global scope only
+npx agents-opencode --uninstall --global
+
+# Uninstall both global + current project scopes
+npx agents-opencode --uninstall --all
+
+# Check detected installation scopes
+npx agents-opencode --status
 ```
 
 Install behavior note:
@@ -46,8 +58,18 @@ Install behavior note:
 - OpenCode CLI runtime command: `opencode`
 
 Uninstall behavior:
-- `npx agents-opencode --uninstall` removes `.opencode/` and `opencode.json` from the current directory.
-- If `AGENTS.md` exists, it is backed up as `AGENTS.<timestamp>.bk.md`.
+- `npx agents-opencode --uninstall` targets the **current project** by default.
+- Use `--global` or `--all` for explicit scope control.
+- Uninstall removes installer-managed files via install manifest tracking.
+- If `AGENTS.md` exists in project scope, it is backed up as `AGENTS.<timestamp>.bk.md`.
+
+Update behavior:
+- `npx agents-opencode --update` auto-detects and updates installed scopes (global and/or current project).
+- Use `--all`, `--global`, or `--project [dir]` to force explicit update scope.
+
+Configuration behavior:
+- Installer merges only missing global permission defaults (`external_directory`, `doom_loop`) into `opencode.json`.
+- Existing provider/model/instructions settings are preserved and never overwritten by installer defaults.
 
 Then run:
 

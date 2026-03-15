@@ -43,6 +43,20 @@ description: Common issues and solutions for OpenCode agent configurations.
 - Check internet connectivity for npm registry access
 - Try `npx agents-opencode --global` instead of curl
 
+### Uninstall does not seem to work
+
+- Check active scope with `npx agents-opencode --status`
+- Default `npx agents-opencode --uninstall` only targets the current project scope
+- Use `npx agents-opencode --uninstall --global` to remove global install
+- Use `npx agents-opencode --uninstall --all` to remove both global and project scopes
+- If global is still installed, OpenCode may continue loading global agents/config
+
+### Existing provider/model config changed unexpectedly
+
+- Installer only adds missing permission defaults (`external_directory`, `doom_loop`).
+- Existing `provider`, `model`, and `instructions` values are preserved.
+- Re-run install with `--project` or `--global` and check logs for `Updated config safely`.
+
 ### Skills not loading
 
 - Skills are invoked through agents, not directly from the TUI

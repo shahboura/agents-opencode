@@ -183,6 +183,12 @@ For each approved phase:
 - Use one relevant skill per phase by default; add another only for explicit cross-domain justification.
 - If phase scope is ambiguous, confirm assumptions before loading.
 
+## CI/CD Guidance (On Demand)
+
+- If a phase involves CI/CD, release engineering, or deployment reliability, include:
+  - `.opencode/instructions/ci-cd-hygiene.instructions.md`
+- Apply it only to relevant phases instead of loading it globally.
+
 ## Coordination Patterns
 
 ### Pattern 1: Implementation Cycle

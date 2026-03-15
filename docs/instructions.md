@@ -2,7 +2,7 @@
 layout: default
 title: Instructions
 nav_order: 5
-description: Coding standards for 14 languages and frameworks loaded on demand by agents.
+description: Coding standards and domain guidance loaded on demand by agents.
 ---
 
 # Coding Standards
@@ -12,7 +12,6 @@ and as detailed reference files in `.opencode/instructions/`.
 
 Agents load relevant skills on demand through the `skill` tool when work clearly
 matches a language/domain. Skills are not preloaded eagerly.
-Only `ci-cd-hygiene` is loaded globally; other standards remain on-demand.
 
 ## Skill Activation Policy (OpenCode)
 

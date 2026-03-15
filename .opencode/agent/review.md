@@ -117,6 +117,12 @@ For each file:
 - Use one relevant language skill by default; add another only for multi-stack reviews.
 - If stack is ambiguous, infer from files first, then ask a clarifying question.
 
+## CI/CD Guidance (On Demand)
+
+- When reviewing workflows/pipelines or deployment automation, read and apply:
+  - `.opencode/instructions/ci-cd-hygiene.instructions.md`
+- Use it as targeted guidance for CI/CD-related reviews.
+
 ## Review Guidelines
 - Be constructive and specific
 - Provide examples of fixes
