@@ -13,11 +13,35 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const {
+    ensureDir,
+    isObject,
+    readJsonFile,
+    writeJsonFile,
+    listFilesRecursive,
+    filesEqual,
+    pruneEmptyDirectories,
+} = require('./installer/utils');
+const {
+    BACKUP_DIR,
+    createBackupSession,
+    printBackupRestoreHint,
+} = require('./installer/backup');
+const {
+    mergeInstallerConfig,
+    mergeConfigPatches,
+    revertInstallerConfig,
+    legacyConfigCleanup,
+} = require('./installer/config');
+const {
+    writeManifest,
+    readManifest,
+    removeIfExists,
+} = require('./installer/manifest');
 
 const PACKAGE_NAME = 'agents-opencode';
 const MANIFEST_FILE = '.agents-opencode-manifest.json';
 const VERSION_FILE = '.opencode-agents-version';
-const BACKUP_DIR = '.backups';
 
 // Colors for output
 const colors = {
@@ -44,6 +68,10 @@ function warning(message) {
     log(colors.yellow, 'WARNING', message);
 }
 
+function readJson(filePath, labelForError) {
+    return readJsonFile(filePath, labelForError, warning);
+}
+
 function error(message) {
     log(colors.red, 'ERROR', message);
 }
@@ -54,163 +82,6 @@ function getHomeDir() {
 
 function getGlobalConfigDir() {
     return path.join(getHomeDir(), '.config', 'opencode');
-}
-
-function ensureDir(dirPath) {
-    if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
-    }
-}
-
-function isObject(value) {
-    return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
-function readJsonFile(filePath, labelForError) {
-    try {
-        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    } catch (err) {
-        warning(`Could not parse ${labelForError}: ${err.message}`);
-        return null;
-    }
-}
-
-function writeJsonFile(filePath, data) {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n');
-}
-
-function formatBackupTimestamp(date = new Date()) {
-    return date.toISOString().replace('T', '_').replace(/:/g, '-').replace(/\.\d{3}Z$/, 'Z');
-}
-
-function removeDirectoryIfExists(dirPath) {
-    if (!fs.existsSync(dirPath)) {
-        return;
-    }
-    fs.rmSync(dirPath, { recursive: true, force: true });
-}
-
-function getBackupRoot(paths) {
-    return paths.scope === 'project'
-        ? path.join(paths.opencodeDir, BACKUP_DIR)
-        : path.join(paths.rootDir, BACKUP_DIR);
-}
-
-function resolveUniqueBackupLocation(backupRoot, baseBackupId) {
-    let backupId = baseBackupId;
-    let backupDir = path.join(backupRoot, backupId);
-    let counter = 1;
-
-    while (fs.existsSync(backupDir)) {
-        backupId = `${baseBackupId}--${String(counter).padStart(2, '0')}`;
-        backupDir = path.join(backupRoot, backupId);
-        counter += 1;
-    }
-
-    return { backupId, backupDir };
-}
-
-function pruneBackupRetention(backupRoot, maxBackups = 10, maxAgeDays = 30) {
-    if (!fs.existsSync(backupRoot)) {
-        return 0;
-    }
-
-    let prunedCount = 0;
-
-    const cutoffMs = Date.now() - (maxAgeDays * 24 * 60 * 60 * 1000);
-    const backupDirs = fs.readdirSync(backupRoot, { withFileTypes: true })
-        .filter(entry => entry.isDirectory())
-        .map(entry => entry.name)
-        .sort()
-        .reverse();
-
-    for (const dirName of backupDirs.slice(maxBackups)) {
-        removeDirectoryIfExists(path.join(backupRoot, dirName));
-        prunedCount += 1;
-    }
-
-    const remainingDirs = fs.readdirSync(backupRoot, { withFileTypes: true })
-        .filter(entry => entry.isDirectory())
-        .map(entry => entry.name);
-
-    for (const dirName of remainingDirs) {
-        const backupPath = path.join(backupRoot, dirName);
-        try {
-            const stat = fs.statSync(backupPath);
-            if (stat.mtimeMs < cutoffMs) {
-                removeDirectoryIfExists(backupPath);
-                prunedCount += 1;
-            }
-        } catch {
-            // ignore retention errors
-        }
-    }
-
-    return prunedCount;
-}
-
-function createBackupSession(paths, operation) {
-    const createdAt = new Date();
-    const stamp = formatBackupTimestamp(createdAt);
-    const baseBackupId = `${stamp}--${operation}--${paths.scope}`;
-    const backupRoot = getBackupRoot(paths);
-    const { backupId, backupDir } = resolveUniqueBackupLocation(backupRoot, baseBackupId);
-    const entries = [];
-    const seen = new Set();
-
-    function backupFile(absolutePath, relativePathFromRoot) {
-        if (!fs.existsSync(absolutePath)) {
-            return false;
-        }
-
-        const normalizedRelativePath = relativePathFromRoot || path.relative(paths.rootDir, absolutePath);
-        if (!normalizedRelativePath || seen.has(normalizedRelativePath)) {
-            return false;
-        }
-
-        const targetPath = path.join(backupDir, normalizedRelativePath);
-        ensureDir(path.dirname(targetPath));
-        fs.copyFileSync(absolutePath, targetPath);
-        entries.push({ path: normalizedRelativePath });
-        seen.add(normalizedRelativePath);
-        return true;
-    }
-
-    function finalize() {
-        if (entries.length === 0) {
-            removeDirectoryIfExists(backupDir);
-            return { created: false, backupDir: null, backupId: null, count: 0, prunedCount: 0 };
-        }
-
-        const manifest = {
-            schemaVersion: 1,
-            package: PACKAGE_NAME,
-            operation,
-            scope: paths.scope,
-            createdAt: createdAt.toISOString(),
-            rootDir: paths.rootDir,
-            files: entries,
-        };
-        writeJsonFile(path.join(backupDir, 'backup-manifest.json'), manifest);
-        const prunedCount = pruneBackupRetention(backupRoot);
-
-        return {
-            created: true,
-            backupDir,
-            backupId,
-            count: entries.length,
-            prunedCount,
-        };
-    }
-
-    return { backupFile, finalize };
-}
-
-function printBackupRestoreHint(backupResult) {
-    if (!backupResult || !backupResult.created) {
-        return;
-    }
-    info(`Restore hint: review ${path.join(backupResult.backupDir, 'backup-manifest.json')} and copy files back to original paths.`);
 }
 
 function validatePackageContents(sourceDir) {
@@ -233,7 +104,7 @@ function checkVersion(sourceDir) {
     try {
         const packagePath = path.join(sourceDir, 'package.json');
         if (fs.existsSync(packagePath)) {
-            const packageData = readJsonFile(packagePath, 'package.json');
+            const packageData = readJson(packagePath, 'package.json');
             if (packageData && packageData.version) {
                 info(`Installing OpenCode Agents v${packageData.version}`);
                 return packageData.version;
@@ -249,7 +120,7 @@ function showVersion(sourceDir) {
     try {
         const packagePath = path.join(sourceDir, 'package.json');
         if (fs.existsSync(packagePath)) {
-            const packageData = readJsonFile(packagePath, 'package.json');
+            const packageData = readJson(packagePath, 'package.json');
             if (packageData && packageData.version) {
                 console.log(`OpenCode Agents v${packageData.version}`);
                 console.log('Repository: https://github.com/shahboura/agents-opencode');
@@ -260,27 +131,6 @@ function showVersion(sourceDir) {
     } catch {
         console.log('OpenCode Agents (version check failed)');
     }
-}
-
-function listFilesRecursive(rootDir) {
-    const files = [];
-
-    function walk(currentDir, relativeBase = '') {
-        const entries = fs.readdirSync(currentDir, { withFileTypes: true });
-        for (const entry of entries) {
-            const relativePath = relativeBase ? path.join(relativeBase, entry.name) : entry.name;
-            const absolutePath = path.join(currentDir, entry.name);
-
-            if (entry.isDirectory()) {
-                walk(absolutePath, relativePath);
-            } else if (entry.isFile()) {
-                files.push(relativePath);
-            }
-        }
-    }
-
-    walk(rootDir);
-    return files;
 }
 
 function getManagedSourceFiles(sourceOpencodeDir) {
@@ -303,21 +153,6 @@ function getManagedSourceFiles(sourceOpencodeDir) {
 
         return true;
     });
-}
-
-function filesEqual(pathA, pathB) {
-    try {
-        const statA = fs.statSync(pathA);
-        const statB = fs.statSync(pathB);
-        if (statA.size !== statB.size) {
-            return false;
-        }
-        const contentA = fs.readFileSync(pathA);
-        const contentB = fs.readFileSync(pathB);
-        return contentA.equals(contentB);
-    } catch {
-        return false;
-    }
 }
 
 function getScopePaths(scope, projectDir) {
@@ -406,208 +241,6 @@ function buildManagedFilesFromSource(scope, sourceFiles, paths) {
     return managedFiles;
 }
 
-function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite) {
-    const patch = {
-        createdFile: false,
-        addedPermissionKeys: [],
-        createdSchema: false,
-        skipped: false,
-        changed: false,
-    };
-
-    const sourceConfigForInstall = {
-        ...(sourceConfig || {}),
-    };
-    delete sourceConfigForInstall.instructions;
-
-    if (!fs.existsSync(targetConfigPath)) {
-        writeJsonFile(targetConfigPath, sourceConfigForInstall);
-        patch.createdFile = true;
-        patch.changed = true;
-        if (isObject(sourceConfigForInstall.permission)) {
-            patch.addedPermissionKeys = Object.keys(sourceConfigForInstall.permission);
-        }
-        patch.createdSchema = !!sourceConfigForInstall.$schema;
-        return patch;
-    }
-
-    const existing = readJsonFile(targetConfigPath, `existing config at ${targetConfigPath}`);
-    if (!existing || !isObject(existing)) {
-        warning(`Skipping config merge for ${targetConfigPath} because existing config is invalid JSON.`);
-        patch.skipped = true;
-        return patch;
-    }
-
-    if (isObject(sourceConfigForInstall.permission)) {
-        if (existing.permission === undefined) {
-            existing.permission = {};
-        }
-
-        if (!isObject(existing.permission)) {
-            warning(`Skipping permission merge for ${targetConfigPath}; existing permission is not an object.`);
-        } else {
-            for (const [key, value] of Object.entries(sourceConfigForInstall.permission)) {
-                if (!(key in existing.permission)) {
-                    existing.permission[key] = value;
-                    patch.addedPermissionKeys.push(key);
-                    patch.changed = true;
-                }
-            }
-        }
-    }
-
-    if (patch.changed) {
-        if (typeof onBeforeWrite === 'function') {
-            onBeforeWrite();
-        }
-        writeJsonFile(targetConfigPath, existing);
-    }
-
-    return patch;
-}
-
-function mergeConfigPatches(existingPatch, currentPatch) {
-    const base = {
-        createdFile: false,
-        addedPermissionKeys: [],
-        createdSchema: false,
-        skipped: false,
-        changed: false,
-    };
-
-    const prior = isObject(existingPatch) ? existingPatch : {};
-    const next = isObject(currentPatch) ? currentPatch : {};
-
-    const permissionKeys = new Set([
-        ...(Array.isArray(prior.addedPermissionKeys) ? prior.addedPermissionKeys : []),
-        ...(Array.isArray(next.addedPermissionKeys) ? next.addedPermissionKeys : []),
-    ]);
-
-    return {
-        ...base,
-        ...prior,
-        ...next,
-        createdFile: Boolean(prior.createdFile || next.createdFile),
-        addedPermissionKeys: [...permissionKeys],
-        createdSchema: Boolean(prior.createdSchema || next.createdSchema || prior.addedSchema || next.addedSchema),
-        skipped: Boolean(prior.skipped || next.skipped),
-        changed: Boolean(prior.changed || next.changed),
-    };
-}
-
-function revertInstallerConfig(targetConfigPath, configPatch, sourceConfig, onBeforeMutate) {
-    if (!configPatch) {
-        return { changed: false, removedFile: false };
-    }
-
-    if (!fs.existsSync(targetConfigPath)) {
-        return { changed: false, removedFile: false };
-    }
-
-    if (configPatch.createdFile) {
-        if (typeof onBeforeMutate === 'function') {
-            onBeforeMutate();
-        }
-        fs.unlinkSync(targetConfigPath);
-        return { changed: true, removedFile: true };
-    }
-
-    const existing = readJsonFile(targetConfigPath, `existing config at ${targetConfigPath}`);
-    if (!existing || !isObject(existing)) {
-        warning(`Could not revert config changes for ${targetConfigPath}; invalid JSON.`);
-        return { changed: false, removedFile: false };
-    }
-
-    let changed = false;
-
-    if (Array.isArray(configPatch.addedPermissionKeys) && isObject(existing.permission)) {
-        for (const key of configPatch.addedPermissionKeys) {
-            if (!(key in existing.permission)) {
-                continue;
-            }
-
-            const sourceValue = sourceConfig && isObject(sourceConfig.permission) ? sourceConfig.permission[key] : undefined;
-            if (sourceValue !== undefined && JSON.stringify(existing.permission[key]) !== JSON.stringify(sourceValue)) {
-                warning(`Keeping modified permission key '${key}' in ${targetConfigPath}; value differs from installer default.`);
-                continue;
-            }
-
-            delete existing.permission[key];
-            changed = true;
-        }
-
-        if (Object.keys(existing.permission).length === 0) {
-            delete existing.permission;
-            changed = true;
-        }
-    }
-
-    const schemaWasCreatedByInstaller = Boolean(configPatch.createdSchema || configPatch.addedSchema);
-    if (schemaWasCreatedByInstaller && sourceConfig && sourceConfig.$schema && existing.$schema === sourceConfig.$schema) {
-        delete existing.$schema;
-        changed = true;
-    }
-
-    if (changed) {
-        if (typeof onBeforeMutate === 'function') {
-            onBeforeMutate();
-        }
-        writeJsonFile(targetConfigPath, existing);
-    }
-
-    return { changed, removedFile: false };
-}
-
-function writeManifest(manifestPath, manifest) {
-    ensureDir(path.dirname(manifestPath));
-    writeJsonFile(manifestPath, manifest);
-}
-
-function readManifest(manifestPath) {
-    if (!fs.existsSync(manifestPath)) {
-        return null;
-    }
-    const manifest = readJsonFile(manifestPath, `manifest at ${manifestPath}`);
-    if (!manifest || !isObject(manifest)) {
-        return null;
-    }
-    return manifest;
-}
-
-function removeIfExists(filePath) {
-    if (!fs.existsSync(filePath)) {
-        return false;
-    }
-    fs.unlinkSync(filePath);
-    return true;
-}
-
-function pruneEmptyDirectories(directories, stopAtDirectory) {
-    const sorted = [...directories].sort((a, b) => b.length - a.length);
-    let prunedCount = 0;
-
-    for (const dirPath of sorted) {
-        if (!fs.existsSync(dirPath)) {
-            continue;
-        }
-        if (path.resolve(dirPath) === path.resolve(stopAtDirectory)) {
-            continue;
-        }
-
-        try {
-            const entries = fs.readdirSync(dirPath);
-            if (entries.length === 0) {
-                fs.rmdirSync(dirPath);
-                prunedCount += 1;
-            }
-        } catch {
-            // ignore pruning errors
-        }
-    }
-
-    return prunedCount;
-}
-
 function backupAndRemoveAgentsMdIfPresent(agentsMdPath, backupSession) {
     if (!agentsMdPath || !fs.existsSync(agentsMdPath)) {
         return false;
@@ -645,56 +278,9 @@ function verifyInstallation(opencodeDir, scope) {
     }
 }
 
-function legacyConfigCleanup(configPath, sourceConfig, onBeforeMutate) {
-    if (!fs.existsSync(configPath)) {
-        return { changed: false, removedFile: false };
-    }
-
-    const existing = readJsonFile(configPath, `existing config at ${configPath}`);
-    if (!existing || !isObject(existing)) {
-        warning(`Skipping legacy config cleanup; invalid JSON at ${configPath}.`);
-        return { changed: false, removedFile: false };
-    }
-
-    if (JSON.stringify(existing) === JSON.stringify(sourceConfig)) {
-        if (typeof onBeforeMutate === 'function') {
-            onBeforeMutate();
-        }
-        fs.unlinkSync(configPath);
-        return { changed: true, removedFile: true };
-    }
-
-    let changed = false;
-
-    if (isObject(sourceConfig.permission) && isObject(existing.permission)) {
-        for (const [key, sourceValue] of Object.entries(sourceConfig.permission)) {
-            if (!(key in existing.permission)) {
-                continue;
-            }
-            if (JSON.stringify(existing.permission[key]) === JSON.stringify(sourceValue)) {
-                delete existing.permission[key];
-                changed = true;
-            }
-        }
-        if (Object.keys(existing.permission).length === 0) {
-            delete existing.permission;
-            changed = true;
-        }
-    }
-
-    if (changed) {
-        if (typeof onBeforeMutate === 'function') {
-            onBeforeMutate();
-        }
-        writeJsonFile(configPath, existing);
-    }
-
-    return { changed, removedFile: false };
-}
-
 function loadSourceConfig(sourceDir) {
     const sourceConfigPath = path.join(sourceDir, 'opencode.json');
-    const sourceConfig = readJsonFile(sourceConfigPath, 'package opencode.json');
+    const sourceConfig = readJson(sourceConfigPath, 'package opencode.json');
     if (!sourceConfig || !isObject(sourceConfig)) {
         error('Could not parse package opencode.json.');
         process.exit(1);
@@ -707,7 +293,7 @@ function configLooksManaged(configPath, sourceConfig) {
         return false;
     }
 
-    const config = readJsonFile(configPath, `config at ${configPath}`);
+    const config = readJson(configPath, `config at ${configPath}`);
     if (!config || !isObject(config)) {
         return false;
     }
@@ -739,7 +325,7 @@ function installScope(options) {
     } = options;
 
     const paths = getScopePaths(scope, projectDir);
-    const existingManifest = readManifest(paths.manifestPath);
+    const existingManifest = readManifest(paths.manifestPath, warning);
 
     if (scope === 'project' && !fs.existsSync(paths.rootDir)) {
         error(`Project directory does not exist: ${paths.rootDir}`);
@@ -769,7 +355,7 @@ function installScope(options) {
         }
     };
 
-    const configPatch = mergeInstallerConfig(paths.configPath, sourceConfig, backupConfigBeforeWrite);
+    const configPatch = mergeInstallerConfig(paths.configPath, sourceConfig, backupConfigBeforeWrite, warning);
     if (configPatch.skipped) {
         warning('Config merge skipped due to invalid existing JSON; continuing with agent files only.');
     } else if (configPatch.createdFile) {
@@ -843,7 +429,7 @@ function uninstallScope(options) {
     } = options;
 
     const paths = getScopePaths(scope, projectDir);
-    const manifest = readManifest(paths.manifestPath);
+    const manifest = readManifest(paths.manifestPath, warning);
 
     let removedFiles = 0;
     let prunedDirs = 0;
@@ -880,7 +466,7 @@ function uninstallScope(options) {
             removeManagedFile(absolutePath, managedPath);
         }
 
-        const revertResult = revertInstallerConfig(paths.configPath, manifest.configPatch, sourceConfig, backupConfigBeforeMutate);
+        const revertResult = revertInstallerConfig(paths.configPath, manifest.configPatch, sourceConfig, backupConfigBeforeMutate, warning);
         configChanged = revertResult.changed;
         removedConfigFile = revertResult.removedFile;
 
@@ -908,7 +494,7 @@ function uninstallScope(options) {
             removeManagedFile(absolutePath, legacyManagedPath);
         }
 
-        const legacyConfigResult = legacyConfigCleanup(paths.configPath, sourceConfig, backupConfigBeforeMutate);
+        const legacyConfigResult = legacyConfigCleanup(paths.configPath, sourceConfig, backupConfigBeforeMutate, warning);
         configChanged = legacyConfigResult.changed;
         removedConfigFile = legacyConfigResult.removedFile;
 
