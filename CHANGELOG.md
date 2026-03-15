@@ -6,6 +6,7 @@
 ### Bug Fixes
 
 * **release:** trigger patch release ([af5ecf3](https://github.com/shahboura/agents-opencode/commit/af5ecf3bac0d3ed70cc4bc0999e259ce527ae1cd))
+* installer backup redesign with readable sessions and restore hints ([#13](https://github.com/shahboura/agents-opencode/pull/13)) ([81e6952](https://github.com/shahboura/agents-opencode/commit/81e6952f17cfca66503a64010a7fb0dcb59ac7be))
 
 ## [1.4.0](https://github.com/shahboura/agents-opencode/compare/v1.3.1...v1.4.0) (2026-03-15)
 
