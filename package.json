@@ -19,9 +19,10 @@
     "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github",
     "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --fix",
     "validate:agents": "node scripts/validate-agents.js",
+    "validate:installer": "node scripts/test-installer.js",
     "validate:docs": "node scripts/validate-docs.js",
     "validate:context": "node scripts/check-context-size.js",
-    "validate:all": "npm run validate:agents && npm run validate:docs && npm run validate:context && npm run lint:md"
+    "validate:all": "npm run validate:agents && npm run validate:installer && npm run validate:docs && npm run validate:context && npm run lint:md"
   },
   "devDependencies": {
     "markdownlint-cli": "^0.48.0"

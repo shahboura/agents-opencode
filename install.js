@@ -667,13 +667,6 @@ function uninstallScope(options) {
     const paths = getScopePaths(scope, projectDir);
     const manifest = readManifest(paths.manifestPath);
 
-    if (scope === 'project') {
-        const backupName = backupAgentsMdIfPresent(paths.agentsMdPath);
-        if (backupName) {
-            success(`✅ Session history backed up to: ${backupName}`);
-        }
-    }
-
     let removedFiles = 0;
     let prunedDirs = 0;
     let configChanged = false;
@@ -745,6 +738,13 @@ function uninstallScope(options) {
     if (removedFiles === 0 && !configChanged && !removedConfigFile) {
         warning(`No ${PACKAGE_NAME} installation artifacts found for ${scope} scope at ${paths.rootDir}.`);
         return true;
+    }
+
+    if (scope === 'project') {
+        const backupName = backupAgentsMdIfPresent(paths.agentsMdPath);
+        if (backupName) {
+            success(`✅ Session history backed up to: ${backupName}`);
+        }
     }
 
     if (removedConfigFile) {
