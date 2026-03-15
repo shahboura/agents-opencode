@@ -31,6 +31,7 @@ permission:
     "java-spring": "allow"
     "node-express": "allow"
     "react-next": "allow"
+    "ux-responsive": "allow"
     "ruby-rails": "allow"
     "rust": "allow"
     "sql-migrations": "allow"
@@ -182,12 +183,8 @@ For each approved phase:
 - Load skills on demand at the phase where they are needed.
 - Use one relevant skill per phase by default; add another only for explicit cross-domain justification.
 - If phase scope is ambiguous, confirm assumptions before loading.
-
-## CI/CD Guidance (On Demand)
-
-- If a phase involves CI/CD, release engineering, or deployment reliability, include:
-  - `.opencode/instructions/ci-cd-hygiene.instructions.md`
-- Apply it only to relevant phases instead of loading it globally.
+- For CI/CD phases, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
+- For cross-device UX/responsive phases, load `ux-responsive` on demand.
 
 ## Coordination Patterns
 

@@ -31,11 +31,13 @@ Most commands accept an optional argument to scope the task:
 
 ## Skills
 
-Skills are reusable behaviors loaded on demand:
+Skills are reusable behaviors loaded on demand. Common utility skills include:
 
 - `project-bootstrap` - Create a minimal `AGENTS.md` scaffold
 - `agent-diagnostics` - Validate agent setup and instruction coverage
 - `docs-validation` - Outline docs lint and link checks
+
+For the canonical current skill inventory and agent allowlists, see [Skills Matrix](./skills-matrix).
 
 ### Using Skills
 
@@ -73,6 +75,24 @@ Pattern notes:
 - `"*": "deny"` first, then explicit allows.
 - Use wildcard patterns for groups (for example, `"internal-*": "allow"`).
 - Prefer narrow allowlists per agent role for least privilege.
+
+### Task Permission Hardening
+
+Control which subagents can be launched via the Task tool:
+
+```yaml
+permission:
+  task:
+    "*": "deny"
+    "explore": "allow"
+    "review": "allow"
+```
+
+Pattern notes:
+
+- Keep `"*": "deny"` first, then explicit allows.
+- Keep allowlists role-specific.
+- Rules are evaluated in order; last matching rule wins.
 
 ## Custom Commands
 

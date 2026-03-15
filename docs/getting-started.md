@@ -26,7 +26,7 @@ npx agents-opencode --global
 # Project install
 npx agents-opencode --project .
 
-# Install with specific languages only
+# Filter language instruction references for a lighter install
 npx agents-opencode --global --languages python,typescript
 
 # Update existing installation
@@ -35,6 +35,8 @@ npx agents-opencode --update
 # Force update both global + current project scopes
 npx agents-opencode --update --all
 ```
+
+`--languages` filters language instruction reference files. Runtime skills still load on demand via agent skill allowlists.
 
 ### Via curl
 

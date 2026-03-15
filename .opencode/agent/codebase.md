@@ -31,6 +31,7 @@ permission:
     "java-spring": "allow"
     "node-express": "allow"
     "react-next": "allow"
+    "ux-responsive": "allow"
     "ruby-rails": "allow"
     "rust": "allow"
     "sql-migrations": "allow"
@@ -101,12 +102,8 @@ Log detected profile at start: `Detected active profile: <profile>`
 - Load skills on demand only when work clearly maps to a stack.
 - Use one relevant language skill by default; load a second only for explicit cross-domain dependencies.
 - If stack choice is unclear, ask a short clarification question before loading.
-
-## CI/CD Guidance (On Demand)
-
-- For CI/CD tasks (workflows, pipelines, release/deploy gates), read and apply:
-  - `.opencode/instructions/ci-cd-hygiene.instructions.md`
-- Treat it as a task-scoped checklist, not a globally-loaded default.
+- For CI/CD tasks, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
+- For responsive UI/UX tasks across phone/tablet/desktop, load `ux-responsive` on demand.
 
 ## Code Standards
 - Write modular, functional code following language conventions

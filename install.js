@@ -973,7 +973,7 @@ USAGE:
 INSTALL OPTIONS:
     -g, --global                Install agents globally (available in all projects)
     -p, --project [DIR]         Install agents for project directory (defaults to current directory)
-    -l, --languages LANGS       Install only specified language standards (comma-separated)
+    -l, --languages LANGS       Filter language instruction reference files (comma-separated)
 
 LIFECYCLE OPTIONS:
     -U, --update                Update existing installation(s)
@@ -1005,6 +1005,7 @@ NOTES:
     - Config updates are merged safely (non-destructive).
     - Uninstall removes only installer-managed files using a manifest.
     - If AGENTS.md exists in project scope, it is backed up on uninstall.
+    - --languages filters instruction reference files; skill loading remains on-demand.
 
 For more information, visit: https://github.com/shahboura/agents-opencode
 `);

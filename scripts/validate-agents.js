@@ -57,6 +57,21 @@ function extractPermissionSkillBlock(frontmatter) {
   return skillSectionMatch[1];
 }
 
+function extractPermissionTaskBlock(frontmatter) {
+  const permissionSectionMatch = frontmatter.match(
+    /^permission\s*:\s*\n([\s\S]*?)(?=^\S|(?![\s\S]))/m
+  );
+  if (!permissionSectionMatch) return null;
+
+  const permissionBlock = permissionSectionMatch[1];
+  const taskSectionMatch = permissionBlock.match(
+    /^\s{2}task\s*:\s*\n([\s\S]*?)(?=^\s{2}\S|(?![\s\S]))/m
+  );
+
+  if (!taskSectionMatch) return null;
+  return taskSectionMatch[1];
+}
+
 function parsePermissionMap(block, indent = 4) {
   const map = new Map();
   const lines = block.split('\n');
@@ -96,6 +111,39 @@ function getKnownAgents() {
   }
 
   return agents;
+}
+
+function getKnownAgentModes() {
+  const agentsDir = path.join(process.cwd(), '.opencode', 'agent');
+  const modes = new Map();
+
+  if (!fs.existsSync(agentsDir)) {
+    return modes;
+  }
+
+  const files = fs.readdirSync(agentsDir)
+    .filter(f => f.endsWith('.md') && f !== 'README.md');
+
+  for (const file of files) {
+    const filePath = path.join(agentsDir, file);
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const frontmatterMatch = content.match(/^---\s*\n([\s\S]+?)\n---/);
+      if (!frontmatterMatch) continue;
+
+      const frontmatter = frontmatterMatch[1];
+      const modeMatch = frontmatter.match(/^(?!\s*#)\s*mode\s*:\s*(.+)$/m);
+      if (!modeMatch) continue;
+
+      const name = path.basename(file, '.md');
+      const mode = modeMatch[1].trim();
+      modes.set(name, mode);
+    } catch {
+      // ignore per-file parse issues for mode discovery
+    }
+  }
+
+  return modes;
 }
 
 function getBody(content) {
@@ -173,6 +221,15 @@ function main() {
   const agentDir = path.join(process.cwd(), '.opencode', 'agent');
   const knownSkills = getKnownSkills();
   const knownAgents = getKnownAgents();
+  const knownAgentModes = getKnownAgentModes();
+  const builtinTaskSubagents = new Set(['general', 'explore']);
+  const knownTaskSubagents = new Set([...builtinTaskSubagents]);
+
+  for (const [agentName, mode] of knownAgentModes.entries()) {
+    if (mode === 'subagent' || mode === 'all') {
+      knownTaskSubagents.add(agentName);
+    }
+  }
 
   log(colors.cyan, 'Validating Agent Configurations...');
 
@@ -296,6 +353,47 @@ function main() {
           if (!knownSkills.has(allowedSkill)) {
             errors.push(`${file.name}: permission.skill allow entry '${allowedSkill}' does not match any .opencode/skills/<name>/SKILL.md`);
           }
+        }
+      }
+    }
+
+    // Validate task permissions when task tool is enabled
+    const hasTaskTool = /^\s*tools\s*:[\s\S]*?^\s*task\s*:\s*true\s*$/m.test(frontmatter);
+    const permissionTaskBlock = extractPermissionTaskBlock(frontmatter);
+
+    if (hasTaskTool && !permissionTaskBlock) {
+      warnings.push(`${file.name}: Missing 'permission.task' allowlist (recommended when task tool is enabled)`);
+    }
+
+    if (hasTaskTool && permissionTaskBlock) {
+      const taskPermissionMap = parsePermissionMap(permissionTaskBlock, 4);
+      const wildcardDecision = taskPermissionMap.get('*');
+
+      if (!wildcardDecision) {
+        warnings.push(`${file.name}: permission.task should include an explicit '*' baseline rule`);
+      } else if (wildcardDecision === 'allow') {
+        warnings.push(`${file.name}: permission.task uses "*": "allow" (flexible but broad; explicit allowlist is safer)`);
+      } else if (!['deny', 'ask', 'allow'].includes(wildcardDecision)) {
+        warnings.push(`${file.name}: permission.task wildcard has unexpected decision '${wildcardDecision}'`);
+      }
+
+      const allowedTaskTargets = [...taskPermissionMap.entries()]
+        .filter(([name, decision]) => name !== '*' && decision === 'allow')
+        .map(([name]) => name);
+
+      for (const target of allowedTaskTargets) {
+        if (target.includes('*')) continue;
+
+        if (knownAgentModes.has(target)) {
+          const mode = knownAgentModes.get(target);
+          if (mode !== 'subagent' && mode !== 'all') {
+            warnings.push(`${file.name}: permission.task allow entry '${target}' points to a non-subagent mode ('${mode}')`);
+          }
+          continue;
+        }
+
+        if (!knownTaskSubagents.has(target)) {
+          warnings.push(`${file.name}: permission.task allow entry '${target}' is unknown (expected known subagent or builtin task agent)`);
         }
       }
     }

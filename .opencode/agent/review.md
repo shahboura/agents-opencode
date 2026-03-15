@@ -23,6 +23,7 @@ permission:
     "java-spring": "allow"
     "node-express": "allow"
     "react-next": "allow"
+    "ux-responsive": "allow"
     "ruby-rails": "allow"
     "rust": "allow"
     "sql-migrations": "allow"
@@ -109,19 +110,13 @@ For each file:
 - What was done well
 ```
 
-## Language-Specific Checks
-
 ## Skill Activation Policy
 
 - Load skills on demand when review criteria depend on language/framework conventions.
 - Use one relevant language skill by default; add another only for multi-stack reviews.
 - If stack is ambiguous, infer from files first, then ask a clarifying question.
-
-## CI/CD Guidance (On Demand)
-
-- When reviewing workflows/pipelines or deployment automation, read and apply:
-  - `.opencode/instructions/ci-cd-hygiene.instructions.md`
-- Use it as targeted guidance for CI/CD-related reviews.
+- For CI/CD workflow reviews, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
+- For responsive/accessibility checks across breakpoints and input modes, load `ux-responsive` on demand.
 
 ## Review Guidelines
 - Be constructive and specific
