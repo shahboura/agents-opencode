@@ -17,18 +17,18 @@ Lean reference for the built-in agents.
 
 ## Agent Overview
 
-| Agent | Best For | Allocated Skills (summary) |
-|-------|----------|----------------------------|
-| `@orchestrator` | Multi-phase coordination | Language skills + utility skills + `ux-responsive` + `blogger`/`brutal-critic` |
-| `@planner` | Read-only architecture/planning | Language skills + utility skills + `ux-responsive` |
-| `@codebase` | Feature implementation | Language skills + `sql-migrations` + `ux-responsive` |
-| `@review` | Security/performance/code quality | Language skills + `docs-validation` + `agent-diagnostics` + `ux-responsive` |
-| `@docs` | Documentation updates | `docs-validation` + `project-bootstrap` + `agent-diagnostics` |
-| `@em-advisor` | Engineering leadership guidance | `project-bootstrap` + `docs-validation` + `agent-diagnostics` |
-| `@blogger` | Blog/video/podcast drafts | `blogger` + `brutal-critic` |
-| `@brutal-critic` | Final content quality gate | `brutal-critic` + `blogger` |
+| Agent | Best For |
+|-------|----------|
+| `@orchestrator` | Multi-phase coordination |
+| `@planner` | Read-only architecture/planning |
+| `@codebase` | Feature implementation |
+| `@review` | Security/performance/code quality |
+| `@docs` | Documentation updates |
+| `@em-advisor` | Engineering leadership guidance |
+| `@blogger` | Blog/video/podcast drafts |
+| `@brutal-critic` | Final content quality gate |
 
-See exact allowlists in the [Skills Matrix](../skills-matrix).
+Canonical source for exact allowlists and skill triggers: [Skills Matrix](../skills-matrix).
 
 ## Suggested Flow
 

@@ -31,6 +31,25 @@ Quick read:
 - Skills load on demand via the `skill` tool.
 - Keep allowlists narrow by role to reduce context/tool noise.
 
+## Skill Trigger Guide (Canonical)
+
+Use this as the canonical trigger reference for when agents should load skills.
+
+| Task intent | Skill to load | Typical agents |
+|---|---|---|
+| Language/framework implementation or review | Matching stack skill (`dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ruby-rails`, `rust`, `sql-migrations`) | `codebase`, `review`, `planner`, `orchestrator` |
+| Responsive UX across phone/tablet/desktop | `ux-responsive` | `codebase`, `review`, `planner`, `orchestrator` |
+| Docs quality checks (lint/link/structure) | `docs-validation` | `docs`, `review`, `orchestrator` |
+| Agent/package diagnostics and configuration checks | `agent-diagnostics` | `docs`, `review`, `planner`, `orchestrator`, `em-advisor` |
+| Project bootstrap scaffolding | `project-bootstrap` | `docs`, `planner`, `orchestrator`, `em-advisor` |
+| Content drafting | `blogger` | `blogger`, `orchestrator` |
+| Content critique and scoring | `brutal-critic` | `brutal-critic`, `blogger`, `orchestrator` |
+
+Trigger policy:
+- Load skills only on demand for the active task/phase.
+- Start with one relevant skill; add a second only for explicit cross-domain needs.
+- If stack/domain is ambiguous, ask a clarifying question before loading.
+
 ## Skill Scope Policy
 
 - Keep the current core-only skill set.
