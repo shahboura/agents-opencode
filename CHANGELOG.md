@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/shahboura/agents-opencode/compare/v1.4.0...v1.4.1) (2026-03-15)
+
+
+### Bug Fixes
+
+* **release:** trigger patch release ([af5ecf3](https://github.com/shahboura/agents-opencode/commit/af5ecf3bac0d3ed70cc4bc0999e259ce527ae1cd))
+
 ## [1.4.0](https://github.com/shahboura/agents-opencode/compare/v1.3.1...v1.4.0) (2026-03-15)
 
 
