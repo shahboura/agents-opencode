@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.2](https://github.com/shahboura/agents-opencode/compare/v1.4.1...v1.4.2) (2026-04-24)
+
+
+### Bug Fixes
+
+* **ci:** ensure gitleaks PR scan works in validation workflow ([21f65b1](https://github.com/shahboura/agents-opencode/commit/21f65b10e2dd624b8642c7f1b372c74f30350010))
+
 ## [Unreleased]
 
 ### Features
