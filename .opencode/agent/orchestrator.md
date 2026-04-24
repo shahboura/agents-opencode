@@ -226,6 +226,15 @@ orchestrator → @codebase (implement + tests)
 - Run end-to-end tests when applicable
 - Don't proceed if critical issues found
 
+## Safe Execution Loop Protocol
+
+For iterative execution tasks, enforce a bounded loop:
+- Define explicit completion criteria before implementation starts.
+- Execute in bounded cycles (default max: 5): plan step -> implement -> validate -> assess.
+- Report cycle progress with remaining gaps after each cycle.
+- If the same blocker repeats twice without meaningful progress, pause and escalate with options.
+- For high-risk changes (security, broad refactor, CI/CD), require an independent verification pass (`@review`) before final completion.
+
 ## Context Persistence
 
 **At session start:**

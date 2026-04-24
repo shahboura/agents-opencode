@@ -34,6 +34,8 @@ Custom commands for common development tasks. Type `/command-name` in the OpenCo
 |---------|-------------|-------|---------------|
 | `/refactor-plan` | Create refactoring plans for improving code quality | planner | `[target module, file, or scope]` |
 | `/plan-project` | Plan and coordinate a complex multi-phase project | orchestrator | `[feature, objective, or epic]` |
+| `/execution-loop` | Execute work with a bounded verify-and-continue loop | orchestrator | `[task goal or deliverable]` |
+| `/stop-loop` | Stop iterative loop execution and report current state | orchestrator | `[optional reason or scope]` |
 
 ### Management
 

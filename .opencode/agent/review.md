@@ -131,3 +131,10 @@ For each file:
 - Summarize key findings
 - Suggest priority of fixes
 - Offer to help implement critical changes
+
+## Verification Gate for Loop Execution
+
+When asked to act as an independent verifier in iterative workflows:
+- Validate against explicit completion criteria, not intent-only summaries.
+- Confirm required checks/tests for the stack actually pass.
+- Return a clear gate decision: pass / pass-with-conditions / fail.

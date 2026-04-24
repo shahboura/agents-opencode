@@ -129,7 +129,10 @@ function testGlobalAndProjectLifecycle(tmpRoot) {
   createDir(homeDir);
   createDir(projectDir);
 
-  const env = { HOME: homeDir };
+  const env = {
+    HOME: homeDir,
+    USERPROFILE: homeDir,
+  };
   const globalManifest = path.join(homeDir, '.config', 'opencode', '.agents-opencode-manifest.json');
   const projectManifest = path.join(projectDir, '.opencode', '.agents-opencode-manifest.json');
 

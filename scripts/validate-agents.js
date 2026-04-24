@@ -3,7 +3,7 @@
 
 /**
  * Agent Configuration Validator
- * Validates OpenCode agent .md files in .opencode/agent/
+ * Validates OpenCode agent .md files in .opencode/agents/ (or legacy .opencode/agent/)
  */
 
 const fs = require('fs');
@@ -194,14 +194,18 @@ function validateCommands(errors, warnings, knownAgents) {
 function main() {
   const errors = [];
   const warnings = [];
-  const agentDir = path.join(process.cwd(), '.opencode', 'agent');
+  const agentDirCandidates = [
+    path.join(process.cwd(), '.opencode', 'agents'),
+    path.join(process.cwd(), '.opencode', 'agent'),
+  ];
+  const agentDir = agentDirCandidates.find((candidate) => fs.existsSync(candidate));
   const knownSkills = getKnownSkills();
 
   log(colors.cyan, 'Validating Agent Configurations...');
 
   // Check agent directory exists
-  if (!fs.existsSync(agentDir)) {
-    log(colors.red, 'ERROR: No agent directory found (.opencode/agent)');
+  if (!agentDir) {
+    log(colors.red, 'ERROR: No agent directory found (.opencode/agents or .opencode/agent)');
     process.exit(1);
   }
 

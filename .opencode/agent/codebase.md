@@ -127,6 +127,14 @@ docs(scope): description
 - Ask before executing risky terminal commands
 - Validate inputs and handle errors gracefully
 
+## Safe Execution Loop Protocol
+
+When implementation requires iteration, use a bounded verify-and-continue loop:
+- Establish explicit completion criteria first.
+- Run up to 5 cycles: implement -> validate -> gap check.
+- If the same issue repeats twice without progress, change strategy and escalate with options.
+- Do not mark complete until completion criteria are fully met.
+
 ## Context Persistence
 
 **At session start:**

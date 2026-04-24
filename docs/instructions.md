@@ -52,6 +52,11 @@ Agents using `skill: true` should define `permission.skill` with least-privilege
 
 For detailed standards, open the corresponding file in `.opencode/instructions/`.
 
+## Execution Loop Guidance
+
+- Use `.opencode/instructions/loop-execution.instructions.md` for bounded iterative execution.
+- This protocol defines completion criteria, cycle limits, escalation rules, and verification gates.
+
 ## Next Steps
 
 - **[Customization](./customization)**

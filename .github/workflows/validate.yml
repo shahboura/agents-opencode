@@ -15,6 +15,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  secrets-scan:
+    name: Secret Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Run gitleaks scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   validate-agents:
     name: Validate Agent Configurations
     runs-on: ubuntu-latest
@@ -128,25 +144,28 @@ jobs:
     name: Validation Summary
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [validate-agents, validate-docs, validate-context, lint-markdown, lint-workflows]
+    needs: [secrets-scan, validate-agents, validate-docs, validate-context, lint-markdown, lint-workflows]
     if: always()
 
     steps:
       - name: Check validation results
         env:
           AGENTS_RESULT: ${{ needs.validate-agents.result }}
+          SECRETS_RESULT: ${{ needs.secrets-scan.result }}
           DOCS_RESULT: ${{ needs.validate-docs.result }}
           CONTEXT_RESULT: ${{ needs.validate-context.result }}
           LINT_RESULT: ${{ needs.lint-markdown.result }}
           WORKFLOW_LINT_RESULT: ${{ needs.lint-workflows.result }}
         run: |
+          echo "Secret Scan: ${SECRETS_RESULT}"
           echo "Agent Validation: ${AGENTS_RESULT}"
           echo "Documentation Validation: ${DOCS_RESULT}"
           echo "Context Validation: ${CONTEXT_RESULT}"
           echo "Markdown Linting: ${LINT_RESULT}"
           echo "Workflow Linting: ${WORKFLOW_LINT_RESULT}"
 
-          if [ "${AGENTS_RESULT}" != "success" ] || \
+          if [ "${SECRETS_RESULT}" != "success" ] || \
+             [ "${AGENTS_RESULT}" != "success" ] || \
              [ "${DOCS_RESULT}" != "success" ] || \
              [ "${CONTEXT_RESULT}" != "success" ] || \
              [ "${LINT_RESULT}" != "success" ] || \
