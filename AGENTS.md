@@ -4,7 +4,7 @@ This repository contains customized agents for OpenCode.ai, aligned with Anthrop
 
 ## Project Structure
 
-- `.opencode/agent/` - Custom agent configurations for OpenCode
+- `.opencode/agents/` - Custom agent configurations for OpenCode (legacy `.opencode/agent/` also supported)
 - `docs/` - Documentation for agents and usage
 - `AGENTS.md` - This file with project instructions
 

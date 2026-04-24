@@ -17,7 +17,7 @@ metadata:
 Use this when agents are not loading, instructions seem ignored, or setup is inconsistent.
 
 ## Key Rules
-- Verify agent files exist in `.opencode/agent/` for each expected agent
+- Verify agent files exist in `.opencode/agents/` (or legacy `.opencode/agent/`) for each expected agent
 - Check that `opencode.json` instruction globs resolve to actual files
 - Confirm skill directories have a `SKILL.md` with valid frontmatter
 - Look for stale references to renamed or removed files
