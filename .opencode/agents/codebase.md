@@ -3,21 +3,15 @@ description: Multi-language development agent with profile auto-detection for im
 mode: primary
 temperature: 0.1
 steps: 50
-tools:
-  bash: true
-  edit: true
-  glob: true
-  grep: true
-  read: true
-  skill: true
-  task: true
-  todoread: true
-  todowrite: true
-  webfetch: true
-  write: true
 permission:
+  "*": "deny"
   edit: "allow"
   bash: "ask"
+  glob: "allow"
+  grep: "allow"
+  read: "allow"
+  webfetch: "allow"
+  todowrite: "allow"
   "rm -rf *": "deny"
   "git push --force*": "deny"
   "git push * --force*": "deny"

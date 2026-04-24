@@ -11,7 +11,7 @@ description: Common issues and solutions for OpenCode agent configurations.
 
 ### Agents not showing up
 
-- Verify agent files exist in `.opencode/agents/*.md` (or legacy `.opencode/agent/*.md`)
+- Verify agent files exist in `.opencode/agents/*.md`
 - Reload OpenCode / editor
 - Check that frontmatter has `description` and `mode` fields
 

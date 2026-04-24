@@ -3,21 +3,15 @@ description: Strategic coordinator for planning and orchestrating complex multi-
 mode: primary
 temperature: 0.2
 steps: 75
-tools:
-  bash: true
-  edit: true
-  glob: true
-  grep: true
-  read: true
-  skill: true
-  task: true
-  todoread: true
-  todowrite: true
-  webfetch: true
-  write: true
 permission:
+  "*": "deny"
   edit: "ask"
   bash: "ask"
+  glob: "allow"
+  grep: "allow"
+  read: "allow"
+  webfetch: "allow"
+  todowrite: "allow"
   "rm -rf *": "deny"
   "git push --force*": "deny"
   "git push * --force*": "deny"
@@ -41,7 +35,12 @@ permission:
     "blogger": "allow"
     "brutal-critic": "allow"
   task:
-    "*": "allow"
+    "*": "deny"
+    "docs": "allow"
+    "review": "allow"
+    "brutal-critic": "allow"
+    "general": "allow"
+    "explore": "allow"
 ---
 
 # Orchestrator Agent

@@ -3,16 +3,14 @@ description: Code review specialist focusing on security, performance, and best 
 mode: subagent
 temperature: 0.1
 steps: 20
-tools:
-  glob: true
-  grep: true
-  read: true
-  skill: true
-  task: true
-  webfetch: true
 permission:
+  "*": "deny"
   edit: "deny"
   bash: "deny"
+  glob: "allow"
+  grep: "allow"
+  read: "allow"
+  webfetch: "allow"
   skill:
     "*": "deny"
     "dotnet": "allow"

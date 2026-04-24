@@ -27,7 +27,8 @@ Create or update `AGENTS.md` (created on first run or via `/init`) with a short 
 
 Edit `.opencode/agents/[agent].md` to adjust behavior (model, permissions).
 
-Note: `.opencode/agent/` is still supported as a legacy path for backward compatibility.
+Note: older installs may still recognize `.opencode/agent/` temporarily,
+but `.opencode/agents/` is canonical.
 
 ## Custom Commands
 

@@ -22,7 +22,7 @@ Runtime behavior should prefer skills; instruction files remain a static referen
 
 ## Skill Permission Policy
 
-Agents using `skill: true` should define `permission.skill` with least-privilege rules:
+Agents should define `permission.skill` with least-privilege rules:
 
 - Start with `"*": "deny"`
 - Add explicit `"<skill-name>": "allow"` entries

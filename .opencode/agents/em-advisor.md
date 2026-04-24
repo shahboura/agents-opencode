@@ -3,21 +3,15 @@ description: Engineering Manager advisor for leadership decisions, team dynamics
 mode: primary
 temperature: 0.3
 steps: 30
-tools:
-  bash: true
-  edit: true
-  glob: true
-  grep: true
-  read: true
-  skill: true
-  task: true
-  todoread: true
-  todowrite: true
-  webfetch: true
-  write: true
 permission:
+  "*": "deny"
   edit: "ask"
   bash: "ask"
+  glob: "allow"
+  grep: "allow"
+  read: "allow"
+  webfetch: "allow"
+  todowrite: "allow"
   "rm -rf *": "deny"
   "git push --force*": "deny"
   "git push * --force*": "deny"

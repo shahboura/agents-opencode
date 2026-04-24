@@ -46,3 +46,12 @@ docs/Gemfile.lock
 
 # User-generated task files
 tasks/*
+
+# Local exploration fixtures
+example/
+
+# Local OpenCode plugin artifacts
+.opencode/package-lock.json
+.opencode/package.json
+.opencode/bun.lock
+.opencode/.gitignore

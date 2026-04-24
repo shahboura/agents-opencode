@@ -4,15 +4,14 @@ mode: subagent
 temperature: 0.2
 hidden: true
 steps: 10
-tools:
-  glob: true
-  grep: true
-  read: true
-  skill: true
-  webfetch: true
 permission:
+  "*": "deny"
   edit: "deny"
   bash: "deny"
+  glob: "allow"
+  grep: "allow"
+  read: "allow"
+  webfetch: "allow"
   skill:
     "*": "deny"
     "brutal-critic": "allow"
