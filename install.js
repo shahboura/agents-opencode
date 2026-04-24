@@ -18,6 +18,22 @@ const PACKAGE_NAME = 'agents-opencode';
 const MANIFEST_FILE = '.agents-opencode-manifest.json';
 const VERSION_FILE = '.opencode-agents-version';
 const BACKUP_DIR = '.backups';
+const AGENT_DIR_PREFERRED = 'agents';
+const AGENT_DIR_LEGACY = 'agent';
+
+function resolveAgentDirectory(opencodeDir) {
+    const preferredAgentDir = path.join(opencodeDir, AGENT_DIR_PREFERRED);
+    if (fs.existsSync(preferredAgentDir)) {
+        return preferredAgentDir;
+    }
+
+    const legacyAgentDir = path.join(opencodeDir, AGENT_DIR_LEGACY);
+    if (fs.existsSync(legacyAgentDir)) {
+        return legacyAgentDir;
+    }
+
+    return null;
+}
 
 // Colors for output
 const colors = {
@@ -622,7 +638,7 @@ function backupAndRemoveAgentsMdIfPresent(agentsMdPath, backupSession) {
 
 function verifyInstallation(opencodeDir, scope) {
     try {
-        const requiredDirs = ['agent', 'instructions', 'commands'];
+        const requiredDirs = ['instructions', 'commands'];
         for (const dir of requiredDirs) {
             const dirPath = path.join(opencodeDir, dir);
             if (!fs.existsSync(dirPath)) {
@@ -631,7 +647,13 @@ function verifyInstallation(opencodeDir, scope) {
             }
         }
 
-        const agentDir = path.join(opencodeDir, 'agent');
+        const agentDir = resolveAgentDirectory(opencodeDir);
+
+        if (!agentDir) {
+            error(`Missing required agent directory ('${AGENT_DIR_PREFERRED}' or '${AGENT_DIR_LEGACY}') in ${scope} installation.`);
+            return false;
+        }
+
         const agents = fs.readdirSync(agentDir).filter(file => file.endsWith('.md'));
         if (agents.length === 0) {
             error(`No agent files found in ${agentDir}`);
@@ -976,7 +998,7 @@ function isInstalled(scope, projectDir, sourceConfig) {
         return true;
     }
 
-    return fs.existsSync(path.join(paths.opencodeDir, 'agent')) || configLooksManaged(paths.configPath, sourceConfig);
+    return !!resolveAgentDirectory(paths.opencodeDir) || configLooksManaged(paths.configPath, sourceConfig);
 }
 
 function showStatus(sourceConfig) {

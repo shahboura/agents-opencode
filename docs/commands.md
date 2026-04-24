@@ -25,8 +25,10 @@ Most commands accept an optional argument to scope the task:
 | `/create-readme` | `[project name or path]` | Generate or improve a README |
 | `/generate-tests` | `[file, class, or function name]` | Generate targeted tests |
 | `/plan-project` | `[feature, objective, or epic]` | Multi-phase implementation plan |
+| `/execution-loop` | `[task goal or deliverable]` | Bounded verify-and-continue execution loop |
 | `/refactor-plan` | `[target module, file, or scope]` | Safe staged refactor strategy |
 | `/security-audit` | `[scope, file, component, or 'full project']` | Security-focused code review |
+| `/stop-loop` | `[optional reason or scope]` | Halt loop execution and report state |
 | `/1-on-1-prep` | `[person] [context]` | Prepare for a 1-on-1 meeting |
 
 ## Skills

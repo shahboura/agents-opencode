@@ -3,21 +3,15 @@ description: Multi-language development agent with profile auto-detection for im
 mode: primary
 temperature: 0.1
 steps: 50
-tools:
-  bash: true
-  edit: true
-  glob: true
-  grep: true
-  read: true
-  skill: true
-  task: true
-  todoread: true
-  todowrite: true
-  webfetch: true
-  write: true
 permission:
+  "*": "deny"
   edit: "allow"
   bash: "ask"
+  glob: "allow"
+  grep: "allow"
+  read: "allow"
+  webfetch: "allow"
+  todowrite: "allow"
   "rm -rf *": "deny"
   "git push --force*": "deny"
   "git push * --force*": "deny"
@@ -126,6 +120,14 @@ docs(scope): description
 - Never implement without approval
 - Ask before executing risky terminal commands
 - Validate inputs and handle errors gracefully
+
+## Safe Execution Loop Protocol
+
+When implementation requires iteration, use a bounded verify-and-continue loop:
+- Establish explicit completion criteria first.
+- Run up to 5 cycles: implement -> validate -> gap check.
+- If the same issue repeats twice without progress, change strategy and escalate with options.
+- Do not mark complete until completion criteria are fully met.
 
 ## Context Persistence
 

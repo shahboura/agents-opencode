@@ -39,7 +39,7 @@ function findMarkdownFiles(dir) {
     const fullPath = path.join(dir, entry.name);
 
     if (entry.isDirectory()) {
-      if (entry.name === 'node_modules' || entry.name === '.git') {
+      if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'example') {
         continue;
       }
       results.push(...findMarkdownFiles(fullPath));

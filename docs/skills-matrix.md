@@ -7,7 +7,7 @@ description: Agent-to-skill allowlist matrix for OpenCode least-privilege config
 
 # Agent Skills Matrix
 
-This table reflects `permission.skill` allowlists in `.opencode/agent/*.md`.
+This table reflects `permission.skill` allowlists in `.opencode/agents/*.md`.
 
 Quick read:
 - Most agents follow `"*": "deny"` + explicit allowlist.

@@ -4,7 +4,7 @@ This repository contains customized agents for OpenCode.ai, aligned with Anthrop
 
 ## Project Structure
 
-- `.opencode/agent/` - Custom agent configurations for OpenCode
+- `.opencode/agents/` - Custom agent configurations for OpenCode (canonical path)
 - `docs/` - Documentation for agents and usage
 - `AGENTS.md` - This file with project instructions
 
@@ -69,6 +69,26 @@ All documentation changes must:
 <!-- Session history managed by OpenCode's built-in memory. Only significant milestones logged here. Auto-prunes at 100KB. -->
 
 ## Milestones
+
+### 2026-04-25 05:45 - Canonical agents migration and permission-first tightening
+
+**Agent:** orchestrator
+**Summary:** Coordinated a migration/tightening pass to standardize on `.opencode/agents/`, remove deprecated agent tool booleans, and harden CI security pinning while preserving migration tolerance.
+- Migrated all agent files from `.opencode/agent/` to `.opencode/agents/` and updated installer/validator paths with legacy fallback signaling.
+- Converted all agent frontmatters to permission-first controls (`"*": "deny"` baselines + scoped allows), removing deprecated `tools` blocks.
+- Tightened orchestrator task delegation from wildcard allow to explicit subagent allowlist.
+- Pinned gitleaks workflow action to latest stable SHA (`v2.3.9`) and refreshed docs/changelog path references.
+- Cleanup pattern that worked: migrate structure first, refactor policy surface second, then run full doctor + agent validation to confirm parity.
+
+### 2026-04-25 05:05 - Bounded loop workflow and doctor-based validation hardening
+
+**Agent:** orchestrator
+**Summary:** Coordinated a reliability-focused execution pass to add bounded loop guidance, tighten validation ergonomics, and keep docs aligned with new workflow commands.
+- Added loop execution protocol and commands (`/execution-loop`, `/stop-loop`) plus agent-level loop/verification guidance.
+- Introduced `scripts/doctor.js` as the unified validation entrypoint and routed `validate:all` through doctor.
+- Hardened validation signal quality by excluding `example/**` from markdown/docs validation paths and fixing Windows npm spawn behavior in doctor.
+- Strengthened CI summary gating by adding secret scanning (`gitleaks`) into workflow dependencies.
+- Coordination pattern that worked: implement protocol + docs together, run end-to-end validation, then isolate untracked fixture content from quality gates.
 
 ### 2026-03-13 12:22 - Docs clarity pass for naming, uninstall behavior, and skill-policy wording
 

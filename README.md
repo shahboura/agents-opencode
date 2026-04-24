@@ -163,6 +163,8 @@ Type `/command-name` in the TUI to run:
 | `/blog-post` | Blog post creation |
 | `/content-review` | Content quality scoring |
 | `/plan-project` | Multi-phase project planning |
+| `/execution-loop` | Bounded iterative execution workflow |
+| `/stop-loop` | Stop loop and summarize state |
 | `/1-on-1-prep` | Meeting preparation |
 
 ## Docs

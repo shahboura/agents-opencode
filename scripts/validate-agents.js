@@ -3,7 +3,8 @@
 
 /**
  * Agent Configuration Validator
- * Validates OpenCode agent .md files in .opencode/agent/
+ * Validates OpenCode agent .md files in .opencode/agents/
+ * (legacy .opencode/agent/ is tolerated for migration compatibility)
  */
 
 const fs = require('fs');
@@ -85,6 +86,20 @@ function parsePermissionMap(block, indent = 4) {
   }
 
   return map;
+}
+
+function resolveAgentDirectory(repoRoot) {
+  const pluralAgentDir = path.join(repoRoot, '.opencode', 'agents');
+  if (fs.existsSync(pluralAgentDir)) {
+    return { dir: pluralAgentDir, legacy: false };
+  }
+
+  const legacyAgentDir = path.join(repoRoot, '.opencode', 'agent');
+  if (fs.existsSync(legacyAgentDir)) {
+    return { dir: legacyAgentDir, legacy: true };
+  }
+
+  return { dir: null, legacy: false };
 }
 
 function loadAgentRecords(agentFiles, errors) {
@@ -194,15 +209,19 @@ function validateCommands(errors, warnings, knownAgents) {
 function main() {
   const errors = [];
   const warnings = [];
-  const agentDir = path.join(process.cwd(), '.opencode', 'agent');
+  const { dir: agentDir, legacy: isLegacyAgentDir } = resolveAgentDirectory(process.cwd());
   const knownSkills = getKnownSkills();
 
   log(colors.cyan, 'Validating Agent Configurations...');
 
   // Check agent directory exists
-  if (!fs.existsSync(agentDir)) {
-    log(colors.red, 'ERROR: No agent directory found (.opencode/agent)');
+  if (!agentDir) {
+    log(colors.red, 'ERROR: No agent directory found (.opencode/agents)');
     process.exit(1);
+  }
+
+  if (isLegacyAgentDir) {
+    warnings.push('Using legacy .opencode/agent directory; migrate to .opencode/agents');
   }
 
   log(colors.green, 'Found OpenCode agents directory');
@@ -292,19 +311,19 @@ function main() {
       warnings.push(`${file.name}: Missing content headings`);
     }
 
-    // If skill tool is enabled, require explicit activation policy guidance
-    const hasSkillTool = /^\s*tools\s*:[\s\S]*?^\s*skill\s*:\s*true\s*$/m.test(frontmatter);
-    if (hasSkillTool && !/^##\s+Skill Activation Policy\s*$/m.test(body)) {
-      warnings.push(`${file.name}: Missing '## Skill Activation Policy' section (recommended when skill tool is enabled)`);
+    const permissionSkillBlock = extractPermissionSkillBlock(frontmatter);
+    const hasLegacySkillTool = /^\s*tools\s*:[\s\S]*?^\s*skill\s*:\s*true\s*$/m.test(frontmatter);
+    const hasSkillAccess = hasLegacySkillTool || !!permissionSkillBlock;
+
+    if (hasSkillAccess && !/^##\s+Skill Activation Policy\s*$/m.test(body)) {
+      warnings.push(`${file.name}: Missing '## Skill Activation Policy' section (recommended when skill access is configured)`);
     }
 
-    // Enforce least-privilege allowlist when skill tool is enabled
-    const permissionSkillBlock = extractPermissionSkillBlock(frontmatter);
-    if (hasSkillTool && !permissionSkillBlock) {
+    if (hasSkillAccess && !permissionSkillBlock) {
       warnings.push(`${file.name}: Missing 'permission.skill' allowlist (recommended when skill tool is enabled)`);
     }
 
-    if (hasSkillTool && permissionSkillBlock) {
+    if (hasSkillAccess && permissionSkillBlock) {
       const permissionMap = parsePermissionMap(permissionSkillBlock, 4);
 
       // Require deny-by-default rule
@@ -332,15 +351,15 @@ function main() {
       }
     }
 
-    // Validate task permissions when task tool is enabled
-    const hasTaskTool = /^\s*tools\s*:[\s\S]*?^\s*task\s*:\s*true\s*$/m.test(frontmatter);
     const permissionTaskBlock = extractPermissionTaskBlock(frontmatter);
+    const hasLegacyTaskTool = /^\s*tools\s*:[\s\S]*?^\s*task\s*:\s*true\s*$/m.test(frontmatter);
+    const hasTaskAccess = hasLegacyTaskTool || !!permissionTaskBlock;
 
-    if (hasTaskTool && !permissionTaskBlock) {
+    if (hasTaskAccess && !permissionTaskBlock) {
       warnings.push(`${file.name}: Missing 'permission.task' allowlist (recommended when task tool is enabled)`);
     }
 
-    if (hasTaskTool && permissionTaskBlock) {
+    if (hasTaskAccess && permissionTaskBlock) {
       const taskPermissionMap = parsePermissionMap(permissionTaskBlock, 4);
       const wildcardDecision = taskPermissionMap.get('*');
 

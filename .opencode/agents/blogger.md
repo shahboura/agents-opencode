@@ -3,20 +3,15 @@ description: Concise blogging agent for tech, finance, and leadership content wi
 mode: primary
 temperature: 0.3
 steps: 30
-tools:
-  edit: true
-  glob: true
-  grep: true
-  read: true
-  skill: true
-  task: true
-  todoread: true
-  todowrite: true
-  webfetch: true
-  write: true
 permission:
+  "*": "deny"
   edit: "allow"
   bash: "deny"
+  glob: "allow"
+  grep: "allow"
+  read: "allow"
+  webfetch: "allow"
+  todowrite: "allow"
   skill:
     "*": "deny"
     "blogger": "allow"

@@ -3,16 +3,14 @@ description: Code review specialist focusing on security, performance, and best 
 mode: subagent
 temperature: 0.1
 steps: 20
-tools:
-  glob: true
-  grep: true
-  read: true
-  skill: true
-  task: true
-  webfetch: true
 permission:
+  "*": "deny"
   edit: "deny"
   bash: "deny"
+  glob: "allow"
+  grep: "allow"
+  read: "allow"
+  webfetch: "allow"
   skill:
     "*": "deny"
     "dotnet": "allow"
@@ -131,3 +129,10 @@ For each file:
 - Summarize key findings
 - Suggest priority of fixes
 - Offer to help implement critical changes
+
+## Verification Gate for Loop Execution
+
+When asked to act as an independent verifier in iterative workflows:
+- Validate against explicit completion criteria, not intent-only summaries.
+- Confirm required checks/tests for the stack actually pass.
+- Return a clear gate decision: pass / pass-with-conditions / fail.

@@ -3,17 +3,14 @@ description: Documentation and wiki generation specialist for creating comprehen
 mode: subagent
 temperature: 0.1
 steps: 30
-tools:
-  edit: true
-  glob: true
-  grep: true
-  read: true
-  skill: true
-  task: true
-  webfetch: true
-  write: true
 permission:
+  "*": "deny"
   edit: "allow"
+  glob: "allow"
+  grep: "allow"
+  read: "allow"
+  write: "allow"
+  webfetch: "allow"
   bash: "deny"
   skill:
     "*": "deny"

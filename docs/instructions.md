@@ -22,7 +22,7 @@ Runtime behavior should prefer skills; instruction files remain a static referen
 
 ## Skill Permission Policy
 
-Agents using `skill: true` should define `permission.skill` with least-privilege rules:
+Agents should define `permission.skill` with least-privilege rules:
 
 - Start with `"*": "deny"`
 - Add explicit `"<skill-name>": "allow"` entries
@@ -51,6 +51,11 @@ Agents using `skill: true` should define `permission.skill` with least-privilege
 ## Full References
 
 For detailed standards, open the corresponding file in `.opencode/instructions/`.
+
+## Execution Loop Guidance
+
+- Use `.opencode/instructions/loop-execution.instructions.md` for bounded iterative execution.
+- This protocol defines completion criteria, cycle limits, escalation rules, and verification gates.
 
 ## Next Steps
 

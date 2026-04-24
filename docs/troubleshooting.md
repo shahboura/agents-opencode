@@ -11,7 +11,7 @@ description: Common issues and solutions for OpenCode agent configurations.
 
 ### Agents not showing up
 
-- Verify `.opencode/agent/*.md` exists
+- Verify agent files exist in `.opencode/agents/*.md`
 - Reload OpenCode / editor
 - Check that frontmatter has `description` and `mode` fields
 
@@ -79,7 +79,7 @@ description: Common issues and solutions for OpenCode agent configurations.
 - Check `permission.skill` in the agent file
 - Ensure `"*": "deny"` is followed by explicit allow rules for required skills
 - Verify skill name matches directory and frontmatter `name`
-- Confirm the agent still has `tools.skill: true`
+- Confirm the agent has `permission.skill` allow rules and that the requested skill is permitted
 
 ### Context file too large
 
