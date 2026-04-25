@@ -17,6 +17,11 @@ const checks = [
     args: ['scripts/validate-command-matrices.js'],
   },
   {
+    name: 'Run risk-path assessment tests',
+    command: process.execPath,
+    args: ['scripts/assess-risk-path.test.js'],
+  },
+  {
     name: 'Run installer lifecycle tests',
     command: process.execPath,
     args: ['scripts/test-installer.js'],

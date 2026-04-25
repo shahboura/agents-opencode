@@ -1,8 +1,5 @@
 {
   "allowedFailureUrls": [
-    "https://docs.example.com",
-    "https://github.com/shahboura/agents-opencode/compare/v1.2.2...v1.3.0",
-    "https://github.com/shahboura/agents-opencode/compare/agents-opencode-v1.1.2...agents-opencode-v1.2.0",
-    "https://github.com/shahboura/agents-opencode/commit/81e6952f17cfca66503a64010a7fb0dcb59ac7be"
+    "https://docs.example.com"
   ]
 }

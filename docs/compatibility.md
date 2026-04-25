@@ -50,9 +50,13 @@ External checks are also executed by a scheduled non-blocking workflow.
 | Agent configuration validation | `npm run validate:agents` | `validate-agents` |
 | Command docs parity validation | `npm run validate:commands` | `validate-command-matrices` |
 | Agent eval harness | `npm run eval:agents` | `validate-agent-evals` |
+| Risk-scored review path | _CI-driven_ | `validate-risk-path` |
 | Docs internal links | `npm run validate:docs` | `validate-docs` |
 | Docs external links (optional) | `npm run validate:docs:external` | `validate-external-links` (scheduled, non-blocking) |
 | Tooling regression tests | `npm run doctor` | `validate-tooling-tests` |
 | Context size check | `npm run validate:context` | `validate-context` |
 | Markdown lint | `npm run lint:md` | `lint-markdown` |
 | Workflow lint | _CI-only_ | `lint-workflows` |
+
+`validate-risk-path` derives changed files from git context and, on pull requests,
+checks that the PR template risk level acknowledges medium/high changes.
