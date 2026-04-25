@@ -4,6 +4,7 @@
 /**
  * Documentation Link Validator
  * Finds all .md files and validates internal markdown links.
+ * Optional mode: validate external http(s) links with retries/timeouts.
  */
 
 const fs = require('fs');
@@ -20,6 +21,44 @@ const colors = {
 
 function log(color, message) {
   console.log(`${color}${message}${colors.reset}`);
+}
+
+const DEFAULT_TIMEOUT_MS = 8000;
+const DEFAULT_RETRIES = 1;
+
+function parseArgs(argv) {
+  const options = {
+    external: false,
+    timeoutMs: DEFAULT_TIMEOUT_MS,
+    retries: DEFAULT_RETRIES,
+  };
+
+  for (const arg of argv) {
+    if (arg === '--external') {
+      options.external = true;
+      continue;
+    }
+
+    if (arg.startsWith('--timeout-ms=')) {
+      const value = Number(arg.slice('--timeout-ms='.length));
+      if (!Number.isFinite(value) || value <= 0) {
+        throw new Error(`Invalid --timeout-ms value: ${arg}`);
+      }
+      options.timeoutMs = value;
+      continue;
+    }
+
+    if (arg.startsWith('--retries=')) {
+      const value = Number(arg.slice('--retries='.length));
+      if (!Number.isInteger(value) || value < 0) {
+        throw new Error(`Invalid --retries value: ${arg}`);
+      }
+      options.retries = value;
+      continue;
+    }
+  }
+
+  return options;
 }
 
 /**
@@ -51,18 +90,174 @@ function findMarkdownFiles(dir) {
   return results;
 }
 
-function main() {
+function extractMarkdownLinks(content) {
+  const links = [];
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+
+  for (const match of content.matchAll(linkRegex)) {
+    links.push({
+      text: match[1],
+      target: match[2],
+    });
+  }
+
+  return links;
+}
+
+function resolveInternalLink(rootDir, filePath, rawLinkPath) {
+  const cleanPath = rawLinkPath.replace(/#.*$/, '');
+
+  if (!cleanPath || cleanPath.trim() === '') {
+    return { found: true };
+  }
+
+  let targetPath;
+  if (cleanPath.startsWith('/')) {
+    targetPath = path.join(rootDir, cleanPath.substring(1));
+  } else {
+    targetPath = path.join(path.dirname(filePath), cleanPath);
+  }
+
+  targetPath = path.resolve(targetPath);
+
+  if (fs.existsSync(targetPath)) {
+    return {
+      found: true,
+      targetPath,
+    };
+  }
+
+  const ext = path.extname(targetPath);
+  if (ext) {
+    return {
+      found: false,
+      targetPath,
+    };
+  }
+
+  const alternatives = [
+    `${targetPath}.md`,
+    path.join(targetPath, 'index.md'),
+  ];
+
+  for (const altPath of alternatives) {
+    if (fs.existsSync(altPath)) {
+      return {
+        found: true,
+        targetPath: altPath,
+      };
+    }
+  }
+
+  return {
+    found: false,
+    targetPath,
+  };
+}
+
+function isExternalHttpLink(linkPath) {
+  return /^https?:\/\//i.test(linkPath);
+}
+
+async function fetchOnce(url, method, timeoutMs) {
+  const response = await fetch(url, {
+    method,
+    redirect: 'follow',
+    signal: AbortSignal.timeout(timeoutMs),
+    headers: method === 'GET' ? { Range: 'bytes=0-0' } : undefined,
+  });
+
+  if (response.ok) {
+    return {
+      ok: true,
+      status: response.status,
+      method,
+      error: null,
+    };
+  }
+
+  return {
+    ok: false,
+    status: response.status,
+    method,
+    error: null,
+  };
+}
+
+async function validateExternalUrl(url, options) {
+  const maxAttempts = options.retries + 1;
+  let lastResult = {
+    ok: false,
+    status: null,
+    method: null,
+    error: 'Validation did not run',
+  };
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const headResult = await fetchOnce(url, 'HEAD', options.timeoutMs);
+      if (headResult.ok) {
+        return {
+          ...headResult,
+          attempt,
+        };
+      }
+
+      const getResult = await fetchOnce(url, 'GET', options.timeoutMs);
+      if (getResult.ok) {
+        return {
+          ...getResult,
+          attempt,
+        };
+      }
+
+      lastResult = {
+        ...getResult,
+        attempt,
+        error: `HTTP ${getResult.status}`,
+      };
+    } catch (err) {
+      lastResult = {
+        ok: false,
+        status: null,
+        method: null,
+        attempt,
+        error: err.message,
+      };
+    }
+
+    if (attempt < maxAttempts) {
+      const delayMs = 250 * attempt;
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  return lastResult;
+}
+
+async function main() {
+  let options;
+  try {
+    options = parseArgs(process.argv.slice(2));
+  } catch (err) {
+    log(colors.red, `ERROR: ${err.message}`);
+    process.exit(1);
+    return;
+  }
+
   const brokenLinks = [];
+  const externalLinks = new Map();
   const rootDir = process.cwd();
 
   log(colors.cyan, 'Validating documentation links...');
 
+  if (options.external) {
+    log(colors.cyan, `External checks enabled (timeout: ${options.timeoutMs}ms, retries: ${options.retries})`);
+  }
+
   const mdFiles = findMarkdownFiles(rootDir);
 
   log(colors.green, `Found ${mdFiles.length} markdown files\n`);
-
-  // Regex for markdown links: [text](path)
-  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
 
   for (const filePath of mdFiles) {
     let content;
@@ -74,19 +269,27 @@ function main() {
 
     const relFilePath = path.relative(rootDir, filePath).split(path.sep).join('/');
 
-    const matches = [...content.matchAll(linkRegex)];
-    if (matches.length === 0) {
+    const links = extractMarkdownLinks(content);
+    if (links.length === 0) {
       continue;
     }
 
-    log(colors.yellow, `Checking: ${relFilePath} (${matches.length} links)`);
+    log(colors.yellow, `Checking: ${relFilePath} (${links.length} links)`);
 
-    for (const match of matches) {
-      const linkText = match[1];
-      const linkPath = match[2];
+    for (const link of links) {
+      const linkText = link.text;
+      const linkPath = link.target;
 
-      // Skip external links
-      if (/^https?:\/\//.test(linkPath)) {
+      if (isExternalHttpLink(linkPath)) {
+        if (options.external) {
+          if (!externalLinks.has(linkPath)) {
+            externalLinks.set(linkPath, []);
+          }
+          externalLinks.get(linkPath).push({
+            file: relFilePath,
+            linkText,
+          });
+        }
         continue;
       }
 
@@ -95,46 +298,10 @@ function main() {
         continue;
       }
 
-      // Strip anchor fragment
-      const cleanPath = linkPath.replace(/#.*$/, '');
+      const resolution = resolveInternalLink(rootDir, filePath, linkPath);
 
-      if (!cleanPath || cleanPath.trim() === '') {
-        continue;
-      }
-
-      // Resolve the target path
-      let targetPath;
-      if (cleanPath.startsWith('/')) {
-        targetPath = path.join(rootDir, cleanPath.substring(1));
-      } else {
-        targetPath = path.join(path.dirname(filePath), cleanPath);
-      }
-
-      // Normalize the path (resolve ../ etc.)
-      targetPath = path.resolve(targetPath);
-
-      let found = fs.existsSync(targetPath);
-
-      // If not found and has no extension, try .md and /index.md
-      if (!found) {
-        const ext = path.extname(targetPath);
-        if (!ext) {
-          const altPaths = [
-            targetPath + '.md',
-            path.join(targetPath, 'index.md'),
-          ];
-
-          for (const altPath of altPaths) {
-            if (fs.existsSync(altPath)) {
-              found = true;
-              break;
-            }
-          }
-        }
-      }
-
-      if (!found) {
-        const resolvedRel = path.relative(rootDir, targetPath).split(path.sep).join('/');
+      if (!resolution.found) {
+        const resolvedRel = path.relative(rootDir, resolution.targetPath).split(path.sep).join('/');
         brokenLinks.push({
           file: relFilePath,
           linkText,
@@ -146,46 +313,85 @@ function main() {
     }
   }
 
+  const externalFailures = [];
+
+  if (options.external && externalLinks.size > 0) {
+    console.log('');
+    log(colors.cyan, `Checking ${externalLinks.size} unique external link(s)...`);
+
+    for (const [url, references] of externalLinks.entries()) {
+      const result = await validateExternalUrl(url, options);
+      if (!result.ok) {
+        externalFailures.push({
+          url,
+          references,
+          error: result.error || `HTTP ${result.status || 'unknown'}`,
+          attempt: result.attempt || options.retries + 1,
+        });
+        log(colors.red, `  ✗ Broken external: ${url} (${result.error || `HTTP ${result.status || 'unknown'}`})`);
+      }
+    }
+  }
+
   // Results
   console.log('');
   log(colors.cyan, '================================');
   log(colors.cyan, 'Validation Results');
   log(colors.cyan, '================================');
 
-  if (brokenLinks.length === 0) {
+  if (brokenLinks.length === 0 && externalFailures.length === 0) {
     log(colors.green, '✅ All links are valid!');
     process.exit(0);
   } else {
-    log(colors.red, `❌ Found ${brokenLinks.length} broken links:\n`);
+    const totalFailures = brokenLinks.length + externalFailures.length;
+    log(colors.red, `❌ Found ${totalFailures} broken link issue(s):\n`);
 
-    // Table-style output
-    const fileColWidth = Math.max(4, ...brokenLinks.map(l => l.file.length));
-    const textColWidth = Math.max(8, ...brokenLinks.map(l => l.linkText.length));
-    const pathColWidth = Math.max(8, ...brokenLinks.map(l => l.linkPath.length));
-    const resolvedColWidth = Math.max(12, ...brokenLinks.map(l => l.resolvedPath.length));
+    if (brokenLinks.length > 0) {
+      log(colors.red, `Internal broken links: ${brokenLinks.length}`);
 
-    const header =
-      'File'.padEnd(fileColWidth) + '  ' +
-      'LinkText'.padEnd(textColWidth) + '  ' +
-      'LinkPath'.padEnd(pathColWidth) + '  ' +
-      'ResolvedPath'.padEnd(resolvedColWidth);
+      // Table-style output
+      const fileColWidth = Math.max(4, ...brokenLinks.map(l => l.file.length));
+      const textColWidth = Math.max(8, ...brokenLinks.map(l => l.linkText.length));
+      const pathColWidth = Math.max(8, ...brokenLinks.map(l => l.linkPath.length));
+      const resolvedColWidth = Math.max(12, ...brokenLinks.map(l => l.resolvedPath.length));
 
-    const separator =
-      '-'.repeat(fileColWidth) + '  ' +
-      '-'.repeat(textColWidth) + '  ' +
-      '-'.repeat(pathColWidth) + '  ' +
-      '-'.repeat(resolvedColWidth);
+      const header =
+        'File'.padEnd(fileColWidth) + '  ' +
+        'LinkText'.padEnd(textColWidth) + '  ' +
+        'LinkPath'.padEnd(pathColWidth) + '  ' +
+        'ResolvedPath'.padEnd(resolvedColWidth);
 
-    console.log(header);
-    console.log(separator);
+      const separator =
+        '-'.repeat(fileColWidth) + '  ' +
+        '-'.repeat(textColWidth) + '  ' +
+        '-'.repeat(pathColWidth) + '  ' +
+        '-'.repeat(resolvedColWidth);
 
-    for (const link of brokenLinks) {
-      console.log(
-        link.file.padEnd(fileColWidth) + '  ' +
-        link.linkText.padEnd(textColWidth) + '  ' +
-        link.linkPath.padEnd(pathColWidth) + '  ' +
-        link.resolvedPath.padEnd(resolvedColWidth)
-      );
+      console.log(header);
+      console.log(separator);
+
+      for (const link of brokenLinks) {
+        console.log(
+          link.file.padEnd(fileColWidth) + '  ' +
+          link.linkText.padEnd(textColWidth) + '  ' +
+          link.linkPath.padEnd(pathColWidth) + '  ' +
+          link.resolvedPath.padEnd(resolvedColWidth)
+        );
+      }
+
+      console.log('');
+    }
+
+    if (externalFailures.length > 0) {
+      log(colors.red, `External broken links: ${externalFailures.length}`);
+      for (const failure of externalFailures) {
+        const refs = failure.references
+          .map((ref) => `${ref.file} [${ref.linkText}]`)
+          .join('; ');
+        console.log(`- ${failure.url}`);
+        console.log(`  Reason: ${failure.error}`);
+        console.log(`  References: ${refs}`);
+      }
     }
 
     process.exit(1);

@@ -54,6 +54,12 @@ agent to use it:
 
 Skills cannot be called directly from the TUI — they are invoked through agents.
 
+### External Link Validation (Optional)
+
+- Internal docs links are validated by default via `npm run validate:docs`.
+- External links can be validated on demand via `npm run validate:docs:external`.
+- CI runs external checks in a separate scheduled, non-blocking workflow to avoid flaky PR gates.
+
 ### Skill Selection Guardrails
 
 - Load skills on demand for matching tasks only.
