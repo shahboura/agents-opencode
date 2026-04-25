@@ -203,6 +203,21 @@ jobs:
       - name: Run agent eval harness
         run: npm run eval:agents
 
+      - name: Generate agent eval JSON report
+        run: npm run eval:agents:json
+
+      - name: Generate agent eval trend snapshot
+        run: npm run eval:agents:trend
+
+      - name: Upload agent eval artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: agent-eval-reports
+          path: |
+            evals/reports/latest.json
+            evals/reports/trend-summary.md
+          if-no-files-found: error
+
       - name: Run agent eval harness tests
         run: node scripts/eval-harness.test.js
 

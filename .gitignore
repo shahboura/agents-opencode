@@ -55,3 +55,7 @@ example/
 .opencode/package.json
 .opencode/bun.lock
 .opencode/.gitignore
+
+# Generated eval reports
+evals/reports/*
+!evals/reports/.gitkeep

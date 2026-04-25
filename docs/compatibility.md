@@ -50,6 +50,7 @@ External checks are also executed by a scheduled non-blocking workflow.
 | Agent configuration validation | `npm run validate:agents` | `validate-agents` |
 | Command docs parity validation | `npm run validate:commands` | `validate-command-matrices` |
 | Agent eval harness | `npm run eval:agents` | `validate-agent-evals` |
+| Agent eval trend snapshot | `npm run eval:agents:json` + `npm run eval:agents:trend` | `validate-agent-evals` (artifact upload) |
 | Risk-scored review path | _CI-driven_ | `validate-risk-path` |
 | Docs internal links | `npm run validate:docs` | `validate-docs` |
 | Changelog capability labels | `npm run validate:changelog` | `validate-changelog` |

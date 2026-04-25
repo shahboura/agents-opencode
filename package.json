@@ -23,6 +23,7 @@
     "validate:commands": "node scripts/validate-command-matrices.js",
     "eval:agents": "node evals/harness/run-evals.js",
     "eval:agents:json": "node evals/harness/run-evals.js --json --out evals/reports/latest.json",
+    "eval:agents:trend": "node scripts/compare-eval-trend.js --current evals/reports/latest.json --baseline evals/fixtures/eval-trend-baseline.json --out evals/reports/trend-summary.md",
     "validate:installer": "node scripts/test-installer.js",
     "validate:docs": "node scripts/validate-docs.js",
     "validate:docs:external": "node scripts/validate-docs.js --external",
