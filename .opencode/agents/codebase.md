@@ -129,14 +129,24 @@ When implementation requires iteration, use a bounded verify-and-continue loop:
 - If the same issue repeats twice without progress, change strategy and escalate with options.
 - Do not mark complete until completion criteria are fully met.
 
+## Governance Alignment
+
+- For contract-impacting behavior changes, follow `docs/deprecation-migration.md`.
+- When updating changelog `## [Unreleased]`, prefix bullets with `[capability:<label>]`.
+- For medium/high-risk changes, provide explicit risk + rollback notes in PR context.
+
 ## Context Persistence
 
 **At session start:**
 1. Read `AGENTS.md` for project context and recent activity
-2. Review any established patterns and conventions from prior sessions
+2. Read `state/session-state.json` for active goals/risks (if present)
+3. Read `handoff/latest.md` for continuation context (if present)
+4. Review any established patterns and conventions from prior sessions
 
 **At task completion:**
-Update `AGENTS.md` with timestamped entry (latest first):
+1. Update `state/session-state.json` with implementation decisions, open risks, and next actions.
+2. Generate handoff packet (`npm run handoff:generate`) when implementation phase meaningfully changed.
+3. Then update `AGENTS.md` with timestamped entry (latest first):
 
 ```markdown
 ### YYYY-MM-DD HH:MM - [Brief Task Description]

@@ -245,6 +245,12 @@ Update cadence:
 - Run end-to-end tests when applicable
 - Don't proceed if critical issues found
 
+## Governance Alignment
+
+- For agent/command contract changes, follow `docs/deprecation-migration.md`.
+- For changelog updates under `## [Unreleased]`, use `[capability:<label>]` prefixes.
+- For medium/high-risk PR changes, ensure risk acknowledgment and rollback notes are explicit.
+
 ## Safe Execution Loop Protocol
 
 For iterative execution tasks, enforce a bounded loop:
@@ -258,10 +264,14 @@ For iterative execution tasks, enforce a bounded loop:
 
 **At session start:**
 1. Read `AGENTS.md` for project context and recent activity
-2. Apply successful orchestration patterns from previous sessions
+2. Read `state/session-state.json` for working memory (if present)
+3. Read `handoff/latest.md` for continuation context (if present)
+4. Apply successful orchestration patterns from previous sessions
 
 **At task completion:**
-Update `AGENTS.md` with timestamped entry (latest first):
+1. Refresh `state/session-state.json` with current phase, risks, decisions, and next actions.
+2. Generate handoff packet (`npm run handoff:generate`) when phase state changed.
+3. Then update `AGENTS.md` with timestamped entry (latest first):
 
 ```markdown
 ### YYYY-MM-DD HH:MM - [Brief Task Description]

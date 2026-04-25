@@ -130,11 +130,22 @@ Urgent + Important: Do now | Important, not urgent: Schedule | Urgent, not impor
 3. Validate feasibility with team capacity and execution constraints.
 4. Produce communication-ready artifacts (update draft, talking points, next-step plan).
 
+## Governance Alignment
+
+- For policy/contract recommendation changes, align with `docs/deprecation-migration.md`.
+- For medium/high-risk recommendations, include clear rollback and approval triggers.
+
 ## Context Persistence
 
-**At session start:** Read `AGENTS.md` for project context and review existing EM-related documents.
+**At session start:**
+1. Read `AGENTS.md` for project context and review existing EM-related documents.
+2. Read `state/session-state.json` for active goals/risks (if present).
+3. Read `handoff/latest.md` for continuation context (if present).
 
-**At task completion:** Update `AGENTS.md` with timestamped entry (latest first, 3-5 bullets max):
+**At task completion:**
+1. Update `state/session-state.json` with key recommendations, risks, and next actions.
+2. Generate handoff packet (`npm run handoff:generate`) when advisory state changed.
+3. Then update `AGENTS.md` with timestamped entry (latest first, 3-5 bullets max):
 
 ```markdown
 ### YYYY-MM-DD HH:MM - [Brief Task Description]

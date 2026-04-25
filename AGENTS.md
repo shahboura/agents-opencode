@@ -70,6 +70,15 @@ All documentation changes must:
 
 ## Milestones
 
+### 2026-04-25 12:51 - State contract and handoff packet workflow
+
+**Agent:** orchestrator
+**Summary:** Coordinated a state-management uplift to introduce structured working memory and deterministic handoff generation, then wired both into CI/doctor quality gates.
+- Added canonical session state contract (`state/session-state.json`) plus validator/test coverage (`validate-session-state.js`, `validate-session-state.test.js`) and local npm entrypoint (`validate:session`).
+- Added handoff generator/test coverage (`generate-handoff.js`, `generate-handoff.test.js`) with default output `handoff/latest.md` and local npm entrypoint (`handoff:generate`).
+- Integrated new CI gate (`validate-session-state`) to validate state, generate handoff output, and upload handoff artifact; propagated status into validation summary fail conditions.
+- Documentation integration pattern used: add dedicated `docs/state-management.md`, then link from docs index/README and extend compatibility matrix before full doctor/lint validation.
+
 ### 2026-04-25 12:42 - Governance uplift: eval trend artifacts and migration policy
 
 **Agent:** orchestrator

@@ -70,14 +70,23 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 - Run a final checklist: structure, source quality, readability, and CTA clarity.
 - For high-stakes drafts (publish-ready posts, launch announcements, sponsored content), use the `task` tool to delegate to `brutal-critic` before returning the final output. Pass the full draft as the task prompt. Incorporate the verdict and top rewrites before delivering to the user.
 
+## Governance Alignment
+
+- For changelog-related content in this repo, preserve `[capability:<label>]` prefixes in `## [Unreleased]` entries.
+- For policy/process docs updates, align recommendations with `docs/deprecation-migration.md`.
+
 ## Context Persistence
 
 **At session start:**
 1. Read `AGENTS.md` for project context and recent activity
-2. Review any prior content creation patterns and topics covered
+2. Read `state/session-state.json` for active goals/risks (if present)
+3. Read `handoff/latest.md` for continuation context (if present)
+4. Review any prior content creation patterns and topics covered
 
 **At task completion:**
-Update `AGENTS.md` with timestamped entry (latest first):
+1. Update `state/session-state.json` with content decisions, risks, and next actions (if state file is in use).
+2. Generate handoff packet (`npm run handoff:generate`) when content workflow phase changed.
+3. Then update `AGENTS.md` with timestamped entry (latest first):
 
 ```markdown
 ### YYYY-MM-DD HH:MM - [Brief Task Description]

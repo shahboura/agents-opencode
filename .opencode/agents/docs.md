@@ -116,6 +116,12 @@ docs/
 - If scope is ambiguous, ask a clarifying question before loading.
 - Use `docs-validation` for docs quality checks.
 
+## Governance Alignment
+
+- For contract/policy docs, align with `docs/deprecation-migration.md`.
+- Preserve changelog `## [Unreleased]` capability labels (`[capability:<label>]`) when editing release notes.
+- Keep validation matrix and gate names consistent with `docs/compatibility.md` and CI workflow names.
+
 ## Quality Checks
 - Spell check all content
 - Verify technical accuracy

@@ -166,6 +166,12 @@ Before handing off to @codebase, verify:
 - Consider backward compatibility
 - Think about operational impact (monitoring, logging, etc.)
 
+## Governance Alignment
+
+- For contract-change planning, include migration steps per `docs/deprecation-migration.md`.
+- If recommending changelog updates, use `[capability:<label>]` prefixes in `## [Unreleased]`.
+- For medium/high-risk implementation plans, include explicit rollback approach in handoff notes.
+
 ## Handoff Recommendations
 
 After plan approval, recommend the appropriate agent to the user (manual handoff):
@@ -178,10 +184,14 @@ After plan approval, recommend the appropriate agent to the user (manual handoff
 
 **At session start:**
 1. Read `AGENTS.md` for project context and recent activity
-2. Review prior planning decisions and patterns
+2. Read `state/session-state.json` for active goals/risks (if present)
+3. Read `handoff/latest.md` for continuation context (if present)
+4. Review prior planning decisions and patterns
 
 **At task completion:**
-Update `AGENTS.md` with timestamped entry (latest first):
+1. Refresh `state/session-state.json` with planning decisions, risks, and recommended next actions.
+2. Generate handoff packet (`npm run handoff:generate`) when plan state changed.
+3. Then update `AGENTS.md` with timestamped entry (latest first):
 
 ```markdown
 ### YYYY-MM-DD HH:MM - [Brief Task Description]
