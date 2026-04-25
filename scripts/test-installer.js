@@ -69,11 +69,15 @@ function testProjectInstallAndUninstall(tmpRoot) {
 
   const manifestPath = path.join(projectDir, '.opencode', '.agents-opencode-manifest.json');
   assert(fs.existsSync(manifestPath), 'Project manifest should exist after install');
+  assert(fs.existsSync(path.join(projectDir, 'state', 'session-state.json')), 'Project state template should exist after install');
+  assert(fs.existsSync(path.join(projectDir, 'handoff', '.gitkeep')), 'Project handoff scaffold should exist after install');
 
   runInstaller(['--uninstall', '--project', '.'], { cwd: projectDir });
 
   assert(!fs.existsSync(manifestPath), 'Project manifest should be removed after uninstall');
   assert(!fs.existsSync(path.join(projectDir, 'AGENTS.md')), 'AGENTS.md should be removed from project root on real uninstall');
+  assert(!fs.existsSync(path.join(projectDir, 'state', 'session-state.json')), 'Project state template should be removed on uninstall');
+  assert(!fs.existsSync(path.join(projectDir, 'handoff', '.gitkeep')), 'Project handoff scaffold should be removed on uninstall');
 
   const sessions = listProjectBackupSessions(projectDir);
   assert(sessions.length >= 1, 'Backup session should be created on real uninstall');
@@ -141,6 +145,8 @@ function testGlobalAndProjectLifecycle(tmpRoot) {
 
   assert(fs.existsSync(globalManifest), 'Global manifest should exist after global install');
   assert(fs.existsSync(projectManifest), 'Project manifest should exist after project install');
+  assert(!fs.existsSync(path.join(homeDir, '.config', 'opencode', 'state', 'session-state.json')), 'Global install should not create project state template');
+  assert(fs.existsSync(path.join(projectDir, 'state', 'session-state.json')), 'Project install should create project state template');
 
   runInstaller(['--update'], { cwd: projectDir, env });
   runInstaller(['--uninstall', '--all'], { cwd: projectDir, env });

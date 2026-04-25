@@ -12,8 +12,10 @@ plus generated handoff packets for session-to-session continuity.
 
 ## Files
 
-- `state/session-state.json` — canonical working state
-- `handoff/latest.md` — generated handoff summary
+- `state/session-state.json` — canonical working state (project-scoped, installer scaffolded for project installs)
+- `handoff/latest.md` — generated handoff summary (runtime output, not installer-seeded)
+
+`state/` is project-level working memory. Global installs do not create shared state.
 
 ## Session State Contract
 

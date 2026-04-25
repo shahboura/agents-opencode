@@ -136,9 +136,3 @@ When asked to act as an independent verifier in iterative workflows:
 - Validate against explicit completion criteria, not intent-only summaries.
 - Confirm required checks/tests for the stack actually pass.
 - Return a clear gate decision: pass / pass-with-conditions / fail.
-
-## Governance Alignment
-
-- For policy/contract reviews, verify migration guidance exists per `docs/deprecation-migration.md`.
-- For changelog reviews, ensure `## [Unreleased]` entries use `[capability:<label>]` prefixes.
-- For state-management flows, verify `state/session-state.json` remains valid and handoff output is generated when required.

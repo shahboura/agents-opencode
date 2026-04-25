@@ -166,12 +166,6 @@ Before handing off to @codebase, verify:
 - Consider backward compatibility
 - Think about operational impact (monitoring, logging, etc.)
 
-## Governance Alignment
-
-- For contract-change planning, include migration steps per `docs/deprecation-migration.md`.
-- If recommending changelog updates, use `[capability:<label>]` prefixes in `## [Unreleased]`.
-- For medium/high-risk implementation plans, include explicit rollback approach in handoff notes.
-
 ## Handoff Recommendations
 
 After plan approval, recommend the appropriate agent to the user (manual handoff):

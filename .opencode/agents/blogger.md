@@ -70,11 +70,6 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 - Run a final checklist: structure, source quality, readability, and CTA clarity.
 - For high-stakes drafts (publish-ready posts, launch announcements, sponsored content), use the `task` tool to delegate to `brutal-critic` before returning the final output. Pass the full draft as the task prompt. Incorporate the verdict and top rewrites before delivering to the user.
 
-## Governance Alignment
-
-- For changelog-related content in this repo, preserve `[capability:<label>]` prefixes in `## [Unreleased]` entries.
-- For policy/process docs updates, align recommendations with `docs/deprecation-migration.md`.
-
 ## Context Persistence
 
 **At session start:**

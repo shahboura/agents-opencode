@@ -245,12 +245,6 @@ Update cadence:
 - Run end-to-end tests when applicable
 - Don't proceed if critical issues found
 
-## Governance Alignment
-
-- For agent/command contract changes, follow `docs/deprecation-migration.md`.
-- For changelog updates under `## [Unreleased]`, use `[capability:<label>]` prefixes.
-- For medium/high-risk PR changes, ensure risk acknowledgment and rollback notes are explicit.
-
 ## Safe Execution Loop Protocol
 
 For iterative execution tasks, enforce a bounded loop:

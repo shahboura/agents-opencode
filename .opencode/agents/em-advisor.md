@@ -130,11 +130,6 @@ Urgent + Important: Do now | Important, not urgent: Schedule | Urgent, not impor
 3. Validate feasibility with team capacity and execution constraints.
 4. Produce communication-ready artifacts (update draft, talking points, next-step plan).
 
-## Governance Alignment
-
-- For policy/contract recommendation changes, align with `docs/deprecation-migration.md`.
-- For medium/high-risk recommendations, include clear rollback and approval triggers.
-
 ## Context Persistence
 
 **At session start:**

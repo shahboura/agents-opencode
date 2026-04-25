@@ -20,6 +20,10 @@ const VERSION_FILE = '.opencode-agents-version';
 const BACKUP_DIR = '.backups';
 const AGENT_DIR_PREFERRED = 'agents';
 const AGENT_DIR_LEGACY = 'agent';
+const PROJECT_TEMPLATE_FILES = [
+    path.join('state', 'session-state.json'),
+    path.join('handoff', '.gitkeep'),
+];
 
 function resolveAgentDirectory(opencodeDir) {
     const preferredAgentDir = path.join(opencodeDir, AGENT_DIR_PREFERRED);
@@ -422,6 +426,44 @@ function buildManagedFilesFromSource(scope, sourceFiles, paths) {
     return managedFiles;
 }
 
+function installProjectTemplateFiles(sourceDir, scope, paths, backupSession) {
+    if (scope !== 'project') {
+        return { installedCount: 0, skippedCount: 0 };
+    }
+
+    let installedCount = 0;
+    let skippedCount = 0;
+
+    for (const relativePath of PROJECT_TEMPLATE_FILES) {
+        const src = path.join(sourceDir, relativePath);
+        if (!fs.existsSync(src)) {
+            warning(`Project template source is missing: ${relativePath}`);
+            continue;
+        }
+
+        const dest = path.join(paths.rootDir, relativePath);
+        ensureDir(path.dirname(dest));
+
+        if (fs.existsSync(dest)) {
+            skippedCount += 1;
+            continue;
+        }
+
+        try {
+            if (backupSession) {
+                backupSession.backupFile(dest, relativePath);
+            }
+        } catch {
+            // backup not required for first-write path
+        }
+
+        fs.copyFileSync(src, dest);
+        installedCount += 1;
+    }
+
+    return { installedCount, skippedCount };
+}
+
 function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite) {
     const patch = {
         createdFile: false,
@@ -750,6 +792,7 @@ function configLooksManaged(configPath, sourceConfig) {
 
 function installScope(options) {
     const {
+        sourceDir,
         sourceConfig,
         sourceOpencodeDir,
         sourceManagedFiles,
@@ -776,6 +819,16 @@ function installScope(options) {
 
     const treeResult = installManagedTree(sourceOpencodeDir, sourceManagedFiles, paths.opencodeDir, scope, backupSession);
     success(`✓ Installed/updated ${treeResult.copiedCount} file(s); ${treeResult.skippedCount} unchanged`);
+
+    const templateResult = installProjectTemplateFiles(sourceDir, scope, paths, backupSession);
+    if (scope === 'project') {
+        if (templateResult.installedCount > 0) {
+            success(`✓ Installed ${templateResult.installedCount} project template file(s)`);
+        }
+        if (templateResult.skippedCount > 0) {
+            info(`Skipped ${templateResult.skippedCount} existing project template file(s)`);
+        }
+    }
 
     if (languages) {
         filterLanguages(paths.opencodeDir, languages);
@@ -808,6 +861,14 @@ function installScope(options) {
     fs.writeFileSync(paths.versionPath, `${sourceVersion || 'unknown'}\n`);
 
     const managedFiles = buildManagedFilesFromSource(scope, sourceManagedFiles, paths);
+    if (scope === 'project') {
+        for (const templateRelativePath of PROJECT_TEMPLATE_FILES) {
+            const absoluteTemplatePath = path.join(paths.rootDir, templateRelativePath);
+            if (fs.existsSync(absoluteTemplatePath)) {
+                managedFiles.push(templateRelativePath);
+            }
+        }
+    }
     const manifest = {
         schemaVersion: 1,
         package: PACKAGE_NAME,
@@ -1320,6 +1381,7 @@ function main() {
         for (const scope of scopes) {
             const projectDir = scope === 'project' ? (parsed.project || process.cwd()) : null;
             const ok = installScope({
+                sourceDir,
                 sourceConfig,
                 sourceOpencodeDir,
                 sourceManagedFiles,
@@ -1357,6 +1419,7 @@ function main() {
 
     if (parsed.global) {
         const ok = installScope({
+            sourceDir,
             sourceConfig,
             sourceOpencodeDir,
             sourceManagedFiles,
@@ -1371,6 +1434,7 @@ function main() {
         }
     } else {
         const ok = installScope({
+            sourceDir,
             sourceConfig,
             sourceOpencodeDir,
             sourceManagedFiles,

@@ -129,12 +129,6 @@ When implementation requires iteration, use a bounded verify-and-continue loop:
 - If the same issue repeats twice without progress, change strategy and escalate with options.
 - Do not mark complete until completion criteria are fully met.
 
-## Governance Alignment
-
-- For contract-impacting behavior changes, follow `docs/deprecation-migration.md`.
-- When updating changelog `## [Unreleased]`, prefix bullets with `[capability:<label>]`.
-- For medium/high-risk changes, provide explicit risk + rollback notes in PR context.
-
 ## Context Persistence
 
 **At session start:**
