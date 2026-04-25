@@ -22,6 +22,16 @@ const checks = [
     args: ['scripts/validate-docs.js'],
   },
   {
+    name: 'Run docs validator tests',
+    command: process.execPath,
+    args: ['scripts/validate-docs.test.js'],
+  },
+  {
+    name: 'Run agent validator tests',
+    command: process.execPath,
+    args: ['scripts/validate-agents.test.js'],
+  },
+  {
     name: 'Validate context size threshold',
     command: process.execPath,
     args: ['scripts/check-context-size.js', '--check'],

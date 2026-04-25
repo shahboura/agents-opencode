@@ -70,7 +70,9 @@ Arguments passed in `/command-name [argument]` are forwarded to the command body
 | `/create-readme` | `docs` | `[project name or path]` | Generate or improve a README |
 | `/generate-tests` | `codebase` | `[file, class, or function name]` | Generate targeted tests |
 | `/1-on-1-prep` | `em-advisor` | `[person] [context]` | Prepare for a focused 1-on-1 |
+| `/execution-loop` | `orchestrator` | `[task goal or deliverable]` | Bounded verify-and-continue execution loop |
 | `/plan-project` | `orchestrator` | `[feature, objective, or epic]` | Multi-phase implementation plan |
 | `/refactor-plan` | `planner` | `[target module, file, or scope]` | Safe staged refactor strategy |
 | `/security-audit` | `review` | `[scope, file, component, or 'full project']` | Security-focused code and config review |
+| `/stop-loop` | `orchestrator` | `[optional reason or scope]` | Halt loop execution and report current state |
 | `/blog-post` | `blogger` | `[topic or title]` | Draft a blog post |

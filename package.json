@@ -22,6 +22,7 @@
     "validate:agents": "node scripts/validate-agents.js",
     "validate:installer": "node scripts/test-installer.js",
     "validate:docs": "node scripts/validate-docs.js",
+    "validate:docs:external": "node scripts/validate-docs.js --external",
     "validate:context": "node scripts/check-context-size.js",
     "validate:all": "npm run doctor"
   },
