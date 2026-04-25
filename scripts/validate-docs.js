@@ -86,6 +86,96 @@ function loadExternalAllowlist(options) {
   }
 }
 
+function classifyRiskLevel(filePath) {
+  const normalized = filePath.replace(/\\/g, '/');
+
+  if (normalized.startsWith('.github/workflows/')) {
+    return 'medium';
+  }
+
+  if (normalized.startsWith('.opencode/agents/') || normalized.startsWith('.opencode/instructions/')) {
+    return 'medium';
+  }
+
+  if (/(^|\/)\.env(\.|$)/.test(normalized)) {
+    return 'high';
+  }
+
+  if (/secret|credential|token|key|cert/i.test(normalized)) {
+    return 'high';
+  }
+
+  return 'low';
+}
+
+function assessApprovalNeeds(rootDir, brokenLinks, externalFailures) {
+  const refsByUrl = new Map();
+
+  for (const issue of brokenLinks) {
+    const existing = refsByUrl.get(issue.linkPath) || [];
+    existing.push(issue.file);
+    refsByUrl.set(issue.linkPath, existing);
+  }
+
+  for (const failure of externalFailures) {
+    const existing = refsByUrl.get(failure.url) || [];
+    for (const ref of failure.references) {
+      existing.push(ref.file);
+    }
+    refsByUrl.set(failure.url, existing);
+  }
+
+  const fileSet = new Set();
+  for (const files of refsByUrl.values()) {
+    for (const file of files) {
+      fileSet.add(file);
+    }
+  }
+
+  let riskLevel = 'low';
+  const highRiskFiles = [];
+  const mediumRiskFiles = [];
+
+  for (const file of fileSet) {
+    const level = classifyRiskLevel(file);
+    if (level === 'high') {
+      riskLevel = 'high';
+      highRiskFiles.push(file);
+    } else if (level === 'medium' && riskLevel !== 'high') {
+      riskLevel = 'medium';
+      mediumRiskFiles.push(file);
+    }
+  }
+
+  return {
+    riskLevel,
+    highRiskFiles,
+    mediumRiskFiles,
+    requiresApproval: riskLevel === 'medium' || riskLevel === 'high',
+  };
+}
+
+function printApprovalRequest(assessment) {
+  if (!assessment.requiresApproval) {
+    return;
+  }
+
+  console.log('');
+  log(colors.yellow, '--- Approval Request (Human Gate) ---');
+  log(colors.yellow, `Risk level: ${assessment.riskLevel}`);
+
+  if (assessment.highRiskFiles.length > 0) {
+    log(colors.yellow, `High-risk file(s): ${assessment.highRiskFiles.join(', ')}`);
+  }
+
+  if (assessment.mediumRiskFiles.length > 0) {
+    log(colors.yellow, `Medium-risk file(s): ${assessment.mediumRiskFiles.join(', ')}`);
+  }
+
+  log(colors.yellow, 'Action: obtain explicit approval before applying fixes to these files.');
+  log(colors.yellow, 'Rollback: revert modified files or revert the commit that applies link fixes.');
+}
+
 /**
  * Recursively find all .md files, excluding node_modules and .git directories.
  */
@@ -435,6 +525,9 @@ async function main() {
       console.log('');
       log(colors.yellow, `Allowed external failures (ignored): ${allowedExternalFailures}`);
     }
+
+    const approvalAssessment = assessApprovalNeeds(rootDir, brokenLinks, externalFailures);
+    printApprovalRequest(approvalAssessment);
 
     process.exit(1);
   }

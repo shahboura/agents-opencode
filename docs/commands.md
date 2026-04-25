@@ -58,7 +58,6 @@ Skills cannot be called directly from the TUI — they are invoked through agent
 
 - Internal docs links are validated by default via `npm run validate:docs`.
 - External links can be validated on demand via `npm run validate:docs:external`.
-- Use `npm run validate:docs:external:allowlist` to ignore known external failures defined in `scripts/external-link-allowlist.json`.
 - CI runs external checks in a separate scheduled, non-blocking workflow to avoid flaky PR gates.
 
 ### Command Matrix Parity Validation

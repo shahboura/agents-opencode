@@ -64,6 +64,7 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](skills
 - [Troubleshooting](troubleshooting)
 - [Skills Matrix](skills-matrix)
 - [Agent Evals](agent-evals)
+- [Approval Gates](approval-gates)
 
 ## Skill Loading Model
 
