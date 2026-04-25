@@ -70,6 +70,15 @@ All documentation changes must:
 
 ## Milestones
 
+### 2026-04-25 12:32 - Roadmap closure: risk gating, changelog labels, and fixture hardening
+
+**Agent:** orchestrator
+**Summary:** Coordinated final roadmap completion by splitting work into cleanup + enforcement + fixture hardening phases, then validating each phase through doctor/CI-aligned checks.
+- Phase sequence used: decouple docs-link validator policy logic, implement risk-scored PR gate (`validate-risk-path`), enforce changelog capability labels (`validate-changelog`), then expand golden fixtures under `scripts/fixtures/`.
+- Workflow pattern that worked: small scoped commits per initiative (S11, S6, S2) with full validation after each step to keep failures localized and rollback simple.
+- CI governance strengthened by adding two explicit gates (`validate-risk-path`, `validate-changelog`) and wiring both into validation summary fail conditions.
+- Reliability lesson: keep negative test fixtures outside default docs crawl scope (exclude `scripts/fixtures`) so intentional broken-link fixtures do not pollute repository-wide docs validation.
+
 ### 2026-04-25 05:45 - Canonical agents migration and permission-first tightening
 
 **Agent:** orchestrator
