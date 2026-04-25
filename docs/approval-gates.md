@@ -47,3 +47,13 @@ Silence or implied intent does not count.
   - affected files/commands,
   - expected impact,
   - rollback plan.
+
+## Context Log Quality Guardrail
+
+For `AGENTS.md` milestone entries, keep updates concise:
+
+- Aim for **3-5 top-level bullets** per entry.
+- Prefer one decision-oriented bullet per major outcome.
+- Avoid copying large diffs or command output into entries.
+
+The context checker surfaces warnings when entries exceed the bullet guidance.
