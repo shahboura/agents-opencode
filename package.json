@@ -29,6 +29,8 @@
     "validate:docs:external": "node scripts/validate-docs.js --external",
     "validate:docs:external:allowlist": "node scripts/validate-docs.js --external --allowlist",
     "validate:changelog": "node scripts/validate-changelog-labels.js",
+    "validate:session": "node scripts/validate-session-state.js",
+    "handoff:generate": "node scripts/generate-handoff.js --state state/session-state.json --out handoff/latest.md",
     "validate:context": "node scripts/check-context-size.js",
     "validate:all": "npm run doctor"
   },

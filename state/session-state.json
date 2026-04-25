@@ -1,0 +1,24 @@
+{
+  "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
+  "current_phase": "sustainment",
+  "decisions": [
+    "Use deny-by-default permissions with explicit allowlists.",
+    "Gate risk-sensitive changes in CI before merge."
+  ],
+  "open_risks": [
+    "Scenario-level behavioral eval coverage is still limited.",
+    "Ownership enforcement is advisory until CODEOWNERS is added."
+  ],
+  "blocked_by": [],
+  "next_actions": [
+    "Introduce CODEOWNERS for governance-critical paths.",
+    "Add scenario-based eval fixtures for orchestrator/review behavior.",
+    "Track eval trend deltas across releases."
+  ],
+  "artifacts": [
+    "docs/approval-gates.md",
+    "docs/deprecation-migration.md",
+    "evals/reports/trend-summary.md"
+  ],
+  "last_updated": "2026-04-25T00:00:00Z"
+}

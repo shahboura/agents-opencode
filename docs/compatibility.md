@@ -54,6 +54,7 @@ External checks are also executed by a scheduled non-blocking workflow.
 | Risk-scored review path | _CI-driven_ | `validate-risk-path` |
 | Docs internal links | `npm run validate:docs` | `validate-docs` |
 | Changelog capability labels | `npm run validate:changelog` | `validate-changelog` |
+| Session state contract | `npm run validate:session` | `validate-session-state` |
 | Docs external links (optional) | `npm run validate:docs:external` | `validate-external-links` (scheduled, non-blocking) |
 | Tooling regression tests | `npm run doctor` | `validate-tooling-tests` |
 | Context size check | `npm run validate:context` | `validate-context` |

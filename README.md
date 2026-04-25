@@ -184,4 +184,5 @@ Type `/command-name` in the TUI to run:
 - **[Approval Gates](./docs/approval-gates.md)**
 - **[Compatibility](./docs/compatibility.md)**
 - **[Deprecation & Migration Policy](./docs/deprecation-migration.md)**
+- **[State Management](./docs/state-management.md)**
 - **[Full Documentation](https://shahboura.github.io/agents-opencode/)**

@@ -156,6 +156,35 @@ jobs:
       - name: Validate changelog capability labels
         run: node scripts/validate-changelog-labels.js
 
+  validate-session-state:
+    name: Validate Session State Contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '24'
+
+      - name: Validate session state
+        run: node scripts/validate-session-state.js
+
+      - name: Generate handoff packet
+        run: node scripts/generate-handoff.js --state state/session-state.json --out handoff/latest.md
+
+      - name: Upload handoff artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: handoff-packet
+          path: handoff/latest.md
+          if-no-files-found: error
+
   validate-tooling-tests:
     name: Validate Tooling Regression Tests
     runs-on: ubuntu-latest
@@ -183,6 +212,12 @@ jobs:
 
       - name: Run changelog validator tests
         run: node scripts/validate-changelog-labels.test.js
+
+      - name: Run session-state validator tests
+        run: node scripts/validate-session-state.test.js
+
+      - name: Run handoff generator tests
+        run: node scripts/generate-handoff.test.js
 
   validate-agent-evals:
     name: Validate Agent Eval Harness
@@ -296,7 +331,7 @@ jobs:
     name: Validation Summary
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [secrets-scan, validate-agents, validate-command-matrices, validate-risk-path, validate-docs, validate-changelog, validate-tooling-tests, validate-agent-evals, validate-context, lint-markdown, lint-workflows]
+    needs: [secrets-scan, validate-agents, validate-command-matrices, validate-risk-path, validate-docs, validate-changelog, validate-session-state, validate-tooling-tests, validate-agent-evals, validate-context, lint-markdown, lint-workflows]
     if: always()
 
     steps:
@@ -308,6 +343,7 @@ jobs:
           SECRETS_RESULT: ${{ needs.secrets-scan.result }}
           DOCS_RESULT: ${{ needs.validate-docs.result }}
           CHANGELOG_RESULT: ${{ needs.validate-changelog.result }}
+          SESSION_STATE_RESULT: ${{ needs.validate-session-state.result }}
           TOOLING_TESTS_RESULT: ${{ needs.validate-tooling-tests.result }}
           AGENT_EVAL_RESULT: ${{ needs.validate-agent-evals.result }}
           CONTEXT_RESULT: ${{ needs.validate-context.result }}
@@ -320,6 +356,7 @@ jobs:
           echo "Risk Path Validation: ${RISK_PATH_RESULT}"
           echo "Documentation Validation: ${DOCS_RESULT}"
           echo "Changelog Validation: ${CHANGELOG_RESULT}"
+          echo "Session State Validation: ${SESSION_STATE_RESULT}"
           echo "Tooling Tests: ${TOOLING_TESTS_RESULT}"
           echo "Agent Eval Harness: ${AGENT_EVAL_RESULT}"
           echo "Context Validation: ${CONTEXT_RESULT}"
@@ -332,6 +369,7 @@ jobs:
              [ "${RISK_PATH_RESULT}" != "success" ] || \
              [ "${DOCS_RESULT}" != "success" ] || \
              [ "${CHANGELOG_RESULT}" != "success" ] || \
+             [ "${SESSION_STATE_RESULT}" != "success" ] || \
              [ "${TOOLING_TESTS_RESULT}" != "success" ] || \
              [ "${AGENT_EVAL_RESULT}" != "success" ] || \
              [ "${CONTEXT_RESULT}" != "success" ] || \
