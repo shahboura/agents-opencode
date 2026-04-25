@@ -34,3 +34,8 @@ npm run eval:agents:json
 - Static and deterministic (no model calls)
 - No external dependencies
 - Designed as a lightweight contract gate, not a benchmark framework
+
+## Fixtures
+
+Regression fixtures for harness and validator tests live under `scripts/fixtures/`.
+This keeps golden inputs explicit and reusable across tests.

@@ -8,6 +8,7 @@ const { execFileSync } = require('child_process');
 
 const repoRoot = process.cwd();
 const harnessPath = path.join(repoRoot, 'evals', 'harness', 'run-evals.js');
+const fixturesRoot = path.join(repoRoot, 'scripts', 'fixtures', 'eval-harness');
 
 function assert(condition, message) {
   if (!condition) {
@@ -36,131 +37,26 @@ function runHarness(cwd, args = []) {
   }
 }
 
-function writeFile(filePath, content) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, content, 'utf8');
-}
+function copyDirectory(sourceDir, destinationDir) {
+  fs.mkdirSync(destinationDir, { recursive: true });
+  const entries = fs.readdirSync(sourceDir, { withFileTypes: true });
 
-function writeExpectedContracts(rootDir) {
-  writeFile(
-    path.join(rootDir, 'evals', 'fixtures', 'expected-contracts.json'),
-    JSON.stringify(
-      {
-        planner: {
-          requiredBodyPatterns: ['read-only', 'no code edits'],
-        },
-        orchestrator: {
-          requiredBodyPatterns: ['planning phase', 'await approval', 'safe execution loop protocol'],
-        },
-        review: {
-          requiredBodyPatterns: ['verification gate', 'pass / pass-with-conditions / fail'],
-        },
-      },
-      null,
-      2
-    ) + '\n'
-  );
-}
+  for (const entry of entries) {
+    const sourcePath = path.join(sourceDir, entry.name);
+    const destinationPath = path.join(destinationDir, entry.name);
 
-function writeSkills(rootDir) {
-  const skills = ['python', 'docs-validation', 'agent-diagnostics'];
-  for (const skill of skills) {
-    writeFile(path.join(rootDir, '.opencode', 'skills', skill, 'SKILL.md'), `# ${skill}\n`);
+    if (entry.isDirectory()) {
+      copyDirectory(sourcePath, destinationPath);
+      continue;
+    }
+
+    fs.copyFileSync(sourcePath, destinationPath);
   }
-}
-
-function writeValidAgents(rootDir) {
-  writeFile(
-    path.join(rootDir, '.opencode', 'agents', 'planner.md'),
-    `---
-description: planner
-mode: primary
-permission:
-  "*": "deny"
-  edit: "deny"
-  bash: "deny"
-  read: "allow"
-  skill:
-    "*": "deny"
-    "python": "allow"
-  task:
-    "*": "deny"
-    "explore": "allow"
----
-
-Read-only planner with no code edits.
-`
-  );
-
-  writeFile(
-    path.join(rootDir, '.opencode', 'agents', 'orchestrator.md'),
-    `---
-description: orchestrator
-mode: primary
-permission:
-  "*": "deny"
-  read: "allow"
-  skill:
-    "*": "deny"
-    "python": "allow"
-  task:
-    "*": "deny"
-    "review": "allow"
-    "explore": "allow"
----
-
-Planning phase is required.
-Present plan and await approval.
-Use the safe execution loop protocol.
-`
-  );
-
-  writeFile(
-    path.join(rootDir, '.opencode', 'agents', 'review.md'),
-    `---
-description: review
-mode: subagent
-permission:
-  "*": "deny"
-  edit: "deny"
-  read: "allow"
-  skill:
-    "*": "deny"
-    "docs-validation": "allow"
-  task:
-    "*": "deny"
----
-
-Verification gate: return pass / pass-with-conditions / fail.
-`
-  );
-}
-
-function writeValidCommands(rootDir) {
-  writeFile(
-    path.join(rootDir, '.opencode', 'commands', 'plan-project.md'),
-    `---
-description: plan
-agent: orchestrator
-argument-hint: "[feature]"
-subtask: true
----
-
-Use $ARGUMENTS for project plan.
-`
-  );
-}
-
-function setupValidFixture(rootDir) {
-  writeExpectedContracts(rootDir);
-  writeSkills(rootDir);
-  writeValidAgents(rootDir);
-  writeValidCommands(rootDir);
 }
 
 function testValidFixturePasses(tmpRoot) {
   const fixture = path.join(tmpRoot, 'valid');
-  setupValidFixture(fixture);
+  copyDirectory(path.join(fixturesRoot, 'valid'), fixture);
 
   const result = runHarness(repoRoot, ['--root', fixture]);
   assert(result.status === 0, 'Expected valid eval fixture to pass');
@@ -168,42 +64,7 @@ function testValidFixturePasses(tmpRoot) {
 
 function testNegativeFixtureFails(tmpRoot) {
   const fixture = path.join(tmpRoot, 'negative');
-  setupValidFixture(fixture);
-
-  writeFile(
-    path.join(fixture, '.opencode', 'agents', 'planner.md'),
-    `---
-description: planner
-mode: primary
-permission:
-  "*": "deny"
-  edit: "allow"
-  bash: "deny"
-  read: "allow"
-  skill:
-    "*": "deny"
-    "python": "allow"
-  task:
-    "*": "deny"
-    "explore": "allow"
----
-
-Planner content missing required phrase.
-`
-  );
-
-  writeFile(
-    path.join(fixture, '.opencode', 'commands', 'plan-project.md'),
-    `---
-description: plan
-agent: unknown-agent
-argument-hint: "[feature]"
-subtask: true
----
-
-Use <args> token.
-`
-  );
+  copyDirectory(path.join(fixturesRoot, 'negative'), fixture);
 
   const result = runHarness(repoRoot, ['--root', fixture]);
   assert(result.status !== 0, 'Expected negative eval fixture to fail');

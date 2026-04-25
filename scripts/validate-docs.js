@@ -106,6 +106,10 @@ function findMarkdownFiles(dir) {
       if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'example') {
         continue;
       }
+
+      if (entry.name === 'fixtures' && path.basename(dir) === 'scripts') {
+        continue;
+      }
       results.push(...findMarkdownFiles(fullPath));
     } else if (entry.isFile() && entry.name.endsWith('.md')) {
       results.push(fullPath);

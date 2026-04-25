@@ -8,6 +8,7 @@ const { execFileSync } = require('child_process');
 
 const repoRoot = process.cwd();
 const scriptPath = path.join(repoRoot, 'scripts', 'validate-docs.js');
+const fixturesRoot = path.join(repoRoot, 'scripts', 'fixtures', 'validate-docs');
 
 function assert(condition, message) {
   if (!condition) {
@@ -36,15 +37,26 @@ function runValidator(cwd, args = []) {
   }
 }
 
-function writeFile(filePath, content) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, content, 'utf8');
+function copyDirectory(sourceDir, destinationDir) {
+  fs.mkdirSync(destinationDir, { recursive: true });
+  const entries = fs.readdirSync(sourceDir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const sourcePath = path.join(sourceDir, entry.name);
+    const destinationPath = path.join(destinationDir, entry.name);
+
+    if (entry.isDirectory()) {
+      copyDirectory(sourcePath, destinationPath);
+      continue;
+    }
+
+    fs.copyFileSync(sourcePath, destinationPath);
+  }
 }
 
 function testRelativeAndExtensionlessLinks(tmpRoot) {
   const testDir = path.join(tmpRoot, 'internal-links');
-  writeFile(path.join(testDir, 'README.md'), '# Root\n\n[Docs](docs/guide)\n');
-  writeFile(path.join(testDir, 'docs', 'guide.md'), '# Guide\n\n[Home](../README.md#top)\n');
+  copyDirectory(path.join(fixturesRoot, 'valid'), testDir);
 
   const result = runValidator(testDir);
   assert(result.status === 0, 'Expected internal links validation to pass');
@@ -52,7 +64,7 @@ function testRelativeAndExtensionlessLinks(tmpRoot) {
 
 function testBrokenInternalLinkFails(tmpRoot) {
   const testDir = path.join(tmpRoot, 'broken-links');
-  writeFile(path.join(testDir, 'README.md'), '# Root\n\n[Missing](docs/missing-page)\n');
+  copyDirectory(path.join(fixturesRoot, 'broken'), testDir);
 
   const result = runValidator(testDir);
   assert(result.status !== 0, 'Expected broken internal links to fail validation');
@@ -61,7 +73,7 @@ function testBrokenInternalLinkFails(tmpRoot) {
 
 function testInvalidArgsFailFast(tmpRoot) {
   const testDir = path.join(tmpRoot, 'invalid-args');
-  writeFile(path.join(testDir, 'README.md'), '# Root\n');
+  copyDirectory(path.join(fixturesRoot, 'valid'), testDir);
 
   const result = runValidator(testDir, ['--timeout-ms=0']);
   assert(result.status !== 0, 'Expected invalid timeout argument to fail');
