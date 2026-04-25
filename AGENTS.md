@@ -70,6 +70,15 @@ All documentation changes must:
 
 ## Milestones
 
+### 2026-04-25 12:42 - Governance uplift: eval trend artifacts and migration policy
+
+**Agent:** orchestrator
+**Summary:** Coordinated a governance-focused follow-up to improve evaluation observability and formalize contract-change handling for agent/command evolution.
+- Added eval artifact workflow outputs by generating `evals/reports/latest.json` + `evals/reports/trend-summary.md` and uploading both in CI (`validate-agent-evals`).
+- Introduced baseline-vs-current trend comparator (`scripts/compare-eval-trend.js`) and seeded baseline fixture (`evals/fixtures/eval-trend-baseline.json`) for lightweight drift tracking.
+- Published `docs/deprecation-migration.md` with Level A/B/C change taxonomy, migration playbook, and required PR checklist for breaking/soft-deprecation flows.
+- Documentation alignment pattern used: wire scripts/workflows first, then update docs index + eval/compatibility pages + README links, followed by full doctor/lint validation.
+
 ### 2026-04-25 12:32 - Roadmap closure: risk gating, changelog labels, and fixture hardening
 
 **Agent:** orchestrator
