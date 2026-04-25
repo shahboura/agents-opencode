@@ -25,12 +25,14 @@ function log(color, message) {
 
 const DEFAULT_TIMEOUT_MS = 8000;
 const DEFAULT_RETRIES = 1;
+const EXTERNAL_ALLOWLIST_FILE = path.join(process.cwd(), 'scripts', 'external-link-allowlist.json');
 
 function parseArgs(argv) {
   const options = {
     external: false,
     timeoutMs: DEFAULT_TIMEOUT_MS,
     retries: DEFAULT_RETRIES,
+    allowlist: false,
   };
 
   for (const arg of argv) {
@@ -56,9 +58,32 @@ function parseArgs(argv) {
       options.retries = value;
       continue;
     }
+
+    if (arg === '--allowlist') {
+      options.allowlist = true;
+      continue;
+    }
   }
 
   return options;
+}
+
+function loadExternalAllowlist(options) {
+  if (!options.external || !options.allowlist) {
+    return new Set();
+  }
+
+  if (!fs.existsSync(EXTERNAL_ALLOWLIST_FILE)) {
+    return new Set();
+  }
+
+  try {
+    const parsed = JSON.parse(fs.readFileSync(EXTERNAL_ALLOWLIST_FILE, 'utf8'));
+    const urls = Array.isArray(parsed.allowedFailureUrls) ? parsed.allowedFailureUrls : [];
+    return new Set(urls.filter((url) => typeof url === 'string' && /^https?:\/\//i.test(url)));
+  } catch (err) {
+    throw new Error(`Could not parse external link allowlist: ${err.message}`);
+  }
 }
 
 /**
@@ -247,12 +272,18 @@ async function main() {
 
   const brokenLinks = [];
   const externalLinks = new Map();
+  let allowedExternalFailures = 0;
   const rootDir = process.cwd();
 
   log(colors.cyan, 'Validating documentation links...');
 
   if (options.external) {
     log(colors.cyan, `External checks enabled (timeout: ${options.timeoutMs}ms, retries: ${options.retries})`);
+  }
+
+  const externalAllowlist = loadExternalAllowlist(options);
+  if (options.external && options.allowlist) {
+    log(colors.cyan, `External allowlist enabled (${externalAllowlist.size} URL(s))`);
   }
 
   const mdFiles = findMarkdownFiles(rootDir);
@@ -322,6 +353,12 @@ async function main() {
     for (const [url, references] of externalLinks.entries()) {
       const result = await validateExternalUrl(url, options);
       if (!result.ok) {
+        if (externalAllowlist.has(url)) {
+          allowedExternalFailures += 1;
+          log(colors.yellow, `  ⚠ Allowed external failure: ${url}`);
+          continue;
+        }
+
         externalFailures.push({
           url,
           references,
@@ -392,6 +429,11 @@ async function main() {
         console.log(`  Reason: ${failure.error}`);
         console.log(`  References: ${refs}`);
       }
+    }
+
+    if (allowedExternalFailures > 0) {
+      console.log('');
+      log(colors.yellow, `Allowed external failures (ignored): ${allowedExternalFailures}`);
     }
 
     process.exit(1);
