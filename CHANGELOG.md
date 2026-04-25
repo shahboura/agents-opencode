@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/shahboura/agents-opencode/compare/v1.4.2...v1.5.0) (2026-04-25)
+
+
+### Features
+
+* **governance:** add risk-aware validation, eval artifacts, and project state/handoff workflows ([#31](https://github.com/shahboura/agents-opencode/issues/31)) ([8155365](https://github.com/shahboura/agents-opencode/commit/8155365abe47ff1d3886366810ac32c3d46d476c))
+
 ## [1.4.2](https://github.com/shahboura/agents-opencode/compare/v1.4.1...v1.4.2) (2026-04-24)
 
 
