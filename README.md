@@ -173,6 +173,20 @@ Type `/command-name` in the TUI to run:
 - `npm run eval:agents:json` writes machine-readable output to `evals/reports/latest.json`.
 - These checks are integrated into doctor and CI validation summary gating.
 
+## Validation Checks Matrix
+
+| Check | Local command | CI gate |
+|---|---|---|
+| Agent configuration validation | `npm run validate:agents` | `validate-agents` |
+| Command docs parity validation | `npm run validate:commands` | `validate-command-matrices` |
+| Agent eval harness | `npm run eval:agents` | `validate-agent-evals` |
+| Docs internal links | `npm run validate:docs` | `validate-docs` |
+| Docs external links (optional) | `npm run validate:docs:external` | `validate-external-links` (scheduled, non-blocking) |
+| Tooling regression tests | `npm run doctor` | `validate-tooling-tests` |
+| Context size check | `npm run validate:context` | `validate-context` |
+| Markdown lint | `npm run lint:md` | `lint-markdown` |
+| Workflow lint | _CI-only_ | `lint-workflows` |
+
 ## Docs
 
 - **[Getting Started](./docs/getting-started.md)**

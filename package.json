@@ -20,6 +20,7 @@
     "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\"",
     "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --fix",
     "validate:agents": "node scripts/validate-agents.js",
+    "validate:commands": "node scripts/validate-command-matrices.js",
     "eval:agents": "node evals/harness/run-evals.js",
     "eval:agents:json": "node evals/harness/run-evals.js --json --out evals/reports/latest.json",
     "validate:installer": "node scripts/test-installer.js",

@@ -12,6 +12,11 @@ const checks = [
     args: ['scripts/validate-agents.js'],
   },
   {
+    name: 'Validate command docs parity',
+    command: process.execPath,
+    args: ['scripts/validate-command-matrices.js'],
+  },
+  {
     name: 'Run installer lifecycle tests',
     command: process.execPath,
     args: ['scripts/test-installer.js'],

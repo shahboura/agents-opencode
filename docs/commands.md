@@ -60,6 +60,11 @@ Skills cannot be called directly from the TUI — they are invoked through agent
 - External links can be validated on demand via `npm run validate:docs:external`.
 - CI runs external checks in a separate scheduled, non-blocking workflow to avoid flaky PR gates.
 
+### Command Matrix Parity Validation
+
+- Command tables are validated against canonical command frontmatter in `.opencode/commands/*.md`.
+- Run `npm run validate:commands` to verify command presence and metadata parity.
+
 ### Skill Selection Guardrails
 
 - Load skills on demand for matching tasks only.
