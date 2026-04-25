@@ -23,6 +23,36 @@ function log(color, message) {
   console.log(`${color}${message}${colors.reset}`);
 }
 
+const MAX_ENTRY_BULLETS = 5;
+
+function splitEntries(entriesBlock) {
+  return entriesBlock
+    .split(/^(?=### )/m)
+    .filter(entry => entry.trim() !== '');
+}
+
+function countTopLevelBullets(entry) {
+  return entry
+    .split(/\r?\n/)
+    .filter(line => /^-\s+/.test(line.trim()))
+    .length;
+}
+
+function warnEntryQuality(entryList) {
+  let warningCount = 0;
+
+  for (const entry of entryList) {
+    const headerLine = entry.split(/\r?\n/).find(line => line.startsWith('### ')) || '### Unknown entry';
+    const bulletCount = countTopLevelBullets(entry);
+    if (bulletCount > MAX_ENTRY_BULLETS) {
+      warningCount += 1;
+      log(colors.yellow, `WARNING: ${headerLine} has ${bulletCount} top-level bullets (recommended max: ${MAX_ENTRY_BULLETS})`);
+    }
+  }
+
+  return warningCount;
+}
+
 function main() {
   const MAX_SIZE_KB = 100;
   const PRUNE_TO_KB = 75;
@@ -86,11 +116,13 @@ function main() {
       const entriesBlock = match[2];
 
       // Split on ### boundaries (keeping the ### prefix)
-      const entryList = entriesBlock
-        .split(/^(?=### )/m)
-        .filter(entry => entry.trim() !== '');
+      const entryList = splitEntries(entriesBlock);
 
       log(colors.cyan, `Found ${entryList.length} context entries`);
+      const qualityWarnings = warnEntryQuality(entryList);
+      if (qualityWarnings > 0) {
+        log(colors.yellow, `Context quality warnings: ${qualityWarnings}`);
+      }
 
       const targetBytes = PRUNE_TO_KB * 1024;
       const headerBytes = Buffer.byteLength(header, 'utf8');
@@ -149,6 +181,24 @@ function main() {
       log(colors.yellow, 'No dated entries found to prune (expected ### YYYY-MM-DD pattern)');
     }
   } else {
+    let content;
+    try {
+      content = fs.readFileSync(contextFile, 'utf8');
+    } catch (err) {
+      log(colors.red, `ERROR: Failed to read ${contextFile} - ${err.message}`);
+      process.exit(1);
+    }
+
+    const entryPattern = /^([\s\S]*?)(### \d{4}-\d{2}-\d{2}[\s\S]*)$/;
+    const match = content.match(entryPattern);
+    if (match) {
+      const entryList = splitEntries(match[2]);
+      const qualityWarnings = warnEntryQuality(entryList);
+      if (qualityWarnings > 0) {
+        log(colors.yellow, `Context quality warnings: ${qualityWarnings}`);
+      }
+    }
+
     log(colors.green, '✅ Context file size is healthy');
   }
 

@@ -8,6 +8,7 @@ const { execFileSync } = require('child_process');
 
 const repoRoot = process.cwd();
 const scriptPath = path.join(repoRoot, 'scripts', 'validate-agents.js');
+const fixturesRoot = path.join(repoRoot, 'scripts', 'fixtures', 'validate-agents');
 
 function assert(condition, message) {
   if (!condition) {
@@ -36,101 +37,33 @@ function runValidator(cwd) {
   }
 }
 
-function writeFile(filePath, content) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, content, 'utf8');
-}
+function copyDirectory(sourceDir, destinationDir) {
+  fs.mkdirSync(destinationDir, { recursive: true });
+  const entries = fs.readdirSync(sourceDir, { withFileTypes: true });
 
-function setupValidFixture(rootDir) {
-  writeFile(path.join(rootDir, '.opencode', 'skills', 'python', 'SKILL.md'), '# python\n');
-  writeFile(path.join(rootDir, '.opencode', 'skills', 'docs-validation', 'SKILL.md'), '# docs-validation\n');
+  for (const entry of entries) {
+    const sourcePath = path.join(sourceDir, entry.name);
+    const destinationPath = path.join(destinationDir, entry.name);
 
-  writeFile(
-    path.join(rootDir, '.opencode', 'agents', 'review.md'),
-    `---
-description: review
-mode: subagent
-permission:
-  "*": "deny"
-  skill:
-    "*": "deny"
-    "python": "allow"
-  task:
-    "*": "deny"
----
+    if (entry.isDirectory()) {
+      copyDirectory(sourcePath, destinationPath);
+      continue;
+    }
 
-## Skill Activation Policy
-
-Use skills on demand.
-`
-  );
-
-  writeFile(
-    path.join(rootDir, '.opencode', 'agents', 'codebase.md'),
-    `---
-description: codebase
-mode: primary
-permission:
-  "*": "deny"
-  skill:
-    "*": "deny"
-    "python": "allow"
-  task:
-    "*": "deny"
-    "review": "allow"
----
-
-## Skill Activation Policy
-
-Use skills on demand.
-`
-  );
-
-  writeFile(
-    path.join(rootDir, '.opencode', 'commands', 'code-review.md'),
-    `---
-description: review code
-agent: review
-argument-hint: "[scope]"
-subtask: true
----
-
-Review current changes for quality and security.
-`
-  );
+    fs.copyFileSync(sourcePath, destinationPath);
+  }
 }
 
 function testValidFixturePasses(tmpRoot) {
   const fixture = path.join(tmpRoot, 'valid');
-  setupValidFixture(fixture);
+  copyDirectory(path.join(fixturesRoot, 'valid'), fixture);
   const result = runValidator(fixture);
   assert(result.status === 0, 'Expected valid fixture to pass agent validation');
 }
 
 function testUnknownSkillFails(tmpRoot) {
   const fixture = path.join(tmpRoot, 'unknown-skill');
-  setupValidFixture(fixture);
-
-  writeFile(
-    path.join(fixture, '.opencode', 'agents', 'codebase.md'),
-    `---
-description: codebase
-mode: primary
-permission:
-  "*": "deny"
-  skill:
-    "*": "deny"
-    "not-a-real-skill": "allow"
-  task:
-    "*": "deny"
-    "review": "allow"
----
-
-## Skill Activation Policy
-
-Use skills on demand.
-`
-  );
+  copyDirectory(path.join(fixturesRoot, 'unknown-skill'), fixture);
 
   const result = runValidator(fixture);
   assert(result.status !== 0, 'Expected unknown skill allow entry to fail validation');

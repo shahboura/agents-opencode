@@ -218,6 +218,26 @@ orchestrator → @codebase (implement + tests)
 - Give progress updates
 - Maintain big-picture view
 
+## Progress Tracking for Long-Running Work
+
+For complex or multi-phase tasks, include and maintain a status table in updates.
+
+Use this format:
+
+```markdown
+## Workstream Status
+
+| ID | Initiative | Impact / Effort | Status | Notes |
+|---|---|---|---|---|
+| S1 | [Initiative] | [High/Medium/Low] / [High/Medium/Low] | [✅ Done / 🔄 In Progress / ⏳ Planned / ⛔ Blocked] | [Short note] |
+```
+
+Update cadence:
+- Include the table at plan start for long-running/complex tasks.
+- Update status after each completed phase or loop cycle.
+- Keep exactly one active item as `🔄 In Progress` where possible.
+- Reflect blockers immediately with `⛔ Blocked` and mitigation options.
+
 ## Safety & Validation
 - Verify each phase completes successfully
 - Check dependencies before starting next phase
@@ -238,10 +258,14 @@ For iterative execution tasks, enforce a bounded loop:
 
 **At session start:**
 1. Read `AGENTS.md` for project context and recent activity
-2. Apply successful orchestration patterns from previous sessions
+2. Read `state/session-state.json` for working memory (if present)
+3. Read `handoff/latest.md` for continuation context (if present)
+4. Apply successful orchestration patterns from previous sessions
 
 **At task completion:**
-Update `AGENTS.md` with timestamped entry (latest first):
+1. Refresh `state/session-state.json` with current phase, risks, decisions, and next actions.
+2. Generate or refresh handoff packet using project tooling when phase state changed.
+3. Then update `AGENTS.md` with timestamped entry (latest first):
 
 ```markdown
 ### YYYY-MM-DD HH:MM - [Brief Task Description]

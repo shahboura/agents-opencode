@@ -60,6 +60,23 @@ Skills cannot be called directly from the TUI — they are invoked through agent
 - External links can be validated on demand via `npm run validate:docs:external`.
 - CI runs external checks in a separate scheduled, non-blocking workflow to avoid flaky PR gates.
 
+### Command Matrix Parity Validation
+
+- Command tables are validated against canonical command frontmatter in `.opencode/commands/*.md`.
+- Run `npm run validate:commands` to verify command presence and metadata parity.
+
+### Risk-Scored Review Path (CI)
+
+- PR validation includes a risk-path gate that classifies changed files as low/medium/high impact.
+- Medium/high changes require the PR template `Risk level` field to acknowledge at least that level.
+- Risk-path logic runs in CI via `validate-risk-path` and is covered by local regression tests (`npm run doctor`).
+
+### Changelog Capability Labels
+
+- Unreleased changelog bullets should be prefixed with `[capability:<label>]`.
+- Validate locally with `npm run validate:changelog`.
+- CI enforces this via the `validate-changelog` gate.
+
 ### Skill Selection Guardrails
 
 - Load skills on demand for matching tasks only.

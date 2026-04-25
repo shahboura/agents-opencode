@@ -1,7 +1,7 @@
 ---
 description: Engineering Manager advisor for leadership decisions, team dynamics, and technical strategy
 mode: primary
-temperature: 0.3
+temperature: 0.25
 steps: 30
 permission:
   "*": "deny"
@@ -132,9 +132,15 @@ Urgent + Important: Do now | Important, not urgent: Schedule | Urgent, not impor
 
 ## Context Persistence
 
-**At session start:** Read `AGENTS.md` for project context and review existing EM-related documents.
+**At session start:**
+1. Read `AGENTS.md` for project context and review existing EM-related documents.
+2. Read `state/session-state.json` for active goals/risks (if present).
+3. Read `handoff/latest.md` for continuation context (if present).
 
-**At task completion:** Update `AGENTS.md` with timestamped entry (latest first, 3-5 bullets max):
+**At task completion:**
+1. Update `state/session-state.json` with key recommendations, risks, and next actions.
+2. Generate or refresh handoff packet using project tooling when advisory state changed.
+3. Then update `AGENTS.md` with timestamped entry (latest first, 3-5 bullets max):
 
 ```markdown
 ### YYYY-MM-DD HH:MM - [Brief Task Description]

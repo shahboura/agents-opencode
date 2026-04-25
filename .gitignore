@@ -55,3 +55,11 @@ example/
 .opencode/package.json
 .opencode/bun.lock
 .opencode/.gitignore
+
+# Generated eval reports
+evals/reports/*
+!evals/reports/.gitkeep
+
+# Generated handoff output
+handoff/*
+!handoff/.gitkeep

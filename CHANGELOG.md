@@ -11,14 +11,14 @@
 
 ### Features
 
-* add bounded loop execution workflow (`/execution-loop`, `/stop-loop`) with loop protocol guidance across orchestrator/codebase/review agents
-* add `doctor` validation entrypoint and route `validate:all` through it
+* [capability:workflow] add bounded loop execution workflow (`/execution-loop`, `/stop-loop`) with loop protocol guidance across orchestrator/codebase/review agents
+* [capability:validation] add `doctor` validation entrypoint and route `validate:all` through it
 
 ### Bug Fixes
 
-* improve validation reliability by excluding `example/**` from markdown/docs checks and fixing Windows npm spawn behavior in doctor
-* migrate agent layout to canonical `.opencode/agents/` and align installer/validation/docs to the plural standard
-* add CI secret scanning to validation summary gating
+* [capability:validation] improve validation reliability by excluding `example/**` from markdown/docs checks and fixing Windows npm spawn behavior in doctor
+* [capability:agents] migrate agent layout to canonical `.opencode/agents/` and align installer/validation/docs to the plural standard
+* [capability:security] add CI secret scanning to validation summary gating
 
 ## [1.4.1](https://github.com/shahboura/agents-opencode/compare/v1.4.0...v1.4.1) (2026-03-15)
 
@@ -26,7 +26,7 @@
 ### Bug Fixes
 
 * **release:** trigger patch release ([af5ecf3](https://github.com/shahboura/agents-opencode/commit/af5ecf3bac0d3ed70cc4bc0999e259ce527ae1cd))
-* installer backup redesign with readable sessions and restore hints ([#13](https://github.com/shahboura/agents-opencode/pull/13)) ([81e6952](https://github.com/shahboura/agents-opencode/commit/81e6952f17cfca66503a64010a7fb0dcb59ac7be))
+* installer backup redesign with readable sessions and restore hints ([#13](https://github.com/shahboura/agents-opencode/pull/13))
 
 ## [1.4.0](https://github.com/shahboura/agents-opencode/compare/v1.3.1...v1.4.0) (2026-03-15)
 
@@ -42,7 +42,7 @@
 
 * remove redundant package entrypoint files ([7438b49](https://github.com/shahboura/agents-opencode/commit/7438b4932022ff4266ce714a0024a8ff62dfeb69))
 
-## [1.3.0](https://github.com/shahboura/agents-opencode/compare/v1.2.2...v1.3.0) (2026-03-12)
+## [1.3.0](https://github.com/shahboura/agents-opencode/compare/agents-opencode-v1.2.2...v1.3.0) (2026-03-12)
 
 
 ### Features
@@ -102,7 +102,7 @@
 
 * trigger release pipeline for next patch ([40b26e2](https://github.com/shahboura/agents-opencode/commit/40b26e29789da0c8d723e33a95fc730644ec5c7f))
 
-## [1.2.0](https://github.com/shahboura/agents-opencode/compare/agents-opencode-v1.1.2...agents-opencode-v1.2.0) (2026-03-09)
+## [1.2.0](https://github.com/shahboura/agents-opencode/compare/v1.1.2...agents-opencode-v1.2.0) (2026-03-09)
 
 ### Features
 

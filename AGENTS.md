@@ -70,6 +70,33 @@ All documentation changes must:
 
 ## Milestones
 
+### 2026-04-25 12:51 - State contract and handoff packet workflow
+
+**Agent:** orchestrator
+**Summary:** Coordinated a state-management uplift to introduce structured working memory and deterministic handoff generation, then wired both into CI/doctor quality gates.
+- Added canonical session state contract (`state/session-state.json`) plus validator/test coverage (`validate-session-state.js`, `validate-session-state.test.js`) and local npm entrypoint (`validate:session`).
+- Added handoff generator/test coverage (`generate-handoff.js`, `generate-handoff.test.js`) with default output `handoff/latest.md` and local npm entrypoint (`handoff:generate`).
+- Integrated new CI gate (`validate-session-state`) to validate state, generate handoff output, and upload handoff artifact; propagated status into validation summary fail conditions.
+- Documentation integration pattern used: add dedicated `docs/state-management.md`, then link from docs index/README and extend compatibility matrix before full doctor/lint validation.
+
+### 2026-04-25 12:42 - Governance uplift: eval trend artifacts and migration policy
+
+**Agent:** orchestrator
+**Summary:** Coordinated a governance-focused follow-up to improve evaluation observability and formalize contract-change handling for agent/command evolution.
+- Added eval artifact workflow outputs by generating `evals/reports/latest.json` + `evals/reports/trend-summary.md` and uploading both in CI (`validate-agent-evals`).
+- Introduced baseline-vs-current trend comparator (`scripts/compare-eval-trend.js`) and seeded baseline fixture (`evals/fixtures/eval-trend-baseline.json`) for lightweight drift tracking.
+- Published `docs/deprecation-migration.md` with Level A/B/C change taxonomy, migration playbook, and required PR checklist for breaking/soft-deprecation flows.
+- Documentation alignment pattern used: wire scripts/workflows first, then update docs index + eval/compatibility pages + README links, followed by full doctor/lint validation.
+
+### 2026-04-25 12:32 - Roadmap closure: risk gating, changelog labels, and fixture hardening
+
+**Agent:** orchestrator
+**Summary:** Coordinated final roadmap completion by splitting work into cleanup + enforcement + fixture hardening phases, then validating each phase through doctor/CI-aligned checks.
+- Phase sequence used: decouple docs-link validator policy logic, implement risk-scored PR gate (`validate-risk-path`), enforce changelog capability labels (`validate-changelog`), then expand golden fixtures under `scripts/fixtures/`.
+- Workflow pattern that worked: small scoped commits per initiative (S11, S6, S2) with full validation after each step to keep failures localized and rollback simple.
+- CI governance strengthened by adding two explicit gates (`validate-risk-path`, `validate-changelog`) and wiring both into validation summary fail conditions.
+- Reliability lesson: keep negative test fixtures outside default docs crawl scope (exclude `scripts/fixtures`) so intentional broken-link fixtures do not pollute repository-wide docs validation.
+
 ### 2026-04-25 05:45 - Canonical agents migration and permission-first tightening
 
 **Agent:** orchestrator

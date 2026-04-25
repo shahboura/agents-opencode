@@ -12,6 +12,16 @@ const checks = [
     args: ['scripts/validate-agents.js'],
   },
   {
+    name: 'Validate command docs parity',
+    command: process.execPath,
+    args: ['scripts/validate-command-matrices.js'],
+  },
+  {
+    name: 'Run risk-path assessment tests',
+    command: process.execPath,
+    args: ['scripts/assess-risk-path.test.js'],
+  },
+  {
     name: 'Run installer lifecycle tests',
     command: process.execPath,
     args: ['scripts/test-installer.js'],
@@ -22,6 +32,16 @@ const checks = [
     args: ['scripts/validate-docs.js'],
   },
   {
+    name: 'Validate changelog capability labels',
+    command: process.execPath,
+    args: ['scripts/validate-changelog-labels.js'],
+  },
+  {
+    name: 'Validate session state',
+    command: process.execPath,
+    args: ['scripts/validate-session-state.js'],
+  },
+  {
     name: 'Run docs validator tests',
     command: process.execPath,
     args: ['scripts/validate-docs.test.js'],
@@ -30,6 +50,31 @@ const checks = [
     name: 'Run agent validator tests',
     command: process.execPath,
     args: ['scripts/validate-agents.test.js'],
+  },
+  {
+    name: 'Run agent eval harness',
+    command: process.execPath,
+    args: ['evals/harness/run-evals.js'],
+  },
+  {
+    name: 'Run agent eval harness tests',
+    command: process.execPath,
+    args: ['scripts/eval-harness.test.js'],
+  },
+  {
+    name: 'Run changelog validator tests',
+    command: process.execPath,
+    args: ['scripts/validate-changelog-labels.test.js'],
+  },
+  {
+    name: 'Run session-state validator tests',
+    command: process.execPath,
+    args: ['scripts/validate-session-state.test.js'],
+  },
+  {
+    name: 'Run handoff generator tests',
+    command: process.execPath,
+    args: ['scripts/generate-handoff.test.js'],
   },
   {
     name: 'Validate context size threshold',

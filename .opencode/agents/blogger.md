@@ -74,10 +74,14 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 
 **At session start:**
 1. Read `AGENTS.md` for project context and recent activity
-2. Review any prior content creation patterns and topics covered
+2. Read `state/session-state.json` for active goals/risks (if present)
+3. Read `handoff/latest.md` for continuation context (if present)
+4. Review any prior content creation patterns and topics covered
 
 **At task completion:**
-Update `AGENTS.md` with timestamped entry (latest first):
+1. Update `state/session-state.json` with content decisions, risks, and next actions (if state file is in use).
+2. Generate or refresh handoff packet using project tooling when content workflow phase changed.
+3. Then update `AGENTS.md` with timestamped entry (latest first):
 
 ```markdown
 ### YYYY-MM-DD HH:MM - [Brief Task Description]

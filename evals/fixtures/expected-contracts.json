@@ -1,0 +1,21 @@
+{
+  "planner": {
+    "requiredBodyPatterns": [
+      "read-only",
+      "no code edits"
+    ]
+  },
+  "orchestrator": {
+    "requiredBodyPatterns": [
+      "planning phase",
+      "await approval",
+      "safe execution loop protocol"
+    ]
+  },
+  "review": {
+    "requiredBodyPatterns": [
+      "verification gate",
+      "pass / pass-with-conditions / fail"
+    ]
+  }
+}

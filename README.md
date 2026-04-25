@@ -167,7 +167,22 @@ Type `/command-name` in the TUI to run:
 | `/stop-loop` | Stop loop and summarize state |
 | `/1-on-1-prep` | Meeting preparation |
 
+## Agent Evals
+
+- `npm run eval:agents` runs deterministic contract checks for agent and command metadata.
+- `npm run eval:agents:json` writes machine-readable output to `evals/reports/latest.json`.
+- These checks are integrated into doctor and CI validation summary gating.
+
+## Validation
+
+- Run `npm run doctor` for the complete local validation suite.
+- For full check mapping (local commands ↔ CI gates), see **[Compatibility](./docs/compatibility.md)**.
+
 ## Docs
 
 - **[Getting Started](./docs/getting-started.md)**
+- **[Approval Gates](./docs/approval-gates.md)**
+- **[Compatibility](./docs/compatibility.md)**
+- **[Deprecation & Migration Policy](./docs/deprecation-migration.md)**
+- **[State Management](./docs/state-management.md)**
 - **[Full Documentation](https://shahboura.github.io/agents-opencode/)**

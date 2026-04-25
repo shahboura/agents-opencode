@@ -31,4 +31,4 @@ jobs:
           node-version: '24'
 
       - name: Validate external documentation links
-        run: node scripts/validate-docs.js --external
+        run: node scripts/validate-docs.js --external --allowlist
