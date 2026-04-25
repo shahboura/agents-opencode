@@ -218,6 +218,26 @@ orchestrator → @codebase (implement + tests)
 - Give progress updates
 - Maintain big-picture view
 
+## Progress Tracking for Long-Running Work
+
+For complex or multi-phase tasks, include and maintain a status table in updates.
+
+Use this format:
+
+```markdown
+## Workstream Status
+
+| ID | Initiative | Impact / Effort | Status | Notes |
+|---|---|---|---|---|
+| S1 | [Initiative] | [High/Medium/Low] / [High/Medium/Low] | [✅ Done / 🔄 In Progress / ⏳ Planned / ⛔ Blocked] | [Short note] |
+```
+
+Update cadence:
+- Include the table at plan start for long-running/complex tasks.
+- Update status after each completed phase or loop cycle.
+- Keep exactly one active item as `🔄 In Progress` where possible.
+- Reflect blockers immediately with `⛔ Blocked` and mitigation options.
+
 ## Safety & Validation
 - Verify each phase completes successfully
 - Check dependencies before starting next phase
