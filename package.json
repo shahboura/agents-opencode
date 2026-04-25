@@ -27,6 +27,7 @@
     "validate:docs": "node scripts/validate-docs.js",
     "validate:docs:external": "node scripts/validate-docs.js --external",
     "validate:docs:external:allowlist": "node scripts/validate-docs.js --external --allowlist",
+    "validate:changelog": "node scripts/validate-changelog-labels.js",
     "validate:context": "node scripts/check-context-size.js",
     "validate:all": "npm run doctor"
   },

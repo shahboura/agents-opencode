@@ -32,6 +32,11 @@ const checks = [
     args: ['scripts/validate-docs.js'],
   },
   {
+    name: 'Validate changelog capability labels',
+    command: process.execPath,
+    args: ['scripts/validate-changelog-labels.js'],
+  },
+  {
     name: 'Run docs validator tests',
     command: process.execPath,
     args: ['scripts/validate-docs.test.js'],
@@ -50,6 +55,11 @@ const checks = [
     name: 'Run agent eval harness tests',
     command: process.execPath,
     args: ['scripts/eval-harness.test.js'],
+  },
+  {
+    name: 'Run changelog validator tests',
+    command: process.execPath,
+    args: ['scripts/validate-changelog-labels.test.js'],
   },
   {
     name: 'Validate context size threshold',

@@ -11,14 +11,14 @@
 
 ### Features
 
-* add bounded loop execution workflow (`/execution-loop`, `/stop-loop`) with loop protocol guidance across orchestrator/codebase/review agents
-* add `doctor` validation entrypoint and route `validate:all` through it
+* [capability:workflow] add bounded loop execution workflow (`/execution-loop`, `/stop-loop`) with loop protocol guidance across orchestrator/codebase/review agents
+* [capability:validation] add `doctor` validation entrypoint and route `validate:all` through it
 
 ### Bug Fixes
 
-* improve validation reliability by excluding `example/**` from markdown/docs checks and fixing Windows npm spawn behavior in doctor
-* migrate agent layout to canonical `.opencode/agents/` and align installer/validation/docs to the plural standard
-* add CI secret scanning to validation summary gating
+* [capability:validation] improve validation reliability by excluding `example/**` from markdown/docs checks and fixing Windows npm spawn behavior in doctor
+* [capability:agents] migrate agent layout to canonical `.opencode/agents/` and align installer/validation/docs to the plural standard
+* [capability:security] add CI secret scanning to validation summary gating
 
 ## [1.4.1](https://github.com/shahboura/agents-opencode/compare/v1.4.0...v1.4.1) (2026-03-15)
 

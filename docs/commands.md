@@ -71,6 +71,12 @@ Skills cannot be called directly from the TUI — they are invoked through agent
 - Medium/high changes require the PR template `Risk level` field to acknowledge at least that level.
 - Risk-path logic runs in CI via `validate-risk-path` and is covered by local regression tests (`npm run doctor`).
 
+### Changelog Capability Labels
+
+- Unreleased changelog bullets should be prefixed with `[capability:<label>]`.
+- Validate locally with `npm run validate:changelog`.
+- CI enforces this via the `validate-changelog` gate.
+
 ### Skill Selection Guardrails
 
 - Load skills on demand for matching tasks only.
