@@ -32,6 +32,16 @@ const checks = [
     args: ['scripts/validate-agents.test.js'],
   },
   {
+    name: 'Run agent eval harness',
+    command: process.execPath,
+    args: ['evals/harness/run-evals.js'],
+  },
+  {
+    name: 'Run agent eval harness tests',
+    command: process.execPath,
+    args: ['scripts/eval-harness.test.js'],
+  },
+  {
     name: 'Validate context size threshold',
     command: process.execPath,
     args: ['scripts/check-context-size.js', '--check'],
