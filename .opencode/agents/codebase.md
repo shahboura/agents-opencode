@@ -139,7 +139,7 @@ When implementation requires iteration, use a bounded verify-and-continue loop:
 
 **At task completion:**
 1. Update `state/session-state.json` with implementation decisions, open risks, and next actions.
-2. Generate handoff packet (`npm run handoff:generate`) when implementation phase meaningfully changed.
+2. Generate or refresh handoff packet using project tooling when implementation phase meaningfully changed.
 3. Then update `AGENTS.md` with timestamped entry (latest first):
 
 ```markdown

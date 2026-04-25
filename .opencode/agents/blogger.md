@@ -80,7 +80,7 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 
 **At task completion:**
 1. Update `state/session-state.json` with content decisions, risks, and next actions (if state file is in use).
-2. Generate handoff packet (`npm run handoff:generate`) when content workflow phase changed.
+2. Generate or refresh handoff packet using project tooling when content workflow phase changed.
 3. Then update `AGENTS.md` with timestamped entry (latest first):
 
 ```markdown

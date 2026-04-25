@@ -139,7 +139,7 @@ Urgent + Important: Do now | Important, not urgent: Schedule | Urgent, not impor
 
 **At task completion:**
 1. Update `state/session-state.json` with key recommendations, risks, and next actions.
-2. Generate handoff packet (`npm run handoff:generate`) when advisory state changed.
+2. Generate or refresh handoff packet using project tooling when advisory state changed.
 3. Then update `AGENTS.md` with timestamped entry (latest first, 3-5 bullets max):
 
 ```markdown

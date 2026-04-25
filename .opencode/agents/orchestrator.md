@@ -264,7 +264,7 @@ For iterative execution tasks, enforce a bounded loop:
 
 **At task completion:**
 1. Refresh `state/session-state.json` with current phase, risks, decisions, and next actions.
-2. Generate handoff packet (`npm run handoff:generate`) when phase state changed.
+2. Generate or refresh handoff packet using project tooling when phase state changed.
 3. Then update `AGENTS.md` with timestamped entry (latest first):
 
 ```markdown

@@ -184,7 +184,7 @@ After plan approval, recommend the appropriate agent to the user (manual handoff
 
 **At task completion:**
 1. Refresh `state/session-state.json` with planning decisions, risks, and recommended next actions.
-2. Generate handoff packet (`npm run handoff:generate`) when plan state changed.
+2. Generate or refresh handoff packet using project tooling when plan state changed.
 3. Then update `AGENTS.md` with timestamped entry (latest first):
 
 ```markdown
