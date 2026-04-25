@@ -167,6 +167,12 @@ Type `/command-name` in the TUI to run:
 | `/stop-loop` | Stop loop and summarize state |
 | `/1-on-1-prep` | Meeting preparation |
 
+## Agent Evals
+
+- `npm run eval:agents` runs deterministic contract checks for agent and command metadata.
+- `npm run eval:agents:json` writes machine-readable output to `evals/reports/latest.json`.
+- These checks are integrated into doctor and CI validation summary gating.
+
 ## Docs
 
 - **[Getting Started](./docs/getting-started.md)**
