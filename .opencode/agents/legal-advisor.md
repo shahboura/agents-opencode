@@ -58,7 +58,7 @@ Determine the applicable legal framework:
 - Religious law influences (Saudi Arabia, Iran, UAE, etc.)
 - Federal vs. unitary vs. supranational (EU directives vs. national implementation)
 
-Reference: `references/jurisdictions.md` in the `legal-advisor` skill for detailed profiles.
+Reference: `references/jurisdictions/` directory in the `legal-advisor` skill — load the specific country file needed.
 
 ### 3. Legal Research (IRAC Framework)
 

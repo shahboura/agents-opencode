@@ -56,7 +56,7 @@ Legal systems fall into broad categories that shape research approach:
 - **Religious Law:** Religious texts or principles inform the legal framework.
 - **Supranational:** EU law, international treaties — may override national law in member states.
 
-Reference: `references/jurisdictions.md` for country-specific legal system profiles.
+Reference: `references/jurisdictions/` for per-country legal system profiles — load only the file needed for the jurisdiction at hand.
 
 ## License & Compliance Checks
 
@@ -100,5 +100,9 @@ Reference: `references/jurisdictions.md` for country-specific legal system profi
 - [references/license-matrix.md](references/license-matrix.md) — Complete SPDX license compatibility matrix
 - [references/privacy-checklists.md](references/privacy-checklists.md) — GDPR, CCPA, HIPAA compliance checklists
 - [references/export-control.md](references/export-control.md) — Export control and sanctions guidance
-- [references/jurisdictions.md](references/jurisdictions.md) — Country legal system profiles and official sources
+- [references/jurisdictions/](references/jurisdictions/) — Per-country legal system profiles and official sources:
+  - `united-states.md`, `united-kingdom.md`, `canada.md`, `australia.md`, `india.md`
+  - `european-union.md`, `germany.md`, `france.md`, `japan.md`, `brazil.md`, `china.md`
+  - `south-africa.md`, `scotland.md`, `quebec.md`, `saudi-arabia.md`, `united-arab-emirates.md`, `malaysia.md`
+  - `international.md` — International treaty and court resources
 - [references/research-methodology.md](references/research-methodology.md) — IRAC framework and source evaluation
