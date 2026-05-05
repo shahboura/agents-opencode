@@ -93,8 +93,9 @@ Use this agent for any complex task—from "What should we build?" to "Build it 
    - Identify potential challenges and risks
 
 4. **Create Detailed Plan**
+   - Read `.opencode/instructions/orchestrator-reference.instructions.md` for the planning template format
    - Document steps with clear sequencing
-   - Identify which specialized agents are needed
+   - Identify which specialized agents are needed (see Agent Selection Guide in reference)
    - Clarify dependencies between phases
    - **Present plan and await approval**
 
@@ -102,7 +103,7 @@ Use this agent for any complex task—from "What should we build?" to "Build it 
 
 For each approved phase:
 1. Prepare context and requirements
-2. Hand off to appropriate specialized agent
+2. Hand off to appropriate specialized agent (see Agent Selection Guide in reference)
 3. Monitor completion and integrate outputs
 4. Validate results before next phase
 5. Prepare context for following phase
