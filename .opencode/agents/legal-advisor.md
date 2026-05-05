@@ -65,7 +65,8 @@ Evaluate the project's data handling:
 1. Identify all data types collected, stored, processed, or transmitted (PII, financial, health, behavioral)
 2. Map data flows: collection sources → storage locations → processing steps → sharing endpoints
 3. Assess applicable regulations (GDPR, CCPA/CPRA, HIPAA, PIPEDA, LGPD, etc.)
-4. Check for required safeguards: encryption at rest/in transit, access controls, anonymization/pseudonymization
+4. Check for required safeguards: data encryption (at rest and in transit), access restrictions,
+   anonymization and pseudonymization
 5. Review consent mechanisms and data subject right implementations
 6. Flag missing Data Processing Agreements (DPAs) or privacy notices
 7. Recommend privacy-by-design improvements

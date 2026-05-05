@@ -7,7 +7,8 @@ description: Install the agents-opencode pack via the OpenCode plugin system or 
 
 # Plugin Installation
 
-The agents-opencode pack supports two installation methods: the OpenCode plugin system (recommended for OpenCode runtime integration) and the traditional npx/npm method.
+The agents-opencode pack supports two installation methods: the OpenCode plugin system
+and the traditional npx/npm method.
 
 ## Via OpenCode Plugin (Recommended)
 
@@ -68,7 +69,8 @@ Run the status command to check detected installation scopes:
 npx agents-opencode --status
 ```
 
-Or confirm the plugin is active by running `/legal-review test` — if the `legal-advisor` agent responds, the pack is installed correctly.
+Or confirm the plugin is active: run `/legal-review test`. If the `legal-advisor` agent
+responds, the pack is installed correctly.
 
 ## Update Behavior
 
