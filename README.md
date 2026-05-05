@@ -87,9 +87,15 @@ opencode
 @orchestrator Build a REST API with JWT auth
 ```
 
-## Plugin Installation
+## Installation
 
-### Via OpenCode Plugin
+### npx (Recommended)
+
+```bash
+npx agents-opencode --global
+```
+
+### OpenCode Plugin (Alternative)
 
 Add to your `opencode.json`:
 
