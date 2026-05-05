@@ -14,241 +14,46 @@ description: Java Spring Boot best practices with dependency injection, validati
 
 ## Dependency Injection
 
-**Constructor injection only:**
-```java
-@Service
-public class UserService {
-
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-}
-```
-
-**Avoid field injection:**
-```java
-// ❌ Bad
-@Autowired
-private UserRepository userRepository;
-
-// ✅ Good - Constructor injection
-```
+**Constructor injection only.** Avoid `@Autowired` field injection — it hides dependencies and complicates testing. Declare dependencies as `private final` fields initialized via the constructor.
 
 ## Entity Design
 
-**Use JPA annotations properly:**
-```java
-@Entity
-@Table(name = "users")
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @Column(nullable = false)
-    private String password;
-
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-
-    // Constructors, getters, setters
-}
-```
+Use JPA annotations on entity classes: `@Entity`, `@Table`, `@Id`, `@GeneratedValue(strategy = GenerationType.IDENTITY)`. Mark timestamps with `@CreationTimestamp` / `@UpdateTimestamp`. Constrain columns with `@Column(nullable = false, unique = true)`.
 
 ## DTOs and Records
 
-**Use records for immutable DTOs:**
-```java
-// Java 14+ record
-public record UserDto(
-    Long id,
-    String email,
-    String name,
-    LocalDateTime createdAt
-) {
-    // Automatic constructor, getters, equals, hashCode, toString
-}
-
-// For complex DTOs
-public record CreateUserRequest(
-    @NotBlank @Email String email,
-    @NotBlank @Size(min = 8) String password,
-    @NotBlank String name
-) {}
-```
+Prefer Java records for immutable DTOs (Java 14+). Apply Bean Validation annotations (`@NotBlank`, `@Email`, `@Size`) directly on record components. Create dedicated request/response record types per operation.
 
 ## Validation
 
-**Use Bean Validation:**
-```java
-@RestController
-@RequestMapping("/api/users")
-@Validated
-public class UserController {
-
-    @PostMapping
-    public ResponseEntity<UserDto> createUser(@Valid @RequestBody CreateUserRequest request) {
-        User user = userService.createUser(request);
-        return ResponseEntity.created(uri).body(userMapper.toDto(user));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUser(@PathVariable @Min(1) Long id) {
-        return userService.findById(id)
-            .map(userMapper::toDto)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
-    }
-}
-```
+Annotate controllers with `@Validated` and request bodies with `@Valid`. Validate path/query parameters with `@Min`, `@Positive`, etc. Return proper `ResponseEntity` with appropriate status codes (`created`, `ok`, `notFound`).
 
 ## Error Handling
 
-**Use ControllerAdvice for global error handling:**
-```java
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponse("User not found", ex.getMessage()));
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = ex.getBindingResult()
-            .getFieldErrors()
-            .stream()
-            .collect(Collectors.toMap(
-                FieldError::getField,
-                FieldError::getDefaultMessage
-            ));
-
-        return ResponseEntity.badRequest()
-            .body(new ErrorResponse("Validation failed", errors));
-    }
-}
-```
+Use `@RestControllerAdvice` with `@ExceptionHandler` methods per exception type. Return a consistent `ErrorResponse` structure. For validation failures, extract field errors from `BindingResult` via `getFieldErrors()`.
 
 ## Testing
 
-**Use Spring Boot Test with JUnit 5:**
-```java
-@SpringBootTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class UserServiceTest {
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Test
-    void shouldCreateUserSuccessfully() {
-        // Given
-        CreateUserRequest request = new CreateUserRequest(
-            "test@example.com", "password123", "Test User"
-        );
-
-        // When
-        User user = userService.createUser(request);
-
-        // Then
-        assertThat(user.getId()).isNotNull();
-        assertThat(user.getEmail()).isEqualTo("test@example.com");
-    }
-
-    @Test
-    void shouldThrowExceptionWhenUserNotFound() {
-        // When & Then
-        assertThatThrownBy(() -> userService.findById(999L))
-            .isInstanceOf(UserNotFoundException.class)
-            .hasMessage("User not found with id: 999");
-    }
-}
-```
+Use `@SpringBootTest` with JUnit 5. Follow Given/When/Then pattern. Use AssertJ's `assertThat` for fluent assertions and `assertThatThrownBy` for exception verification. Use `@MockBean` for external dependencies.
 
 ## Repository Pattern
 
-**Use Spring Data JPA:**
-```java
-@Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-
-    Optional<User> findByEmail(String email);
-
-    @Query("SELECT u FROM User u WHERE u.createdAt > :since")
-    List<User> findRecentUsers(@Param("since") LocalDateTime since);
-
-    @Modifying
-    @Query("UPDATE User u SET u.lastLoginAt = :now WHERE u.id = :id")
-    int updateLastLogin(@Param("id") Long id, @Param("now") LocalDateTime now);
-}
-```
+Extend `JpaRepository<T, ID>` for standard CRUD. Add custom finders following Spring Data method naming. Use `@Query` with JPQL for complex queries and `@Modifying` for update/delete operations. Pass `@Param` annotations for named parameters.
 
 ## Configuration
 
-**Use application.yml for configuration:**
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/myapp
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: false
-
-logging:
-  level:
-    com.example.myapp: DEBUG
-    org.springframework.security: TRACE
-```
+Use `application.yml` with structured profiles. Reference environment variables via `${VAR_NAME}`. In production: `ddl-auto: validate`, `show-sql: false`. Add logging level overrides per package.
 
 ## Security
 
-**Use Spring Security properly:**
-```java
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig {
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
-            .csrf(csrf -> csrf.disable()) // For APIs, consider enabling
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .build();
-    }
-}
-```
+Define a `SecurityFilterChain` bean. For stateless APIs use `SessionCreationPolicy.STATELESS`. Add JWT filter before `UsernamePasswordAuthenticationFilter`. Use `@PreAuthorize` for method-level fine-grained authorization.
 
 ## Best Practices
 
 ### Code Organization
-- Keep controllers thin (only HTTP concerns)
-- Put business logic in services
-- Use repositories for data access
+- Keep controllers thin — only HTTP concerns
+- Put business logic in service layer
+- Use repositories for data access only
 - Create custom exceptions for business errors
 
 ### Performance
@@ -260,7 +65,6 @@ public class SecurityConfig {
 ### Maintainability
 - Write descriptive method names
 - Add JavaDoc for public APIs
-- Use meaningful variable names
 - Keep methods small and focused
 
 ## Validation Commands
@@ -281,3 +85,5 @@ public class SecurityConfig {
 # Run with profile
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
+
+For detailed examples and extended guidance, see [java-spring-boot-reference.instructions.md](java-spring-boot-reference.instructions.md).
