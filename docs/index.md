@@ -3,7 +3,7 @@ layout: default
 title: Home
 nav_order: 1
 permalink: /
-description: Lean OpenCode agents pack with 8 specialized agents, core language/domain skills, and slash commands.
+description: Lean OpenCode agents pack with 9 specialized agents, core language/domain skills, and slash commands.
 keywords: opencode, ai agents, code generation, development workflow, .NET, Python, TypeScript, Flutter, code review, documentation
 ---
 
@@ -40,6 +40,16 @@ Quick jump: [Agents](agents/README) · [Skills Matrix](skills-matrix) · [Comman
 
    OpenCode runtime command: `opencode`
 
+3. Plugin install (alternative):
+
+   Add to your `opencode.json`:
+
+   ```json
+   { "plugin": ["agents-opencode"] }
+   ```
+
+   Then restart OpenCode or run `/reload-plugins`.
+
 ## Agents
 
 | Agent | Best For |
@@ -52,6 +62,7 @@ Quick jump: [Agents](agents/README) · [Skills Matrix](skills-matrix) · [Comman
 | `@em-advisor` | EM/leadership guidance |
 | `@blogger` | Blog/video/podcast drafting |
 | `@brutal-critic` | Final content quality gate |
+| `@legal-advisor` | License auditing, IP review, data privacy assessment, regulatory guidance |
 
 Canonical source for exact allowlists and skill triggers: [Skills Matrix](skills-matrix).
 
@@ -79,3 +90,5 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](skills
 
 - Keep core-only scope for now.
 - Add new skills only when there is clear demand, a real gap, ownership, and clean licensing.
+
+*Last updated: 2026-05-05*

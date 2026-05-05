@@ -3,7 +3,7 @@ layout: default
 title: Agents
 nav_order: 3
 has_children: false
-description: Overview of the 8 built-in OpenCode agents and their recommended workflow.
+description: Overview of the 9 built-in OpenCode agents and their recommended workflow.
 ---
 # Agents
 
@@ -27,6 +27,7 @@ Lean reference for the built-in agents.
 | `@em-advisor` | Engineering leadership guidance |
 | `@blogger` | Blog/video/podcast drafts |
 | `@brutal-critic` | Final content quality gate |
+| `@legal-advisor` | License auditing, IP review, data privacy assessment, regulatory guidance |
 
 Canonical source for exact allowlists and skill triggers: [Skills Matrix](../skills-matrix).
 

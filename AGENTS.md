@@ -70,6 +70,14 @@ All documentation changes must:
 
 ## Milestones
 
+### 2026-05-05 00:00 - v2.0.0 Uplift: Plugin compatibility, legal-advisor, memory optimization
+
+**Agent:** orchestrator
+**Summary:** Coordinated a major version uplift adding OpenCode runtime plugin compatibility, a new legal-advisor agent, and memory/context optimizations.
+- 9-phase execution spanning obsolete code removal, instruction file progressive disclosure refactoring, OpenCode runtime plugin creation, skills standardization, legal-advisor agent/skill/command addition, existing agent best-practice updates, memory state contract enhancement, and full documentation refresh.
+- Key pattern: split large instruction files (283→57 lines) using progressive disclosure; modularized install.js (1494→1030 lines) into testable lib modules; created runtime plugin with compaction hooks for context survival.
+- Lessons learned: progressive disclosure reduces per-session context budget by ~65% for instruction files; plugin-layer compaction hooks are critical for preserving agent context across session boundaries.
+
 ### 2026-04-25 12:51 - State contract and handoff packet workflow
 
 **Agent:** orchestrator

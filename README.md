@@ -87,6 +87,18 @@ opencode
 @orchestrator Build a REST API with JWT auth
 ```
 
+## Plugin Installation
+
+### Via OpenCode Plugin
+
+Add to your `opencode.json`:
+
+```json
+{ "plugin": ["agents-opencode"] }
+```
+
+Then restart OpenCode or run `/reload-plugins`.
+
 ## Agents
 
 | Agent | Best For |
@@ -99,6 +111,7 @@ opencode
 | `@em-advisor` | EM/leadership guidance |
 | `@blogger` | Blog/video/podcast drafting |
 | `@brutal-critic` | Final content quality gate |
+| `@legal-advisor` | License auditing, IP review, data privacy assessment, regulatory guidance |
 
 Canonical source for exact allowlists and skill triggers: [Skills Matrix](./docs/skills-matrix.md)
 
