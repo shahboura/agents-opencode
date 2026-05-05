@@ -36,8 +36,10 @@ permission:
     "brutal-critic": "allow"
   task:
     "*": "deny"
+    "codebase": "allow"
     "docs": "allow"
     "review": "allow"
+    "planner": "allow"
     "brutal-critic": "allow"
     "legal-advisor": "allow"
     "general": "allow"
