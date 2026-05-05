@@ -260,7 +260,7 @@ function main() {
   log(colors.green, `Found ${agentFiles.length} agent files\n`);
 
   const requiredFields = ['description', 'mode'];
-  const validModes = ['primary', 'secondary', 'utility', 'subagent'];
+  const validModes = ['primary', 'secondary', 'utility', 'subagent', 'all'];
 
   for (const record of agentRecords) {
     const file = { name: record.name, fullPath: record.fullPath };
@@ -285,7 +285,7 @@ function main() {
     if (modeMatch) {
       const mode = modeMatch[1].trim();
       if (!validModes.includes(mode)) {
-        warnings.push(`${file.name}: Unusual mode value: '${mode}' (expected: primary, secondary, utility, or subagent)`);
+        warnings.push(`${file.name}: Unusual mode value: '${mode}' (expected: primary, secondary, utility, subagent, or all)`);
       }
     }
 
