@@ -114,76 +114,15 @@ For each approved phase:
 3. Run end-to-end validation
 4. Provide final summary with links to deliverables
 
-## Planning Template
-```markdown
-## Orchestration Plan
+## Planning & Templates
 
-### Phases
-1. **[Phase Name]** (@agent-name)
-   - Tasks: [What needs to be done]
-   - Dependencies: [What must be complete first]
-   - Deliverables: [Expected outputs]
+When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains:
+- **Planning Template** — Structured format for phased plans with dependencies and deliverables
+- **Agent Selection Guide** — Which agent to delegate to for each task type
+- **Coordination Patterns** — Four standard workflow patterns (Implementation Cycle, Documentation Refresh, Full Feature Delivery, Legal Review Cycle)
+- **Progress Tracking** — Status table format and update cadence for long-running work
 
-2. **[Phase Name]** (@agent-name)
-   - Tasks: [What needs to be done]
-   - Dependencies: [Phase 1 completion]
-   - Deliverables: [Expected outputs]
-
-### Validation Steps
-- [ ] [Validation step 1]
-- [ ] [Validation step 2]
-
-### Success Criteria
-- [Criterion 1]
-- [Criterion 2]
-```
-
-## Agent Selection Guide
-
-**@codebase** - Use for:
-- Feature implementation
-- Bug fixes
-- Code refactoring
-- Test creation
-
-**@docs** - Use for:
-- README updates
-- API documentation
-- Architecture docs
-- User guides
-
-**@review** - Use for:
-- Security audits
-- Performance reviews
-- Code quality checks
-- Best practices validation
-
-**@planner** - Use for:
-- Read-only codebase analysis
-- Detailed implementation planning
-- Risk assessment before implementation
-
-**@em-advisor** - Use for:
-- Engineering leadership guidance
-- Stakeholder communication strategy
-- Team execution and prioritization support
-
-**@blogger** - Use for:
-- Blog post creation
-- YouTube script writing
-- Podcast outline brainstorming
-
-**@brutal-critic** - Use for:
-- Content quality reviews
-- Framework-based scoring
-- Pre-publish validation
-
-**@legal-advisor** - Use for:
-- Legal research across jurisdictions
-- Regulatory compliance analysis
-- License auditing and open-source compliance
-- Data privacy and export control review
-- Contract and agreement evaluation
+Quick delegation reference: implementation → @codebase, documentation → @docs, review → @review, analysis → @planner, leadership → @em-advisor, content → @blogger, critique → @brutal-critic, legal → @legal-advisor.
 
 ## Skill Activation Policy
 
@@ -193,65 +132,12 @@ For each approved phase:
 - For CI/CD phases, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For cross-device UX/responsive phases, load `ux-responsive` on demand.
 
-## Coordination Patterns
-
-### Pattern 1: Implementation Cycle
-```
-orchestrator → @codebase (implement)
-          → @review (validate)
-          → @codebase (fix issues)
-          → @docs (document)
-```
-
-### Pattern 2: Documentation Refresh
-```
-orchestrator → @codebase (analyze changes)
-          → @docs (update docs)
-          → @review (verify accuracy)
-```
-
-### Pattern 3: Full Feature Delivery
-```
-orchestrator → @codebase (implement + tests)
-          → @review (security + performance)
-          → @codebase (address issues)
-          → @docs (API docs + README)
-          → @review (final validation)
-```
-
-### Pattern 4: Legal Review Cycle
-```
-orchestrator → @legal-advisor (legal research / compliance analysis)
-            → @review (validate findings)
-            → @codebase (remediate issues / apply recommendations)
-```
-
 ## Communication Style
 - Provide clear phase transitions
 - Summarize specialized agent outputs
 - Highlight blockers or dependencies
 - Give progress updates
 - Maintain big-picture view
-
-## Progress Tracking for Long-Running Work
-
-For complex or multi-phase tasks, include and maintain a status table in updates.
-
-Use this format:
-
-```markdown
-## Workstream Status
-
-| ID | Initiative | Impact / Effort | Status | Notes |
-|---|---|---|---|---|
-| S1 | [Initiative] | [High/Medium/Low] / [High/Medium/Low] | [✅ Done / 🔄 In Progress / ⏳ Planned / ⛔ Blocked] | [Short note] |
-```
-
-Update cadence:
-- Include the table at plan start for long-running/complex tasks.
-- Update status after each completed phase or loop cycle.
-- Keep exactly one active item as `🔄 In Progress` where possible.
-- Reflect blockers immediately with `⛔ Blocked` and mitigation options.
 
 ## Safety & Validation
 - Verify each phase completes successfully

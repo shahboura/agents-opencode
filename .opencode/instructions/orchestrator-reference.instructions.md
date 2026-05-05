@@ -1,0 +1,134 @@
+---
+description: Orchestrator reference — planning templates, agent selection guide, coordination patterns, and progress tracking
+---
+
+# Orchestrator Reference
+
+Loaded on demand when the orchestrator needs to create plans, delegate tasks, or track progress.
+
+## Planning Template
+
+Use this format when creating a multi-phase plan:
+
+```markdown
+## Orchestration Plan
+
+### Phases
+1. **[Phase Name]** (@agent-name)
+   - Tasks: [What needs to be done]
+   - Dependencies: [What must be complete first]
+   - Deliverables: [Expected outputs]
+
+2. **[Phase Name]** (@agent-name)
+   - Tasks: [What needs to be done]
+   - Dependencies: [Phase 1 completion]
+   - Deliverables: [Expected outputs]
+
+### Validation Steps
+- [ ] [Validation step 1]
+- [ ] [Validation step 2]
+
+### Success Criteria
+- [Criterion 1]
+- [Criterion 2]
+```
+
+## Agent Selection Guide
+
+**@codebase** - Use for:
+- Feature implementation
+- Bug fixes
+- Code refactoring
+- Test creation
+
+**@docs** - Use for:
+- README updates
+- API documentation
+- Architecture docs
+- User guides
+
+**@review** - Use for:
+- Security audits
+- Performance reviews
+- Code quality checks
+- Best practices validation
+
+**@planner** - Use for:
+- Read-only codebase analysis
+- Detailed implementation planning
+- Risk assessment before implementation
+
+**@em-advisor** - Use for:
+- Engineering leadership guidance
+- Stakeholder communication strategy
+- Team execution and prioritization support
+
+**@blogger** - Use for:
+- Blog post creation
+- YouTube script writing
+- Podcast outline brainstorming
+
+**@brutal-critic** - Use for:
+- Content quality reviews
+- Framework-based scoring
+- Pre-publish validation
+
+**@legal-advisor** - Use for:
+- Legal research across jurisdictions
+- Regulatory compliance analysis
+- License auditing and open-source compliance
+- Data privacy and export control review
+- Contract and agreement evaluation
+
+## Coordination Patterns
+
+### Pattern 1: Implementation Cycle
+```
+orchestrator → @codebase (implement)
+          → @review (validate)
+          → @codebase (fix issues)
+          → @docs (document)
+```
+
+### Pattern 2: Documentation Refresh
+```
+orchestrator → @codebase (analyze changes)
+          → @docs (update docs)
+          → @review (verify accuracy)
+```
+
+### Pattern 3: Full Feature Delivery
+```
+orchestrator → @codebase (implement + tests)
+          → @review (security + performance)
+          → @codebase (address issues)
+          → @docs (API docs + README)
+          → @review (final validation)
+```
+
+### Pattern 4: Legal Review Cycle
+```
+orchestrator → @legal-advisor (legal research / compliance analysis)
+            → @review (validate findings)
+            → @codebase (remediate issues / apply recommendations)
+```
+
+## Progress Tracking for Long-Running Work
+
+For complex or multi-phase tasks, include and maintain a status table in updates.
+
+Use this format:
+
+```markdown
+## Workstream Status
+
+| ID | Initiative | Impact / Effort | Status | Notes |
+|---|---|---|---|---|
+| S1 | [Initiative] | [High/Medium/Low] / [High/Medium/Low] | [✅ Done / 🔄 In Progress / ⏳ Planned / ⛔ Blocked] | [Short note] |
+```
+
+Update cadence:
+- Include the table at plan start for long-running/complex tasks.
+- Update status after each completed phase or loop cycle.
+- Keep exactly one active item as `🔄 In Progress` where possible.
+- Reflect blockers immediately with `⛔ Blocked` and mitigation options.
