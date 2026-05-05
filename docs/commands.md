@@ -26,6 +26,7 @@ Most commands accept an optional argument to scope the task:
 | `/generate-tests` | `[file, class, or function name]` | Generate targeted tests |
 | `/plan-project` | `[feature, objective, or epic]` | Multi-phase implementation plan |
 | `/execution-loop` | `[task goal or deliverable]` | Bounded verify-and-continue execution loop |
+| `/legal-review` | `[dependency, file, or scope]` | Review licenses, compliance, and data privacy |
 | `/refactor-plan` | `[target module, file, or scope]` | Safe staged refactor strategy |
 | `/security-audit` | `[scope, file, component, or 'full project']` | Security-focused code review |
 | `/stop-loop` | `[optional reason or scope]` | Halt loop execution and report state |

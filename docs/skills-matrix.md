@@ -78,4 +78,4 @@ Arguments passed in `/command-name [argument]` are forwarded to the command body
 | `/security-audit` | `review` | `[scope, file, component, or 'full project']` | Security-focused code and config review |
 | `/stop-loop` | `orchestrator` | `[optional reason or scope]` | Halt loop execution and report current state |
 | `/blog-post` | `blogger` | `[topic or title]` | Draft a blog post |
-| `/legal-review` | `legal-advisor` | `[file, dependency, or scope]` | Review licenses, compliance, and data privacy |
+| `/legal-review` | `legal-advisor` | `[dependency, file, or scope]` | Review licenses, compliance, and data privacy |
