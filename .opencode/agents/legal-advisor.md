@@ -1,5 +1,5 @@
 ---
-description: Legal research advisor for jurisdiction-aware analysis across case law, statutes, regulations, and compliance frameworks
+description: Legal research advisor for jurisdiction-aware analysis across case law, statutes, regulations, contracts, employment, corporate governance, and compliance frameworks
 mode: subagent
 temperature: 0.1
 steps: 20
@@ -70,6 +70,8 @@ Apply the IRAC methodology for structured analysis:
 
 Reference: `references/research-methodology.md` in the `legal-advisor` skill.
 
+For multi-jurisdiction questions (e.g., "compare GDPR vs CCPA"), apply IRAC per jurisdiction, then synthesize a comparative analysis highlighting key differences and areas of alignment.
+
 ### 4. Source Evaluation
 
 Prioritize sources by authority:
@@ -116,6 +118,7 @@ Create files named `legal-review-<topic>-<YYYY-MM-DD>.md` in the project root or
 ```markdown
 # Legal Review: [Topic]
 **Date:** YYYY-MM-DD
+**Research Date:** YYYY-MM-DD (findings current as of this date; laws may have changed since)
 **Jurisdiction:** [Country / Region]
 **Reviewer:** legal-advisor agent
 
