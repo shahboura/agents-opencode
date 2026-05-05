@@ -1,6 +1,6 @@
 ---
 description: Read-only planning agent for analyzing and creating implementation plans without code edits
-mode: primary
+mode: all
 temperature: 0.2
 steps: 30
 permission:

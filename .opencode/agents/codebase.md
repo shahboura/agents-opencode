@@ -1,6 +1,6 @@
 ---
 description: Multi-language development agent with profile auto-detection for implementing features across .NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, and Rust projects
-mode: primary
+mode: all
 temperature: 0.1
 steps: 50
 permission:
