@@ -179,10 +179,11 @@ For each approved phase:
 - Pre-publish validation
 
 **@legal-advisor** - Use for:
-- License compliance auditing
-- Data privacy review
-- Export control screening
-- IP and copyright analysis
+- Legal research across jurisdictions
+- Regulatory compliance analysis
+- License auditing and open-source compliance
+- Data privacy and export control review
+- Contract and agreement evaluation
 
 ## Skill Activation Policy
 
@@ -220,9 +221,9 @@ orchestrator → @codebase (implement + tests)
 
 ### Pattern 4: Legal Review Cycle
 ```
-orchestrator → @legal-advisor (license audit / compliance check)
+orchestrator → @legal-advisor (legal research / compliance analysis)
             → @review (validate findings)
-            → @codebase (remediate issues)
+            → @codebase (remediate issues / apply recommendations)
 ```
 
 ## Communication Style
