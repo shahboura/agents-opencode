@@ -104,9 +104,9 @@ Use this agent for any complex task—from "What should we build?" to "Build it 
 For each approved phase:
 1. Prepare context and requirements
 2. Hand off to appropriate specialized agent (see Agent Selection Guide in reference)
-3. Monitor completion and integrate outputs
-4. Validate results before next phase
-5. Prepare context for following phase
+3. Follow the coordination pattern from the reference file that matches the task type
+4. Monitor completion and integrate outputs
+5. Validate results before next phase
 
 ### Integration & Validation
 
@@ -153,6 +153,7 @@ For iterative execution tasks, enforce a bounded loop:
 - Define explicit completion criteria before implementation starts.
 - Execute in bounded cycles (default max: 5): plan step -> implement -> validate -> assess.
 - Report cycle progress with remaining gaps after each cycle.
+- For long-running tasks, use the Progress Tracking status table format from the reference file.
 - If the same blocker repeats twice without meaningful progress, pause and escalate with options.
 - For high-risk changes (security, broad refactor, CI/CD), require an independent verification pass (`@review`) before final completion.
 
