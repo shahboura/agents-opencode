@@ -462,6 +462,7 @@ function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite) {
     const patch = {
         createdFile: false,
         addedPermissionKeys: [],
+        addedPluginEntries: [],
         createdSchema: false,
         skipped: false,
         changed: false,
@@ -478,6 +479,9 @@ function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite) {
         patch.changed = true;
         if (isObject(sourceConfigForInstall.permission)) {
             patch.addedPermissionKeys = Object.keys(sourceConfigForInstall.permission);
+        }
+        if (Array.isArray(sourceConfigForInstall.plugin)) {
+            patch.addedPluginEntries = [...sourceConfigForInstall.plugin];
         }
         patch.createdSchema = !!sourceConfigForInstall.$schema;
         return patch;
@@ -504,6 +508,20 @@ function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite) {
                     patch.addedPermissionKeys.push(key);
                     patch.changed = true;
                 }
+            }
+        }
+    }
+
+    // Merge plugin entries: add source plugins not already present
+    if (Array.isArray(sourceConfigForInstall.plugin)) {
+        if (!Array.isArray(existing.plugin)) {
+            existing.plugin = [];
+        }
+        for (const entry of sourceConfigForInstall.plugin) {
+            if (!existing.plugin.includes(entry)) {
+                existing.plugin.push(entry);
+                patch.addedPluginEntries.push(entry);
+                patch.changed = true;
             }
         }
     }
