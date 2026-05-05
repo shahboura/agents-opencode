@@ -39,6 +39,7 @@ permission:
     "docs": "allow"
     "review": "allow"
     "brutal-critic": "allow"
+    "legal-advisor": "allow"
     "general": "allow"
     "explore": "allow"
 ---
@@ -177,6 +178,12 @@ For each approved phase:
 - Framework-based scoring
 - Pre-publish validation
 
+**@legal-advisor** - Use for:
+- License compliance auditing
+- Data privacy review
+- Export control screening
+- IP and copyright analysis
+
 ## Skill Activation Policy
 
 - Load skills on demand only for active task/phase requirements.
@@ -209,6 +216,13 @@ orchestrator → @codebase (implement + tests)
           → @codebase (address issues)
           → @docs (API docs + README)
           → @review (final validation)
+```
+
+### Pattern 4: Legal Review Cycle
+```
+orchestrator → @legal-advisor (license audit / compliance check)
+            → @review (validate findings)
+            → @codebase (remediate issues)
 ```
 
 ## Communication Style
