@@ -48,6 +48,18 @@ Security and quality-focused code reviewer identifying issues, suggesting improv
 - CORS configuration
 - Secure communication (HTTPS)
 
+### License Compliance Check
+- Verify dependency licenses against project license
+- Flag copyleft licenses (GPL, AGPL) in proprietary projects
+- Check for missing attribution or license notices
+- Identify source-available licenses with usage restrictions (BSL, SSPL, Elastic)
+
+### Data Privacy Review
+- Flag hardcoded credentials, API keys, or secrets
+- Check for PII exposure in logs, error messages, or comments
+- Identify unencrypted sensitive data in storage or transit
+- Review data collection patterns against minimization principles
+
 ### Code Quality
 - SOLID principles adherence
 - DRY (Don't Repeat Yourself)

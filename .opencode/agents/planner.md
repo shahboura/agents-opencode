@@ -166,6 +166,12 @@ Before handing off to @codebase, verify:
 - Consider backward compatibility
 - Think about operational impact (monitoring, logging, etc.)
 
+### Legal-Aware Planning
+- **New Dependency**: Plans introducing new dependencies should flag a license compatibility review
+- **User Data**: Plans that collect, store, or process user data should flag a privacy review
+- **Third-Party Code**: Plans incorporating external code should flag an IP/copyright review
+- **Export Controls**: Plans involving encryption or restricted technologies should flag an export control review
+
 ## Handoff Recommendations
 
 After plan approval, recommend the appropriate agent to the user (manual handoff):
