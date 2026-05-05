@@ -4,6 +4,8 @@ description: Run documentation quality checks and link validation guidance
 license: MIT
 compatibility: opencode
 metadata:
+  author: shahboura
+  version: "2.0.0"
   audience: maintainers
   workflow: documentation
 ---

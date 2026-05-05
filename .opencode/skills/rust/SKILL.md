@@ -4,6 +4,8 @@ description: Rust best practices with ownership, error handling, and performance
 license: MIT
 compatibility: opencode
 metadata:
+  author: shahboura
+  version: "2.0.0"
   audience: developers
   workflow: development
 ---

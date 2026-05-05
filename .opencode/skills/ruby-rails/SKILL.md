@@ -4,6 +4,8 @@ description: Ruby on Rails best practices with MVC, ActiveRecord, and testing
 license: MIT
 compatibility: opencode
 metadata:
+  author: shahboura
+  version: "2.0.0"
   audience: developers
   workflow: development
 ---

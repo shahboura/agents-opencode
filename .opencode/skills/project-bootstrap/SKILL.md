@@ -4,6 +4,8 @@ description: Create baseline OpenCode project context and AGENTS.md scaffold
 license: MIT
 compatibility: opencode
 metadata:
+  author: shahboura
+  version: "2.0.0"
   audience: maintainers
   workflow: initialization
 ---

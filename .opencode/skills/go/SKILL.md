@@ -4,6 +4,8 @@ description: Go best practices for modules, error handling, concurrency, and tes
 license: MIT
 compatibility: opencode
 metadata:
+  author: shahboura
+  version: "2.0.0"
   audience: developers
   workflow: development
 ---
