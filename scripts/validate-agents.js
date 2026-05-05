@@ -89,17 +89,12 @@ function parsePermissionMap(block, indent = 4) {
 }
 
 function resolveAgentDirectory(repoRoot) {
-  const pluralAgentDir = path.join(repoRoot, '.opencode', 'agents');
-  if (fs.existsSync(pluralAgentDir)) {
-    return { dir: pluralAgentDir, legacy: false };
+  const agentDir = path.join(repoRoot, '.opencode', 'agents');
+  if (fs.existsSync(agentDir)) {
+    return { dir: agentDir };
   }
 
-  const legacyAgentDir = path.join(repoRoot, '.opencode', 'agent');
-  if (fs.existsSync(legacyAgentDir)) {
-    return { dir: legacyAgentDir, legacy: true };
-  }
-
-  return { dir: null, legacy: false };
+  return { dir: null };
 }
 
 function loadAgentRecords(agentFiles, errors) {
@@ -209,7 +204,7 @@ function validateCommands(errors, warnings, knownAgents) {
 function main() {
   const errors = [];
   const warnings = [];
-  const { dir: agentDir, legacy: isLegacyAgentDir } = resolveAgentDirectory(process.cwd());
+  const { dir: agentDir } = resolveAgentDirectory(process.cwd());
   const knownSkills = getKnownSkills();
 
   log(colors.cyan, 'Validating Agent Configurations...');
@@ -218,10 +213,6 @@ function main() {
   if (!agentDir) {
     log(colors.red, 'ERROR: No agent directory found (.opencode/agents)');
     process.exit(1);
-  }
-
-  if (isLegacyAgentDir) {
-    warnings.push('Using legacy .opencode/agent directory; migrate to .opencode/agents');
   }
 
   log(colors.green, 'Found OpenCode agents directory');

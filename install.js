@@ -18,24 +18,18 @@ const PACKAGE_NAME = 'agents-opencode';
 const MANIFEST_FILE = '.agents-opencode-manifest.json';
 const VERSION_FILE = '.opencode-agents-version';
 const BACKUP_DIR = '.backups';
-const AGENT_DIR_PREFERRED = 'agents';
-const AGENT_DIR_LEGACY = 'agent';
+const AGENT_DIR = 'agents';
+const AGENT_DIR_LEGACY = 'agent'; // v2.0.0: no longer supported — used only for pre-flight error check
 const PROJECT_TEMPLATE_FILES = [
     path.join('state', 'session-state.json'),
     path.join('handoff', '.gitkeep'),
 ];
 
 function resolveAgentDirectory(opencodeDir) {
-    const preferredAgentDir = path.join(opencodeDir, AGENT_DIR_PREFERRED);
-    if (fs.existsSync(preferredAgentDir)) {
-        return preferredAgentDir;
+    const agentDir = path.join(opencodeDir, AGENT_DIR);
+    if (fs.existsSync(agentDir)) {
+        return agentDir;
     }
-
-    const legacyAgentDir = path.join(opencodeDir, AGENT_DIR_LEGACY);
-    if (fs.existsSync(legacyAgentDir)) {
-        return legacyAgentDir;
-    }
-
     return null;
 }
 
@@ -692,7 +686,7 @@ function verifyInstallation(opencodeDir, scope) {
         const agentDir = resolveAgentDirectory(opencodeDir);
 
         if (!agentDir) {
-            error(`Missing required agent directory ('${AGENT_DIR_PREFERRED}' or '${AGENT_DIR_LEGACY}') in ${scope} installation.`);
+            error(`Missing required agent directory ('.opencode/${AGENT_DIR}/') in ${scope} installation.`);
             return false;
         }
 
@@ -709,14 +703,14 @@ function verifyInstallation(opencodeDir, scope) {
     }
 }
 
-function legacyConfigCleanup(configPath, sourceConfig, onBeforeMutate) {
+function manifestlessCleanup(configPath, sourceConfig, onBeforeMutate) {
     if (!fs.existsSync(configPath)) {
         return { changed: false, removedFile: false };
     }
 
     const existing = readJsonFile(configPath, `existing config at ${configPath}`);
     if (!existing || !isObject(existing)) {
-        warning(`Skipping legacy config cleanup; invalid JSON at ${configPath}.`);
+        warning(`Skipping manifestless config cleanup; invalid JSON at ${configPath}.`);
         return { changed: false, removedFile: false };
     }
 
@@ -790,6 +784,19 @@ function configLooksManaged(configPath, sourceConfig) {
     return false;
 }
 
+function checkLegacyAgentDir(opencodeDir) {
+    const legacyDir = path.join(opencodeDir, AGENT_DIR_LEGACY);
+    if (fs.existsSync(legacyDir)) {
+        error(`Legacy '.opencode/${AGENT_DIR_LEGACY}/' directory detected.`);
+        error(`v2.0.0+ only supports '.opencode/${AGENT_DIR}/' (plural).`);
+        error('');
+        error(`Migration: mv ${legacyDir} ${path.join(opencodeDir, AGENT_DIR)}`);
+        error(`Then re-run: npx ${PACKAGE_NAME}`);
+        return false;
+    }
+    return true;
+}
+
 function installScope(options) {
     const {
         sourceDir,
@@ -808,6 +815,10 @@ function installScope(options) {
 
     if (scope === 'project' && !fs.existsSync(paths.rootDir)) {
         error(`Project directory does not exist: ${paths.rootDir}`);
+        return false;
+    }
+
+    if (!checkLegacyAgentDir(paths.opencodeDir)) {
         return false;
     }
 
@@ -936,6 +947,10 @@ function uninstallScope(options) {
     const backupSession = createBackupSession(paths, 'uninstall');
     let configBackedUp = false;
 
+    if (!checkLegacyAgentDir(paths.opencodeDir)) {
+        return false;
+    }
+
     const backupConfigBeforeMutate = () => {
         if (configBackedUp || !fs.existsSync(paths.configPath)) {
             return;
@@ -981,19 +996,19 @@ function uninstallScope(options) {
             touchedDirectories.add(path.dirname(paths.manifestPath));
         }
     } else {
-        warning(`No install manifest found for ${scope}. Attempting safe legacy cleanup.`);
+        warning(`No install manifest found for ${scope}. Attempting safe cleanup.`);
 
-        const legacyManagedFiles = sourceManagedFiles
+        const managedFiles = sourceManagedFiles
             .map(relative => toManagedPath(scope, relative));
 
-        for (const legacyManagedPath of legacyManagedFiles) {
-            const absolutePath = path.join(paths.rootDir, legacyManagedPath);
-            removeManagedFile(absolutePath, legacyManagedPath);
+        for (const managedPath of managedFiles) {
+            const absolutePath = path.join(paths.rootDir, managedPath);
+            removeManagedFile(absolutePath, managedPath);
         }
 
-        const legacyConfigResult = legacyConfigCleanup(paths.configPath, sourceConfig, backupConfigBeforeMutate);
-        configChanged = legacyConfigResult.changed;
-        removedConfigFile = legacyConfigResult.removedFile;
+        const cleanupResult = manifestlessCleanup(paths.configPath, sourceConfig, backupConfigBeforeMutate);
+        configChanged = cleanupResult.changed;
+        removedConfigFile = cleanupResult.removedFile;
 
         if (fs.existsSync(paths.versionPath)) {
             backupSession.backupFile(paths.versionPath, path.relative(paths.rootDir, paths.versionPath));

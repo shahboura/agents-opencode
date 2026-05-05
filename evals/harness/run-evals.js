@@ -309,10 +309,6 @@ function runCommandRoutingRule(issues, commands, knownAgents) {
     if (command.body.includes('$ARGUMENTS') && !argumentHint) {
       addIssue(issues, RULES.COMMAND_ROUTING_METADATA, command.relativePath, 'Command uses $ARGUMENTS but argument-hint is missing');
     }
-
-    if (/\$1|\$\{1\}|<args?>|<argument>/i.test(command.body)) {
-      addIssue(issues, RULES.COMMAND_ROUTING_METADATA, command.relativePath, 'Command body uses legacy argument token; use $ARGUMENTS');
-    }
   }
 }
 
