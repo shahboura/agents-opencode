@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/shahboura/agents-opencode/compare/v1.5.0...v1.6.0) (2026-05-05)
+
+
+### Features
+
+* **agents:** add plugin compatibility, legal-advisor, and memory optimization ([#37](https://github.com/shahboura/agents-opencode/issues/37)) ([aec36b7](https://github.com/shahboura/agents-opencode/commit/aec36b712332db42292f3a06f2d0df263c0e5c2d))
+
 ## [2.0.0] - 2026-05-05
 
 ### Breaking Changes [capability:breaking]
