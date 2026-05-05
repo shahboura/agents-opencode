@@ -18,6 +18,7 @@ This matrix captures tested runtime/tooling targets for this repository.
 | npm publish runtime | 24.x | `publish.yml` uses Node 24 with trusted publishing. |
 | Ruby (docs build) | 3.2 | Used by GitHub Pages workflow. |
 | OS support for installer | Windows / Linux / macOS | Uses Node + filesystem APIs only. |
+| `@opencode-ai/plugin` SDK | 1.14.39 | Plugin API version for compaction hooks, safety checks, and environment injection. |
 
 ## Expected Tooling Availability
 

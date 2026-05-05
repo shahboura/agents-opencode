@@ -1,0 +1,11 @@
+# gitleaks configuration for agents-opencode
+# https://github.com/gitleaks/gitleaks
+
+title = "agents-opencode gitleaks config"
+
+[allowlist]
+  description = "False positives and intentional test fixtures"
+
+  # commit dcdeef0: false positive generic-api-key on legal-advisor.md:68
+  # "encryption at rest/in transit, access controls" — fixed in 9753298
+  commits = ["dcdeef0483697932d8249d3f3232a2973591c912"]

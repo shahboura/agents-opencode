@@ -43,6 +43,12 @@ Custom commands for common development tasks. Type `/command-name` in the OpenCo
 |---------|-------------|-------|---------------|
 | `/1-on-1-prep` | Prepare for effective 1-on-1 meetings with team members | em-advisor | `[person] [context]` |
 
+### Compliance
+
+| Command | Description | Agent | Argument hint |
+|---------|-------------|-------|---------------|
+| `/legal-review` | Review licenses, compliance, and data privacy | legal-advisor | `[dependency, file, or scope]` |
+
 ## Usage
 
 Type `/` followed by the command name in the OpenCode TUI:

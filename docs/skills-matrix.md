@@ -24,6 +24,7 @@ Quick read:
 | `em-advisor` | `project-bootstrap`, `agent-diagnostics`, `docs-validation` |
 | `blogger` | `blogger`, `brutal-critic` |
 | `brutal-critic` | `brutal-critic`, `blogger` |
+| `legal-advisor` | `legal-advisor` |
 
 ## Notes
 
@@ -44,6 +45,7 @@ Use this as the canonical trigger reference for when agents should load skills.
 | Project bootstrap scaffolding | `project-bootstrap` | `docs`, `planner`, `orchestrator`, `em-advisor` |
 | Content drafting | `blogger` | `blogger`, `orchestrator` |
 | Content critique and scoring | `brutal-critic` | `brutal-critic`, `blogger`, `orchestrator` |
+| License auditing, IP review, data privacy, regulatory guidance | `legal-advisor` | `legal-advisor`, `orchestrator` |
 
 Trigger policy:
 - Load skills only on demand for the active task/phase.
@@ -76,3 +78,4 @@ Arguments passed in `/command-name [argument]` are forwarded to the command body
 | `/security-audit` | `review` | `[scope, file, component, or 'full project']` | Security-focused code and config review |
 | `/stop-loop` | `orchestrator` | `[optional reason or scope]` | Halt loop execution and report current state |
 | `/blog-post` | `blogger` | `[topic or title]` | Draft a blog post |
+| `/legal-review` | `legal-advisor` | `[dependency, file, or scope]` | Review licenses, compliance, and data privacy |

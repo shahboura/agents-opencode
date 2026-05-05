@@ -1,6 +1,6 @@
 ---
 description: Read-only planning agent for analyzing and creating implementation plans without code edits
-mode: primary
+mode: all
 temperature: 0.2
 steps: 30
 permission:
@@ -165,6 +165,12 @@ Before handing off to @codebase, verify:
 - Flag security concerns early in planning
 - Consider backward compatibility
 - Think about operational impact (monitoring, logging, etc.)
+
+### Legal-Aware Planning
+- **New Dependency**: Plans introducing new dependencies should flag a license compatibility review
+- **User Data**: Plans that collect, store, or process user data should flag a privacy review
+- **Third-Party Code**: Plans incorporating external code should flag an IP/copyright review
+- **Export Controls**: Plans involving encryption or restricted technologies should flag an export control review
 
 ## Handoff Recommendations
 

@@ -46,7 +46,7 @@ function asBulletList(values, fallback = '- (none)') {
 function renderMarkdown(state) {
   const timestamp = new Date().toISOString();
 
-  return `# Handoff Packet
+  let result = `# Handoff Packet
 
 Generated: ${timestamp}
 
@@ -82,6 +82,20 @@ ${asBulletList(state.artifacts)}
 
 ${state.last_updated || '(missing last_updated)'}
 `;
+
+  if (state.plugin_version || typeof state.compaction_count === 'number' || Array.isArray(state.legal_reviews)) {
+    const version = state.plugin_version || 'unknown';
+    const compaction = typeof state.compaction_count === 'number' ? state.compaction_count : 0;
+    const legalPending = Array.isArray(state.legal_reviews) ? state.legal_reviews.length : 0;
+    result += `
+## Plugin Context
+- agents-opencode version: ${version}
+- Compaction count: ${compaction}
+- Legal reviews pending: ${legalPending}
+`;
+  }
+
+  return result;
 }
 
 function main() {

@@ -53,6 +53,65 @@ function warnEntryQuality(entryList) {
   return warningCount;
 }
 
+const MAX_INSTRUCTION_LINES = 200;
+
+function checkInstructionFiles() {
+  const instructionsDir = path.join(process.cwd(), '.opencode', 'instructions');
+  if (!fs.existsSync(instructionsDir)) {
+    log(colors.yellow, 'WARNING: .opencode/instructions/ directory not found');
+    return;
+  }
+
+  let entries;
+  try {
+    entries = fs.readdirSync(instructionsDir, { withFileTypes: true });
+  } catch {
+    log(colors.yellow, 'WARNING: Could not read .opencode/instructions/ directory');
+    return;
+  }
+
+  const mdFiles = entries.filter((e) => e.isFile() && e.name.endsWith('.md'));
+  if (mdFiles.length === 0) {
+    return;
+  }
+
+  const fileStats = [];
+  let warnings = 0;
+
+  for (const entry of mdFiles) {
+    const filePath = path.join(instructionsDir, entry.name);
+    let content;
+    try {
+      content = fs.readFileSync(filePath, 'utf8');
+    } catch {
+      continue;
+    }
+    const lineCount = content.split(/\r?\n/).length;
+    fileStats.push({ name: entry.name, lines: lineCount });
+
+    if (lineCount > MAX_INSTRUCTION_LINES) {
+      warnings += 1;
+      log(colors.yellow, `WARNING: ${entry.name} has ${lineCount} lines (max recommended: ${MAX_INSTRUCTION_LINES})`);
+    }
+  }
+
+  if (fileStats.length > 0) {
+    fileStats.sort((a, b) => b.lines - a.lines);
+    const topFiles = fileStats.slice(0, 5);
+    log(colors.cyan, 'Instruction file sizes (top 5):');
+    for (const f of topFiles) {
+      const color = f.lines > MAX_INSTRUCTION_LINES ? colors.yellow : colors.green;
+      log(color, `  ${f.lines} lines - ${f.name}`);
+    }
+  }
+
+  if (warnings > 0) {
+    log(colors.yellow, `Instruction file budget warnings: ${warnings}`);
+  } else if (fileStats.length > 0) {
+    log(colors.green, '✅ All instruction files are within budget');
+  }
+}
+
 function main() {
   const MAX_SIZE_KB = 100;
   const PRUNE_TO_KB = 75;
@@ -70,6 +129,9 @@ function main() {
     contextFile = localContextFile;
   }
 
+  log(colors.cyan, 'Checking instruction file budgets...');
+  checkInstructionFiles();
+  console.log('');
   log(colors.cyan, 'Checking context file size...');
 
   if (!contextFile) {

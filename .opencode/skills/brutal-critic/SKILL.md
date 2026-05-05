@@ -4,6 +4,8 @@ description: Framework-based content review with scoring, criticism patterns, an
 license: MIT
 compatibility: opencode
 metadata:
+  author: shahboura
+  version: "2.0.0"
   audience: content-creators
   workflow: content-review
 ---

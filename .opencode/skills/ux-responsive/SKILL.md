@@ -4,6 +4,8 @@ description: Responsive UX guidance for small and large form factors with access
 license: MIT
 compatibility: opencode
 metadata:
+  author: shahboura
+  version: "2.0.0"
   audience: developers
   workflow: design-and-development
 ---

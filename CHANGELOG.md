@@ -1,5 +1,36 @@
 # Changelog
 
+## [2.0.0] - 2026-05-05
+
+### Breaking Changes [capability:breaking]
+- Removed legacy `.opencode/agent/` directory support. Only `.opencode/agents/` (plural) is supported.
+  Migrate by running: `mv .opencode/agent .opencode/agents`
+
+### Added [capability:agents]
+- `legal-advisor` agent: license auditing, IP review, data privacy assessment, and regulatory guidance
+- `/legal-review` command: review licenses, compliance, and data privacy
+- `legal-advisor` skill with progressive disclosure (core + license-matrix + privacy-checklists references)
+
+### Added [capability:plugins]
+- OpenCode runtime plugin with compaction hooks, safety checks, and environment injection
+- Plugin registration via `opencode.json` — compatible with OpenCode `Install plugin` command
+- Config merger handles plugin array merging to prevent duplicate entries
+
+### Changed [capability:memory]
+- Instruction files refactored for progressive disclosure (core + reference split for 4 files)
+- Session state contract expanded with plugin_version, legal_reviews, compaction_count
+- Handoff packets now include Plugin Context section
+- Context size checker adds per-file instruction budget warnings (200-line threshold)
+
+### Changed [capability:validation]
+- Skills standardized against agentskills.io specification (license, compatibility, metadata)
+- Removed legacy `$ARGUMENTS` token check from eval harness
+- Removed legacy agent directory fallback from validator
+
+### Changed [capability:refactor]
+- install.js modularized into scripts/lib/ (paths, file-ops, config-mutator)
+- 5 existing agents refreshed with legal-aware and best-practice updates
+
 ## [1.5.0](https://github.com/shahboura/agents-opencode/compare/v1.4.2...v1.5.0) (2026-04-25)
 
 

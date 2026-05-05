@@ -1,6 +1,7 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
   "current_phase": "sustainment",
+  "plugin_version": "2.0.0",
   "decisions": [
     "Use deny-by-default permissions with explicit allowlists.",
     "Gate risk-sensitive changes in CI before merge."
@@ -13,12 +14,15 @@
   "next_actions": [
     "Introduce CODEOWNERS for governance-critical paths.",
     "Add scenario-based eval fixtures for orchestrator/review behavior.",
-    "Track eval trend deltas across releases."
+    "Track eval trend deltas across releases.",
+    "Monitor context budget across agent sessions"
   ],
   "artifacts": [
     "docs/approval-gates.md",
     "docs/deprecation-migration.md",
     "evals/reports/trend-summary.md"
   ],
-  "last_updated": "2026-04-25T00:00:00Z"
+  "legal_reviews": [],
+  "compaction_count": 0,
+  "last_updated": "2026-05-05T00:00:00Z"
 }

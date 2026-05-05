@@ -89,17 +89,12 @@ function parsePermissionMap(block, indent = 4) {
 }
 
 function resolveAgentDirectory(repoRoot) {
-  const pluralAgentDir = path.join(repoRoot, '.opencode', 'agents');
-  if (fs.existsSync(pluralAgentDir)) {
-    return { dir: pluralAgentDir, legacy: false };
+  const agentDir = path.join(repoRoot, '.opencode', 'agents');
+  if (fs.existsSync(agentDir)) {
+    return { dir: agentDir };
   }
 
-  const legacyAgentDir = path.join(repoRoot, '.opencode', 'agent');
-  if (fs.existsSync(legacyAgentDir)) {
-    return { dir: legacyAgentDir, legacy: true };
-  }
-
-  return { dir: null, legacy: false };
+  return { dir: null };
 }
 
 function loadAgentRecords(agentFiles, errors) {
@@ -209,7 +204,7 @@ function validateCommands(errors, warnings, knownAgents) {
 function main() {
   const errors = [];
   const warnings = [];
-  const { dir: agentDir, legacy: isLegacyAgentDir } = resolveAgentDirectory(process.cwd());
+  const { dir: agentDir } = resolveAgentDirectory(process.cwd());
   const knownSkills = getKnownSkills();
 
   log(colors.cyan, 'Validating Agent Configurations...');
@@ -218,10 +213,6 @@ function main() {
   if (!agentDir) {
     log(colors.red, 'ERROR: No agent directory found (.opencode/agents)');
     process.exit(1);
-  }
-
-  if (isLegacyAgentDir) {
-    warnings.push('Using legacy .opencode/agent directory; migrate to .opencode/agents');
   }
 
   log(colors.green, 'Found OpenCode agents directory');
@@ -269,7 +260,7 @@ function main() {
   log(colors.green, `Found ${agentFiles.length} agent files\n`);
 
   const requiredFields = ['description', 'mode'];
-  const validModes = ['primary', 'secondary', 'utility', 'subagent'];
+  const validModes = ['primary', 'subagent', 'all'];
 
   for (const record of agentRecords) {
     const file = { name: record.name, fullPath: record.fullPath };
@@ -294,7 +285,7 @@ function main() {
     if (modeMatch) {
       const mode = modeMatch[1].trim();
       if (!validModes.includes(mode)) {
-        warnings.push(`${file.name}: Unusual mode value: '${mode}' (expected: primary, secondary, utility, or subagent)`);
+        warnings.push(`${file.name}: Unusual mode value: '${mode}' (expected: primary, subagent, or all)`);
       }
     }
 

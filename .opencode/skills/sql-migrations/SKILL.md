@@ -4,6 +4,8 @@ description: SQL and database migration best practices for safe schema changes
 license: MIT
 compatibility: opencode
 metadata:
+  author: shahboura
+  version: "2.0.0"
   audience: developers
   workflow: development
 ---

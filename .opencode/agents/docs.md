@@ -95,6 +95,12 @@ License information
 - Alt text for images
 - Tables for structured data
 
+### License Attribution
+When generating README files or project documentation:
+- Include the project's license type and SPDX identifier
+- Add attribution for third-party dependencies when required by their licenses
+- Include a standard legal disclaimer where appropriate
+
 ## File Organization
 ```
 docs/

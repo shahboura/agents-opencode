@@ -4,6 +4,8 @@ description: Concise content creation for tech, finance, and leadership blogging
 license: MIT
 compatibility: opencode
 metadata:
+  author: shahboura
+  version: "2.0.0"
   audience: developers
   workflow: content-creation
 ---
