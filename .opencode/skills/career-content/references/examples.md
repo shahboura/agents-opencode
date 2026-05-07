@@ -35,6 +35,42 @@
 ✅ Designed 6 Tableau dashboards for C-suite, surfacing KPIs that drove a 20% increase in customer retention
 ```
 
+### Marketing
+```
+❌ Ran email campaigns and social media
+✅ Designed and executed a multi-channel demand gen campaign (email, LinkedIn Ads, webinars), generating 2,400 qualified leads and $1.8M in pipeline in 6 months
+
+❌ Managed the company blog
+✅ Grew organic blog traffic from 12K to 85K monthly visitors through SEO-driven content strategy and CRO, converting 6.5% of readers into free-trial sign-ups
+
+❌ Helped with product launches
+✅ Led go-to-market for 3 product launches, coordinating across Product, Sales, and Design to achieve 110% of Q4 revenue target
+```
+
+### Sales
+```
+❌ Closed deals and managed accounts
+✅ Closed $4.2M in new ARR across 28 enterprise deals in 2025, averaging 45-day sales cycles and 22% above quota
+
+❌ Built relationships with clients
+✅ Cultivated 6 strategic accounts into $500K+ annual relationships through quarterly business reviews and executive alignment, reducing churn to under 3%
+
+❌ Worked on sales enablement
+✅ Developed a competitive battlecard library used by 45+ AEs, correlating to an 18% win-rate improvement against top 3 competitors
+```
+
+### Operations
+```
+❌ Improved internal processes
+✅ Redesigned the vendor onboarding workflow, cutting approval time from 14 days to 3 days and reducing procurement errors by 40%
+
+❌ Managed budgets and vendors
+✅ Oversaw a $2.5M annual ops budget across 18 vendor relationships, renegotiating 4 contracts to save $320K/year while maintaining SLA compliance
+
+❌ Helped with tool migrations
+✅ Led migration from 5 disparate tools to a unified ERP (NetSuite), training 120+ users and achieving full adoption within 90 days
+```
+
 ## LinkedIn Headlines
 
 ### Before
@@ -89,3 +125,12 @@ Python/R, SQL, ML frameworks, statistics, A/B testing, data visualization, featu
 
 ### Product Management
 User research, roadmap prioritization, A/B testing, stakeholder alignment, PRDs, analytics, go-to-market, cross-functional leadership
+
+### Marketing
+Demand generation, SEO/SEM, content marketing, marketing automation (HubSpot, Marketo), CRM, funnel optimization, ABM, brand strategy, CRO
+
+### Sales
+Enterprise sales, MEDDIC/MEDDPICC, pipeline management, Salesforce, outbound prospecting, negotiation, account planning, quota attainment
+
+### Operations
+Process improvement, vendor management, ERP (NetSuite, SAP), procurement, logistics, KPI dashboards, change management, capacity planning
