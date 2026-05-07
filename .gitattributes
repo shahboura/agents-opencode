@@ -27,4 +27,4 @@ scripts/fixtures/ export-ignore
 package-lock.json export-ignore
 
 # Release automation
-.release-please* export-ignore
+*release-please* export-ignore
