@@ -5,7 +5,8 @@
   "files": [
     "install.js",
     ".opencode",
-    "opencode.json"
+    "opencode.json",
+    "scripts/lib"
   ],
   "repository": {
     "type": "git",
@@ -32,6 +33,7 @@
     "validate:session": "node scripts/validate-session-state.js",
     "handoff:generate": "node scripts/generate-handoff.js --state state/session-state.json --out handoff/latest.md",
     "validate:context": "node scripts/check-context-size.js",
+    "validate:npx": "node scripts/test-npx-integrity.js",
     "validate:all": "npm run doctor"
   },
   "devDependencies": {
