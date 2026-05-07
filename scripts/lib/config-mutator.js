@@ -50,9 +50,7 @@ function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite, log
         logWarning(`Skipping permission merge for ${targetConfigPath}; existing permission is not an object.`);
       }
     } else {
-      const sourceKeys = Object.keys(sourceConfigForInstall.permission);
-      for (var i = 0; i < sourceKeys.length; i++) {
-        var key = sourceKeys[i];
+      for (const key of Object.keys(sourceConfigForInstall.permission)) {
         if (!(key in existing.permission)) {
           existing.permission[key] = sourceConfigForInstall.permission[key];
           patch.addedPermissionKeys.push(key);
@@ -66,8 +64,7 @@ function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite, log
     if (!Array.isArray(existing.plugin)) {
       existing.plugin = [];
     }
-    for (var j = 0; j < sourceConfigForInstall.plugin.length; j++) {
-      var entry = sourceConfigForInstall.plugin[j];
+    for (const entry of sourceConfigForInstall.plugin) {
       if (!existing.plugin.includes(entry)) {
         existing.plugin.push(entry);
         patch.addedPluginEntries.push(entry);
@@ -135,9 +132,7 @@ function configLooksManaged(configPath, sourceConfig, logWarning) {
   }
 
   if (isObject(sourceConfig.permission) && isObject(config.permission)) {
-    const sourceKeys = Object.keys(sourceConfig.permission);
-    for (var i = 0; i < sourceKeys.length; i++) {
-      var key = sourceKeys[i];
+    for (const key of Object.keys(sourceConfig.permission)) {
       if (!(key in config.permission)) {
         continue;
       }
@@ -174,9 +169,7 @@ function manifestlessCleanup(configPath, sourceConfig, onBeforeMutate, logWarnin
   let changed = false;
 
   if (isObject(sourceConfig.permission) && isObject(existing.permission)) {
-    const sourcePermKeys = Object.keys(sourceConfig.permission);
-    for (var i = 0; i < sourcePermKeys.length; i++) {
-      var key = sourcePermKeys[i];
+    for (const key of Object.keys(sourceConfig.permission)) {
       if (!(key in existing.permission)) {
         continue;
       }
@@ -202,11 +195,11 @@ function manifestlessCleanup(configPath, sourceConfig, onBeforeMutate, logWarnin
 }
 
 function checkLegacyAgentDir(opencodeDir, opts) {
-  var logError = opts.error;
-  var pkgName = opts.PACKAGE_NAME;
-  var AGENT_DIR_LEGACY = opts.AGENT_DIR_LEGACY;
-  var AGENT_DIR = opts.AGENT_DIR;
-  var legacyDir = path.join(opencodeDir, AGENT_DIR_LEGACY);
+  const logError = opts.error;
+  const pkgName = opts.PACKAGE_NAME;
+  const AGENT_DIR_LEGACY = opts.AGENT_DIR_LEGACY;
+  const AGENT_DIR = opts.AGENT_DIR;
+  const legacyDir = path.join(opencodeDir, AGENT_DIR_LEGACY);
   if (fs.existsSync(legacyDir)) {
     if (logError) {
       logError(`Legacy '.opencode/${AGENT_DIR_LEGACY}/' directory detected.`);

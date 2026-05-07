@@ -82,6 +82,11 @@ const checks = [
     args: ['scripts/check-context-size.js', '--check'],
   },
   {
+    name: 'Run plugin entry validation tests',
+    command: process.execPath,
+    args: ['scripts/test-plugin-entry.js'],
+  },
+  {
     name: 'Lint markdown files',
     command: isWin ? 'npm.cmd' : 'npm',
     args: ['run', 'lint:md'],
