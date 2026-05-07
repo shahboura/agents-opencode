@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.0.0](https://github.com/shahboura/agents-opencode/compare/v1.5.0...v2.0.0) (2026-05-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* removed legacy .opencode/agent/ directory support. Only .opencode/agents/ (plural) is supported. Users must run 'mv .opencode/agent .opencode/agents' before upgrading.
+* removed legacy .opencode/agent/ directory support. Only .opencode/agents/ (plural) is supported. Users must run 'mv .opencode/agent .opencode/agents' before upgrading.
+
+### Features
+
+* add legal-advisor standalone mode and code quality fixes ([#41](https://github.com/shahboura/agents-opencode/issues/41)) ([4c4c259](https://github.com/shahboura/agents-opencode/commit/4c4c259896ba624a70d7f03412d984ca4f435078))
+* add OpenCode /plugin install support and legal-advisor standalone mode ([#39](https://github.com/shahboura/agents-opencode/issues/39)) ([b16848b](https://github.com/shahboura/agents-opencode/commit/b16848bc43f329919bf019c65810122e1f7f3fcd))
+* **agents:** add plugin compatibility, legal-advisor, and memory optimization ([#37](https://github.com/shahboura/agents-opencode/issues/37)) ([aec36b7](https://github.com/shahboura/agents-opencode/commit/aec36b712332db42292f3a06f2d0df263c0e5c2d))
+
 ## [2.0.0] - 2026-05-05
 
 ### Breaking Changes [capability:breaking]
