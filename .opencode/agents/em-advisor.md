@@ -20,6 +20,7 @@ permission:
     "project-bootstrap": "allow"
     "agent-diagnostics": "allow"
     "docs-validation": "allow"
+    "career-content": "allow"
   task:
     "*": "deny"
     "explore": "allow"

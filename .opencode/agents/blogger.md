@@ -16,6 +16,7 @@ permission:
     "*": "deny"
     "blogger": "allow"
     "brutal-critic": "allow"
+    "career-content": "allow"
   task:
     "*": "deny"
     "brutal-critic": "allow"
