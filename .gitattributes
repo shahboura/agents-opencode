@@ -1,1 +1,31 @@
 * text=auto eol=lf
+
+# ─── Export rules: exclude development-only files from release archives ───
+# GitHub release zips use `git archive` which respects these rules.
+# `git clone` is unaffected — developers get the full source tree.
+
+# Documentation site (available on GitHub Pages)
+docs/ export-ignore
+
+# Development scripts and tests
+scripts/ export-ignore
+!scripts/lib/ export-ignore
+
+# CI/CD workflows
+.github/ export-ignore
+
+# Project-scoped runtime files
+state/ export-ignore
+handoff/ export-ignore
+
+# Evaluation harness
+evals/ export-ignore
+
+# Development tooling config
+.markdownlint.json export-ignore
+.markdownlintignore export-ignore
+.gitignore export-ignore
+
+# Release automation
+release-please-config.json export-ignore
+.release-please-manifest.json export-ignore
