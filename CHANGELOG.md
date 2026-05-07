@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/shahboura/agents-opencode/compare/v2.0.1...v2.1.0) (2026-05-07)
+
+
+### Features
+
+* add career-content skill with cross-review fixes and Skill-First refactor ([#45](https://github.com/shahboura/agents-opencode/issues/45)) ([6519d87](https://github.com/shahboura/agents-opencode/commit/6519d87dd9595436df07780ade90ee68be815d5e))
+
 ## [2.0.1](https://github.com/shahboura/agents-opencode/compare/v2.0.0...v2.0.1) (2026-05-07)
 
 
