@@ -71,6 +71,18 @@
 ✅ Led migration from 5 disparate tools to a unified ERP (NetSuite), training 120+ users and achieving full adoption within 90 days
 ```
 
+## Resume Summaries
+
+### Entry-Level Software Engineer
+```
+Software Engineer with 1 year of experience in full-stack web development. Skilled in React, Node.js, and PostgreSQL, with a track record of shipping 3 production features that reduced customer support tickets by 25%. Seeking to apply expertise in building scalable user-facing applications at a growth-stage startup.
+```
+
+### Senior Engineering Manager
+```
+Engineering Manager with 12 years of experience in SaaS and developer tools. Skilled in team scaling, platform architecture, and org design, with a track record of growing engineering orgs from 15 to 60+ while maintaining 97% retention. Seeking to apply expertise to building high-performing, inclusive engineering cultures at mission-driven companies.
+```
+
 ## LinkedIn Headlines
 
 ### Before

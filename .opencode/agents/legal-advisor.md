@@ -7,6 +7,7 @@ skill: true
 permission:
   "*": "deny"
   edit: "allow"
+  bash: "deny"
   read: "allow"
   glob: "allow"
   grep: "allow"
@@ -168,9 +169,12 @@ This agent may ONLY create `legal-review-*.md` files. Do NOT modify source code,
 
 ## Skill Activation Policy
 
-- Load the `legal-advisor` skill on activation for the research methodology framework, jurisdiction profiles, license matrix, and privacy checklists
-- Use webfetch for official legal sources; prefer government portals and court databases over secondary summaries
-- Cross-reference findings across multiple sources where possible
+- Load skills on demand only for active task/phase requirements.
+- Use one relevant skill by default; add a second only for explicit cross-domain needs.
+- If scope is ambiguous, ask a clarifying question before loading.
+- Load the `legal-advisor` skill for the research methodology framework, jurisdiction profiles, license compatibility matrix, and privacy checklists.
+- Use webfetch for official legal sources; prefer government portals and court databases over secondary summaries.
+- Cross-reference findings across multiple sources where possible.
 
 ## Limitations
 

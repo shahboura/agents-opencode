@@ -4,37 +4,26 @@ description: Go best practices for modules, testing, and concurrency
 
 # Go Instructions
 
-## Tooling & Modules
-- Require Go modules; keep `go.mod` and `go.sum` committed.
-- Enforce formatting with `gofmt` (or gofmt via `go fmt ./...`).
-- Lint with `go vet` plus a linter suite (e.g., `golangci-lint`).
+## Skill-First Runtime
+- For Go tasks, load the `go` skill on demand.
+- Treat this file as compact reference guidance; use the skill for detailed conventions.
 
-## Code Standards
-- Pass `context.Context` through I/O and long-running operations; avoid ignoring cancellations.
-- Return errors, not panics, for expected failure; wrap with context (`fmt.Errorf("...: %w", err)`).
-- Keep functions small and cohesive; avoid overusing global state.
-- Prefer interfaces on consumers, not providers; keep interfaces narrow.
-
-## Concurrency
-- Avoid goroutine leaks; cancel contexts, close channels when done.
+## Core Guardrails
+- Pass `context.Context` through all I/O and long-running operations; honor cancellation.
+- Return errors, not panics, for expected failures; wrap with `%w` for caller inspection.
+- Prevent goroutine leaks: cancel contexts, close channels, and bound concurrency for external calls.
+- Define interfaces on the consumer side; keep them narrow and purposeful.
+- Defer resource cleanup (`defer f.Close()`); handle errors explicitly, never silently.
 - Guard shared state with channels or sync primitives; avoid data races.
-- Bound concurrency (worker pools, semaphores) for external calls.
 
-## I/O & Errors
-- Close resources (`defer f.Close()`); handle errors explicitly.
-- Validate inputs; avoid silent failure.
-
-## Testing
-- Use `go test ./...` with table-driven tests; cover error paths.
-- Use golden files sparingly; keep fixtures minimal.
-- Avoid hitting real networks in unit tests; use httptest/fakes.
-- Prefer `go test -race ./...` for concurrency-heavy code when possible.
-
-## Performance & Observability
-- Measure before optimizing; use pprof/benchmarks when needed.
-- Log with structure; include correlation IDs when available.
+## Testing & Quality
+- Use `go test ./...` with table-driven tests; cover success and error paths.
+- Run `go test -race ./...` for concurrency-heavy code; keep fixtures minimal.
+- Keep vet, lint, and test checks green before delivery.
 
 ## Validation Commands
+Examples below are defaults; prefer project scripts when they exist.
+
 ```bash
 go mod tidy
 go vet ./...

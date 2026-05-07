@@ -21,6 +21,7 @@ permission:
     "agent-diagnostics": "allow"
     "docs-validation": "allow"
     "career-content": "allow"
+    "legal-advisor": "allow"
   task:
     "*": "deny"
     "explore": "allow"

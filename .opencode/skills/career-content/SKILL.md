@@ -7,6 +7,7 @@ metadata:
   author: shahboura
   version: "2.0.0"
   audience: professionals
+  workflow: career-content
 ---
 
 # Career Content Skill
@@ -30,6 +31,14 @@ Activate this skill when:
 
 **Recommended:** Use em-advisor to identify what to showcase, then blogger to polish the language.
 
+## Pre-Writing: Match Skills to the Job
+
+Before writing anything:
+1. Extract 5-10 keywords and requirements from the target job description
+2. Map your top achievements to each requirement
+3. Use this mapping to decide which bullets to write — every bullet should trace back to a requirement
+4. Prioritize requirements that appear in the first half of the job description (most important)
+
 ## Resume Rules
 
 ### Structure
@@ -37,6 +46,11 @@ Activate this skill when:
 - Sections: Contact → Summary → Skills → Experience → Education → (Optional: Projects, Certifications)
 - Reverse chronological within each section
 - Save as `resume-<name>.md` — deliver as markdown for easy editing
+
+### Resume Summary
+Write 2-3 sentences following: `[Role] with [X years] in [industry]. Skilled in [skill 1], [skill 2], and [skill 3], with a track record of [measurable achievement]. Seeking to apply expertise to [goal].`
+- Skip if <3 years experience — use an objective statement instead
+- Customize the last sentence for each application
 
 ### Bullet Formula (STAR + Metrics)
 Every experience bullet should follow: **Action Verb → Task → Result (with metric)**
@@ -79,6 +93,13 @@ When you don't have precise numbers, use reasonable estimates with approximate m
 ```
 Keep under 220 characters (LinkedIn's current limit). Include keywords recruiters search for.
 
+### Alternative Headline Strategies
+Beyond the pipeline formula, consider:
+- **Mission-driven:** "Helping startups scale their engineering teams from seed to Series B"
+- **Personality-forward:** "Engineer by training, product thinker by instinct. Ask me about distributed systems."
+- **Thought-leadership:** "Writing about engineering culture, hiring, and why monoliths aren't dead"
+- Choose a style that matches your industry: pipeline for corporate/enterprise, mission-driven for startups, personality for creative roles
+
 ### Profile Visuals
 - **Banner/background photo**: Use a clean, professional image that reflects your industry (conference talk, workspace, abstract tech graphic). Avoid generic stock photos, personal/family photos, and overly busy images. Recommended dimensions: 1584 x 396 pixels.
 - **Profile photo**: Headshot with plain background, well-lit, looking at the camera. You should occupy ~60% of the frame.
@@ -89,6 +110,14 @@ Keep under 220 characters (LinkedIn's current limit). Include keywords recruiter
 - Paragraph 2: Key achievements (past tense, metrics)
 - Paragraph 3: What you're looking for or passionate about
 - Include 3-5 core skills as hashtags
+
+### Summary Style Tips
+- Write how you speak — read it aloud; if it sounds stiff, rewrite it
+- Hook readers in the first sentence with a bold claim or personal angle
+- Cut jargon and buzzwords ("synergy," "passionate," "results-driven")
+- Add one personal element (hobby, side project, or non-work interest)
+- Use white space — short paragraphs, 1-2 sentences each
+- Avoid opening with "I am a..." — lead with impact instead
 
 ### Experience Section
 - Same STAR + metrics formula as resume
@@ -101,9 +130,15 @@ Keep under 220 characters (LinkedIn's current limit). Include keywords recruiter
 - Reorder remaining skills by relevance to your target role, not alphabetically
 - Endorsements from colleagues add credibility; aim for 5+ endorsements on your top 3 pinned skills
 
+### Hard Skills Only
+Your Skills section should contain only hard/technical skills. Soft skills belong in experience bullets:
+- "Communication" → Demonstrate via "Presented quarterly roadmap to C-suite and 200+ engineers"
+- "Leadership" → Demonstrate via "Led a team of 5 through a platform migration"
+- "Problem-solving" → Demonstrate via "Reduced P95 latency by 60% through query optimization"
+
 ## Cover Letters
 
-> **Check relevance:** Many tech companies and startups no longer require cover letters. Before writing one, verify the role explicitly asks for it. If it's optional, skip it unless you have context that won't fit in your resume.
+> **Check relevance:** Many tech companies and startups no longer require cover letters. Before writing one, verify the role explicitly asks for it. If optional, a brief 150-200 word letter can still differentiate you — 94% of hiring managers say cover letters influence decisions (Resume Genius, 2026).
 
 - 3-4 paragraphs, under 400 words
 - Paragraph 1: Role you're applying for + why this company

@@ -4,44 +4,26 @@ description: Node.js + Express best practices for services and APIs
 
 # Node.js + Express Instructions
 
-## Tooling & Runtime
-- Target LTS Node; enforce engines in package.json.
-- Prefer `npm ci` in CI; use lockfiles (package-lock.json) checked in.
-- Lint with ESLint; format with Prettier (or equivalent) consistently.
-- Environment config via dotenv or platform env vars; never commit secrets.
+## Skill-First Runtime
+- For Node.js and Express tasks, load the `node-express` skill on demand.
+- Treat this file as compact reference guidance; use the skill for detailed conventions.
 
-## Application Structure
+## Core Guardrails
+- Use async/await exclusively; wrap async handlers to propagate errors to error middleware.
+- Validate all input at the edge with a schema library (Joi, Zod) and reject early.
+- Enable security middleware: helmet, CORS with explicit origins, rate limiting on sensitive routes.
+- Centralize configuration via environment variables; never commit secrets.
+- Use structured logging (pino/winston) with request IDs; avoid `console.log`.
 - Keep layers separated: routes → controllers → services → data access.
-- Use async/await; avoid callbacks and unhandled promises.
-- Centralize configuration; avoid sprinkling process.env reads.
 
-## Routing & Middleware
-- Use Express Router; keep routes thin, delegate to services.
-- Validate input (Joi/Zod/class-validator) at the edge; reject early.
-- Add global error-handling middleware; return consistent JSON shapes.
-- Enable security middleware: helmet, compression (as needed), CORS with explicit origins, rate limiting on sensitive endpoints.
-
-## Error Handling & Logging
-- Use structured logging (pino/winston) with levels and request IDs; avoid console.log.
-- Normalize errors; avoid leaking stack traces to clients.
-- Wrap async handlers to propagate errors to the error middleware.
-
-## Data & I/O
-- Parameterize queries; avoid string interpolation for SQL.
-- Time out external calls; add retries with backoff where appropriate.
-- Close resources and streams; use `finally` for cleanup.
-
-## Testing
-- Use Jest/Vitest/Mocha for unit/integration tests; isolate side effects.
-- Mock external services; avoid real network calls.
-- Provide test commands: `npm test`, with coverage when feasible.
-
-## Performance & Reliability
-- Avoid blocking the event loop; offload CPU-heavy work.
-- Cache hot data thoughtfully; document TTL/invalidation.
-- Instrument with metrics/tracing where available.
+## Testing & Quality
+- Use Jest/Vitest/Mocha with isolated side effects; mock external services.
+- Include coverage when feasible; avoid real network calls in unit tests.
+- Keep lint, build, and test checks green before delivery.
 
 ## Validation Commands
+Examples below are defaults; prefer project scripts when they exist.
+
 ```bash
 npm ci
 npm run lint
