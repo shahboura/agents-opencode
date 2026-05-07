@@ -91,4 +91,4 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](skills
 - Keep core-only scope for now.
 - Add new skills only when there is clear demand, a real gap, ownership, and clean licensing.
 
-*Last updated: 2026-05-05*
+*Last updated: 2026-05-07*

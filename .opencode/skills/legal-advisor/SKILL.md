@@ -7,6 +7,7 @@ metadata:
   author: shahboura
   version: "2.0.0"
   audience: developers
+  workflow: legal-compliance
 ---
 
 # Legal Advisor Skill
