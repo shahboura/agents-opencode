@@ -1,6 +1,6 @@
 ---
 description: Legal research advisor for jurisdiction-aware analysis across case law, statutes, regulations, contracts, employment, corporate governance, and compliance frameworks
-mode: subagent
+mode: all
 temperature: 0.1
 steps: 20
 skill: true

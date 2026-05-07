@@ -5,8 +5,11 @@
   "files": [
     "install.js",
     ".opencode",
-    "opencode.json"
+    "opencode.json",
+    "plugin-entry.ts"
   ],
+  "main": "./plugin-entry.ts",
+  "exports": "./plugin-entry.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shahboura/agents-opencode.git"
@@ -36,6 +39,9 @@
   },
   "devDependencies": {
     "markdownlint-cli": "^0.48.0"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "1.14.39"
   },
   "keywords": [
     "opencode",
