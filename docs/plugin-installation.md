@@ -49,20 +49,13 @@ The plugin provides:
 - Safety checks that block reading sensitive files (.env, credentials, keys)
 - Environment injection (`AGENTS_OPENCODE_VERSION`) for project-scoped installs
 
-### Plugin Compatibility
-
-| Runtime | Minimum Version |
-|---------|----------------|
-| `@opencode-ai/plugin` SDK | 1.14.39 |
-
 ## Troubleshooting Plugin Discovery
 
 If the plugin does not load after adding it to `opencode.json`:
 
 1. Verify the plugin entry is in your project's `opencode.json` under the `plugin` array.
 2. Run `/reload-plugins` in the OpenCode TUI.
-3. Check that your `@opencode-ai/plugin` SDK is at version 1.14.39 or later.
-4. Restart OpenCode and check for plugin load messages in the startup log.
+3. Restart OpenCode and check for plugin load messages in the startup log.
 
 If the plugin still does not appear, use the npx/npm install method instead — it copies
 the plugin directly into `.opencode/plugins/` where OpenCode discovers it automatically.
