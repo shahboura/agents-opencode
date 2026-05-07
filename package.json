@@ -5,8 +5,11 @@
   "files": [
     "install.js",
     ".opencode",
-    "opencode.json"
+    "opencode.json",
+    "plugin-entry.ts"
   ],
+  "main": "./plugin-entry.ts",
+  "exports": "./plugin-entry.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shahboura/agents-opencode.git"
@@ -32,10 +35,14 @@
     "validate:session": "node scripts/validate-session-state.js",
     "handoff:generate": "node scripts/generate-handoff.js --state state/session-state.json --out handoff/latest.md",
     "validate:context": "node scripts/check-context-size.js",
+    "validate:plugin": "node scripts/test-plugin-entry.js",
     "validate:all": "npm run doctor"
   },
   "devDependencies": {
     "markdownlint-cli": "^0.48.0"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "1.14.39"
   },
   "keywords": [
     "opencode",
