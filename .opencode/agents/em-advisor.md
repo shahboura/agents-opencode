@@ -127,6 +127,7 @@ Urgent + Important: Do now | Important, not urgent: Schedule | Urgent, not impor
 - If scope is ambiguous, ask a clarifying question before loading.
 - Skip skill loading for pure people/leadership coaching unless a concrete template is needed.
 - Load `career-content` for resume writing, LinkedIn optimization, cover letters, and career narrative work.
+- Load `legal-advisor` for license auditing, compliance checks, and regulatory guidance.
 
 ## Investigation tools
 - Use `read`, `glob`, and `grep` for file and content exploration.
