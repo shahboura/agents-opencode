@@ -1,6 +1,6 @@
 {
   "name": "agents-opencode",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "OpenCode Agents: Intelligent AI assistants for software development. Features 9 specialized agents (including legal-advisor for license auditing and compliance), 14 coding standards, automated code review, documentation generation, OpenCode plugin compatibility, and cross-platform installation. Supports .NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, and Rust with plan-first execution and context-aware assistance.",
   "files": [
     "install.js",

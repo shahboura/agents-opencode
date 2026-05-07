@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/shahboura/agents-opencode/compare/v2.0.0...v2.0.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* add scripts/lib to npm package files and npx integrity test ([#43](https://github.com/shahboura/agents-opencode/issues/43)) ([dddad7f](https://github.com/shahboura/agents-opencode/commit/dddad7f6688d56a3f6099a5a155ee1407366059c))
+
 ## [2.0.0](https://github.com/shahboura/agents-opencode/compare/v1.5.0...v2.0.0) (2026-05-07)
 
 
