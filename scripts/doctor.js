@@ -82,6 +82,11 @@ const checks = [
     args: ['scripts/check-context-size.js', '--check'],
   },
   {
+    name: 'Run npx package integrity tests',
+    command: process.execPath,
+    args: ['scripts/test-npx-integrity.js'],
+  },
+  {
     name: 'Lint markdown files',
     command: isWin ? 'npm.cmd' : 'npm',
     args: ['run', 'lint:md'],
