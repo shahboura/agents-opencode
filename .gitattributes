@@ -16,36 +16,15 @@ evals/ export-ignore
 state/ export-ignore
 handoff/ export-ignore
 
-# Test fixtures
+# Scripts — exclude validation, tests, doctor, fixtures (keep scripts/lib/ for installer deps)
+scripts/*.js export-ignore
+scripts/*.json export-ignore
 scripts/fixtures/ export-ignore
 
-# Root-level scripts (keep scripts/lib/ for installer deps)
-scripts/assess-risk-path.js export-ignore
-scripts/assess-risk-path.test.js export-ignore
-scripts/check-context-size.js export-ignore
-scripts/compare-eval-trend.js export-ignore
-scripts/doctor.js export-ignore
-scripts/eval-harness.test.js export-ignore
-scripts/external-link-allowlist.json export-ignore
-scripts/generate-handoff.js export-ignore
-scripts/generate-handoff.test.js export-ignore
-scripts/test-installer.js export-ignore
-scripts/test-npx-integrity.js export-ignore
-scripts/validate-agents.js export-ignore
-scripts/validate-agents.test.js export-ignore
-scripts/validate-changelog-labels.js export-ignore
-scripts/validate-changelog-labels.test.js export-ignore
-scripts/validate-command-matrices.js export-ignore
-scripts/validate-docs.js export-ignore
-scripts/validate-docs.test.js export-ignore
-scripts/validate-session-state.js export-ignore
-scripts/validate-session-state.test.js export-ignore
-
 # Dev tooling configs
-.markdownlint.json export-ignore
-.markdownlintignore export-ignore
+.markdownlint* export-ignore
 .gitignore export-ignore
+package-lock.json export-ignore
 
 # Release automation
-release-please-config.json export-ignore
-.release-please-manifest.json export-ignore
+release-please* export-ignore
