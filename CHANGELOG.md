@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.1](https://github.com/shahboura/agents-opencode/compare/v2.1.0...v2.1.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* exclude dev files from GitHub release archives via export-ignore ([#47](https://github.com/shahboura/agents-opencode/issues/47)) ([855507b](https://github.com/shahboura/agents-opencode/commit/855507bd48837cfe28c64afb8cf784c27231fabf))
+* exclude dev files from GitHub release archives via export-ignore ([#49](https://github.com/shahboura/agents-opencode/issues/49)) ([2296fbc](https://github.com/shahboura/agents-opencode/commit/2296fbcebb8bbcf7d987f40b64c653300a666fb9))
+
 ## [2.1.0](https://github.com/shahboura/agents-opencode/compare/v2.0.1...v2.1.0) (2026-05-07)
 
 
