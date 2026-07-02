@@ -34,6 +34,7 @@ permission:
     "agent-diagnostics": "allow"
     "blogger": "allow"
     "brutal-critic": "allow"
+    "code-change-impact": "allow"
   task:
     "*": "deny"
     "codebase": "allow"
@@ -151,6 +152,8 @@ Quick delegation reference: implementation → @codebase, documentation → @doc
 - If scope is ambiguous, ask a clarifying question before loading.
 - For CI/CD phases, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For cross-device UX/responsive phases, load `ux-responsive` on demand.
+- For planning high-risk refactors or cross-cutting changes, load `code-change-impact`
+  to assess blast radius before delegating implementation.
 
 ## Communication Style
 - Provide clear phase transitions
