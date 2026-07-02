@@ -7,6 +7,8 @@
 
 Lean OpenCode agent pack for fast setup, safer skill loading, and production-ready workflows.
 
+Also available for Claude Code — see [Installation](#installation).
+
 ## Why this pack
 
 - **Fast onboarding:** install in minutes with `npx`.
@@ -95,15 +97,22 @@ opencode
 npx agents-opencode --global
 ```
 
-### OpenCode Plugin (Alternative)
+### Claude Code Plugin
 
-Add to your `opencode.json`:
+```bash
+# Add marketplace (one-time)
+/plugin marketplace add shahboura/agents-opencode-claude
 
-```json
-{ "plugin": ["agents-opencode"] }
+# Install
+/plugin install agents-opencode@shahboura-agents-opencode-claude
+
+# Update
+/plugin update agents-opencode@shahboura-agents-opencode-claude
 ```
 
-Then restart OpenCode or run `/reload-plugins`.
+Gives Claude Code access to the same 23 on-demand skills. Skills load only when
+invoked — no context cost until you use them. See [adapters/claude-code/](./adapters/claude-code/)
+for the plugin manifest and generator script.
 
 ## Agents
 

@@ -40,15 +40,14 @@ Quick jump: [Agents](agents/README) · [Skills Matrix](skills-matrix) · [Comman
 
    OpenCode runtime command: `opencode`
 
-3. Plugin install (alternative):
+## Claude Code
 
-   Add to your `opencode.json`:
+Also available as a Claude Code plugin:
 
-   ```json
-   { "plugin": ["agents-opencode"] }
    ```
-
-   Then restart OpenCode or run `/reload-plugins`.
+   /plugin marketplace add shahboura/agents-opencode-claude
+   /plugin install agents-opencode@shahboura-agents-opencode-claude
+   ```
 
 ## Agents
 
