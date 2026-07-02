@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/shahboura/agents-opencode/compare/v2.1.1...v2.2.0) (2026-07-02)
+
+
+### Features
+
+* v2.2.0 — cache metrics, docs pruning, agent modernization, human-in-loop, code-change-impact skill ([#65](https://github.com/shahboura/agents-opencode/issues/65)) ([24cd6d4](https://github.com/shahboura/agents-opencode/commit/24cd6d4a065e8aabbd28b0b0e06d8b71debe1edb))
+
 ## [2.1.1](https://github.com/shahboura/agents-opencode/compare/v2.1.0...v2.1.1) (2026-05-07)
 
 
