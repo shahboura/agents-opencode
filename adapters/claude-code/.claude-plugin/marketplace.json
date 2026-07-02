@@ -9,7 +9,6 @@
       "name": "agents-opencode",
       "source": "./",
       "description": "23 on-demand skills: languages (.NET, Python, Go, Rust, etc.), quality (code review, security audit, refactoring), documentation (API docs, ADRs), content (blogging, critique), and leadership (EM, legal). Skills load on demand — no context cost until invoked.",
-      "version": "2.3.0",
       "author": { "name": "shahboura" },
       "license": "MIT",
       "keywords": ["skills", "development", "security", "documentation", "code-review"]

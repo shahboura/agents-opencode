@@ -1,6 +1,5 @@
 {
   "name": "agents-opencode",
-  "version": "2.3.0",
   "description": "Lean AI agent pack with 23 on-demand skills for development, security, documentation, and leadership. Skills load on demand — no context cost until invoked.",
   "author": {
     "name": "shahboura"
