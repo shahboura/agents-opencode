@@ -20,8 +20,8 @@ permission:
     "project-bootstrap": "allow"
     "agent-diagnostics": "allow"
     "docs-validation": "allow"
-    "career-content": "allow"
     "legal-advisor": "allow"
+    "blogger": "allow"
   task:
     "*": "deny"
     "explore": "allow"
@@ -126,7 +126,7 @@ Urgent + Important: Do now | Important, not urgent: Schedule | Urgent, not impor
 - Use one relevant skill by default; add a second only for explicit cross-domain needs.
 - If scope is ambiguous, ask a clarifying question before loading.
 - Skip skill loading for pure people/leadership coaching unless a concrete template is needed.
-- Load `career-content` for resume writing, LinkedIn optimization, cover letters, and career narrative work.
+- Load `blogger` for resume writing, LinkedIn optimization, cover letters, and career narrative work (career-content is now part of the blogger skill).
 - Load `legal-advisor` for license auditing, compliance checks, and regulatory guidance.
 
 ## Investigation tools

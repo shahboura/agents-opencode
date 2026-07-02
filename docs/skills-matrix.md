@@ -21,8 +21,8 @@ Quick read:
 | `planner` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics` |
 | `review` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `docs-validation`, `agent-diagnostics` |
 | `docs` | `docs-validation`, `project-bootstrap`, `agent-diagnostics` |
-| `em-advisor` | `project-bootstrap`, `agent-diagnostics`, `docs-validation`, `career-content` |
-| `blogger` | `blogger`, `brutal-critic`, `career-content` |
+| `em-advisor` | `project-bootstrap`, `agent-diagnostics`, `docs-validation`, `legal-advisor`, `blogger` |
+| `blogger` | `blogger`, `brutal-critic` |
 | `brutal-critic` | `brutal-critic`, `blogger` |
 | `legal-advisor` | `legal-advisor` |
 
@@ -43,10 +43,9 @@ Use this as the canonical trigger reference for when agents should load skills.
 | Docs quality checks (lint/link/structure) | `docs-validation` | `docs`, `review`, `orchestrator` |
 | Agent/package diagnostics and configuration checks | `agent-diagnostics` | `docs`, `review`, `planner`, `orchestrator`, `em-advisor` |
 | Project bootstrap scaffolding | `project-bootstrap` | `docs`, `planner`, `orchestrator`, `em-advisor` |
-| Content drafting | `blogger` | `blogger`, `orchestrator` |
+| Content drafting | `blogger` | `blogger`, `orchestrator`, `em-advisor` |
 | Content critique and scoring | `brutal-critic` | `brutal-critic`, `blogger`, `orchestrator` |
 | License auditing, IP review, data privacy, regulatory guidance | `legal-advisor` | `legal-advisor`, `orchestrator` |
-| Resume writing, LinkedIn optimization, cover letters, professional bios | `career-content` | `em-advisor`, `blogger` |
 
 Trigger policy:
 - Load skills only on demand for the active task/phase.

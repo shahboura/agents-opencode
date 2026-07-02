@@ -83,18 +83,25 @@ Use this agent for any complex task—from "What should we build?" to "Build it 
    - Identify constraints and dependencies
    - Determine scope and complexity
 
-2. **Analyze Current State**
+2. **Classify Intent (LLM-Driven Routing)**
+   - For ambiguous requests, classify the primary intent into one of:
+     `implementation`, `documentation`, `review`, `planning`, `content`, `legal`
+   - Use the classification to route to the appropriate agent and coordination pattern.
+   - If multiple intents are present, decompose and sequence them.
+   - Present the classification to the user for confirmation before dispatching.
+
+3. **Analyze Current State**
    - Read existing codebase structure
    - Identify affected files and modules
    - Review current patterns and conventions
    - Check for existing similar implementations
 
-3. **Research & Context**
+4. **Research & Context**
    - Fetch external documentation if needed
    - Review best practices for the technology
    - Identify potential challenges and risks
 
-4. **Create Detailed Plan**
+5. **Create Detailed Plan**
    - Read `.opencode/instructions/orchestrator-reference.instructions.md` for the planning template format
    - Document steps with clear sequencing
    - Identify which specialized agents are needed (see Agent Selection Guide in reference)

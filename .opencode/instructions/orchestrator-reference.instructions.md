@@ -113,6 +113,32 @@ orchestrator → @legal-advisor (legal research / compliance analysis)
             → @codebase (remediate issues / apply recommendations)
 ```
 
+### Pattern 5: Evaluator-Optimizer Loop
+```
+orchestrator → @codebase (generate solution)
+            → @review (evaluate against criteria)
+            → @codebase (iterate based on feedback) ⊛ loop
+            → @review (final gate)
+```
+Use when quality criteria are well-defined and iterative refinement demonstrably improves output. The evaluator (`@review` or `@brutal-critic`) provides feedback; the generator (`@codebase` or `@blogger`) iterates. Run up to 3 refinement cycles before gating.
+
+### Pattern 6: Parallelized Sub-Tasks
+```
+orchestrator → @codebase (frontend) ∥ @codebase (backend)
+            → @review (integration / contract gate)
+            → @docs (unified documentation)
+```
+Use when tasks can be cleanly sectioned into independent subtasks (e.g., frontend + backend, API + client SDK, multiple microservices). Aggregate results at the integration gate. Ensure consistent contracts across parallel workers.
+
+### Pattern 7: Analyze-Then-Act
+```
+orchestrator → @planner (deep analysis, no code changes)
+            → [present findings to human]
+            → @codebase (implement approved plan)
+            → @review (validate)
+```
+Use for high-risk or unfamiliar codebases where understanding must precede action. The read-only planner phase prevents premature implementation.
+
 ## Progress Tracking for Long-Running Work
 
 For complex or multi-phase tasks, include and maintain a status table in updates.

@@ -180,4 +180,4 @@ Before delivering any career document:
 
 ## Quick Reference
 
-For detailed before/after examples and templates, see [references/examples.md](references/examples.md).
+For detailed before/after examples and templates, see [career-examples/examples.md](career-examples/examples.md).
