@@ -15,14 +15,17 @@ metadata:
 
 # Code Change Impact — blast-radius / regression analysis
 
-A fix is "done" only when you know what it touched *besides* the thing you were
-fixing. This skill traces reverse dependencies, hunts silent behavioral ripples,
-runs the project's own verification commands, and delivers a verdict.
+## What I do
+
+- Trace reverse dependencies from a changed symbol to every caller, importer, and consumer
+- Hunt silent behavioral ripples the compiler can't catch
+- Run the project's own typecheck, build, test, and lint to prove nothing broke
+- Deliver a structured verdict: SAFE, SAFE WITH CAVEATS, or IMPACT FOUND
 
 Run it against the VCS diff — it adapts to whatever language and tooling the
 repo uses by discovering the project's conventions first.
 
-## When to Activate
+## When to use me
 
 Activate this skill when:
 - A change touches shared/core code, a public API, a type/interface, a serialized
@@ -157,6 +160,18 @@ Always use this structure:
   a glance. A shared/core, public-API, schema, or contract change earns the whole pipeline.
 - **When unsure, say so.** If a ripple might be real but you can't confirm, put it on the
   residual checklist rather than declaring SAFE.
+
+## Validation Commands
+
+```bash
+# Manual verification checklist — no automated validation
+# [ ] Coupling class assigned to every changed file
+# [ ] Reverse-dependency grep run for each changed symbol
+# [ ] Four silent-risk categories checked against impacted sites
+# [ ] Typecheck + build + targeted tests pass
+# [ ] Verdict matches evidence (SAFE / SAFE WITH CAVEATS / IMPACT FOUND)
+# [ ] Residual checklist populated if anything unverifiable
+```
 
 ## Quick Reference
 
