@@ -165,6 +165,26 @@ Pattern notes:
 - Keep allowlists narrow by role.
 - Rules are matched in order and the last matching rule wins.
 
+## Usage & Efficiency
+
+OpenCode's context caching dramatically reduces token consumption across sessions.
+The following metrics are from production usage (May–June 2026) with the
+`deepseek-v4-pro` model. Raw data: [`usagedata/`](./usagedata/).
+
+| Metric | May 2026 | June 2026 | Combined |
+|---|---|---|---|
+| Cache Hit Tokens | 263.3M | 21.9M | 285.2M |
+| Cache Miss Tokens | 7.9M | 1.3M | 9.2M |
+| Output Tokens | 0.8M | 0.2M | 1.0M |
+| Total Requests | 1,407 | 380 | 1,787 |
+| **Cache Hit Rate** | **97.1%** | **94.5%** | **96.9%** |
+| Avg Tokens/Request | 193K | 62K | 165K |
+
+Key takeaway: persistent context reuse keeps ~97% of input tokens in cache,
+avoiding costly re-processing across agent sessions. Cache-hit tokens cost
+~120× less than cache-miss tokens, translating to substantial efficiency
+gains for long-running multi-agent workflows.
+
 ## Commands
 
 Type `/command-name` in the TUI to run:
