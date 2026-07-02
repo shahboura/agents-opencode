@@ -169,7 +169,7 @@ Pattern notes:
 
 OpenCode's context caching dramatically reduces token consumption across sessions.
 The following metrics are from production usage (May–June 2026) with the
-`deepseek-v4-pro` model. Raw data: [`usagedata/`](./usagedata/).
+`deepseek-v4-pro` model.
 
 | Metric | May 2026 | June 2026 | Combined |
 |---|---|---|---|
