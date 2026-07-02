@@ -28,6 +28,7 @@ permission:
     "docs-validation": "allow"
     "agent-diagnostics": "allow"
     "code-change-impact": "allow"
+    "security-audit": "allow"
   task:
     "*": "deny"
     "explore": "allow"

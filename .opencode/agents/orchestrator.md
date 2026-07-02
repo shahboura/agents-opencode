@@ -35,6 +35,7 @@ permission:
     "blogger": "allow"
     "brutal-critic": "allow"
     "code-change-impact": "allow"
+    "refactoring": "allow"
   task:
     "*": "deny"
     "codebase": "allow"

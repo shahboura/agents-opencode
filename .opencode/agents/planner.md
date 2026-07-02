@@ -29,6 +29,8 @@ permission:
     "project-bootstrap": "allow"
     "docs-validation": "allow"
     "agent-diagnostics": "allow"
+    "adr": "allow"
+    "refactoring": "allow"
   task:
     "*": "deny"
     "explore": "allow"
