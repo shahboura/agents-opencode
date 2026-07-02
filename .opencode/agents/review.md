@@ -27,6 +27,7 @@ permission:
     "sql-migrations": "allow"
     "docs-validation": "allow"
     "agent-diagnostics": "allow"
+    "code-change-impact": "allow"
   task:
     "*": "deny"
     "explore": "allow"
