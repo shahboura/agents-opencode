@@ -184,30 +184,7 @@ After plan approval, recommend the appropriate agent to the user (manual handoff
 
 ## Context Persistence
 
-**At session start:**
-1. Read `AGENTS.md` for project context and recent activity
-2. Read `state/session-state.json` for active goals/risks (if present)
-3. Read `handoff/latest.md` for continuation context (if present)
-4. Review prior planning decisions and patterns
-
-**At task completion:**
-1. Refresh `state/session-state.json` with planning decisions, risks, and recommended next actions.
-2. Generate or refresh handoff packet using project tooling when plan state changed.
-3. Then update `AGENTS.md` with timestamped entry (latest first):
-
-```markdown
-### YYYY-MM-DD HH:MM - [Brief Task Description]
-**Agent:** planner
-**Summary:** [What was analyzed/planned]
-- Key findings and recommendations
-- Risks identified
-- Recommended implementation sequence
-```
-
-**Format requirements:**
-- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
-- Latest entries first (prepend, don't append)
-- Keep entries concise (3-5 bullets max)
-- File auto-prunes when exceeding 100KB
-
-**Present update for approval before ending task.**
+**At session start:** Read `AGENTS.md`, `state/session-state.json`, and `handoff/latest.md`.
+**At task completion:** Refresh state, generate handoff packet, and log a concise
+timestamped entry (3-5 bullets) to `AGENTS.md`. Present update for approval before ending.
+See `.opencode/agents/codebase.md` for the full Context Persistence format specification.

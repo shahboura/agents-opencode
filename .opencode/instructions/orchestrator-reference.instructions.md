@@ -35,54 +35,21 @@ Use this format when creating a multi-phase plan:
 
 ## Agent Selection Guide
 
-**@codebase** - Use for:
-- Feature implementation
-- Bug fixes
-- Code refactoring
-- Test creation
-- Cross-domain or unfamiliar-stack work (multi-language validation, auto-detection)
+**@codebase** — Feature implementation, bug fixes, refactoring, test creation. Use for cross-domain or unfamiliar-stack work (multi-language validation, auto-detection). For single-file/single-domain changes, orchestrator may implement directly — see Implementation Routing in the orchestrator agent.
 
-For single-file or single-domain changes, the orchestrator may implement directly
-to avoid handoff context loss — see Implementation Routing in the orchestrator agent.
+**@docs** — README updates, API documentation, architecture docs, user guides.
 
-**@docs** - Use for:
-- README updates
-- API documentation
-- Architecture docs
-- User guides
+**@review** — Security audits, performance reviews, code quality checks, best practices validation.
 
-**@review** - Use for:
-- Security audits
-- Performance reviews
-- Code quality checks
-- Best practices validation
+**@planner** — Read-only codebase analysis, detailed implementation planning, risk assessment before implementation.
 
-**@planner** - Use for:
-- Read-only codebase analysis
-- Detailed implementation planning
-- Risk assessment before implementation
+**@em-advisor** — Engineering leadership guidance, stakeholder communication, team execution and prioritization.
 
-**@em-advisor** - Use for:
-- Engineering leadership guidance
-- Stakeholder communication strategy
-- Team execution and prioritization support
+**@blogger** — Blog post creation, YouTube scripts, podcast outlines.
 
-**@blogger** - Use for:
-- Blog post creation
-- YouTube script writing
-- Podcast outline brainstorming
+**@brutal-critic** — Content quality reviews, framework-based scoring, pre-publish validation.
 
-**@brutal-critic** - Use for:
-- Content quality reviews
-- Framework-based scoring
-- Pre-publish validation
-
-**@legal-advisor** - Use for:
-- Legal research across jurisdictions
-- Regulatory compliance analysis
-- License auditing and open-source compliance
-- Data privacy and export control review
-- Contract and agreement evaluation
+**@legal-advisor** — Legal research, regulatory compliance, license auditing, data privacy, export control, contract evaluation.
 
 ## Coordination Patterns
 

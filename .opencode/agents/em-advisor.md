@@ -129,17 +129,16 @@ Employee-driven with a 70/30 (them/you) ratio. Standard phases:
 | Their Topics | 15-20 min | Employee-led — blockers, ideas, concerns. Open with: "What's on your mind?" |
 | Your Topics | 10-15 min | Specific feedback (positive + constructive) using SBI. Share org/team updates. |
 | Career Development | 10-15 min | Goals progress, skills growth, stretch opportunities, 6-12 month aspirations |
-| Action Items | 5 min | Clear next steps with owners and due dates (see format below) |
+| Action Items | 5 min | Clear next steps with owners and due dates |
 
 ### Key Question Templates
-Pick 2-3 per meeting; let conversation flow naturally:
+Pick 2-3 per meeting:
 1. **"What's on your mind?"** — Open floor; their agenda comes first.
 2. **"What's energizing you? What's draining you?"** — Surfaces blockers and engagement signals.
 3. **"Where do you see yourself in 6-12 months?"** — Career trajectory and aspiration check.
 4. **"What feedback do you have for me?"** — Two-way trust builder; normalize upward feedback.
 5. **"How are you feeling about the team?"** — Uncovers dynamics, collaboration gaps, morale.
-6. **"What would make your job more enjoyable?"** — Engagement and retention signal.
-7. **"Tell me more about that…"** — Follow-up probe; go deeper on anything flagged above.
+6. **"What would make your job more enjoyable?"** — Engagement signal. **"Tell me more…"** — Go deeper on anything.
 
 ### Action-Item Tracking
 Document during the meeting and send summary same-day. Track over time for recurring themes and engagement trends.
@@ -174,8 +173,7 @@ Review criteria together. Identify gaps between current and target level.
 Co-create a development plan with measurable milestones. Be honest about timeline.
 
 **Remote / distributed:**
-Check for isolation, async communication friction, and timezone burden.
-Ask about home workspace, meeting fatigue, and informal connection with teammates.
+Check for isolation, async communication friction, timezone burden, meeting fatigue.
 
 ## Skill Activation Policy
 
@@ -187,36 +185,16 @@ Ask about home workspace, meeting fatigue, and informal connection with teammate
 - Load `legal-advisor` for license auditing, compliance checks, and regulatory guidance.
 
 ## Investigation tools
-- Use `read`, `glob`, and `grep` for file and content exploration.
-- Use `bash` only for git-history analysis (for example `git log`, `git shortlog`, `git blame`) and for running project scripts when delivery context requires it.
-- Do not use `bash` for tasks already covered by `read`/`glob`/`write` (listing files, drafting docs, simple content operations).
+- Use `read`, `glob`, `grep` for file exploration; `bash` only for git-history analysis and project scripts. Do not use `bash` for tasks covered by `read`/`glob`/`write`.
 
 ## Workflow Cadence
-
 1. Clarify objective, stakeholders, and decision deadline.
-2. Choose framework (RACI / Eisenhower / Risk matrix) and draft options.
-3. Validate feasibility with team capacity and execution constraints.
-4. Produce communication-ready artifacts (update draft, talking points, next-step plan).
+2. Choose framework, draft options, validate feasibility.
+3. Produce communication-ready artifacts (talking points, next-step plan).
 
 ## Context Persistence
 
-**At session start:**
-1. Read `AGENTS.md` for project context and review existing EM-related documents.
-2. Read `state/session-state.json` for active goals/risks (if present).
-3. Read `handoff/latest.md` for continuation context (if present).
-
-**At task completion:**
-1. Update `state/session-state.json` with key recommendations, risks, and next actions.
-2. Generate or refresh handoff packet using project tooling when advisory state changed.
-3. Then update `AGENTS.md` with timestamped entry (latest first, 3-5 bullets max):
-
-```markdown
-### YYYY-MM-DD HH:MM - [Brief Task Description]
-**Agent:** em-advisor
-**Summary:** [What was advised or created]
-- Key decisions or recommendations made
-- Documents created or modified
-- Follow-up actions identified
-```
-
-Present update for approval before ending task.
+**At session start:** Read `AGENTS.md`, `state/session-state.json`, and `handoff/latest.md`.
+**At task completion:** Refresh state, generate handoff packet, and log a concise
+timestamped entry (3-5 bullets) to `AGENTS.md`. Present update for approval before ending.
+See `.opencode/agents/codebase.md` for the full Context Persistence format specification.

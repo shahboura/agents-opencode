@@ -54,62 +54,79 @@ function warnEntryQuality(entryList) {
 }
 
 const MAX_INSTRUCTION_LINES = 200;
+const MAX_SKILL_LINES = 200;
+const MAX_AGENT_LINES = 200;
 
-function checkInstructionFiles() {
-  const instructionsDir = path.join(process.cwd(), '.opencode', 'instructions');
-  if (!fs.existsSync(instructionsDir)) {
-    log(colors.yellow, 'WARNING: .opencode/instructions/ directory not found');
-    return;
+function checkFileGroup(dirPath, label, maxLines, filePattern) {
+  if (!fs.existsSync(dirPath)) {
+    return 0;
   }
 
   let entries;
   try {
-    entries = fs.readdirSync(instructionsDir, { withFileTypes: true });
+    entries = fs.readdirSync(dirPath, { withFileTypes: true });
   } catch {
-    log(colors.yellow, 'WARNING: Could not read .opencode/instructions/ directory');
-    return;
+    return 0;
   }
 
-  const mdFiles = entries.filter((e) => e.isFile() && e.name.endsWith('.md'));
-  if (mdFiles.length === 0) {
-    return;
-  }
+  const results = [];
 
-  const fileStats = [];
-  let warnings = 0;
-
-  for (const entry of mdFiles) {
-    const filePath = path.join(instructionsDir, entry.name);
-    let content;
-    try {
-      content = fs.readFileSync(filePath, 'utf8');
-    } catch {
-      continue;
+  if (filePattern) {
+    // Flat files (agents, instructions): match by filename pattern
+    for (const entry of entries) {
+      if (!entry.isFile() || !filePattern.test(entry.name)) continue;
+      const filePath = path.join(dirPath, entry.name);
+      let content;
+      try { content = fs.readFileSync(filePath, 'utf8'); } catch { continue; }
+      results.push({ name: entry.name, lines: content.trimEnd().split(/\r?\n/).length });
     }
-    const lineCount = content.split(/\r?\n/).length;
-    fileStats.push({ name: entry.name, lines: lineCount });
-
-    if (lineCount > MAX_INSTRUCTION_LINES) {
-      warnings += 1;
-      log(colors.yellow, `WARNING: ${entry.name} has ${lineCount} lines (max recommended: ${MAX_INSTRUCTION_LINES})`);
+  } else {
+    // Directory-based (skills): each dir contains SKILL.md
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const skillFile = path.join(dirPath, entry.name, 'SKILL.md');
+      if (!fs.existsSync(skillFile)) continue;
+      let content;
+      try { content = fs.readFileSync(skillFile, 'utf8'); } catch { continue; }
+      results.push({ name: entry.name, lines: content.trimEnd().split(/\r?\n/).length });
     }
   }
 
-  if (fileStats.length > 0) {
-    fileStats.sort((a, b) => b.lines - a.lines);
-    const topFiles = fileStats.slice(0, 5);
-    log(colors.cyan, 'Instruction file sizes (top 5):');
-    for (const f of topFiles) {
-      const color = f.lines > MAX_INSTRUCTION_LINES ? colors.yellow : colors.green;
-      log(color, `  ${f.lines} lines - ${f.name}`);
+  results.sort((a, b) => b.lines - a.lines);
+  const warnings = results.filter((r) => r.lines > maxLines);
+
+  if (warnings.length > 0) {
+    for (const w of warnings) {
+      log(colors.yellow, `WARNING: ${w.name} has ${w.lines} lines (max: ${maxLines})`);
+    }
+  } else if (results.length > 0) {
+    log(colors.green, `✅ All ${label.toLowerCase()} are within budget`);
+  }
+
+  if (results.length > 0) {
+    const top = results.slice(0, 5);
+    log(colors.cyan, `${label} sizes (top 5):`);
+    for (const r of top) {
+      log(r.lines > maxLines ? colors.yellow : colors.green, `  ${r.lines} lines - ${r.name}`);
     }
   }
 
-  if (warnings > 0) {
-    log(colors.yellow, `Instruction file budget warnings: ${warnings}`);
-  } else if (fileStats.length > 0) {
-    log(colors.green, '✅ All instruction files are within budget');
-  }
+  return warnings.length;
+}
+
+function checkSkillFiles() {
+  const skillsDir = path.join(process.cwd(), '.opencode', 'skills');
+  return checkFileGroup(skillsDir, 'Skills', MAX_SKILL_LINES, null);
+}
+
+function checkAgentFiles() {
+  const agentsDir = path.join(process.cwd(), '.opencode', 'agents');
+  return checkFileGroup(agentsDir, 'Agents', MAX_AGENT_LINES, /\.md$/);
+}
+
+function checkInstructionFiles() {
+  const instructionsDir = path.join(process.cwd(), '.opencode', 'instructions');
+  return checkFileGroup(instructionsDir, 'Instructions', MAX_INSTRUCTION_LINES, /\.md$/);
 }
 
 function main() {
@@ -129,10 +146,23 @@ function main() {
     contextFile = localContextFile;
   }
 
+  let budgetViolations = 0;
+
   log(colors.cyan, 'Checking instruction file budgets...');
-  checkInstructionFiles();
+  budgetViolations += checkInstructionFiles();
+  console.log('');
+  log(colors.cyan, 'Checking skill file budgets...');
+  budgetViolations += checkSkillFiles();
+  console.log('');
+  log(colors.cyan, 'Checking agent file budgets...');
+  budgetViolations += checkAgentFiles();
   console.log('');
   log(colors.cyan, 'Checking context file size...');
+
+  if (budgetViolations > 0 && checkOnly) {
+    log(colors.yellow, `\n⚠️  ${budgetViolations} file budget violation(s) detected`);
+    process.exit(1);
+  }
 
   if (!contextFile) {
     log(colors.yellow, 'WARNING: No AGENTS.md context file found in global or local location.');

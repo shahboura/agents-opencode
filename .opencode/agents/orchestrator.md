@@ -59,19 +59,11 @@ Use this agent for any complex task—from "What should we build?" to "Build it 
 
 ## When to Use This Agent
 
-**Planning Mode (Proposal Without Implementation):**
-- Analyzing complex existing code before refactoring
-- Risk assessment and architectural review
-- Brainstorming solutions without immediate execution
-- Creating detailed step-by-step plans for others to execute
-- When you want a "second opinion" before committing to changes
+**Planning Mode (Read-Only):** Risk assessment, architectural review, brainstorming,
+creating step-by-step plans for others to execute. No code changes.
 
-**Execution Mode (Full End-to-End):**
-- Complex features requiring implementation + docs + review
-- Multi-phase projects with dependencies
-- Tasks spanning multiple domains (backend + frontend + docs)
-- Refactoring projects affecting multiple modules
-- Migration projects with validation steps
+**Execution Mode (Full End-to-End):** Complex features, multi-phase projects, cross-domain
+tasks, refactoring, migrations. Plans + coordinates specialized agents.
 
 **Simple Implementation:**
 - Defer full doc/lint validation (`npm run doctor`, `npm run lint:md`) to the final
