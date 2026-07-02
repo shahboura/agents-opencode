@@ -25,73 +25,64 @@ repo uses by discovering the project's conventions first.
 ## When to Activate
 
 Activate this skill when:
-- Assessing whether a code change is safe to merge or push
-- A change touched shared/core/common code, a public API, a type/interface,
-  a serialized contract (REST/GraphQL/DTO), a DB schema, or global config
-- You need to prove a fix didn't break other features
-- Before opening a PR on a change with non-obvious blast radius
+- A change touches shared/core code, a public API, a type/interface, a serialized
+  contract, a DB schema, or global config — anything with non-obvious blast radius
+- You need to prove a fix didn't break other features before merging
 - Any request containing "did this break anything", "what else does this affect",
-  "check the impact / blast radius", "side effects of this change",
-  "is this safe to merge", "regression check", or "what depends on this"
+  "check the impact", "is this safe to merge", or "regression check"
 
 ## Methodology
 
-### Phase 0 — Discover the project
+### Phase 1 — Discover the project + pin the epicenter
 
-Establish before analyzing:
-1. **Repo root + diff** — `git rev-parse --show-toplevel`; then the change set
+Establish the repo context:
+1. **Repo root + diff** — `git rev-parse --show-toplevel` then `git diff HEAD`
 2. **Languages + ecosystems** — from manifests and file extensions
 3. **Verification commands** — typecheck, build, test, lint from manifests or CI
-4. **Module + import style** — how the language names and imports modules
-
-If discovery is ambiguous, state what you found and ask the user to confirm.
-
-### Phase 1 — Pin the epicenter
-
-```bash
-git -C <root> status --short
-git -C <root> diff --stat HEAD
-git -C <root> diff HEAD
-```
 
 Classify each changed file by coupling class:
 
-| Changed file is… | Reach | Where it ripples |
-|---|---|---|
-| shared/core/common/util module | **wide** | every importer |
-| a public/exported symbol, package public API, barrel/index | callers in + out of module | every caller |
-| a type / interface / schema / `.proto` | wide | usages (compiler-caught in typed langs; **silent** in dynamic) |
-| a serialized contract (REST/GraphQL/DTO/protobuf/event) | cross-service | the other side of the wire |
-| a config/registry (route table, DI container, plugin list, feature flags) | fan-out | everything derived from it |
-| a DB schema / migration / ORM model | data layer | queries, models, other services |
-| global config / styles / theme / i18n strings | **global, silent** | every screen/string, no compiler signal |
-| build / deps / lockfile / Dockerfile / CI | build & runtime | the whole app |
-| an internal change in a single leaf file | **local** | itself — small verify, done |
+| Changed file is… | Reach |
+|---|---|
+| shared/core/common/util module | **wide** — every importer |
+| public/exported symbol, barrel/index, package public API | every caller, in and out of module |
+| type / interface / schema / `.proto` | compiler-caught in typed langs; **silent** in dynamic |
+| serialized contract (REST/GraphQL/DTO/protobuf) | cross-service — the other side of the wire |
+| config/registry (route table, DI, feature flags) | fan-out — everything derived from it |
+| DB schema / migration / ORM model | data layer — queries, models, other services |
+| global config / styles / theme / i18n strings | **global, silent** — no compiler signal |
+| build / deps / lockfile / Dockerfile / CI | the whole app |
+| internal change in a single leaf file | **local** — small verify, done |
+
+If discovery is ambiguous, state findings and ask the user to confirm.
 
 ### Phase 2 — Trace reverse dependencies
 
-For each changed symbol, find who depends on it. Per-ecosystem grep recipes are
-in `references/recipes.md`. Build two buckets: **directly impacted** (import/call
-the changed symbol) and **transitively impacted** (depend on the directly-impacted).
-Map impacted code to user-facing surfaces (route, endpoint, command, job).
+For each changed symbol, find who depends on it. The shape (per `references/recipes.md` §1):
+```bash
+rg -n "<import-form-for-this-language targeting the changed module>" <root> -l
+rg -n "\b<SymbolName>\b" <root> -l
+```
+Build two buckets: **directly impacted** (import/call the changed symbol) and
+**transitively impacted** (depend on the directly-impacted). Map impacted code
+to user-facing surfaces (route, endpoint, command, job).
 
-### Phase 3 — Behavioral impact (what the compiler can't see)
+### Phase 3 — Hunt silent ripples (what the compiler can't see)
 
-Hunt silent ripples — same types, different behavior. Catalog:
+For each directly-impacted site, check four categories of silent risk:
 
-- Cache/memo key change, changed default/sort/comparator/rounding
-- Serialization drift (field made nullable/optional, enum value added)
-- Global mutable state, singleton shape, persisted client state
-- Concurrency boundaries, transaction scope, retry policy
-- Locale/time zone/number/date formatting
-- Regex/validation predicate change
-- Feature-flag/env-var default flip
-- Error-handling control flow change
-- Theme/token/i18n string change
-- Mirror/twin files out of sync (generated code with `// Code generated` header,
-  cross-language duplicated constants, paired golden files/snapshots)
+- **Shape drift** — serialization changes (nullable field, enum added, default
+  changed), mirror/twin files out of sync (generated code, cross-language
+  constants), regex/validation predicate changes
+- **Behavioral shift** — changed defaults, sort order, comparator, rounding,
+  cache/memo key change, error-handling control flow
+- **Environment sensitivity** — locale/time/number formatting, feature-flag
+  defaults, theme/token/i18n strings
+- **Runtime hazards** — concurrency boundaries, transaction scope, retry policy,
+  global mutable state, persisted client state holding an old shape after upgrade
 
-Dynamic languages (Python/Ruby/JS) have no compiler net — weight Phase 3 heavier.
+Dynamic languages (Python/Ruby/JS) have no compiler net — weight Phase 3 heavier
+for those stacks.
 
 ### Phase 4 — Verify (prove it, don't assert it)
 
@@ -104,20 +95,22 @@ Run the commands discovered in Phase 0, cheapest signal first:
 
 ### Phase 5 — Report
 
+Always use this structure:
+
 ```
 # Code Change Impact: <one-line description>
 
 ## Verdict: SAFE | SAFE WITH CAVEATS | IMPACT FOUND
 
-## Project (discovered)
-- languages/ecosystems: <…>   verify cmds: typecheck=<…> build=<…> test=<…>
+## Project
+- languages: <…>   verify: typecheck=<…> build=<…> test=<…>
 
 ## Epicenter
 - <file:line> — <coupling class> — <what changed>
 
 ## Blast radius
 ### Directly impacted
-- <file / surface> — <route/endpoint/command> — risk: High|Med|Low
+- <file/surface> — <route/endpoint/command> — risk: High|Med|Low
 ### Transitively impacted
 - <…>  (or "none beyond build-checked usages")
 
@@ -128,22 +121,19 @@ Run the commands discovered in Phase 0, cheapest signal first:
 - <…>  (or "none identified")
 
 ## Verification
-- typecheck/compile: PASS/FAIL
-- build: PASS/FAIL/skipped
+- typecheck/compile: PASS/FAIL   build: PASS/FAIL/skipped
 - tests: <which ran> → PASS/FAIL
 - surfaces exercised: <list> → clean? errors?
 
-## Residual risk & manual checklist
+## Residual checklist
 - [ ] <thing not auto-verifiable>
 ```
 
 **Verdict rules:**
-- **SAFE** — blast radius traced; mirror/twin files in sync; typecheck +
-  warranted build/tests pass; impacted surfaces exercised clean; no silent risks.
-- **SAFE WITH CAVEATS** — passes, but residual checks remain. List them as
-  checkboxes; don't paper over them.
-- **IMPACT FOUND** — a twin is out of sync, a consumer breaks at compile/runtime,
-  or a silent ripple is confirmed. List each breakage with file + fix.
+- **SAFE** — fully traced, twin files in sync, build/tests pass, surfaces clean, no silent risks.
+- **SAFE WITH CAVEATS** — passes but residual checks remain. List them; don't paper over them.
+- **IMPACT FOUND** — a twin is out of sync, a consumer breaks, or a silent ripple is confirmed.
+  List each breakage with file + fix. This is the outcome the skill exists to catch.
 
 ## Quick Reference
 
