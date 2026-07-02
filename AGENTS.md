@@ -13,7 +13,7 @@ This repository contains customized agents for OpenCode.ai, aligned with Anthrop
 Language-specific rules are loaded on-demand via skills (not eagerly). Available skills:
 `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `blogger`, `brutal-critic`
 
-Utility skills: `project-bootstrap`, `docs-validation`, `agent-diagnostics`
+Utility skills: `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `legal-advisor`, `career-content`
 
 Load a skill with the `skill` tool when working on a specific language or domain.
 

@@ -125,6 +125,6 @@ To restore files, use `backup-manifest.json` from a backup session and copy the 
 ## Next Steps
 
 - **[Agents](./agents/README)**
-- **[Coding Standards](./instructions)**
+- **[Coding Standards](./customization)**
 - **[Commands & Skills](./commands)**
 - **[Troubleshooting](./troubleshooting)**

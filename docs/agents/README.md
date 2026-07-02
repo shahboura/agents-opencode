@@ -67,5 +67,5 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](../ski
 ## Next Steps
 
 - **[Commands & Skills](../commands)**
-- **[Coding Standards](../instructions)**
+- **[Coding Standards](../customization)**
 - **[Customization](../customization)**

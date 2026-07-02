@@ -70,7 +70,7 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](skills
 
 - [Getting Started](getting-started)
 - [Agents](agents/README)
-- [Coding Standards](instructions)
+- [Coding Standards](customization)
 - [Commands & Skills](commands)
 - [Troubleshooting](troubleshooting)
 - [Skills Matrix](skills-matrix)
@@ -90,5 +90,3 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](skills
 
 - Keep core-only scope for now.
 - Add new skills only when there is clear demand, a real gap, ownership, and clean licensing.
-
-*Last updated: 2026-05-07*
