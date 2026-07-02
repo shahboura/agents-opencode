@@ -42,12 +42,16 @@ mkdir -p "$OUTPUT/skills" "$OUTPUT/.claude-plugin"
 
 # Copy .claude-plugin directory with version substituted
 cp "$PLUGIN_SRC/plugin.json" "$OUTPUT/.claude-plugin/plugin.json"
+cp "$PLUGIN_SRC/marketplace.json" "$OUTPUT/.claude-plugin/marketplace.json"
 node -e "
   const fs = require('fs');
-  const p = '$OUTPUT/.claude-plugin/plugin.json';
-  const j = JSON.parse(fs.readFileSync(p, 'utf8'));
-  j.version = '$VERSION';
-  fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n');
+  ['plugin.json', 'marketplace.json'].forEach(f => {
+    const p = '$OUTPUT/.claude-plugin/' + f;
+    const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+    if (f === 'plugin.json') j.version = '$VERSION';
+    if (f === 'marketplace.json') j.plugins[0].version = '$VERSION';
+    fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n');
+  });
 "
 
 for skill_dir in "$SKILLS_SRC"/*/; do
@@ -168,4 +172,4 @@ fi
 echo ""
 echo "Publish:  push dist/ contents to github.com/shahboura/agents-opencode-claude"
 echo "Install:  /plugin marketplace add shahboura/agents-opencode-claude"
-echo "          /plugin install agents-opencode@shahboura-agents-opencode-claude"
+echo "          /plugin install agents-opencode@shahboura"

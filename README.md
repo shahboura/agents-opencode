@@ -104,10 +104,10 @@ npx agents-opencode --global
 /plugin marketplace add shahboura/agents-opencode-claude
 
 # Install
-/plugin install agents-opencode@shahboura-agents-opencode-claude
+/plugin install agents-opencode@shahboura
 
 # Update
-/plugin update agents-opencode@shahboura-agents-opencode-claude
+/plugin update agents-opencode@shahboura
 ```
 
 Gives Claude Code access to the same 23 on-demand skills. Skills load only when

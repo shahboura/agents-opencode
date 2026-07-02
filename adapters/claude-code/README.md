@@ -9,7 +9,7 @@ Install the agents-opencode skill pack for Claude Code.
 /plugin marketplace add shahboura/agents-opencode-claude
 
 # Install the plugin
-/plugin install agents-opencode@shahboura-agents-opencode-claude
+/plugin install agents-opencode@shahboura
 ```
 
 23 on-demand skills covering:
@@ -25,7 +25,7 @@ Skills load on demand — no context cost until invoked.
 ## Update
 
 ```
-/plugin update agents-opencode@shahboura-agents-opencode-claude
+/plugin update agents-opencode@shahboura
 ```
 
 ## Publish (maintainers)

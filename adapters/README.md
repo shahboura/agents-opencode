@@ -5,7 +5,7 @@ agents-opencode skills and agents are portable across AI coding platforms.
 | Platform | Distribution | Install |
 |---|---|---|
 | **OpenCode** | npm | `npx agents-opencode --global` |
-| **Claude Code** | GitHub plugin | `/plugin marketplace add shahboura/agents-opencode-claude` then `/plugin install agents-opencode@shahboura-agents-opencode-claude` |
+| **Claude Code** | GitHub plugin | `/plugin marketplace add shahboura/agents-opencode-claude` then `/plugin install agents-opencode@shahboura` |
 | **Cursor** | 🔲 Planned | Generate `.cursor/rules/*.mdc` from skills |
 
 ## How adapters work
