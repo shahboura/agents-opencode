@@ -46,7 +46,7 @@ Also available as a Claude Code plugin:
 
    ```
    /plugin marketplace add shahboura/agents-opencode-claude
-   /plugin install agents-opencode@shahboura-agents-opencode-claude
+   /plugin install agents-opencode@shahboura
    ```
 
 ## Agents

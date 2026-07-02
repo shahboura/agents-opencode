@@ -45,7 +45,7 @@ npx agents-opencode --update --all
 /plugin marketplace add shahboura/agents-opencode-claude
 
 # Install
-/plugin install agents-opencode@shahboura-agents-opencode-claude
+/plugin install agents-opencode@shahboura
 ```
 
 All 23 skills are available immediately. Type `/` in Claude Code to see the full
