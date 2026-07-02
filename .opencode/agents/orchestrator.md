@@ -197,3 +197,4 @@ For iterative execution tasks, enforce a bounded loop:
 **At session start:** Read `AGENTS.md`, `state/session-state.json`, and `handoff/latest.md`.
 **At task completion:** Refresh state, generate handoff packet, and log a concise
 timestamped entry (3-5 bullets) to `AGENTS.md`. Present update for approval before ending.
+Adopt the format from `AGENTS.md` if it exists.

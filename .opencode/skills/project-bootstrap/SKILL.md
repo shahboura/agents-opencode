@@ -25,10 +25,27 @@ Ask clarifying questions about tech stack and standards before writing.
 ### AGENTS.md
 - Keep the template short and practical
 - Prefer bullet points over long paragraphs
-- Include a brief "Milestones" section placeholder
+- Include these standard sections:
+  - **Project Structure** — `.opencode/`, `docs/`, key directories
+  - **Language & Domain Skills** — available skill list
+  - **Agent Usage** — primary agents and subagents
+  - **Quality Requirements** — lint, test, typecheck standards
+  - **Context Persistence Format** — canonical milestone entry template (see below)
+  - **Milestones** — placeholder for timestamped entries
 - Ask about tech stack and conventions before generating content
 - Do not add language-specific rules; those belong in skills
 - Respect repository scope decisions (if policy is core-only, do not suggest optional skill packs by default)
+- Context Persistence Format template:
+  ```
+  ### YYYY-MM-DD HH:MM - [Brief Task Description]
+  **Agent:** [agent-name]
+  **Summary:** [What was done]
+  - Key decisions, files changed, patterns used
+  - Lessons learned for future sessions
+
+  Format: date to minute precision, latest first (prepend), 3-5 bullets max,
+  skip trivial edits, auto-prunes at 100KB.
+  ```
 
 ### README Creation
 Include these standard sections where applicable:
