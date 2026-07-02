@@ -151,6 +151,32 @@ Document during the meeting and send summary same-day. Track over time for recur
 **Joint:**
 - [ ] [Collaboration item] — Due: [Date]
 
+### Post-Meeting Follow-Up
+
+Send within 24 hours:
+- **Summary:** 3-5 bullet recap of key discussion points
+- **Action items:** Copied from above with owners and due dates
+- **Next meeting:** Date/time, any prep needed
+- **Tone:** Positive, forward-looking — focus on growth, not critique
+
+### Special Situations
+
+**New hire / onboarding:**
+Focus on belonging and clarity — "What's clear? What's confusing? Who should you meet?"
+Check ramp-up progress against 30/60/90-day plan. Over-communicate culture norms.
+
+**Performance concern:**
+Be specific, not general — "The last two PRs had 5+ review cycles" not "Your code quality needs work."
+Use SBI format. Co-create an improvement plan. Document expectations in writing.
+
+**Promotion discussion:**
+Review criteria together. Identify gaps between current and target level.
+Co-create a development plan with measurable milestones. Be honest about timeline.
+
+**Remote / distributed:**
+Check for isolation, async communication friction, and timezone burden.
+Ask about home workspace, meeting fatigue, and informal connection with teammates.
+
 ## Skill Activation Policy
 
 - Load skills on demand only for active task/phase requirements.

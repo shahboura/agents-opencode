@@ -126,6 +126,15 @@ Before building the plan, scan the target area for:
    gradually increase traffic, monitor metrics
 5. **Cleanup** — remove old code paths, update documentation, share learnings
 
+### Risk Assessment Format
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Breaking changes | High | Comprehensive test suite first |
+| Performance regression | Medium | Benchmark before/after each phase |
+| Merge conflicts | Low | Frequent rebasing, small PRs |
+| Scope creep | Medium | Stick to phases; defer feature changes |
+
 ### Success Criteria
 
 After refactoring:

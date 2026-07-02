@@ -31,7 +31,20 @@ Ask clarifying questions about tech stack and standards before writing.
 - Respect repository scope decisions (if policy is core-only, do not suggest optional skill packs by default)
 
 ### README Creation
-Include these standard sections where applicable: Overview, Getting Started, Installation, Usage, Configuration, API Reference, Development, Testing, Deployment, Contributing, License, Support.
+Include these standard sections where applicable:
+
+**Overview** — Clear value proposition in first paragraph, target audience, key differentiators.
+**Getting Started** — Prerequisites, quick-start commands, verification steps.
+**Installation** — Multiple methods (local dev, Docker, platform-specific), common issues.
+**Usage** — Start simple, then show advanced; real-world examples; common use cases.
+**Configuration** — All env vars documented; required vs optional marked; security considerations.
+**API Reference** — Most common endpoints with request/response examples; link to full docs.
+**Development** — Dev environment setup, code organization, workflow, testing approach.
+**Testing** — How to run tests, coverage targets, test structure (unit/integration/e2e).
+**Deployment** — Environment setup, build steps, platform guides (Heroku, Docker, cloud).
+**Contributing** — Branch naming, commit conventions, PR process, code standards.
+**License** — SPDX identifier and link.
+**Support** — Documentation link, community channel, issue tracker, contact info.
 
 Best practices:
 - Keep it scannable with headers, lists, and tables

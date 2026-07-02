@@ -180,6 +180,29 @@ Integrate into CI/CD:
 | Secret scanning | TruffleHog, GitGuardian |
 | Container scanning | Trivy, Clair, Docker Scout |
 
+### Audit Commands
+
+Run these during the audit:
+
+```bash
+# Dependency vulnerability scans (by ecosystem)
+npm audit                              # Node.js
+pip-audit                              # Python
+safety check                           # Python (alternative)
+dotnet list package --vulnerable       # .NET
+go list -json -m all | nancy sleuth   # Go
+bundle audit                           # Ruby
+
+# Secret scanning
+trufflehog git file://. --only-verified
+git grep -E 'password.*=.*["'"'"'].*["'"'"']'     # Manual: hardcoded passwords
+git grep -E 'api[_-]?key.*=.*["'"'"'].*["'"'"']'  # Manual: API keys
+
+# Infrastructure
+docker scan <image>                    # Container CVE scan
+trivy image <image>                    # Container scan (alternative)
+```
+
 ## Validation Commands
 
 ```bash
