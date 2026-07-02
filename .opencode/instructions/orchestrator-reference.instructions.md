@@ -35,50 +35,21 @@ Use this format when creating a multi-phase plan:
 
 ## Agent Selection Guide
 
-**@codebase** - Use for:
-- Feature implementation
-- Bug fixes
-- Code refactoring
-- Test creation
+**@codebase** — Feature implementation, bug fixes, refactoring, test creation. Use for cross-domain or unfamiliar-stack work (multi-language validation, auto-detection). For single-file/single-domain changes, orchestrator may implement directly — see Implementation Routing in the orchestrator agent.
 
-**@docs** - Use for:
-- README updates
-- API documentation
-- Architecture docs
-- User guides
+**@docs** — README updates, API documentation, architecture docs, user guides.
 
-**@review** - Use for:
-- Security audits
-- Performance reviews
-- Code quality checks
-- Best practices validation
+**@review** — Security audits, performance reviews, code quality checks, best practices validation.
 
-**@planner** - Use for:
-- Read-only codebase analysis
-- Detailed implementation planning
-- Risk assessment before implementation
+**@planner** — Read-only codebase analysis, detailed implementation planning, risk assessment before implementation.
 
-**@em-advisor** - Use for:
-- Engineering leadership guidance
-- Stakeholder communication strategy
-- Team execution and prioritization support
+**@em-advisor** — Engineering leadership guidance, stakeholder communication, team execution and prioritization.
 
-**@blogger** - Use for:
-- Blog post creation
-- YouTube script writing
-- Podcast outline brainstorming
+**@blogger** — Blog post creation, YouTube scripts, podcast outlines.
 
-**@brutal-critic** - Use for:
-- Content quality reviews
-- Framework-based scoring
-- Pre-publish validation
+**@brutal-critic** — Content quality reviews, framework-based scoring, pre-publish validation.
 
-**@legal-advisor** - Use for:
-- Legal research across jurisdictions
-- Regulatory compliance analysis
-- License auditing and open-source compliance
-- Data privacy and export control review
-- Contract and agreement evaluation
+**@legal-advisor** — Legal research, regulatory compliance, license auditing, data privacy, export control, contract evaluation.
 
 ## Coordination Patterns
 

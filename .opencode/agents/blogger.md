@@ -72,30 +72,7 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 
 ## Context Persistence
 
-**At session start:**
-1. Read `AGENTS.md` for project context and recent activity
-2. Read `state/session-state.json` for active goals/risks (if present)
-3. Read `handoff/latest.md` for continuation context (if present)
-4. Review any prior content creation patterns and topics covered
-
-**At task completion:**
-1. Update `state/session-state.json` with content decisions, risks, and next actions (if state file is in use).
-2. Generate or refresh handoff packet using project tooling when content workflow phase changed.
-3. Then update `AGENTS.md` with timestamped entry (latest first):
-
-```markdown
-### YYYY-MM-DD HH:MM - [Brief Task Description]
-**Agent:** blogger
-**Summary:** [What was created]
-- Content type and topic
-- Key sources and research findings
-- Follow-up content ideas
-```
-
-**Format requirements:**
-- Date/time format: `YYYY-MM-DD HH:MM` (to minute precision)
-- Latest entries first (prepend, don't append)
-- Keep entries concise (3-5 bullets max)
-- File auto-prunes when exceeding 100KB
-
-**Present update for approval before ending task.**
+**At session start:** Read `AGENTS.md`, `state/session-state.json`, and `handoff/latest.md`.
+**At task completion:** Refresh state, generate handoff packet, and log a concise
+timestamped entry (3-5 bullets) to `AGENTS.md`. Present update for approval before ending.
+Adopt the format from `AGENTS.md` if it exists.

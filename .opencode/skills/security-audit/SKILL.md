@@ -31,8 +31,6 @@ Activate this skill when:
 - A user requests a security audit, security review, or vulnerability assessment
 - A new feature, endpoint, or deployment surface is being introduced
 - Pre-release hardening or compliance (GDPR, PCI-DSS, HIPAA, SOC 2) is needed
-- Any request containing "security audit", "vulnerability scan", "pentest",
-  "is this secure", or "check for vulnerabilities"
 
 ## Key Rules
 
@@ -103,7 +101,6 @@ Activate this skill when:
 ### Security Headers Reference
 
 Required HTTP response headers:
-
 ```text
 X-Frame-Options: DENY
 X-Content-Type-Options: nosniff
@@ -112,60 +109,39 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains
 Referrer-Policy: strict-origin-when-cross-origin
 ```
 
-Nginx TLS configuration baseline:
-
-```nginx
-ssl_protocols TLSv1.2 TLSv1.3;
-ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
-ssl_prefer_server_ciphers on;
-add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-```
+TLS: require TLS 1.2+, disable 1.0/1.1, use strong cipher suites.
 
 ### Report Template
 
-Audit deliverable structure:
-
 ```markdown
 # Security Audit Report
-
-**Date:** YYYY-MM-DD
-**Auditor:** [Name]
-**Scope:** [What was audited]
+**Date:** YYYY-MM-DD | **Scope:** [What was audited]
+**Overall Risk Level:** Critical / High / Medium / Low
 
 ## Executive Summary
-[High-level findings and risk assessment]
-
-**Overall Risk Level:** Critical / High / Medium / Low
+[High-level findings]
 
 ## Critical Issues
 ### [Issue Title]
-- **Severity:** Critical | **Category:** [area]
-- **Location:** `path:line`
-- **Description:** [What is wrong]
-- **Impact:** [What could happen]
+- **Severity:** Critical | **Category:** [area] | **Location:** `path:line`
+- **Description:** [What is wrong] | **Impact:** [What could happen]
 - **Recommendation:** [How to fix]
-- **Priority:** Fix immediately
 
 ## High / Medium / Low Priority Issues
 [Same format, tiered by severity]
 
 ## Compliance
-- [ ] GDPR compliant
-- [ ] PCI-DSS compliant (if handling cards)
-- [ ] HIPAA compliant (if handling health data)
-- [ ] SOC 2 requirements met
+- [ ] GDPR  [ ] PCI-DSS  [ ] HIPAA  [ ] SOC 2
 
 ## Action Items
-| Issue | Priority | Owner | Due Date | Status |
-|---|---|---|---|---|
+| Issue | Priority | Owner | Due | Status |
+|---|---|---|---|
 
 ## Next Steps
-1. Address all critical issues immediately
-2. Schedule fixes for high priority items
-3. Re-audit after fixes applied
-4. Implement continuous security monitoring
-
-**Next Audit Date:** [Schedule follow-up]
+1. Fix critical issues immediately
+2. Schedule high-priority fixes
+3. Re-audit after remediation
+4. Implement continuous monitoring
 ```
 
 ### Automated Tools
@@ -208,16 +184,12 @@ trivy image <image>                    # Container scan (alternative)
 ```bash
 # Manual verification checklist — no automated validation
 # [ ] All 8 audit areas reviewed against checklist
-# [ ] Authentication & authorization: hashing algo + session config verified
-# [ ] Injection vectors: SQL, XSS, command injection, path traversal checked
-# [ ] Data protection: TLS config + encryption at rest validated
-# [ ] API surface: rate limiting, CORS, auth, size limits confirmed
+# [ ] Auth: hashing algo, session config, RBAC, IDOR verified
+# [ ] Injection: SQL, XSS, command injection, path traversal checked
+# [ ] Data: TLS config, encryption at rest, sensitive data handling validated
+# [ ] API: rate limiting, CORS, auth, size limits confirmed
 # [ ] Dependencies: audit tool run, zero known CVEs
 # [ ] Infrastructure: container non-root, SSH key-only, IAM least privilege
-# [ ] Secrets: no hardcoded secrets in code or git history
-# [ ] Logging: security events captured, no PII in logs
-# [ ] Security headers present and correctly configured
-# [ ] Report generated with severity-graded findings + action plan
-# [ ] CVEs assigned CVSS severity; action items have owners + deadlines
-# [ ] Compliance requirements reviewed; re-audit scheduled after remediation
+# [ ] Secrets + Logging: no hardcoded secrets, security events captured
+# [ ] Report generated with severity-graded findings + action plan + compliance review
 ```

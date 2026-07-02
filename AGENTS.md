@@ -68,6 +68,29 @@ All documentation changes must:
 
 <!-- Session history managed by OpenCode's built-in memory. Only significant milestones logged here. Auto-prunes at 100KB. -->
 
+## Context Persistence Format
+
+All agents log milestone entries to this file using this format:
+
+```markdown
+### YYYY-MM-DD HH:MM - [Brief Task Description]
+**Agent:** [agent-name]
+**Summary:** [What was done]
+- Key decisions, files changed, patterns used
+- Lessons learned for future sessions
+```
+
+**Format rules:**
+- Date/time: `YYYY-MM-DD HH:MM` (to minute precision)
+- Latest entries first (prepend, don't append)
+- Keep entries concise (3-5 bullets max)
+- Log only significant work — skip trivial edits
+- File auto-prunes when exceeding 100KB
+
+**Agent session workflow:**
+- **At session start:** Read `AGENTS.md`, `state/session-state.json`, and `handoff/latest.md`.
+- **At task completion:** Refresh state, generate handoff packet, log milestone entry, present update for approval.
+
 ## Milestones
 
 ### 2026-07-02 19:55 - v2.2.0 Uplift: Usage showcase, docs pruning, agent modernization, human-in-loop

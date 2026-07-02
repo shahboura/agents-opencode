@@ -13,48 +13,26 @@ Detailed code examples and extended guidance for the Java Spring Boot instructio
 ```java
 @Service
 public class UserService {
-
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    public UserService(UserRepository userRepository) { this.userRepository = userRepository; }
 }
 ```
 
 ### Avoid Field Injection
 
 ```java
-// ❌ Bad
-@Autowired
-private UserRepository userRepository;
-
-// ✅ Good - Constructor injection
+// ❌ Bad: @Autowired private UserRepository repo;
+// ✅ Good: constructor injection (above)
 ```
 
 ## Entity Design
 
 ```java
-@Entity
-@Table(name = "users")
+@Entity @Table(name = "users")
 public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @Column(nullable = false)
-    private String password;
-
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-
-    // Constructors, getters, setters
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
+    @Column(nullable = false, unique = true) private String email;
+    @CreationTimestamp private LocalDateTime createdAt;
 }
 ```
 
@@ -108,25 +86,15 @@ public class UserController {
 ```java
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponse("User not found", ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handleNotFound(UserNotFoundException ex) {
+        return ResponseEntity.status(NOT_FOUND).body(new ErrorResponse("Not found", ex.getMessage()));
     }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = ex.getBindingResult()
-            .getFieldErrors()
-            .stream()
-            .collect(Collectors.toMap(
-                FieldError::getField,
-                FieldError::getDefaultMessage
-            ));
-
-        return ResponseEntity.badRequest()
-            .body(new ErrorResponse("Validation failed", errors));
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+        var errors = ex.getBindingResult().getFieldErrors().stream()
+            .collect(toMap(FieldError::getField, FieldError::getDefaultMessage));
+        return ResponseEntity.badRequest().body(new ErrorResponse("Validation failed", errors));
     }
 }
 ```
