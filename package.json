@@ -18,8 +18,8 @@
   },
   "scripts": {
     "doctor": "node scripts/doctor.js",
-    "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\"",
-    "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --fix",
+    "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --ignore \"dist/**\"",
+    "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --ignore \"dist/**\" --fix",
     "validate:agents": "node scripts/validate-agents.js",
     "validate:commands": "node scripts/validate-command-matrices.js",
     "eval:agents": "node evals/harness/run-evals.js",
