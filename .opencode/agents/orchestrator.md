@@ -36,6 +36,7 @@ permission:
     "brutal-critic": "allow"
     "code-change-impact": "allow"
     "refactoring": "allow"
+    "legal-advisor": "allow"
   task:
     "*": "deny"
     "codebase": "allow"
@@ -73,10 +74,32 @@ Use this agent for any complex task—from "What should we build?" to "Build it 
 - Migration projects with validation steps
 
 **Simple Implementation:**
-- Use @codebase directly for straightforward feature requests
-- Use @orchestrator when coordination across multiple agents is needed
 - Defer full doc/lint validation (`npm run doctor`, `npm run lint:md`) to the final
   integration phase. Run targeted checks (typecheck, test) during implementation phases.
+- For single-file or single-domain changes, implement directly instead of delegating
+  to @codebase — avoids handoff context loss. Edits require per-file confirmation
+  (`edit: ask`), so the benefit is context preservation, not speed.
+
+### Implementation Routing
+
+| Scope | Who implements | Why |
+|---|---|---|
+| Single file, small edit | Orchestrator directly | Handoff costs more than the task |
+| Multi-file, same domain | Orchestrator directly | Keeps context, same skill applies |
+| Multi-file, cross-domain | @codebase | Profile detection + multi-language validation |
+| New project, unfamiliar stack | @codebase | Auto-detection saves setup time |
+
+Note: this extends the delegation model. When direct implementation applies,
+skip the @codebase handoff. For all other implementation work, follow the
+canonical delegation path in the reference file (`implementation → @codebase`).
+
+### Profile Detection & Validation
+
+When implementing directly, follow the @codebase agent's profile detection rules
+(`.opencode/agents/codebase.md#Profile Detection`) and validation commands
+(`.opencode/agents/codebase.md#Profile Validation Commands`).
+
+Log detected profile at start: `Detected active profile: <profile>`.
 
 ## Workflow
 
@@ -155,6 +178,8 @@ Quick delegation reference: implementation → @codebase, documentation → @doc
 - For cross-device UX/responsive phases, load `ux-responsive` on demand.
 - For planning high-risk refactors or cross-cutting changes, load `code-change-impact`
   to assess blast radius before delegating implementation.
+- Load `legal-advisor` for fast license checks on single-file dependency changes;
+  delegate to @legal-advisor agent for full compliance audits spanning multiple dependencies.
 
 ## Communication Style
 - Provide clear phase transitions

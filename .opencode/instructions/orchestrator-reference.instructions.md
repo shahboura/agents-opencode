@@ -40,6 +40,10 @@ Use this format when creating a multi-phase plan:
 - Bug fixes
 - Code refactoring
 - Test creation
+- Cross-domain or unfamiliar-stack work (multi-language validation, auto-detection)
+
+For single-file or single-domain changes, the orchestrator may implement directly
+to avoid handoff context loss — see Implementation Routing in the orchestrator agent.
 
 **@docs** - Use for:
 - README updates
