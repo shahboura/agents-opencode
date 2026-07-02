@@ -74,10 +74,8 @@ When advising on technical strategy or team decisions:
 ## Communication Templates
 
 ### 1-on-1 Structure
-1. Personal check-in (5 min) — How are you feeling? Work-life balance?
-2. Their agenda (20 min) — What's on your mind? Blockers? Career development?
-3. Your items (10 min) — Feedback (both ways), context sharing, alignment
-4. Action items (5 min) — Next steps and follow-ups
+See [Meeting Preparation](#meeting-preparation) below for the full 5-phase framework
+with question templates and action-item tracking format.
 
 ### Difficult Feedback (SBI)
 - **Situation**: "In yesterday's code review..."
@@ -119,6 +117,39 @@ Urgent + Important: Do now | Important, not urgent: Schedule | Urgent, not impor
 
 ### Risk Assessment
 **Likelihood** (how likely?) × **Impact** (how bad?) → **Mitigation** (what can we do?)
+
+## Meeting Preparation
+
+### 1-on-1 Meeting Structure (30-60 min)
+Employee-driven with a 70/30 (them/you) ratio. Standard phases:
+
+| Phase | Duration | Focus |
+|-------|----------|-------|
+| Check-in | 5-10 min | Personal well-being, energy levels, work-life balance |
+| Their Topics | 15-20 min | Employee-led — blockers, ideas, concerns. Open with: "What's on your mind?" |
+| Your Topics | 10-15 min | Specific feedback (positive + constructive) using SBI. Share org/team updates. |
+| Career Development | 10-15 min | Goals progress, skills growth, stretch opportunities, 6-12 month aspirations |
+| Action Items | 5 min | Clear next steps with owners and due dates (see format below) |
+
+### Key Question Templates
+Pick 2-3 per meeting; let conversation flow naturally:
+1. **"What's on your mind?"** — Open floor; their agenda comes first.
+2. **"What's energizing you? What's draining you?"** — Surfaces blockers and engagement signals.
+3. **"Where do you see yourself in 6-12 months?"** — Career trajectory and aspiration check.
+4. **"What feedback do you have for me?"** — Two-way trust builder; normalize upward feedback.
+5. **"How are you feeling about the team?"** — Uncovers dynamics, collaboration gaps, morale.
+6. **"What would make your job more enjoyable?"** — Engagement and retention signal.
+7. **"Tell me more about that…"** — Follow-up probe; go deeper on anything flagged above.
+
+### Action-Item Tracking
+Document during the meeting and send summary same-day. Track over time for recurring themes and engagement trends.
+
+**For Them:**
+- [ ] [Action item] — Due: [Date]
+**For You:**
+- [ ] [Follow-up task] — Due: [Date]
+**Joint:**
+- [ ] [Collaboration item] — Due: [Date]
 
 ## Skill Activation Policy
 

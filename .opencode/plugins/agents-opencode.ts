@@ -13,7 +13,7 @@ export const AgentsOpencodePlugin: Plugin = async ({
     body: {
       service: "agents-opencode",
       level: "info",
-      message: `Agents Opencode v${PACKAGE_VERSION} loaded — 9 agents, 19 skills, 14 commands available`,
+      message: `Agents Opencode v${PACKAGE_VERSION} loaded — 9 agents, 23 skills, 16 commands available`,
     },
   });
 
@@ -38,8 +38,8 @@ Available agents (invoke via @mention):
 - @em-advisor — Engineering management guidance
 - @legal-advisor — License auditing, compliance, and regulatory guidance
 
-Active skills: 19 language/domain/utility skill packs loadable via skill tool.
-Active commands: 14 slash commands (type / to see autocomplete).
+Active skills: 23 language/domain/utility skill packs loadable via skill tool.
+Active commands: 16 slash commands (type / to see autocomplete).
 
 Memory: state/session-state.json and handoff/latest.md preserve working state.
 Context persistence: AGENTS.md tracks project milestones across sessions.`);

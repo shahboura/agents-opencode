@@ -31,6 +31,7 @@ permission:
     "sql-migrations": "allow"
     "legal-advisor": "allow"
     "code-change-impact": "allow"
+    "refactoring": "allow"
   task:
     "*": "deny"
     "review": "allow"

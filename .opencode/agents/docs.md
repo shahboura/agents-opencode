@@ -17,6 +17,8 @@ permission:
     "docs-validation": "allow"
     "project-bootstrap": "allow"
     "agent-diagnostics": "allow"
+    "adr": "allow"
+    "api-documentation": "allow"
   task:
     "*": "deny"
     "explore": "allow"
