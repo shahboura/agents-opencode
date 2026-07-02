@@ -139,6 +139,59 @@ orchestrator → @planner (deep analysis, no code changes)
 ```
 Use for high-risk or unfamiliar codebases where understanding must precede action. The read-only planner phase prevents premature implementation.
 
+## Checkpoint Format
+
+At multi-phase boundaries, emit a structured checkpoint for human decision:
+
+```
+## Checkpoint: [Phase Name] Complete — Human Decision Required
+**Phase:** [Phase description]
+**Status:** Complete
+**Completed:** [What was done — files, key changes]
+**Validated:** [Verification results — tests, lint, doctor]
+**Next phase:** [Phase name and brief description]
+**Decision:** Proceed to next phase?
+**Options:**
+  [A] Proceed
+  [B] Review changes first, then proceed
+  [C] Skip this phase, jump to [alternative]
+  [D] Stop and hand off
+```
+
+Checkpoints should be emitted at:
+- Phase boundaries in multi-phase plans
+- After high-risk changes (security, schema, contract, build)
+- When the orchestrator needs a decision before continuing
+- Before Phase 7 of any plan (final validation gate)
+
+## Fallback Routing
+
+When a primary path fails, route to alternatives instead of blocking:
+
+```
+orchestrator → @review (primary gate)
+            → if FAIL → @planner (diagnose root cause)
+                       → @codebase (remediate)
+                       → @review (re-validate)
+            → if FAIL again → escalate to human with options
+```
+
+Fallback patterns per failure type:
+- **Review failure** → @planner diagnose → @codebase fix → @review re-validate
+- **Build break** → @codebase fix (auto if safe) → build → re-validate
+- **Test failure** → @planner analyze → @codebase fix → test → re-validate
+- **Multiple cycles fail** → escalate with structured options (do not loop)
+
+## Idempotency & Resumption
+
+When resuming or retrying, avoid re-executing completed work:
+- Before each sub-task, check if it was already completed:
+  - `git diff --stat` for already-applied changes
+  - File existence for generated artifacts
+  - Test pass status for already-verified work
+- Skip completed sub-tasks; report them as "already done" in checkpoint.
+- Reference `state/session-state.json` for prior phase completion status.
+
 ## Progress Tracking for Long-Running Work
 
 For complex or multi-phase tasks, include and maintain a status table in updates.

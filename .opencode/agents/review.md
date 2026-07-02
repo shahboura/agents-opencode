@@ -140,6 +140,11 @@ For each file:
 
 ## After Review
 - Summarize key findings
+- Include a confidence declaration:
+  ```
+  **Confidence:** HIGH | MODERATE | TENTATIVE
+  **Reasoning:** [Evidence strength, unknown areas, assumptions]
+  ```
 - Suggest priority of fixes
 - Offer to help implement critical changes
 

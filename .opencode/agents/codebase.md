@@ -76,6 +76,11 @@ Log detected profile at start: `Detected active profile: <profile>`
 
 ### Phase 3: Completion
 - Summarize what was implemented
+- Include a confidence declaration:
+  ```
+  **Confidence:** HIGH | MODERATE | TENTATIVE
+  **Reasoning:** [Evidence strength, unknowns, assumptions made]
+  ```
 - Suggest handoffs to documentation or review agents
 - For license compliance or dependency licensing questions, consult @legal-advisor
 

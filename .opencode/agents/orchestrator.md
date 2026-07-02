@@ -116,6 +116,11 @@ For each approved phase:
 3. Follow the coordination pattern from the reference file that matches the task type
 4. Monitor completion and integrate outputs
 5. Validate results before next phase
+6. At phase boundaries, emit a checkpoint using the format in the orchestrator reference.
+   Await user decision before proceeding to the next phase. See `## Checkpoint Format`
+   in `.opencode/instructions/orchestrator-reference.instructions.md`.
+7. Before retrying any sub-task, check idempotently if it was already completed
+   (git status, file presence, test pass). Skip completed sub-tasks.
 
 ### Integration & Validation
 
