@@ -16,10 +16,10 @@ Quick read:
 
 | Agent | Allowed skills |
 |---|---|
-| `codebase` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `legal-advisor`, `code-change-impact` |
+| `codebase` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `legal-advisor` |
 | `orchestrator` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `blogger`, `brutal-critic` |
 | `planner` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics` |
-| `review` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `docs-validation`, `agent-diagnostics`, `code-change-impact` |
+| `review` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `docs-validation`, `agent-diagnostics` |
 | `docs` | `docs-validation`, `project-bootstrap`, `agent-diagnostics` |
 | `em-advisor` | `project-bootstrap`, `agent-diagnostics`, `docs-validation`, `legal-advisor`, `blogger` |
 | `blogger` | `blogger`, `brutal-critic` |
@@ -40,13 +40,12 @@ Use this as the canonical trigger reference for when agents should load skills.
 |---|---|---|
 | Language/framework implementation or review | Matching stack skill (`dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ruby-rails`, `rust`, `sql-migrations`) | `codebase`, `review`, `planner`, `orchestrator` |
 | Responsive UX across phone/tablet/desktop | `ux-responsive` | `codebase`, `review`, `planner`, `orchestrator` |
+| Content drafting (blogs, podcasts, YouTube, resumes, LinkedIn, bios) | `blogger` | `blogger`, `orchestrator`, `em-advisor` |
+| Content critique and scoring | `brutal-critic` | `brutal-critic`, `blogger`, `orchestrator` |
 | Docs quality checks (lint/link/structure) | `docs-validation` | `docs`, `review`, `orchestrator` |
 | Agent/package diagnostics and configuration checks | `agent-diagnostics` | `docs`, `review`, `planner`, `orchestrator`, `em-advisor` |
 | Project bootstrap scaffolding | `project-bootstrap` | `docs`, `planner`, `orchestrator`, `em-advisor` |
-| Content drafting | `blogger` | `blogger`, `orchestrator`, `em-advisor` |
-| Content critique and scoring | `brutal-critic` | `brutal-critic`, `blogger`, `orchestrator` |
-| Legal research, jurisdiction-aware compliance, contract review, license auditing, data privacy, IP, export controls | `legal-advisor` | `legal-advisor`, `orchestrator` |
-| Code change impact/blast-radius analysis, regression check, safe-to-merge verification | `code-change-impact` | `review`, `codebase` |
+| Legal research, compliance, contract review, license auditing, data privacy, IP, export controls | `legal-advisor` | `legal-advisor`, `orchestrator` |
 
 Trigger policy:
 - Load skills only on demand for the active task/phase.
@@ -78,5 +77,6 @@ Arguments passed in `/command-name [argument]` are forwarded to the command body
 | `/refactor-plan` | `planner` | `[target module, file, or scope]` | Safe staged refactor strategy |
 | `/security-audit` | `review` | `[scope, file, component, or 'full project']` | Security-focused code and config review |
 | `/stop-loop` | `orchestrator` | `[optional reason or scope]` | Halt loop execution and report current state |
+| `/checkpoint` | `orchestrator` | `[phase name or description]` | Structured phase-boundary checkpoint for human decision |
 | `/blog-post` | `blogger` | `[topic or title]` | Draft a blog post |
 | `/legal-review` | `legal-advisor` | `[dependency, file, or scope]` | Review licenses, compliance, and data privacy |

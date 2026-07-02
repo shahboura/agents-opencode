@@ -30,7 +30,6 @@ permission:
     "rust": "allow"
     "sql-migrations": "allow"
     "legal-advisor": "allow"
-    "code-change-impact": "allow"
   task:
     "*": "deny"
     "review": "allow"

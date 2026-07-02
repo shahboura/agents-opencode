@@ -70,6 +70,14 @@ All documentation changes must:
 
 ## Milestones
 
+### 2026-07-02 19:55 - v2.2.0 Uplift: Usage showcase, docs pruning, agent modernization, human-in-loop
+
+**Agent:** orchestrator
+**Summary:** Coordinated a 7-phase uplift adding usage metrics to README, consolidating docs, modernizing agent coordination patterns, generalizing legal-advisor, integrating (then migrating) code-change-impact methodology, and adding human-in-loop checkpoint/confidence/fallback patterns.
+- Phase sequence: usage data showcase → docs pruning (merged instructions.md, updated stale refs) → agent modernization (7 coordination patterns, career-content→blogger merge, LLM routing) → legal-advisor generalization → code-change-impact absorbed into @review → human-in-loop improvements (checkpoint command, confidence scoring, fallback routing, idempotency)
+- Key decision: migrated code-change-impact from standalone skill into @review agent instructions (coupling taxonomy + silent-risk catalog) to reduce maintenance surface and align with core-only skill policy
+- Created `/checkpoint` command for structured phase-boundary human decision gates
+
 ### 2026-05-05 00:00 - v2.0.0 Uplift: Plugin compatibility, legal-advisor, memory optimization
 
 **Agent:** orchestrator

@@ -27,7 +27,6 @@ permission:
     "sql-migrations": "allow"
     "docs-validation": "allow"
     "agent-diagnostics": "allow"
-    "code-change-impact": "allow"
   task:
     "*": "deny"
     "explore": "allow"
@@ -128,6 +127,29 @@ For each file:
 - If scope is ambiguous, ask a clarifying question before loading.
 - For CI/CD workflow reviews, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For responsive/accessibility checks across breakpoints and input modes, load `ux-responsive` on demand.
+
+## Impact Analysis (Blast-Radius Review)
+
+When reviewing a code change, assess its blast radius using this coupling taxonomy:
+
+| Changed code is… | Reach | Verify |
+|---|---|---|
+| shared/core/common/util | **wide** | every importer |
+| public API / exported symbol | callers in + out of module | every caller |
+| type / interface / schema | wide | compiler-caught in typed langs; **silent** in dynamic |
+| serialized contract (REST/GraphQL/DTO) | cross-service | the other side of the wire |
+| config / registry / route table / DI | fan-out | everything derived from it |
+| DB schema / migration / ORM model | data layer | queries, models, other services |
+| global config / styles / theme / i18n | **global, silent** | every screen/string, no compiler signal |
+| build / deps / lockfile / container / CI | build & runtime | the whole app |
+| internal leaf-file change | **local** | itself |
+
+Silent-risk catalog (build/lint won't catch):
+- Cache/memo key change, changed default/sort/comparator
+- Serialization drift (field made nullable, enum value added)
+- Global mutable state, concurrency boundaries, transaction scope
+- Regex/validation predicate, feature-flag default, error-handling control flow
+- Mirror/twin files out of sync (generated code, cross-language constants)
 
 ## Review Guidelines
 - Be constructive and specific
