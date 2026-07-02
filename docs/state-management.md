@@ -12,6 +12,8 @@ plus generated handoff packets for session-to-session continuity.
 
 ## Files
 
+- `AGENTS.md` — canonical Context Persistence Format (milestone entry template,
+  format rules, agent session workflow). All agents reference this format.
 - `state/session-state.json` — canonical working state (project-scoped, installer scaffolded for project installs)
 - `handoff/latest.md` — generated handoff summary (runtime output, not installer-seeded)
 

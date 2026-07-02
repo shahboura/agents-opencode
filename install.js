@@ -1021,7 +1021,7 @@ function main() {
     info('\n🎯 Next steps:');
     info("1. Run 'opencode' to start using the agents");
     info("2. Type '@' to see available agents");
-    info("3. Try: @codebase Create a user API endpoint");
+    info("3. Try: @orchestrator Create a user API endpoint");
     info('\n📚 Documentation: https://github.com/shahboura/agents-opencode');
 }
 

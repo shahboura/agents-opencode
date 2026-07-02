@@ -2,7 +2,7 @@
 layout: default
 title: Getting Started
 nav_order: 2
-description: Install and configure OpenCode agents in under 5 minutes with npx or curl.
+description: Install and configure agents for OpenCode (npx/curl) or Claude Code (plugin).
 ---
 
 # Getting Started
@@ -37,6 +37,19 @@ npx agents-opencode --update --all
 ```
 
 `--languages` filters language instruction reference files. Runtime skills still load on demand via agent skill allowlists.
+
+### Claude Code Plugin
+
+```bash
+# Add marketplace (one-time)
+/plugin marketplace add shahboura/agents-opencode-claude
+
+# Install
+/plugin install agents-opencode@shahboura-agents-opencode-claude
+```
+
+All 23 skills are available immediately. Type `/` in Claude Code to see the full
+skill list. Skills load on demand — no context cost until invoked.
 
 ### Via curl
 
