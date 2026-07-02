@@ -102,6 +102,9 @@ For detailed standards, open the corresponding file in `.opencode/instructions/`
 Use `.opencode/instructions/loop-execution.instructions.md` for bounded iterative
 execution with completion criteria, cycle limits, escalation rules, and verification gates.
 
+For multi-phase coordination patterns, checkpoints, fallback routing, and agent delegation
+guidance, see `.opencode/instructions/orchestrator-reference.instructions.md`.
+
 ## Next Steps
 
 - **[Getting Started](./getting-started)**

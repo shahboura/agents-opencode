@@ -204,6 +204,7 @@ Type `/command-name` in the TUI to run:
 | `/plan-project` | Multi-phase project planning |
 | `/execution-loop` | Bounded iterative execution workflow |
 | `/stop-loop` | Stop loop and summarize state |
+| `/checkpoint` | Phase-boundary checkpoint for human decision |
 | `/1-on-1-prep` | Meeting preparation |
 
 ## Agent Evals
