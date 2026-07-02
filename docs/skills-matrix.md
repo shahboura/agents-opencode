@@ -45,7 +45,7 @@ Use this as the canonical trigger reference for when agents should load skills.
 | Docs quality checks (lint/link/structure) | `docs-validation` | `docs`, `review`, `orchestrator` |
 | Agent/package diagnostics and configuration checks | `agent-diagnostics` | `docs`, `review`, `planner`, `orchestrator`, `em-advisor` |
 | Project bootstrap scaffolding | `project-bootstrap` | `docs`, `planner`, `orchestrator`, `em-advisor` |
-| Legal research, compliance, contract review, license auditing, data privacy, IP, export controls | `legal-advisor` | `legal-advisor`, `orchestrator` |
+| Legal research, compliance, contract review, license auditing, data privacy, IP, export controls | `legal-advisor` | `legal-advisor` |
 | Code change impact/blast-radius analysis, regression check, safe-to-merge verification | `code-change-impact` | `review`, `codebase`, `orchestrator` |
 
 Trigger policy:
