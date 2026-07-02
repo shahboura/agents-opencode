@@ -16,10 +16,10 @@ Quick read:
 
 | Agent | Allowed skills |
 |---|---|
-| `codebase` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `legal-advisor` |
+| `codebase` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `legal-advisor`, `code-change-impact` |
 | `orchestrator` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `blogger`, `brutal-critic` |
 | `planner` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics` |
-| `review` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `docs-validation`, `agent-diagnostics` |
+| `review` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `docs-validation`, `agent-diagnostics`, `code-change-impact` |
 | `docs` | `docs-validation`, `project-bootstrap`, `agent-diagnostics` |
 | `em-advisor` | `project-bootstrap`, `agent-diagnostics`, `docs-validation`, `legal-advisor`, `blogger` |
 | `blogger` | `blogger`, `brutal-critic` |
@@ -46,6 +46,7 @@ Use this as the canonical trigger reference for when agents should load skills.
 | Agent/package diagnostics and configuration checks | `agent-diagnostics` | `docs`, `review`, `planner`, `orchestrator`, `em-advisor` |
 | Project bootstrap scaffolding | `project-bootstrap` | `docs`, `planner`, `orchestrator`, `em-advisor` |
 | Legal research, compliance, contract review, license auditing, data privacy, IP, export controls | `legal-advisor` | `legal-advisor`, `orchestrator` |
+| Code change impact/blast-radius analysis, regression check, safe-to-merge verification | `code-change-impact` | `review`, `codebase` |
 
 Trigger policy:
 - Load skills only on demand for the active task/phase.
