@@ -27,7 +27,7 @@ Lean reference for the built-in agents.
 | `@em-advisor` | Engineering leadership guidance |
 | `@blogger` | Blog/video/podcast drafts |
 | `@brutal-critic` | Final content quality gate |
-| `@legal-advisor` | License auditing, IP review, data privacy assessment, regulatory guidance |
+| `@legal-advisor` | Legal research, jurisdiction-aware compliance, contract review, license auditing, data privacy, IP, export controls |
 
 Canonical source for exact allowlists and skill triggers: [Skills Matrix](../skills-matrix).
 
@@ -67,5 +67,5 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](../ski
 ## Next Steps
 
 - **[Commands & Skills](../commands)**
-- **[Coding Standards](../instructions)**
+- **[Coding Standards](../customization)**
 - **[Customization](../customization)**

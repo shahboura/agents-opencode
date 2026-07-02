@@ -72,8 +72,40 @@ When evaluating potential additions, use this gate:
 3. Named maintenance owner
 4. Clean licensing/provenance (or clean-room rewrite)
 
+## Coding Standards
+
+Reference standards for each language. Agents load relevant skills on demand through
+the `skill` tool when work matches a language/domain. Skills are not preloaded eagerly.
+
+| Language | Highlights |
+|---------|------------|
+| .NET (C#) | Clean Architecture, async/await, nullable types |
+| Python | Type hints, context managers, pytest |
+| TypeScript | Strict mode, null safety |
+| Flutter | Riverpod, freezed models, widget testing |
+| Go | Modules, context, testing |
+| Java | Spring Boot DI, validation, records |
+| Node.js | Security middleware, validation, structured logs |
+| React | Accessibility, performance, hooks |
+| UX Responsive | Breakpoints, reflow, touch/pointer and keyboard accessibility |
+| Ruby | MVC, ActiveRecord, RSpec |
+| Rust | Ownership, Result/Option, clippy |
+| CI/CD | Fail-fast gates, security, caching |
+| SQL | Safe migrations, constraints, indexes |
+| Blogger | Content style, SEO, research validation |
+| Brutal Critic | Framework-based scoring, review process |
+
+For detailed standards, open the corresponding file in `.opencode/instructions/`.
+
+### Execution Loop
+
+Use `.opencode/instructions/loop-execution.instructions.md` for bounded iterative
+execution with completion criteria, cycle limits, escalation rules, and verification gates.
+
+For multi-phase coordination patterns, checkpoints, fallback routing, and agent delegation
+guidance, see `.opencode/instructions/orchestrator-reference.instructions.md`.
+
 ## Next Steps
 
 - **[Getting Started](./getting-started)**
 - **[Agents](./agents/README)**
-- **[Coding Standards](./instructions)**

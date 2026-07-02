@@ -16,7 +16,6 @@ permission:
     "*": "deny"
     "blogger": "allow"
     "brutal-critic": "allow"
-    "career-content": "allow"
   task:
     "*": "deny"
     "brutal-critic": "allow"
@@ -62,8 +61,7 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 - Load skills on demand only for active task/phase requirements.
 - Use one relevant skill by default; add a second only for explicit cross-domain needs.
 - If scope is ambiguous, ask a clarifying question before loading.
-- Load `blogger` for blog, podcast, or YouTube content creation tasks.
-- Load `career-content` for resume bullet polishing, LinkedIn copy, cover letters, and professional bios.
+- Load `blogger` for blog, podcast, YouTube, or career content (resumes, LinkedIn, bios) creation tasks.
 - Use `brutal-critic` only for final quality-gate review or when requested.
 
 ## Validation & Handoff

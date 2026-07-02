@@ -117,7 +117,7 @@ Then restart OpenCode or run `/reload-plugins`.
 | `@em-advisor` | EM/leadership guidance |
 | `@blogger` | Blog/video/podcast drafting |
 | `@brutal-critic` | Final content quality gate |
-| `@legal-advisor` | License auditing, IP review, data privacy assessment, regulatory guidance |
+| `@legal-advisor` | Legal research, jurisdiction-aware compliance, contract review, license auditing, data privacy, IP, export controls |
 
 Canonical source for exact allowlists and skill triggers: [Skills Matrix](./docs/skills-matrix.md)
 
@@ -165,6 +165,26 @@ Pattern notes:
 - Keep allowlists narrow by role.
 - Rules are matched in order and the last matching rule wins.
 
+## Usage & Efficiency
+
+OpenCode's context caching dramatically reduces token consumption across sessions.
+The following metrics are from production usage (May–June 2026) with the
+`deepseek-v4-pro` model.
+
+| Metric | May 2026 | June 2026 | Combined |
+|---|---|---|---|
+| Cache Hit Tokens | 263.3M | 21.9M | 285.2M |
+| Cache Miss Tokens | 7.9M | 1.3M | 9.2M |
+| Output Tokens | 0.8M | 0.2M | 1.0M |
+| Total Requests | 1,407 | 380 | 1,787 |
+| **Cache Hit Rate** | **97.1%** | **94.5%** | **96.9%** |
+| Avg Tokens/Request | 193K | 62K | 165K |
+
+Key takeaway: persistent context reuse keeps ~97% of input tokens in cache,
+avoiding costly re-processing across agent sessions. Cache-hit tokens cost
+~120× less than cache-miss tokens, translating to substantial efficiency
+gains for long-running multi-agent workflows.
+
 ## Commands
 
 Type `/command-name` in the TUI to run:
@@ -184,6 +204,7 @@ Type `/command-name` in the TUI to run:
 | `/plan-project` | Multi-phase project planning |
 | `/execution-loop` | Bounded iterative execution workflow |
 | `/stop-loop` | Stop loop and summarize state |
+| `/checkpoint` | Phase-boundary checkpoint for human decision |
 | `/1-on-1-prep` | Meeting preparation |
 
 ## Agent Evals

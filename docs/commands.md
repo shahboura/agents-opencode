@@ -30,6 +30,7 @@ Most commands accept an optional argument to scope the task:
 | `/refactor-plan` | `[target module, file, or scope]` | Safe staged refactor strategy |
 | `/security-audit` | `[scope, file, component, or 'full project']` | Security-focused code review |
 | `/stop-loop` | `[optional reason or scope]` | Halt loop execution and report state |
+| `/checkpoint` | `[phase name or description]` | Structured phase-boundary pause for human decision |
 | `/1-on-1-prep` | `[person] [context]` | Prepare for a 1-on-1 meeting |
 
 ## Skills

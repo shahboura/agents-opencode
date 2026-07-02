@@ -1,16 +1,7 @@
----
-name: career-content
-description: Resume writing, LinkedIn profile optimization, cover letters, and professional bio creation. Use for career content involving ATS optimization, STAR method, action verbs, and personal branding.
-license: MIT
-compatibility: opencode
-metadata:
-  author: shahboura
-  version: "2.0.0"
-  audience: professionals
-  workflow: career-content
----
+# Career Content Reference
 
-# Career Content Skill
+> Part of the `blogger` skill. Use for resume writing, LinkedIn optimization,
+> cover letters, and professional bios.
 
 ## When to Activate
 
@@ -180,4 +171,4 @@ Before delivering any career document:
 
 ## Quick Reference
 
-For detailed before/after examples and templates, see [references/examples.md](references/examples.md).
+For detailed before/after examples and templates, see [career-examples/examples.md](career-examples/examples.md).

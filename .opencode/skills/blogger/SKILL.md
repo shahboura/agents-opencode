@@ -1,6 +1,6 @@
 ---
 name: blogger
-description: Concise content creation for tech, finance, and leadership blogging
+description: Concise content creation for tech, finance, leadership blogging, and career content (resumes, LinkedIn, cover letters, professional bios)
 license: MIT
 compatibility: opencode
 metadata:
@@ -42,3 +42,17 @@ Use this when creating blog posts, podcast outlines, or YouTube scripts for tech
 # [ ] All links tested
 # [ ] SEO title optimized
 ```
+
+## Career Content (Resumes, LinkedIn, Cover Letters)
+
+For resume writing, LinkedIn profile optimization, cover letters, and professional bios,
+see [references/career-content.md](references/career-content.md) for detailed rules covering:
+
+- STAR + metrics bullet formulas and ATS optimization
+- LinkedIn headline strategies, profile visuals, and skills section
+- Cover letter structure and AI-detection avoidance
+- Writing conventions, proofreading checklist, and file format recommendations
+
+The career-content reference was previously a standalone skill (`career-content`), now
+consolidated under the blogger skill. Both `@blogger` and `@em-advisor` agents can use
+this reference for career content tasks.

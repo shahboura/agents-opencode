@@ -62,7 +62,7 @@ Quick jump: [Agents](agents/README) · [Skills Matrix](skills-matrix) · [Comman
 | `@em-advisor` | EM/leadership guidance |
 | `@blogger` | Blog/video/podcast drafting |
 | `@brutal-critic` | Final content quality gate |
-| `@legal-advisor` | License auditing, IP review, data privacy assessment, regulatory guidance |
+| `@legal-advisor` | Legal research, jurisdiction-aware compliance, contract review, license auditing, data privacy, IP, export controls |
 
 Canonical source for exact allowlists and skill triggers: [Skills Matrix](skills-matrix).
 
@@ -70,7 +70,7 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](skills
 
 - [Getting Started](getting-started)
 - [Agents](agents/README)
-- [Coding Standards](instructions)
+- [Coding Standards](customization)
 - [Commands & Skills](commands)
 - [Troubleshooting](troubleshooting)
 - [Skills Matrix](skills-matrix)
@@ -90,5 +90,3 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](skills
 
 - Keep core-only scope for now.
 - Add new skills only when there is clear demand, a real gap, ownership, and clean licensing.
-
-*Last updated: 2026-05-07*

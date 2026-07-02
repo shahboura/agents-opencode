@@ -27,6 +27,7 @@ permission:
     "sql-migrations": "allow"
     "docs-validation": "allow"
     "agent-diagnostics": "allow"
+    "code-change-impact": "allow"
   task:
     "*": "deny"
     "explore": "allow"
@@ -127,6 +128,8 @@ For each file:
 - If scope is ambiguous, ask a clarifying question before loading.
 - For CI/CD workflow reviews, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For responsive/accessibility checks across breakpoints and input modes, load `ux-responsive` on demand.
+- Load `code-change-impact` for structured blast-radius analysis — traces reverse
+  dependencies, finds silent ripples, and delivers a SAFE/SAFE WITH CAVEATS/IMPACT FOUND verdict.
 
 ## Review Guidelines
 - Be constructive and specific
@@ -139,6 +142,11 @@ For each file:
 
 ## After Review
 - Summarize key findings
+- Include a confidence declaration:
+  ```
+  **Confidence:** HIGH | MODERATE | TENTATIVE
+  **Reasoning:** [Evidence strength, unknown areas, assumptions]
+  ```
 - Suggest priority of fixes
 - Offer to help implement critical changes
 
