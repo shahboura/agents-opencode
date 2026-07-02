@@ -37,8 +37,12 @@ Activate this skill when:
 
 Establish the repo context:
 1. **Repo root + diff** — `git rev-parse --show-toplevel` then `git diff HEAD`
-2. **Languages + ecosystems** — from manifests and file extensions
-3. **Verification commands** — typecheck, build, test, lint from manifests or CI
+   (for a whole branch: `git diff <base>...HEAD`)
+2. **Languages + ecosystems** — from manifests (`package.json`, `pyproject.toml`,
+   `go.mod`, `pom.xml`/`build.gradle`, `*.csproj`, `Gemfile`, `Cargo.toml`)
+3. **Verification commands** — typecheck, build, test, lint from manifests or CI.
+   Note targeted test scripts (named per area) — they verify a specific blast
+   radius far cheaper than the full suite.
 
 Classify each changed file by coupling class:
 
@@ -50,6 +54,7 @@ Classify each changed file by coupling class:
 | serialized contract (REST/GraphQL/DTO/protobuf) | cross-service — the other side of the wire |
 | config/registry (route table, DI, feature flags) | fan-out — everything derived from it |
 | DB schema / migration / ORM model | data layer — queries, models, other services |
+| generated, duplicated, or cross-language **twin** file | paired — its twin must change in lockstep |
 | global config / styles / theme / i18n strings | **global, silent** — no compiler signal |
 | build / deps / lockfile / Dockerfile / CI | the whole app |
 | internal change in a single leaf file | **local** — small verify, done |
@@ -62,14 +67,19 @@ For each changed symbol, find who depends on it. The shape (per `references/reci
 ```bash
 rg -n "<import-form-for-this-language targeting the changed module>" <root> -l
 rg -n "\b<SymbolName>\b" <root> -l
+# for a contract change: who is on the other side of the wire?
+rg -n "<endpoint path | message name | field name>" <root>
 ```
 Build two buckets: **directly impacted** (import/call the changed symbol) and
-**transitively impacted** (depend on the directly-impacted). Map impacted code
+**transitively impacted** (depend on the directly-impacted). One hop is usually
+enough; go deeper for shared/core and public-API changes. Map impacted code
 to user-facing surfaces (route, endpoint, command, job).
 
 ### Phase 3 — Hunt silent ripples (what the compiler can't see)
 
-For each directly-impacted site, check four categories of silent risk:
+For each directly-impacted site, ask: did the change alter a **shape, signature,
+default, side effect, or invariant** — or is it internal and safe? Then check
+four categories of silent risk:
 
 - **Shape drift** — serialization changes (nullable field, enum added, default
   changed), mirror/twin files out of sync (generated code, cross-language
@@ -86,12 +96,15 @@ for those stacks.
 
 ### Phase 4 — Verify (prove it, don't assert it)
 
-Run the commands discovered in Phase 0, cheapest signal first:
+Run the commands discovered in Phase 1, cheapest signal first, scaled to blast radius:
 1. Typecheck / compile — catches build-caught ripples fast
 2. Build — if shared/entry-point/build-path code was touched
 3. Tests — prefer targeted suites matching the impacted area
 4. Lint / static analysis — if the project gates on it
 5. Exercise impacted surfaces — hit the affected routes, endpoints, CLI commands
+
+A green local build is not the same as deployed — never claim a change is live
+in an environment you didn't check.
 
 ### Phase 5 — Report
 
@@ -106,11 +119,11 @@ Always use this structure:
 - languages: <…>   verify: typecheck=<…> build=<…> test=<…>
 
 ## Epicenter
-- <file:line> — <coupling class> — <what changed>
+- <file:line> — <coupling class> — <what changed (shape/default/internal/…)>
 
 ## Blast radius
 ### Directly impacted
-- <file/surface> — <route/endpoint/command> — risk: High|Med|Low
+- <file/surface> — <route/endpoint/command> — <why> — risk: High|Med|Low
 ### Transitively impacted
 - <…>  (or "none beyond build-checked usages")
 
@@ -133,7 +146,17 @@ Always use this structure:
 - **SAFE** — fully traced, twin files in sync, build/tests pass, surfaces clean, no silent risks.
 - **SAFE WITH CAVEATS** — passes but residual checks remain. List them; don't paper over them.
 - **IMPACT FOUND** — a twin is out of sync, a consumer breaks, or a silent ripple is confirmed.
-  List each breakage with file + fix. This is the outcome the skill exists to catch.
+  List each breakage with file + fix. State it plainly, don't soften it — this is
+  the outcome the skill exists to catch.
+
+## Scope Discipline
+
+- **Analyze; don't silently fix.** If you find collateral damage, report it and propose
+  the fix — let the user decide whether the change should grow.
+- **Match effort to reach.** An internal one-liner in a leaf file needs a typecheck and
+  a glance. A shared/core, public-API, schema, or contract change earns the whole pipeline.
+- **When unsure, say so.** If a ripple might be real but you can't confirm, put it on the
+  residual checklist rather than declaring SAFE.
 
 ## Quick Reference
 
