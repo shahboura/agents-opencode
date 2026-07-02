@@ -117,7 +117,7 @@ Then restart OpenCode or run `/reload-plugins`.
 | `@em-advisor` | EM/leadership guidance |
 | `@blogger` | Blog/video/podcast drafting |
 | `@brutal-critic` | Final content quality gate |
-| `@legal-advisor` | License auditing, IP review, data privacy assessment, regulatory guidance |
+| `@legal-advisor` | Legal research, jurisdiction-aware compliance, contract review, license auditing, data privacy, IP, export controls |
 
 Canonical source for exact allowlists and skill triggers: [Skills Matrix](./docs/skills-matrix.md)
 

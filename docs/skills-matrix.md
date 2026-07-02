@@ -45,7 +45,7 @@ Use this as the canonical trigger reference for when agents should load skills.
 | Project bootstrap scaffolding | `project-bootstrap` | `docs`, `planner`, `orchestrator`, `em-advisor` |
 | Content drafting | `blogger` | `blogger`, `orchestrator`, `em-advisor` |
 | Content critique and scoring | `brutal-critic` | `brutal-critic`, `blogger`, `orchestrator` |
-| License auditing, IP review, data privacy, regulatory guidance | `legal-advisor` | `legal-advisor`, `orchestrator` |
+| Legal research, jurisdiction-aware compliance, contract review, license auditing, data privacy, IP, export controls | `legal-advisor` | `legal-advisor`, `orchestrator` |
 
 Trigger policy:
 - Load skills only on demand for the active task/phase.
