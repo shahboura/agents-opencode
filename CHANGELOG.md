@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/shahboura/agents-opencode/compare/v2.3.0...v2.3.1) (2026-07-03)
+
+
+### Bug Fixes
+
+* bump package version for v2.3.1 release ([5be7011](https://github.com/shahboura/agents-opencode/commit/5be701104325a63817bd94a0fca25c72778e01a9))
+
 ## [2.3.0](https://github.com/shahboura/agents-opencode/compare/v2.2.0...v2.3.0) (2026-07-02)
 
 
