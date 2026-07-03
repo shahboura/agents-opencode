@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.3.1](https://github.com/shahboura/agents-opencode/compare/v2.3.0...v2.3.1) (2026-07-03)
+
+
+### Bug Fixes
+
+* bump package version for v2.3.1 release ([5be7011](https://github.com/shahboura/agents-opencode/commit/5be701104325a63817bd94a0fca25c72778e01a9))
+* Claude Code adapter with marketplace manifest and generator script
+* 23 skills ported, OpenCode content stripped at build time
+* Version auto-detected from package.json
+* Docs: README, getting-started, index updated for both platforms
+* Obsolete opencode.json plugin docs removed
+* dist/ excluded from lint
+* Install: /plugin marketplace add shahboura/agents-opencode-claude
+          /plugin install agents-opencode@shahboura
+
 ## [2.3.0](https://github.com/shahboura/agents-opencode/compare/v2.2.0...v2.3.0) (2026-07-02)
 
 
