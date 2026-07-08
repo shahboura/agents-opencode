@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.2](https://github.com/shahboura/agents-opencode/compare/v2.3.1...v2.3.2) (2026-07-08)
+
+
+### Bug Fixes
+
+* tarball cleanup and README restructure ([cfa6f28](https://github.com/shahboura/agents-opencode/commit/cfa6f2815abfd2f253b73561a826de1d8da2abe3))
+
 ## [2.3.1](https://github.com/shahboura/agents-opencode/compare/v2.3.0...v2.3.1) (2026-07-03)
 
 
