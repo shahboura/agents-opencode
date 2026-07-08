@@ -6,9 +6,116 @@
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://shahboura.github.io/agents-opencode/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Lean OpenCode agent pack for fast setup, safer skill loading, and production-ready workflows.
+**9 specialized agents, 23 on-demand skills, production-ready workflows.**
+Install once, get 97% context cache hits — sessions start near-instantly and cost ~20× less.
 
 Also available for Claude Code — see [Installation](#installation).
+
+## Efficiency
+
+OpenCode's context caching dramatically reduces token consumption across sessions.
+The following metrics are from production usage (May–July 2026) with the
+`deepseek-v4-pro` model.
+
+| Metric | May 2026 | June 2026 | July 2026 | Combined |
+|---|---|---|---|---|
+| Cache Hit Tokens | 263.3M | 21.9M | 145.0M | 430.2M |
+| Cache Miss Tokens | 7.9M | 1.3M | 2.7M | 11.9M |
+| Output Tokens | 0.8M | 0.2M | 0.5M | 1.5M |
+| Total Requests | 1,407 | 380 | 1,016 | 2,803 |
+| **Cache Hit Rate** | **97.1%** | **94.5%** | **98.2%** | **97.3%** |
+| Avg Tokens/Request | 193K | 62K | 146K | 158K |
+
+Key takeaway: persistent context reuse keeps ~97% of input tokens in cache,
+avoiding costly re-processing across agent sessions. Cache-hit tokens cost
+~120× less than cache-miss tokens, translating to substantial efficiency
+gains for long-running multi-agent workflows.
+
+## Quick Start
+
+**Requires:** Node.js
+
+```bash
+npx agents-opencode --global
+```
+
+<details><summary>More install options (filter, update, uninstall, status)</summary>
+
+```bash
+# Filter language references for a lighter install
+npx agents-opencode --global --languages python,typescript
+
+# Update existing installation
+npx agents-opencode --update
+
+# Uninstall
+npx agents-opencode --uninstall
+
+# Check detected installation scopes
+npx agents-opencode --status
+```
+
+**Install:** npm package and installer command: `agents-opencode`. OpenCode CLI runtime command: `opencode`.
+
+**Uninstall:** targets current project by default; use `--global` or `--all` for
+explicit scope. Creates timestamped backups before removal.
+
+**Update:** auto-detects installed scopes; use `--all`, `--global`, or
+`--project [dir]` for explicit scope.
+
+**Config:** installer merges only missing global permission defaults into
+`opencode.json`. Existing provider/model/instructions settings are preserved.
+
+</details>
+
+Then run:
+
+```bash
+opencode              # start the TUI
+/init                 # initialize a new session
+@orchestrator Build a REST API with JWT auth
+```
+
+The orchestrator plans, delegates to @codebase for implementation,
+@review for quality checks, and @docs for documentation — all in one session.
+
+## Agents
+
+| Agent | Best For |
+|---|---|
+| `@orchestrator` | End-to-end features: plans, delegates to specialists, validates results |
+| `@codebase` | Write code across 10+ languages with auto-detected project conventions |
+| `@planner` | Architecture reviews, risk assessment, step-by-step implementation plans |
+| `@review` | Catch bugs, security holes, and perf issues before they ship |
+| `@docs` | READMEs, API docs, ADRs, wiki pages |
+| `@blogger` | Blog posts, YouTube scripts, podcast outlines, resumes, LinkedIn profiles |
+| `@brutal-critic` | Ruthless content QA against proven frameworks with actionable scores |
+| `@em-advisor` | 1-on-1 prep, team strategy, roadmap planning |
+| `@legal-advisor` | License auditing, compliance checks, IP review, export controls |
+
+Canonical source for exact allowlists and skill triggers: [Skills Matrix](./docs/skills-matrix.md)
+
+## Commands
+
+Type `/command-name` in the TUI to run:
+
+| Command | Description |
+|---|---|
+| `/code-review` | Comprehensive code review |
+| `/security-audit` | Security audit |
+| `/generate-tests` | Unit test generation |
+| `/refactor-plan` | Refactoring plan |
+| `/architecture-review` | Architecture review |
+| `/architecture-decision` | ADR creation |
+| `/api-docs` | Generate API documentation |
+| `/create-readme` | Generate README |
+| `/blog-post` | Blog post creation |
+| `/content-review` | Content quality scoring |
+| `/plan-project` | Multi-phase project planning |
+| `/execution-loop` | Bounded iterative execution workflow |
+| `/stop-loop` | Stop loop and summarize state |
+| `/checkpoint` | Phase-boundary checkpoint for human decision |
+| `/1-on-1-prep` | Meeting preparation |
 
 ## Why this pack
 
@@ -17,78 +124,39 @@ Also available for Claude Code — see [Installation](#installation).
 - **Safer defaults:** on-demand skills + deny-by-default skill permissions.
 - **Operationally ready:** built-in validation and release automation.
 
-Quick jump: [Agents](#agents) · [Skills Matrix](./docs/skills-matrix.md) · [Commands](#commands) · [Full Docs](https://shahboura.github.io/agents-opencode/)
+## Skill Loading (OpenCode)
 
-## Quick Start
+Skills load on demand via the `skill` tool — no context cost until you use them.
+Use one relevant skill per task/phase; add another only for clear cross-domain work.
 
-**Requires:** Node.js
+Instruction files live in `.opencode/instructions/`, skill packs in `.opencode/skills/<name>/SKILL.md`.
+Scope remains core-only; additions pass demand, clear-gap, ownership, and licensing/provenance checks.
 
-```bash
-# Via npx (recommended)
-npx agents-opencode --global
+<details><summary>Permission configuration (least-privilege patterns)</summary>
 
-# Alternative (direct npm install)
-npm install -g agents-opencode && agents-opencode --global
+Skill permissions (prevent unrelated skill loads):
 
-# Project install (current directory only)
-npx agents-opencode --project .
-
-# Filter language instruction references for a lighter install
-npx agents-opencode --global --languages python,typescript
-
-# Update existing installation
-npx agents-opencode --update
-
-# Force update both global + current project scopes
-npx agents-opencode --update --all
-
-# Uninstall current project scope (default)
-npx agents-opencode --uninstall
-
-# Uninstall global scope only
-npx agents-opencode --uninstall --global
-
-# Uninstall both global + current project scopes
-npx agents-opencode --uninstall --all
-
-# Check detected installation scopes
-npx agents-opencode --status
+```yaml
+permission:
+  skill:
+    "*": "deny"
+    "python": "allow"
+    "sql-migrations": "allow"
 ```
 
-Install behavior note:
-- `npx`/`npm` installs from the published npm package version (deterministic release artifact).
-- npm package and installer command: `agents-opencode`
-- OpenCode CLI runtime command: `opencode`
-- `--languages` filters language instruction reference files; runtime skill loading remains on-demand per agent allowlists.
+Task permissions (control which subagents each agent can invoke):
 
-Uninstall behavior:
-- `npx agents-opencode --uninstall` targets the **current project** by default.
-- Use `--global` or `--all` for explicit scope control.
-- Uninstall removes installer-managed files via install manifest tracking.
-- Project backups: `<project>/.opencode/.backups/<timestamp>--<operation>--<scope>/`
-- Global backups: `~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/`
-- Backup retention: latest 10 sessions and sessions newer than 30 days.
-
-Restore from backup:
-1. Open the latest backup session folder.
-2. Review `backup-manifest.json` for file paths.
-3. Copy files back to their original paths.
-
-Update behavior:
-- `npx agents-opencode --update` auto-detects and updates installed scopes (global and/or current project).
-- Use `--all`, `--global`, or `--project [dir]` to force explicit update scope.
-
-Configuration behavior:
-- Installer merges only missing global permission defaults (`external_directory`, `doom_loop`) into `opencode.json`.
-- Existing provider/model/instructions settings are preserved and never overwritten by installer defaults.
-
-Then run:
-
-```bash
-opencode
-/init
-@orchestrator Build a REST API with JWT auth
+```yaml
+permission:
+  task:
+    "*": "deny"
+    "explore": "allow"
+    "review": "allow"
 ```
+
+Start with `"*": "deny"`, add explicit allows. Rules match in order — last match wins.
+
+</details>
 
 ## Installation
 
@@ -115,118 +183,14 @@ Gives Claude Code access to the same 23 on-demand skills. Skills load only when
 invoked — no context cost until you use them. See [adapters/claude-code/](./adapters/claude-code/)
 for the plugin manifest and generator script.
 
-## Agents
-
-| Agent | Best For |
-|-------|----------|
-| `@orchestrator` | Multi-phase coordination |
-| `@planner` | Read-only architecture/planning |
-| `@codebase` | Feature implementation |
-| `@review` | Security/performance/code quality |
-| `@docs` | Documentation updates |
-| `@em-advisor` | EM/leadership guidance |
-| `@blogger` | Blog/video/podcast drafting |
-| `@brutal-critic` | Final content quality gate |
-| `@legal-advisor` | Legal research, jurisdiction-aware compliance, contract review, license auditing, data privacy, IP, export controls |
-
-Canonical source for exact allowlists and skill triggers: [Skills Matrix](./docs/skills-matrix.md)
-
-## Skill Loading (OpenCode)
-
-- Instruction files live in `.opencode/instructions/*.instructions.md` as reference material.
-- Reusable skill packs live in `.opencode/skills/<name>/SKILL.md`.
-- Skills are the primary runtime mechanism and are loaded on demand via the `skill` tool.
-- Use one relevant skill per task/phase by default; add another only for clear cross-domain work.
-- If stack/domain is unclear, ask for clarification before loading.
-
-## Skill Scope Policy
-
-- Scope remains **core-only** skills (no optional skill packs).
-- Additions should pass demand, clear-gap, ownership, and licensing/provenance checks.
-
-## Skill Permissions (Least Privilege)
-
-Use `permission.skill` allowlists in agent frontmatter to prevent unrelated skill loads.
-
-```yaml
-permission:
-  skill:
-    "*": "deny"
-    "python": "allow"
-    "sql-migrations": "allow"
-```
-
-This keeps skills focused by agent role and reduces accidental context bloat.
-
-## Task Permissions (Subagent Hardening)
-
-Use `permission.task` allowlists to control which subagents each agent can invoke.
-
-```yaml
-permission:
-  task:
-    "*": "deny"
-    "explore": "allow"
-    "review": "allow"
-```
-
-Pattern notes:
-- Start with `"*": "deny"`, then add explicit allows.
-- Keep allowlists narrow by role.
-- Rules are matched in order and the last matching rule wins.
-
-## Usage & Efficiency
-
-OpenCode's context caching dramatically reduces token consumption across sessions.
-The following metrics are from production usage (May–June 2026) with the
-`deepseek-v4-pro` model.
-
-| Metric | May 2026 | June 2026 | Combined |
-|---|---|---|---|
-| Cache Hit Tokens | 263.3M | 21.9M | 285.2M |
-| Cache Miss Tokens | 7.9M | 1.3M | 9.2M |
-| Output Tokens | 0.8M | 0.2M | 1.0M |
-| Total Requests | 1,407 | 380 | 1,787 |
-| **Cache Hit Rate** | **97.1%** | **94.5%** | **96.9%** |
-| Avg Tokens/Request | 193K | 62K | 165K |
-
-Key takeaway: persistent context reuse keeps ~97% of input tokens in cache,
-avoiding costly re-processing across agent sessions. Cache-hit tokens cost
-~120× less than cache-miss tokens, translating to substantial efficiency
-gains for long-running multi-agent workflows.
-
-## Commands
-
-Type `/command-name` in the TUI to run:
-
-| Command | Description |
-|---------|-------------|
-| `/api-docs` | Generate API documentation |
-| `/code-review` | Comprehensive code review |
-| `/generate-tests` | Unit test generation |
-| `/security-audit` | Security audit |
-| `/refactor-plan` | Refactoring plan |
-| `/create-readme` | Generate README |
-| `/architecture-decision` | ADR creation |
-| `/architecture-review` | Architecture review |
-| `/blog-post` | Blog post creation |
-| `/content-review` | Content quality scoring |
-| `/plan-project` | Multi-phase project planning |
-| `/execution-loop` | Bounded iterative execution workflow |
-| `/stop-loop` | Stop loop and summarize state |
-| `/checkpoint` | Phase-boundary checkpoint for human decision |
-| `/1-on-1-prep` | Meeting preparation |
-
-## Agent Evals
-
-- `npm run eval:agents` runs deterministic contract checks for agent and command metadata.
-- `npm run eval:agents:json` writes machine-readable output to `evals/reports/latest.json`.
-- These checks are integrated into doctor and CI validation summary gating.
-
 ## Validation
 
-- Run `npm run doctor` for the complete local validation suite.
-- For full check mapping (local commands ↔ CI gates), see **[Compatibility](./docs/compatibility.md)**.
+Run `npm run doctor` for the complete local validation suite (agent contracts,
+markdown linting, docs links, session state, eval trends, and more).
+For full check mapping (local commands ↔ CI gates), see **[Compatibility](./docs/compatibility.md)**.
+
+Agent evals: `npm run eval:agents` runs deterministic contract checks for agent
+and command metadata. `npm run eval:agents:json` writes machine-readable output.
 
 ## Docs
 
