@@ -6,9 +6,9 @@
 ### Bug Fixes
 
 * tarball cleanup and README restructure ([cfa6f28](https://github.com/shahboura/agents-opencode/commit/cfa6f2815abfd2f253b73561a826de1d8da2abe3))
-* [x] **Tarball cleanup** — `.opencode/package-lock.json` and `.opencode/package.json` no longer ship in the npm tarball. These dev-only plugin dependency files were scanned by Socket.dev, which flagged Apache-2.0 transitive deps and docked the license score to 70 despite MIT licensing. Fixed by replacing the wildcard `"files": [".opencode"]` with explicit subdirectories.
-* [x] **README restructure** — moved cache efficiency stats to 2nd section (was near bottom), added a 30-second demo, collapsed the 10-command install block into 1 command + `<details>`, trimmed verbose behavior notes, moved permission YAML into `<details>`, and rewrote the agent "Best For" column from role labels to action+outcome.
-* [x] **July metrics** — added July column to the efficiency table (145M cache hits, 98.2% hit rate, 1,016 requests). Combined 3-month hit rate now 97.3% across 2,803 requests.
+* **Tarball cleanup** — `.opencode/package-lock.json` and `.opencode/package.json` no longer ship in the npm tarball. These dev-only plugin dependency files were scanned by Socket.dev, which flagged Apache-2.0 transitive deps and docked the license score to 70 despite MIT licensing. Fixed by replacing the wildcard `"files": [".opencode"]` with explicit subdirectories.
+* **README restructure** — moved cache efficiency stats to 2nd section (was near bottom), added a 30-second demo, collapsed the 10-command install block into 1 command + `<details>`, trimmed verbose behavior notes, moved permission YAML into `<details>`, and rewrote the agent "Best For" column from role labels to action+outcome.
+* **July metrics** — added July column to the efficiency table (145M cache hits, 98.2% hit rate, 1,016 requests). Combined 3-month hit rate now 97.3% across 2,803 requests.
 
 ## [2.3.1](https://github.com/shahboura/agents-opencode/compare/v2.3.0...v2.3.1) (2026-07-03)
 
