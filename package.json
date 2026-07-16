@@ -41,7 +41,7 @@
     "validate:all": "npm run doctor"
   },
   "devDependencies": {
-    "markdownlint-cli": "^0.49.0"
+    "markdownlint-cli": "^0.49.1"
   },
   "keywords": [
     "opencode",
