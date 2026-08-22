@@ -5,48 +5,19 @@ This repository contains customized agents for OpenCode.ai, aligned with Anthrop
 ## Project Structure
 
 - `.opencode/agents/` - Custom agent configurations for OpenCode (canonical path)
+- `.opencode/instructions/` - Reference instructions (loaded on demand)
+- `.opencode/skills/` - Language and domain skills (loaded on demand via `skill` tool)
 - `docs/` - Documentation for agents and usage
-- `AGENTS.md` - This file with project instructions
+- `AGENTS.md` - This file with project instructions and session history
 
-## Language & Domain Skills
+## On-Demand References
 
-Language-specific rules are loaded on-demand via skills (not eagerly). Available skills:
-`dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `blogger`, `brutal-critic`
-
-Utility skills: `adr`, `agent-diagnostics`, `api-documentation`, `code-change-impact`, `docs-validation`, `legal-advisor`, `project-bootstrap`, `refactoring`, `security-audit`
-
-Load a skill with the `skill` tool when working on a specific language or domain.
-
-### Skill Activation Policy (OpenCode)
-
-- Skills are loaded on demand; do not preload unrelated skills.
-- Prefer 1 relevant skill per task/phase; load a second only for clear cross-domain dependencies.
-- If stack/domain is unclear, ask for clarification before loading a skill.
-- Keep skills scoped to active work to minimize context impact.
-
-### Skill Verification Checklist
-
-- [ ] Agent has `skill: true` only when needed by its role
-- [ ] Agent guidance explains *when* to load skills (not just that it can)
-- [ ] Agent `permission.skill` uses deny-by-default + explicit allowlist
-- [ ] On-demand behavior is documented in user-facing docs
-- [ ] Validation scripts and CI run agent/doc checks on each PR
-
-## Agent Usage
-
-Primary agents:
-
-- `codebase` - Multi-language development with profile detection
-- `orchestrator` - Strategic planning and complex workflow coordination
-- `planner` - Read-only analysis and implementation planning
-- `blogger` - Content creation for blogging, podcasting, and YouTube scripting
-- `brutal-critic` - Ruthless content reviewer with framework-based criticism
-- `em-advisor` - Engineering management guidance
-
-Subagents:
-
-- `docs` - Documentation creation and maintenance
-- `review` - Code review for security, performance, and best practices
+- **Skill activation:** Each agent defines its own Skill Activation Policy inline. See `.opencode/agents/` for individual policies.
+- **Skill catalog:** Available skills are in `.opencode/skills/`. Agents load them on demand via the `skill` tool.
+- **Agent roster:** See `.opencode/agents/` for the full agent catalog, roles, and permissions.
+- **Coordination patterns & templates:** See `.opencode/instructions/orchestrator-reference.instructions.md`.
+- **Validation workflow:** See `.opencode/skills/docs-validation/SKILL.md`.
+- **Skill policy governance:** Cross-agent skill verification criteria (CI-enforced) are in `scripts/validate-agents.js`.
 
 ## Quality Requirements
 

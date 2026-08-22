@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+### Features
+
+* [capability:workflow] **Pre-Commit Review Gate** — Two-tier gate in orchestrator workflow: Tier 1 (automated harness — deterministic checks with baseline comparison) and Tier 2 (adversarial review via `@review` in fresh subagent context, risk-gated, max 2 cycles). Added Pattern 8 to coordination patterns. Gate outcomes: PASS / PASS-WITH-CAVEATS / FAIL with escalation. Skip criteria and 8 edge case mitigations included.
+* [capability:workflow] **Interview pattern** — Structured Q&A (3-5 targeted questions) added to orchestrator Planning Phase before plan creation.
+* [capability:workflow] **Goal condition in checkpoints** — `**Goal:**` field added to Checkpoint Format for self-validating loops.
+* [capability:memory] **Progressive disclosure in AGENTS.md** — Trimmed from 231 to 202 lines. Replaced verbose skill/agent lists with on-demand reference pointers. Added `validate-agents.js` governance pointer.
+
+### Changed
+
+* [capability:validation] **Instruction file budget** — Bumped from 200 to 250 lines. Instruction files are loaded on-demand (progressive disclosure), not at session start, so the tighter agent-file budget (200) is the right context constraint.
+
 ## [2.3.2](https://github.com/shahboura/agents-opencode/compare/v2.3.1...v2.3.2) (2026-07-08)
 
 

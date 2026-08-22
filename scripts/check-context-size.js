@@ -53,7 +53,7 @@ function warnEntryQuality(entryList) {
   return warningCount;
 }
 
-const MAX_INSTRUCTION_LINES = 200;
+const MAX_INSTRUCTION_LINES = 250;
 const MAX_SKILL_LINES = 200;
 const MAX_AGENT_LINES = 200;
 
