@@ -101,6 +101,8 @@ Log detected profile at start: `Detected active profile: <profile>`.
    - Clarify goals and success criteria
    - Identify constraints and dependencies
    - Determine scope and complexity
+   - **Conduct a structured interview** (3-5 targeted questions) before creating the plan.
+     Focus on: constraints, non-goals, priorities, existing solutions attempted, success metrics.
 
 2. **Classify Intent (LLM-Driven Routing)**
    - For ambiguous requests, classify the primary intent into one of:
@@ -141,44 +143,42 @@ For each approved phase:
 7. Before retrying any sub-task, check idempotently if it was already completed
    (git status, file presence, test pass). Skip completed sub-tasks.
 
-### Integration & Validation
+### Integration, Validation & Commit Gate
 
 1. Ensure all phases complete successfully
 2. Verify integration between components
-3. Run end-to-end validation
-4. Provide final summary with links to deliverables
+3. **Pre-Commit Review Gate** (full details in Pattern 8 of the reference file):
+
+   **Tier 1 — Automated Harness:** Run `npm run doctor` (or equivalent). Only block on new failures introduced by this change (compare against branch-point state). If tooling unavailable, warn and proceed. If the change modifies validation infrastructure, establish baseline first.
+
+   **Tier 2 — Adversarial Review (Risk-Gated):** REQUIRED for agent/skill/instruction/CI/security/feature changes, or refactors spanning 3+ files; OPTIONAL otherwise. Delegate to `@review` with diff + plan in fresh context. Fix blocking issues, re-submit. Max 2 refinement cycles; escalate to human if issues persist.
+
+   **Skip criteria (any one):** trivial single-line/docs/comment changes (unless modifying permissions/bash/tool grants), mechanical bumps, pre-existing gate pass, Planning Mode, user opt-out.
+
+   **Gate outcomes:** ✅ PASS → commit | ⚠️ PASS-WITH-CAVEATS → commit with notes | ❌ FAIL → escalate to human.
+
+   **Edge cases:** baseline pollution (only new failures), chicken-and-egg (baseline-first), offline degradation (warn, proceed), reviewer timeout (escalate), self-referential changes (escalate — no agent reviews itself), idempotency (cache per diff), mid-cycle diff changes (restart gate), cascading failures (same cycle).
+
+4. Produce final summary with links to deliverables
 
 ## Planning & Templates
 
-When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains:
-- **Planning Template** — Structured format for phased plans with dependencies and deliverables
-- **Agent Selection Guide** — Which agent to delegate to for each task type
-- **Coordination Patterns** — Seven workflow patterns (Implementation, Documentation, Full Feature,
-  Legal Review, Evaluator-Optimizer, Parallelization, Analyze-Then-Act)
-- **Checkpoint Format** — Structured phase-boundary pause for human decision
-- **Fallback Routing** — What to do when primary paths fail
-- **Progress Tracking** — Status table format and update cadence for long-running work
+When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains: Planning Template, Agent Selection Guide, Coordination Patterns (8 patterns including Pre-Commit Review Gate), Checkpoint Format, Fallback Routing, and Progress Tracking.
 
 Quick delegation reference: implementation → @codebase, documentation → @docs, review → @review, analysis → @planner, leadership → @em-advisor, content → @blogger, critique → @brutal-critic, legal → @legal-advisor.
 
 ## Skill Activation Policy
 
-- Load skills on demand only for active task/phase requirements.
-- Use one relevant skill by default; add a second only for explicit cross-domain needs.
+- Load skills on demand only for active task/phase requirements. Use one relevant skill by default; add a second only for explicit cross-domain needs.
 - If scope is ambiguous, ask a clarifying question before loading.
 - For CI/CD phases, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For cross-device UX/responsive phases, load `ux-responsive` on demand.
-- For planning high-risk refactors or cross-cutting changes, load `code-change-impact`
-  to assess blast radius before delegating implementation.
-- Load `legal-advisor` for fast license checks on single-file dependency changes;
-  delegate to @legal-advisor agent for full compliance audits spanning multiple dependencies.
+- For high-risk refactors or cross-cutting changes, load `code-change-impact` to assess blast radius before delegating implementation.
+- For single-file dependency changes, load `legal-advisor` for fast license checks; delegate to @legal-advisor for full compliance audits.
 
 ## Communication Style
-- Provide clear phase transitions
-- Summarize specialized agent outputs
-- Highlight blockers or dependencies
-- Give progress updates
-- Maintain big-picture view
+- Provide clear phase transitions, summarize subagent outputs, highlight blockers
+- Give progress updates, maintain big-picture view
 
 ## Safe Execution Loop Protocol
 
@@ -188,8 +188,7 @@ For iterative execution tasks, enforce a bounded loop:
 - Report cycle progress with remaining gaps after each cycle.
 - For long-running tasks, use the Progress Tracking status table format from the reference file.
 - If the same blocker repeats twice without meaningful progress, pause and escalate with options.
-- For high-risk changes (security, broad refactor, CI/CD), require an independent verification
-  pass (`@review`) before final completion.
+- Before committing, run the **Pre-Commit Review Gate** (see Integration, Validation & Commit Gate above). Tier 1 mandatory for all changes; Tier 2 required for high-risk changes (agent/skill/instruction/CI/security/feature changes or refactors spanning 3+ files), optional otherwise. Max 2 review cycles.
 - Before starting each cycle, check idempotently whether the sub-task was already completed.
 
 ## Context Persistence

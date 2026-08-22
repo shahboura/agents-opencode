@@ -91,7 +91,7 @@ orchestrator → @codebase (generate solution)
             → @codebase (iterate based on feedback) ⊛ loop
             → @review (final gate)
 ```
-Use when quality criteria are well-defined and iterative refinement demonstrably improves output. The evaluator (`@review` or `@brutal-critic`) provides feedback; the generator (`@codebase` or `@blogger`) iterates. Run up to 3 refinement cycles before gating.
+Use when quality criteria are well-defined and iterative refinement demonstrably improves output. The evaluator (`@review` or `@brutal-critic`) provides feedback; the generator (`@codebase` or `@blogger`) iterates. Run up to 3 refinement cycles before gating. (Note: this is an implementation refinement loop; the Pre-Commit Review Gate uses 2 cycles for its adversarial review — see Pattern 8.)
 
 ### Pattern 6: Parallelized Sub-Tasks
 ```
@@ -99,7 +99,7 @@ orchestrator → @codebase (frontend) ∥ @codebase (backend)
             → @review (integration / contract gate)
             → @docs (unified documentation)
 ```
-Use when tasks can be cleanly sectioned into independent subtasks (e.g., frontend + backend, API + client SDK, multiple microservices). Aggregate results at the integration gate. Ensure consistent contracts across parallel workers.
+Use when tasks can be cleanly sectioned into independent subtasks (e.g., frontend + backend, API + client SDK). Aggregate results at the integration gate. Ensure consistent contracts across parallel workers.
 
 ### Pattern 7: Analyze-Then-Act
 ```
@@ -110,6 +110,38 @@ orchestrator → @planner (deep analysis, no code changes)
 ```
 Use for high-risk or unfamiliar codebases where understanding must precede action. The read-only planner phase prevents premature implementation.
 
+### Pattern 8: Pre-Commit Review Gate
+```
+orchestrator → @review (Tier 2 adversarial review: diff + plan, fresh context)
+            → if issues → @codebase (fix) → @review (re-verify) ⊛ max 2 cycles
+            → if clean → commit
+            → if still failing after 2 cycles → escalate to human
+```
+Use as the final gate before any `git commit`.
+
+**Tier 1 (Automated Harness):** Run `npm run doctor` (or equivalent). Only block on new failures — compare against branch-point state. If tooling unavailable, warn and proceed. For validation infra changes, establish baseline first.
+
+**Tier 2 (Adversarial Review):** Fresh `@review` subagent with ONLY diff + plan (not implementation reasoning). REQUIRED for agent/skill/instruction/CI/security/feature changes spanning 3+ files; OPTIONAL for docs, comments, trivial refactors, mechanical bumps.
+
+**Review procedure:**
+1. Submit diff + plan to `@review`
+2. Categorize findings: critical (blocking), high (should fix), medium (nice to fix)
+3. Fix all critical and high findings. Delegate to `@codebase` for cross-domain fixes; fix single-domain issues directly.
+4. Re-submit to `@review` for verification
+5. Max 2 refinement cycles. Escalate to human if issues persist.
+
+**Gate outcomes:**
+
+| Outcome | Action |
+|---|---|
+| ✅ PASS | Proceed to commit |
+| ⚠️ PASS-WITH-CAVEATS | Commit with documented notes on remaining medium/low items |
+| ❌ FAIL | Escalate to human with structured options |
+
+**Skip criteria (any one):** Trivial (single-line/docs/comment — unless modifying permissions/bash/tool grants), mechanical bumps, pre-existing gate pass, Planning Mode, user opt-out.
+
+**Edge cases:** Baseline pollution (only new failures, check branch-point); chicken-and-egg (baseline-first for validation infra changes); offline/degraded (warn, proceed); reviewer unavailability (escalate); self-referential changes (escalate to human, exempt from REQUIRED); idempotency (cache per diff, skip on rebase); mid-cycle diff changes (restart gate); cascading Tier 2→Tier 1 failures (same cycle, not new).
+
 ## Checkpoint Format
 
 At multi-phase boundaries, emit a structured checkpoint for human decision:
@@ -118,6 +150,7 @@ At multi-phase boundaries, emit a structured checkpoint for human decision:
 ## Checkpoint: [Phase Name] Complete — Human Decision Required
 **Phase:** [Phase description]
 **Status:** Complete
+**Goal:** [Measurable condition — the loop continues until this holds. Leave blank if not a loop.]
 **Completed:** [What was done — files, key changes]
 **Validated:** [Verification results — tests, lint, doctor]
 **Next phase:** [Phase name and brief description]
@@ -148,7 +181,7 @@ orchestrator → @review (primary gate)
 ```
 
 Fallback patterns per failure type:
-- **Review failure** → @planner diagnose → @codebase fix → @review re-validate
+- **Pre-commit review failure** → @planner diagnose root cause → @codebase fix → @review re-validate (max 2 review cycles). Failing after 2 cycles → escalate to human with structured options.
 - **Build break** → @codebase fix (auto if safe) → build → re-validate
 - **Test failure** → @planner analyze → @codebase fix → test → re-validate
 - **Multiple cycles fail** → escalate with structured options (do not loop)
