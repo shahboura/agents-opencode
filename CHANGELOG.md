@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/shahboura/agents-opencode/compare/v2.3.2...v2.4.0) (2026-08-22)
+
+
+### Features
+
+* **orchestrator:** pre commit review gate ([#83](https://github.com/shahboura/agents-opencode/issues/83)) ([cb413b6](https://github.com/shahboura/agents-opencode/commit/cb413b6573fe6d3735c3c33f1fc553f90906391f))
+
 ## [Unreleased]
 
 ### Features
