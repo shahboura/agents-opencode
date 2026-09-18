@@ -6,15 +6,18 @@ steps: 30
 permission:
   "*": "deny"
   edit: "ask"
-  bash: "ask"
+  bash:
+    "*": "ask"
+    "rm -rf *": "deny"
+    "git push*--force*": "deny"
+    "git push -f*": "deny"
+    "git push * -f*": "deny"
   glob: "allow"
   grep: "allow"
   read: "allow"
   webfetch: "allow"
   todowrite: "allow"
-  "rm -rf *": "deny"
-  "git push --force*": "deny"
-  "git push * --force*": "deny"
+  question: "allow"
   skill:
     "*": "deny"
     "project-bootstrap": "allow"
@@ -72,10 +75,6 @@ When advising on technical strategy or team decisions:
 - Recommend legal review for contracts, partnerships, or IP-sensitive decisions
 
 ## Communication Templates
-
-### 1-on-1 Structure
-See [Meeting Preparation](#meeting-preparation) below for the full 5-phase framework
-with question templates and action-item tracking format.
 
 ### Difficult Feedback (SBI)
 - **Situation**: "In yesterday's code review..."

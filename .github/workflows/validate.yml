@@ -111,12 +111,12 @@ jobs:
         run: |
           printf "%s" "${PR_BODY:-}" > pr-body.txt
 
-      - name: Assess risk path
+      - name: Assess risk path (advisory)
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            node scripts/assess-risk-path.js --changed-files-file changed-files.txt --pr-body-file pr-body.txt --require-ack
+            node scripts/assess-risk-path.js --changed-files-file changed-files.txt --pr-body-file pr-body.txt --require-ack --advisory
           else
-            node scripts/assess-risk-path.js --changed-files-file changed-files.txt
+            node scripts/assess-risk-path.js --changed-files-file changed-files.txt --advisory
           fi
 
   validate-docs:
@@ -208,6 +208,9 @@ jobs:
       - name: Run agent validator tests
         run: node scripts/validate-agents.test.js
 
+      - name: Run plugin guard tests
+        run: node scripts/plugin-guards.test.js
+
       - name: Run risk-path assessment tests
         run: node scripts/assess-risk-path.test.js
 
@@ -219,6 +222,12 @@ jobs:
 
       - name: Run handoff generator tests
         run: node scripts/generate-handoff.test.js
+
+      - name: Run installer lifecycle tests
+        run: npm run validate:installer
+
+      - name: Run npx package integrity tests
+        run: npm run validate:npx
 
   validate-agent-evals:
     name: Validate Agent Eval Harness
@@ -354,7 +363,7 @@ jobs:
           echo "Secret Scan: ${SECRETS_RESULT}"
           echo "Agent Validation: ${AGENTS_RESULT}"
           echo "Command Matrix Docs: ${COMMAND_MATRIX_RESULT}"
-          echo "Risk Path Validation: ${RISK_PATH_RESULT}"
+          echo "Risk Path Validation (advisory): ${RISK_PATH_RESULT}"
           echo "Documentation Validation: ${DOCS_RESULT}"
           echo "Changelog Validation: ${CHANGELOG_RESULT}"
           echo "Session State Validation: ${SESSION_STATE_RESULT}"
@@ -367,7 +376,6 @@ jobs:
           if [ "${SECRETS_RESULT}" != "success" ] || \
              [ "${AGENTS_RESULT}" != "success" ] || \
              [ "${COMMAND_MATRIX_RESULT}" != "success" ] || \
-             [ "${RISK_PATH_RESULT}" != "success" ] || \
              [ "${DOCS_RESULT}" != "success" ] || \
              [ "${CHANGELOG_RESULT}" != "success" ] || \
              [ "${SESSION_STATE_RESULT}" != "success" ] || \

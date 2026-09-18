@@ -9,9 +9,9 @@ permission:
   glob: "allow"
   grep: "allow"
   read: "allow"
-  write: "allow"
   webfetch: "allow"
   bash: "deny"
+  question: "allow"
   skill:
     "*": "deny"
     "docs-validation": "allow"

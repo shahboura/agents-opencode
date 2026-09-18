@@ -15,7 +15,7 @@ function assert(condition, message) {
   }
 }
 
-function runAssessment({ changedFiles, prBody, requireAck }) {
+function runAssessment({ changedFiles, prBody, requireAck, advisory }) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agents-opencode-risk-path-'));
 
   const changedFilesPath = path.join(tmpDir, 'changed-files.txt');
@@ -36,6 +36,10 @@ function runAssessment({ changedFiles, prBody, requireAck }) {
 
   if (requireAck) {
     args.push('--require-ack');
+  }
+
+  if (advisory) {
+    args.push('--advisory');
   }
 
   try {
@@ -113,6 +117,20 @@ function testLowRiskDoesNotRequireAcknowledgment() {
   assert(result.payload.requireAcknowledgment === false, 'Expected low-risk change to skip acknowledgment requirement');
 }
 
+function testAdvisoryNeverFails() {
+  const result = runAssessment({
+    changedFiles: ['.github/workflows/validate.yml'],
+    prBody: '## Risk & Rollback\n- Risk level: medium\n',
+    requireAck: true,
+    advisory: true,
+  });
+
+  assert(result.status === 0, 'Expected advisory mode to exit 0 even when acknowledgment is insufficient');
+  assert(result.payload.computedRisk === 'high', 'Expected computed risk to still be reported as high');
+  assert(result.payload.acknowledgmentSufficient === false, 'Expected insufficient acknowledgment to still be reported');
+  assert(result.payload.advisory === true, 'Expected advisory flag in output');
+}
+
 function main() {
   try {
     console.log('Running risk-path assessment tests...');
@@ -120,6 +138,7 @@ function main() {
     testHighRiskPassesWithHighAcknowledgment();
     testMediumRiskPassesWithMediumAcknowledgment();
     testLowRiskDoesNotRequireAcknowledgment();
+    testAdvisoryNeverFails();
     console.log('✅ Risk-path assessment tests passed');
   } catch (err) {
     console.error('❌ Risk-path assessment tests failed');

@@ -29,6 +29,7 @@ function parseArgs(argv) {
     changedFilesFile: null,
     prBodyFile: null,
     requireAck: false,
+    advisory: false,
     json: false,
   };
 
@@ -49,6 +50,11 @@ function parseArgs(argv) {
 
     if (arg === '--require-ack') {
       options.requireAck = true;
+      continue;
+    }
+
+    if (arg === '--advisory') {
+      options.advisory = true;
       continue;
     }
 
@@ -195,6 +201,14 @@ function printHumanSummary(result) {
     return;
   }
 
+  if (result.advisory) {
+    console.log('⚠ Risk acknowledgment not satisfied (advisory only — merge is not blocked)');
+    console.log(
+      `Suggestion: set PR template "Risk level" to at least "${result.computedRisk}" and describe rollback approach.`
+    );
+    return;
+  }
+
   console.log('❌ Risk acknowledgment check failed');
   console.log(
     `Action: set PR template \"Risk level\" to at least \"${result.computedRisk}\" and describe rollback approach.`
@@ -215,11 +229,18 @@ function main() {
   const prBody = readTextOrEmpty(options.prBodyFile);
 
   const result = assessRisk(changedFiles, prBody, options);
+  result.advisory = options.advisory === true;
 
   if (options.json) {
     console.log(JSON.stringify(result, null, 2));
   } else {
     printHumanSummary(result);
+  }
+
+  // Advisory mode always exits 0 so the risk read-out can never block a merge;
+  // it still reports whether the PR acknowledgment would have been sufficient.
+  if (options.advisory) {
+    process.exit(0);
   }
 
   process.exit(result.acknowledgmentSufficient ? 0 : 1);

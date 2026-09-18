@@ -330,6 +330,26 @@ function revertInstallerConfig(targetConfigPath, configPatch, sourceConfig, onBe
         }
     }
 
+    if (Array.isArray(configPatch.addedPluginEntries) && Array.isArray(existing.plugin)) {
+        var sourcePlugins = sourceConfig && Array.isArray(sourceConfig.plugin) ? sourceConfig.plugin : [];
+        for (var p = 0; p < configPatch.addedPluginEntries.length; p++) {
+            var pluginEntry = configPatch.addedPluginEntries[p];
+            if (sourcePlugins.indexOf(pluginEntry) === -1) {
+                continue;
+            }
+            var pluginIndex = existing.plugin.indexOf(pluginEntry);
+            if (pluginIndex === -1) {
+                continue;
+            }
+            existing.plugin.splice(pluginIndex, 1);
+            changed = true;
+        }
+        if (existing.plugin.length === 0) {
+            delete existing.plugin;
+            changed = true;
+        }
+    }
+
     var schemaWasCreatedByInstaller = Boolean(configPatch.createdSchema || configPatch.addedSchema);
     if (schemaWasCreatedByInstaller && sourceConfig && sourceConfig.$schema && existing.$schema === sourceConfig.$schema) {
         delete existing.$schema;

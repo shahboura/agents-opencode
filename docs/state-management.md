@@ -32,11 +32,11 @@ Required fields:
 - `artifacts` (string[])
 - `last_updated` (ISO-8601 string)
 
-Runtime fields (managed by the compaction hook and plugin infrastructure):
+Optional runtime fields (part of the state contract; maintained by tooling or manually):
 
 - `plugin_version` (string) — version of the session runtime plugin creating/managing state
 - `legal_reviews` (string[]) — tracks legal review outcomes across sessions
-- `compaction_count` (number) — incremented each time the session is compacted
+- `compaction_count` (number) — count of compaction cycles recorded (optional telemetry; not auto-incremented by the plugin)
 
 Validate locally:
 
@@ -62,14 +62,17 @@ The output includes objective, phase, decisions, risks, blockers, and next actio
 
 ## Compaction Hook
 
-The runtime plugin preserves session state during compaction by:
+During compaction the runtime plugin injects a state-context reminder (state
+contract, handoff, and milestone locations) so agents keep track of where durable
+state lives. Compaction does not modify `state/session-state.json`.
 
-- Incrementing `compaction_count` on each compaction cycle
-- Preserving `legal_reviews` entries across compactions (append-only)
-- Retaining `plugin_version` to signal compatibility with the runtime
-- Keeping `decisions`, `open_risks`, `blocked_by`, and `next_actions` intact
+Durable state remains the source of truth across compactions:
 
-Session compaction reduces context window usage without losing governance-critical state.
+- `state/session-state.json` keeps decisions, risks, blockers, and next actions
+- `handoff/latest.md` is regenerated from state for session-to-session continuity
+- `AGENTS.md` records milestone history
+
+Session compaction reduces context window usage without relying on context alone.
 
 ## Memory Budget Recommendations
 

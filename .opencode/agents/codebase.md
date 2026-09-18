@@ -6,15 +6,18 @@ steps: 50
 permission:
   "*": "deny"
   edit: "allow"
-  bash: "ask"
+  bash:
+    "*": "ask"
+    "rm -rf *": "deny"
+    "git push*--force*": "deny"
+    "git push -f*": "deny"
+    "git push * -f*": "deny"
   glob: "allow"
   grep: "allow"
   read: "allow"
   webfetch: "allow"
   todowrite: "allow"
-  "rm -rf *": "deny"
-  "git push --force*": "deny"
-  "git push * --force*": "deny"
+  question: "allow"
   skill:
     "*": "deny"
     "dotnet": "allow"

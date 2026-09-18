@@ -63,4 +63,3 @@ evals/reports/*
 # Generated handoff output
 handoff/*
 !handoff/.gitkeep
-dist/
