@@ -70,6 +70,18 @@ function testUnknownSkillFails(tmpRoot) {
   assert(result.output.includes('does not match any .opencode/skills'), 'Expected unknown skill error in output');
 }
 
+function testInvalidPermissionKeyFails(tmpRoot) {
+  const fixture = path.join(tmpRoot, 'invalid-permission-key');
+  copyDirectory(path.join(fixturesRoot, 'invalid-permission-key'), fixture);
+
+  const result = runValidator(fixture);
+  assert(result.status !== 0, 'Expected inert top-level permission key to fail validation');
+  assert(
+    result.output.includes('is not a recognized permission'),
+    'Expected unrecognized permission-key error in output'
+  );
+}
+
 function main() {
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agents-opencode-validate-agents-'));
 
@@ -77,6 +89,7 @@ function main() {
     console.log('Running agent validator tests...');
     testValidFixturePasses(tmpRoot);
     testUnknownSkillFails(tmpRoot);
+    testInvalidPermissionKeyFails(tmpRoot);
     console.log('✅ Agent validator tests passed');
   } catch (err) {
     console.error('❌ Agent validator tests failed');

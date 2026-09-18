@@ -127,6 +127,24 @@ function testConfigMergePreservesUserData(tmpRoot) {
   assert(!('doom_loop' in (revertedConfig.permission || {})), 'Installer-added permission should be removed on uninstall');
 }
 
+function testFreshConfigContainsOnlyManagedKeys(tmpRoot) {
+  const projectDir = path.join(tmpRoot, 'fresh-config');
+  createDir(projectDir);
+
+  runInstaller(['--project', '.'], { cwd: projectDir });
+
+  const config = readJson(path.join(projectDir, 'opencode.json'));
+  const allowed = new Set(['$schema', 'plugin', 'permission']);
+  for (const key of Object.keys(config)) {
+    assert(allowed.has(key), `Fresh install config must not contain opinionated key '${key}'`);
+  }
+  assert(Array.isArray(config.plugin) && config.plugin.includes('agents-opencode'), 'Fresh config should register the plugin');
+  assert(config.permission && config.permission.doom_loop === 'deny', 'Fresh config should include installer permission defaults');
+  assert(!('share' in config), 'Fresh config must not set share');
+  assert(!('compaction' in config), 'Fresh config must not set compaction');
+  assert(!('subagent_depth' in config), 'Fresh config must not set subagent_depth');
+}
+
 function testGlobalAndProjectLifecycle(tmpRoot) {
   const homeDir = path.join(tmpRoot, 'home');
   const projectDir = path.join(tmpRoot, 'both-scopes');
@@ -145,6 +163,13 @@ function testGlobalAndProjectLifecycle(tmpRoot) {
 
   assert(fs.existsSync(globalManifest), 'Global manifest should exist after global install');
   assert(fs.existsSync(projectManifest), 'Project manifest should exist after project install');
+
+  const globalConfigPath = path.join(homeDir, '.config', 'opencode', 'opencode.json');
+  assert(fs.existsSync(globalConfigPath), 'Global install should create a config');
+  const globalConfig = readJson(globalConfigPath);
+  for (const key of Object.keys(globalConfig)) {
+    assert(['$schema', 'plugin', 'permission'].includes(key), `Global config must not contain opinionated key '${key}'`);
+  }
   assert(!fs.existsSync(path.join(homeDir, '.config', 'opencode', 'state', 'session-state.json')), 'Global install should not create project state template');
   assert(fs.existsSync(path.join(projectDir, 'state', 'session-state.json')), 'Project install should create project state template');
 
@@ -164,6 +189,7 @@ function main() {
     testNoopUninstallDoesNotBackupAgents(tmpRoot);
     testProjectInstallAndUninstall(tmpRoot);
     testConfigMergePreservesUserData(tmpRoot);
+    testFreshConfigContainsOnlyManagedKeys(tmpRoot);
     testGlobalAndProjectLifecycle(tmpRoot);
 
     console.log('✅ Installer lifecycle tests passed');

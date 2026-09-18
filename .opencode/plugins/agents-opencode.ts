@@ -1,23 +1,126 @@
 import type { Plugin } from "@opencode-ai/plugin";
+import { readFileSync, readdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { isBlockedReadPath, selectPackVersion } from "../lib/guards.mjs";
 
-const PACKAGE_VERSION = "2.0.0";
+/**
+ * The plugin sits in `<pack-root>/plugins/`. Depending on install scope the pack
+ * root is either a project's `.opencode/` directory or the global
+ * `~/.config/opencode/` directory, so `agents/`, `skills/`, and `commands/` are
+ * always one level up (`../`).
+ */
+const PACK_ROOT = new URL("../", import.meta.url);
 
-export const AgentsOpencodePlugin: Plugin = async ({
-  client,
-  project,
-  directory,
-  worktree,
-  $,
-}) => {
+type PackInfo = {
+  version: string;
+  inventory: string;
+};
+
+function safeRead(path: URL): string | null {
+  try {
+    return readFileSync(fileURLToPath(path), "utf8");
+  } catch {
+    return null;
+  }
+}
+
+function countFiles(path: URL, extension: string, exclude: string[] = []): number {
+  try {
+    return readdirSync(fileURLToPath(path)).filter(
+      (entry) => entry.endsWith(extension) && !exclude.includes(entry)
+    ).length;
+  } catch {
+    return 0;
+  }
+}
+
+function countSkills(path: URL): number {
+  try {
+    return readdirSync(fileURLToPath(path), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .filter((entry) => safeRead(new URL(`${entry.name}/SKILL.md`, path)) !== null)
+      .length;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * The installer writes `.opencode-agents-version` at the pack root. Its location
+ * relative to this file depends on install scope:
+ * - project scope: `<projectRoot>/.opencode/plugins/` -> `../../.opencode-agents-version`
+ * - global scope:  `<configDir>/plugins/`              -> `../.opencode-agents-version`
+ * The in-repo package.json is only trusted when it actually is this pack, so a
+ * consumer's own package.json never leaks in as the pack version.
+ */
+function readVersion(): string {
+  const markers = [
+    safeRead(new URL("../../.opencode-agents-version", import.meta.url)),
+    safeRead(new URL("../.opencode-agents-version", import.meta.url)),
+  ];
+
+  let packageName: unknown;
+  let packageVersion: unknown;
+  const rawPackage = safeRead(new URL("../../package.json", import.meta.url));
+  if (rawPackage) {
+    try {
+      const parsed = JSON.parse(rawPackage);
+      packageName = parsed?.name;
+      packageVersion = parsed?.version;
+    } catch {
+      // selectPackVersion falls back to "unknown" when nothing resolves.
+    }
+  }
+
+  return selectPackVersion({ markers, packageName, packageVersion });
+}
+
+function readPackInfo(): PackInfo {
+  const version = readVersion();
+  const agents = countFiles(new URL("agents/", PACK_ROOT), ".md");
+  const skills = countSkills(new URL("skills/", PACK_ROOT));
+  const commands = countFiles(new URL("commands/", PACK_ROOT), ".md", ["README.md"]);
+
+  const parts = [
+    agents > 0 ? `${agents} agents` : null,
+    skills > 0 ? `${skills} skills` : null,
+    commands > 0 ? `${commands} commands` : null,
+  ].filter((part): part is string => part !== null);
+
+  return {
+    version,
+    inventory: parts.length > 0 ? parts.join(", ") : "agent pack",
+  };
+}
+
+const PACK = readPackInfo();
+
+export const AgentsOpencodePlugin: Plugin = async ({ client }) => {
   await client.app.log({
     body: {
       service: "agents-opencode",
       level: "info",
-      message: `Agents Opencode v${PACKAGE_VERSION} loaded — 9 agents, 23 skills, 16 commands available`,
+      message: `Agents Opencode v${PACK.version} loaded — ${PACK.inventory} available`,
     },
   });
 
   return {
+    /**
+     * Surface session-level failures through the plugin logger so they are not
+     * silently lost when a run aborts.
+     */
+    event: async ({ event }) => {
+      if (event.type === "session.error") {
+        await client.app.log({
+          body: {
+            service: "agents-opencode",
+            level: "error",
+            message: "OpenCode session error observed",
+          },
+        });
+      }
+    },
+
     /**
      * Inject agent-specific state into compaction so critical context
      * survives context window truncation.
@@ -25,21 +128,13 @@ export const AgentsOpencodePlugin: Plugin = async ({
     "experimental.session.compacting": async (input, output) => {
       output.context.push(`## Agents Opencode Context
 
-You are operating with the agents-opencode v${PACKAGE_VERSION} agent pack.
+You are operating with the agents-opencode v${PACK.version} agent pack.
 
-Available agents (invoke via @mention):
-- @codebase — Multi-language development with profile detection
-- @orchestrator — Strategic planning and complex workflow coordination
-- @planner — Read-only analysis and implementation planning
-- @review — Code review for security, performance, and best practices
-- @docs — Documentation creation and maintenance
-- @blogger — Content creation for blogging, podcasting, YouTube
-- @brutal-critic — Content quality review with framework-based scoring
-- @em-advisor — Engineering management guidance
-- @legal-advisor — License auditing, compliance, and regulatory guidance
+Available agents:
+- Task-delegatable agents (subagent/all): @codebase, @docs, @review, @planner, @brutal-critic, @legal-advisor
+- Primary agents (user switches with Tab; not Task-invocable): orchestrator, em-advisor, blogger
 
-Active skills: 23 language/domain/utility skill packs loadable via skill tool.
-Active commands: 16 slash commands (type / to see autocomplete).
+Active inventory: ${PACK.inventory} available as skills and slash commands.
 
 Memory: state/session-state.json and handoff/latest.md preserve working state.
 Context persistence: AGENTS.md tracks project milestones across sessions.`);
@@ -57,23 +152,10 @@ Context persistence: AGENTS.md tracks project milestones across sessions.`);
     "tool.execute.before": async (input, output) => {
       if (input.tool === "read") {
         const filePath = output.args?.filePath;
-        if (typeof filePath === "string") {
-          const basename = filePath.split(/[/\\]/).pop()?.toLowerCase() || "";
-          const blockedPatterns = [
-            ".env",
-            "credentials.json",
-            "secrets.yaml",
-            "id_rsa",
-            "id_ed25519",
-            ".pem",
-          ];
-          for (const pattern of blockedPatterns) {
-            if (basename === pattern || basename.endsWith(pattern)) {
-              throw new Error(
-                `[agents-opencode] Blocked reading sensitive file: ${filePath}. Do not read credential or secret files.`
-              );
-            }
-          }
+        if (typeof filePath === "string" && isBlockedReadPath(filePath)) {
+          throw new Error(
+            `[agents-opencode] Blocked reading sensitive file: ${filePath}. Do not read credential or secret files.`
+          );
         }
       }
     },
@@ -82,7 +164,7 @@ Context persistence: AGENTS.md tracks project milestones across sessions.`);
      * Inject package version into shell environment for script awareness.
      */
     "shell.env": async (input, output) => {
-      output.env["AGENTS_OPENCODE_VERSION"] = PACKAGE_VERSION;
+      output.env["AGENTS_OPENCODE_VERSION"] = PACK.version;
     },
   };
 };

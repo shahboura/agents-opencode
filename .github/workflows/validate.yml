@@ -208,6 +208,9 @@ jobs:
       - name: Run agent validator tests
         run: node scripts/validate-agents.test.js
 
+      - name: Run plugin guard tests
+        run: node scripts/plugin-guards.test.js
+
       - name: Run risk-path assessment tests
         run: node scripts/assess-risk-path.test.js
 

@@ -64,6 +64,32 @@ All agents log milestone entries to this file using this format:
 
 ## Milestones
 
+### 2026-09-18 11:12 - Agent permission fix, plugin modernization, config uplift
+
+**Agent:** orchestrator
+**Summary:** Fix-up pass on the agent pack: repaired inert permission denies, restored the interactive question tool, modernized the plugin, adopted newer OpenCode config keys, and trimmed dead code. Two-tier review gate applied (Tier 1 doctor + Tier 2 @review ×2).
+- Permissions: moved bash command denies (`rm -rf *`, `git push*--force*`, `git push -f*`) under `bash:` where they actually enforce; added `question: "allow"` to conversational agents (the `"*": "deny"` baseline was also blocking the question tool); removed invalid `write: "allow"` and stale `skill: true`.
+- Validator: `scripts/validate-agents.js` now rejects unrecognized top-level permission keys (with negative fixture + test) so inert command patterns cannot return.
+- Plugin: version/inventory resolved at runtime from the installer's `.opencode-agents-version` marker (project/global/npm layouts) instead of hardcoded; broadened secret-read blocking (`.env*`, `*.env`, `.npmrc`) with a public-cert allowlist so `.pem`/`.key` stay blocked while `ca.pem`/`cert.pem`/`*.crt`/`*.pub` stay readable; added `session.error` logging; corrected the compaction agent list; extracted pure guards to `.opencode/lib/guards.mjs` with table-driven tests (`validate:plugin-guards`, wired into doctor + CI).
+- Config/scope: `opencode.json` gained `subagent_depth: 2`, tuned `compaction` (`prune` + `reserved`/`tail_turns`/`preserve_recent_tokens`), `watcher.ignore`, and `share: "disabled"`; documented em-advisor/blogger as primary agents requiring manual switch (not Task-invocable). The installer now writes only `$schema`/`plugin`/`permission` into user configs (fresh and global), so these opinionated defaults never leak into a user's global install.
+- Housekeeping: bumped `.opencode` plugin dev dep 1.18.12→^1.18.31; removed 6 dead exports and a duplicate `.gitignore` line; `orchestrator`/`em-advisor` trimmed to 199 lines; `npm run doctor` green.
+
+### 2026-08-22 14:46 - Pre-commit review gate, Socket.dev license fix, dev-dep audit
+
+**Agent:** orchestrator
+**Summary:** Shipped the two-tier Pre-Commit Review Gate, resolved the lingering Socket.dev license score (70), and cleaned up high-severity dev advisories. Merged as PR #83 → release 2.4.0.
+- Pre-Commit Review Gate: Tier 1 (automated `npm run doctor` harness) + Tier 2 (adversarial `@review`, risk-gated, max 2 cycles), Pattern 8, interview pattern, and `**Goal:**` checkpoint condition; instruction budget 200→250 lines.
+- License fix: untracked `.opencode/package-lock.json` (was still tracked despite `.gitignore`) — its Apache-2.0 transitive deps (`detect-libc`, `kubernetes-types`) drove the 70 score. Tarball was already clean; recovery expected on next publish.
+- Dev deps: `brace-expansion` 5.0.8→5.0.9 and `js-yaml` 5.2.1→5.2.3 (both high-severity DoS, dev-only).
+
+### Deferred — pattern references (evaluated, not implemented)
+
+**Agent:** orchestrator
+**Summary:** Researched Anthropic agent patterns; three genuine gaps worth a follow-up. References retained for reuse.
+- Voting/redundancy to harden Tier 2: https://www.anthropic.com/engineering/building-effective-agents ("Parallelization → Voting")
+- Effort-scaling rules for delegation: https://www.anthropic.com/engineering/multi-agent-research-system (principle #3)
+- Filesystem artifact handoff (bypass coordinator "game of telephone"): https://www.anthropic.com/engineering/multi-agent-research-system (Appendix)
+
 ### 2026-07-02 19:55 - v2.2.0 Uplift: Usage showcase, docs pruning, agent modernization, human-in-loop
 
 **Agent:** orchestrator

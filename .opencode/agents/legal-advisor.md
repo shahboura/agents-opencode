@@ -3,7 +3,6 @@ description: Legal research advisor for jurisdiction-aware analysis across case 
 mode: all
 temperature: 0.1
 steps: 20
-skill: true
 permission:
   "*": "deny"
   edit: "allow"
@@ -12,6 +11,7 @@ permission:
   glob: "allow"
   grep: "allow"
   webfetch: "allow"
+  question: "allow"
   skill:
     "*": "deny"
     "legal-advisor": "allow"

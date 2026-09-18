@@ -4,6 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const { readJsonFile, writeJsonFile, isObject } = require('./file-ops.js');
 
+// Only installer-managed keys are ever written into a user's config. Opinionated
+// package defaults (share, compaction, subagent_depth, watcher, provider, ...)
+// must never leak into a user's project or global configuration.
+const MANAGED_CONFIG_KEYS = ['$schema', 'plugin', 'permission'];
+
 function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite, logWarning) {
   const patch = {
     createdFile: false,
@@ -17,17 +22,24 @@ function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite, log
   const sourceConfigForInstall = Object.assign({}, (sourceConfig || {}));
   delete sourceConfigForInstall.instructions;
 
+  const createdConfig = {};
+  for (const key of MANAGED_CONFIG_KEYS) {
+    if (key in sourceConfigForInstall) {
+      createdConfig[key] = sourceConfigForInstall[key];
+    }
+  }
+
   if (!fs.existsSync(targetConfigPath)) {
-    writeJsonFile(targetConfigPath, sourceConfigForInstall);
+    writeJsonFile(targetConfigPath, createdConfig);
     patch.createdFile = true;
     patch.changed = true;
-    if (isObject(sourceConfigForInstall.permission)) {
-      patch.addedPermissionKeys = Object.keys(sourceConfigForInstall.permission);
+    if (isObject(createdConfig.permission)) {
+      patch.addedPermissionKeys = Object.keys(createdConfig.permission);
     }
-    if (Array.isArray(sourceConfigForInstall.plugin)) {
-      patch.addedPluginEntries = sourceConfigForInstall.plugin.slice();
+    if (Array.isArray(createdConfig.plugin)) {
+      patch.addedPluginEntries = createdConfig.plugin.slice();
     }
-    patch.createdSchema = !!sourceConfigForInstall.$schema;
+    patch.createdSchema = !!createdConfig.$schema;
     return patch;
   }
 

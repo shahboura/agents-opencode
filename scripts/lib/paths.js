@@ -58,11 +58,7 @@ function resolveAgentDirectory(opencodeDir) {
 }
 
 module.exports = {
-  MANIFEST_FILE,
-  VERSION_FILE,
   AGENT_DIR,
-  getHomeDir,
-  getGlobalConfigDir,
   getScopePaths,
   toManagedPath,
   resolveAgentDirectory,
