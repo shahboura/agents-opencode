@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/shahboura/agents-opencode/compare/v2.4.0...v2.4.1) (2026-09-19)
+
+
+### Bug Fixes
+
+* **permissions:** enforce nested bash denies and stop installer config leakage ([#86](https://github.com/shahboura/agents-opencode/issues/86)) ([a88a8c4](https://github.com/shahboura/agents-opencode/commit/a88a8c4f1b18a4630f5d7e972e0c84513d61ab0a))
+
 ## [2.4.0](https://github.com/shahboura/agents-opencode/compare/v2.3.2...v2.4.0) (2026-08-22)
 
 
