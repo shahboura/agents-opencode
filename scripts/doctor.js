@@ -52,6 +52,11 @@ const checks = [
     args: ['scripts/validate-agents.test.js'],
   },
   {
+    name: 'Run plugin guard tests',
+    command: process.execPath,
+    args: ['scripts/plugin-guards.test.js'],
+  },
+  {
     name: 'Run agent eval harness',
     command: process.execPath,
     args: ['evals/harness/run-evals.js'],

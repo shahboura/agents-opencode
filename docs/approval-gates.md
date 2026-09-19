@@ -57,3 +57,10 @@ For `AGENTS.md` milestone entries, keep updates concise:
 - Avoid copying large diffs or command output into entries.
 
 The context checker surfaces warnings when entries exceed the bullet guidance.
+
+## Automated Risk Read-Out
+
+The CI `validate-risk-path` job computes a risk level from the changed files and
+reports whether the PR template's `Risk level` acknowledges it. This check is
+**advisory**: it prints the computed risk but never blocks a merge. Enforcement of
+the rubric above remains a human responsibility, backed by the pre-commit review gate.

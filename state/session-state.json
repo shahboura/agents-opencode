@@ -1,28 +1,40 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
-  "current_phase": "sustainment",
-  "plugin_version": "2.0.0",
+  "current_phase": "agent-pack modernization",
+  "plugin_version": "2.4.0",
   "decisions": [
     "Use deny-by-default permissions with explicit allowlists.",
-    "Gate risk-sensitive changes in CI before merge."
+    "Nest command patterns under the relevant permission (e.g. bash:) — top-level command keys are inert.",
+    "Keep em-advisor/blogger as primary agents (manual switch/@mention) rather than Task-delegatable subagents.",
+    "Resolve plugin version/inventory at runtime from the installer marker and package layout, never from the consumer package.json.",
+    "Secret-read guard: deny by default (.pem/.key included) with a public-cert allowlist (.crt/.cer/.pub, ca/cert/chain/fullchain .pem); accept the rare Keynote .key false positive.",
+    "Scope the skill pass to targeted fixes only; the three skills hidden from orchestrator are intentional.",
+    "Disable session sharing (share: disabled) and enable compaction pruning (compaction.prune) for long agent sessions.",
+    "Agent-level read: allow overrides OpenCode's built-in *.env read deny; the plugin secret guard is the compensating control.",
+    "Installer writes only $schema/plugin/permission to user configs; opinionated package defaults must never propagate into a project or global opencode.json.",
+    "Risk-path review gate is advisory (reports computed risk + PR acknowledgment but never blocks merges); enforcement stays human/Tier 2.",
+    "Installer lifecycle and npx package integrity tests now run in the CI tooling-tests job (previously local-only via doctor)."
   ],
   "open_risks": [
     "Scenario-level behavioral eval coverage is still limited.",
-    "Ownership enforcement is advisory until CODEOWNERS is added."
+    "orchestrator and em-advisor sit near the 200-line agent budget (199 used).",
+    "Consumer-visible opencode.json defaults are not yet in the changelog."
   ],
   "blocked_by": [],
   "next_actions": [
+    "Commit the change set including the untracked validator fixture and new guard module/tests.",
+    "Add a changelog/docs note for the new consumer-visible opencode.json defaults.",
     "Introduce CODEOWNERS for governance-critical paths.",
-    "Add scenario-based eval fixtures for orchestrator/review behavior.",
-    "Track eval trend deltas across releases.",
-    "Monitor context budget across agent sessions"
+    "Expand eval fixtures toward capability/regression suites (pass@k) per Anthropic guidance."
   ],
   "artifacts": [
-    "docs/approval-gates.md",
-    "docs/deprecation-migration.md",
-    "evals/reports/trend-summary.md"
+    ".opencode/plugins/agents-opencode.ts",
+    ".opencode/lib/guards.mjs",
+    "scripts/plugin-guards.test.js",
+    "scripts/validate-agents.js",
+    "opencode.json"
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-05-05T00:00:00Z"
+  "last_updated": "2026-09-18T11:12:00Z"
 }

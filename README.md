@@ -63,8 +63,9 @@ explicit scope. Creates timestamped backups before removal.
 **Update:** auto-detects installed scopes; use `--all`, `--global`, or
 `--project [dir]` for explicit scope.
 
-**Config:** installer merges only missing global permission defaults into
-`opencode.json`. Existing provider/model/instructions settings are preserved.
+**Config:** the installer only manages `$schema`, `plugin`, and missing permission
+defaults in `opencode.json` — it never writes other keys, so existing
+provider/model/instructions/share/compaction settings are preserved.
 
 </details>
 

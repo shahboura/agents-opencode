@@ -6,15 +6,18 @@ steps: 75
 permission:
   "*": "deny"
   edit: "ask"
-  bash: "ask"
+  bash:
+    "*": "ask"
+    "rm -rf *": "deny"
+    "git push*--force*": "deny"
+    "git push -f*": "deny"
+    "git push * -f*": "deny"
   glob: "allow"
   grep: "allow"
   read: "allow"
   webfetch: "allow"
   todowrite: "allow"
-  "rm -rf *": "deny"
-  "git push --force*": "deny"
-  "git push * --force*": "deny"
+  question: "allow"
   skill:
     "*": "deny"
     "dotnet": "allow"
@@ -66,11 +69,8 @@ creating step-by-step plans for others to execute. No code changes.
 tasks, refactoring, migrations. Plans + coordinates specialized agents.
 
 **Simple Implementation:**
-- Defer full doc/lint validation (`npm run doctor`, `npm run lint:md`) to the final
-  integration phase. Run targeted checks (typecheck, test) during implementation phases.
-- For single-file or single-domain changes, implement directly instead of delegating
-  to @codebase — avoids handoff context loss. Edits require per-file confirmation
-  (`edit: ask`), so the benefit is context preservation, not speed.
+- Defer full doc/lint validation (`npm run doctor`) to the final integration phase; run targeted checks (typecheck, test) during implementation.
+- For single-file/single-domain changes, implement directly (not via @codebase) to preserve context. Edits still require per-file confirmation (`edit: ask`).
 
 ### Implementation Routing
 
@@ -165,7 +165,7 @@ For each approved phase:
 
 When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains: Planning Template, Agent Selection Guide, Coordination Patterns (8 patterns including Pre-Commit Review Gate), Checkpoint Format, Fallback Routing, and Progress Tracking.
 
-Quick delegation reference: implementation → @codebase, documentation → @docs, review → @review, analysis → @planner, leadership → @em-advisor, content → @blogger, critique → @brutal-critic, legal → @legal-advisor.
+Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @brutal-critic, @legal-advisor (plus built-ins general/explore); manual handoff (Tab; `primary`, not Task-invocable) → `em-advisor`, `blogger`.
 
 ## Skill Activation Policy
 

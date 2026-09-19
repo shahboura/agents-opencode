@@ -105,6 +105,32 @@ execution with completion criteria, cycle limits, escalation rules, and verifica
 For multi-phase coordination patterns, checkpoints, fallback routing, and agent delegation
 guidance, see `.opencode/instructions/orchestrator-reference.instructions.md`.
 
+### Nested Delegation
+
+Some agents can delegate further (for example `codebase` → `@review`/`@docs` or
+`planner` → `@explore`). This requires `subagent_depth` of at least `2` in your
+`opencode.json`; the default of `1` lets only top-level agents spawn subagents. The
+installer does not set this for you, so add `"subagent_depth": 2` if you want nested
+delegation. The orchestrator's own coordination patterns work at the default depth
+because it calls each specialist directly.
+
+### Recommended Project Config
+
+The installer writes only `$schema`, `plugin`, and permission defaults. To get the
+pack's full behavior, add these keys to `opencode.json`:
+
+```json
+{
+  "subagent_depth": 2,
+  "compaction": { "prune": true },
+  "share": "disabled"
+}
+```
+
+- `subagent_depth: 2` enables nested delegation (see above).
+- `compaction.prune` drops stale tool output to save context on long sessions.
+- `share: "disabled"` prevents accidental session sharing.
+
 ## Next Steps
 
 - **[Getting Started](./getting-started)**

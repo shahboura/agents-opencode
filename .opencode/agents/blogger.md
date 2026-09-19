@@ -12,6 +12,7 @@ permission:
   read: "allow"
   webfetch: "allow"
   todowrite: "allow"
+  question: "allow"
   skill:
     "*": "deny"
     "blogger": "allow"

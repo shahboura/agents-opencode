@@ -4,6 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const { readJsonFile, writeJsonFile, isObject } = require('./file-ops.js');
 
+// Only installer-managed keys are ever written into a user's config. Opinionated
+// package defaults (share, compaction, subagent_depth, watcher, provider, ...)
+// must never leak into a user's project or global configuration.
+const MANAGED_CONFIG_KEYS = ['$schema', 'plugin', 'permission'];
+
 function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite, logWarning) {
   const patch = {
     createdFile: false,
@@ -17,17 +22,24 @@ function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite, log
   const sourceConfigForInstall = Object.assign({}, (sourceConfig || {}));
   delete sourceConfigForInstall.instructions;
 
+  const createdConfig = {};
+  for (const key of MANAGED_CONFIG_KEYS) {
+    if (key in sourceConfigForInstall) {
+      createdConfig[key] = sourceConfigForInstall[key];
+    }
+  }
+
   if (!fs.existsSync(targetConfigPath)) {
-    writeJsonFile(targetConfigPath, sourceConfigForInstall);
+    writeJsonFile(targetConfigPath, createdConfig);
     patch.createdFile = true;
     patch.changed = true;
-    if (isObject(sourceConfigForInstall.permission)) {
-      patch.addedPermissionKeys = Object.keys(sourceConfigForInstall.permission);
+    if (isObject(createdConfig.permission)) {
+      patch.addedPermissionKeys = Object.keys(createdConfig.permission);
     }
-    if (Array.isArray(sourceConfigForInstall.plugin)) {
-      patch.addedPluginEntries = sourceConfigForInstall.plugin.slice();
+    if (Array.isArray(createdConfig.plugin)) {
+      patch.addedPluginEntries = createdConfig.plugin.slice();
     }
-    patch.createdSchema = !!sourceConfigForInstall.$schema;
+    patch.createdSchema = !!createdConfig.$schema;
     return patch;
   }
 
@@ -87,6 +99,7 @@ function mergeConfigPatches(existingPatch, currentPatch) {
   const base = {
     createdFile: false,
     addedPermissionKeys: [],
+    addedPluginEntries: [],
     createdSchema: false,
     skipped: false,
     changed: false,
@@ -100,12 +113,18 @@ function mergeConfigPatches(existingPatch, currentPatch) {
     ...(Array.isArray(next.addedPermissionKeys) ? next.addedPermissionKeys : []),
   ]);
 
+  const pluginEntries = new Set([
+    ...(Array.isArray(prior.addedPluginEntries) ? prior.addedPluginEntries : []),
+    ...(Array.isArray(next.addedPluginEntries) ? next.addedPluginEntries : []),
+  ]);
+
   return {
     ...base,
     ...prior,
     ...next,
     createdFile: Boolean(prior.createdFile || next.createdFile),
     addedPermissionKeys: [...permissionKeys],
+    addedPluginEntries: [...pluginEntries],
     createdSchema: Boolean(prior.createdSchema || next.createdSchema || prior.addedSchema || next.addedSchema),
     skipped: Boolean(prior.skipped || next.skipped),
     changed: Boolean(prior.changed || next.changed),
@@ -182,6 +201,35 @@ function manifestlessCleanup(configPath, sourceConfig, onBeforeMutate, logWarnin
       delete existing.permission;
       changed = true;
     }
+  }
+
+  if (Array.isArray(sourceConfig.plugin) && Array.isArray(existing.plugin)) {
+    const managedPlugins = new Set(sourceConfig.plugin);
+    const remainingPlugins = existing.plugin.filter((entry) => !managedPlugins.has(entry));
+    if (remainingPlugins.length !== existing.plugin.length) {
+      changed = true;
+    }
+    if (remainingPlugins.length > 0) {
+      existing.plugin = remainingPlugins;
+    } else {
+      delete existing.plugin;
+    }
+  }
+
+  if (sourceConfig.$schema && existing.$schema === sourceConfig.$schema) {
+    delete existing.$schema;
+    changed = true;
+  }
+
+  // A config left empty after stripping installer-managed values was created by
+  // the installer; remove it instead of leaving an orphan that still registers the
+  // pack. User-owned keys (provider, model, share, ...) keep the file in place.
+  if (Object.keys(existing).length === 0) {
+    if (typeof onBeforeMutate === 'function') {
+      onBeforeMutate();
+    }
+    fs.unlinkSync(configPath);
+    return { changed: true, removedFile: true };
   }
 
   if (changed) {

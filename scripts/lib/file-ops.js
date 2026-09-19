@@ -24,8 +24,6 @@ const LANGUAGE_MAP = {
 const LANGUAGE_INSTRUCTIONS = new Set(Object.values(LANGUAGE_MAP));
 
 const ALWAYS_KEEP = [
-  'blogger.instructions.md',
-  'brutal-critic.instructions.md',
   'ci-cd-hygiene.instructions.md',
 ];
 
@@ -270,9 +268,7 @@ module.exports = {
   writeJsonFile,
   removeIfExists,
   removeManagedFile,
-  listFilesRecursive,
   getManagedSourceFiles,
-  filesEqual,
   buildManagedFilesFromSource,
   installManagedTree,
   filterLanguages,
