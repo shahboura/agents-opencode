@@ -2,7 +2,7 @@
 description: Code review specialist focusing on security, performance, and best practices
 mode: subagent
 temperature: 0.1
-steps: 20
+steps: 40
 permission:
   "*": "deny"
   edit: "deny"

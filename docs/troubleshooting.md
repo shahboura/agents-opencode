@@ -61,9 +61,21 @@ description: Common issues and solutions for OpenCode agent configurations.
 
 ### Existing provider/model config changed unexpectedly
 
-- Installer only adds missing permission defaults (`external_directory`, `doom_loop`).
-- Existing `provider`, `model`, and `instructions` values are preserved.
+- Installer only manages `$schema`, `plugin`, and missing permission defaults
+  (`external_directory`, `doom_loop`); other keys are never written.
+- Existing `provider`, `model`, `instructions`, `share`, and `compaction` values are preserved.
 - Re-run install with `--project` or `--global` and check logs for `Updated config safely`.
+
+### Agent refuses to read a file that looks like a secret
+
+- The runtime plugin blocks reads of secret-style files: `.env`, `.env.*`, `*.env`,
+  `id_rsa`, `id_ed25519`, `id_ecdsa`, `credentials.json`, `credentials.yaml`,
+  `credentials.yml`, `secrets.yaml`, `secrets.yml`, `secrets.json`, `.npmrc`,
+  `.netrc`, `.p12`, `.pfx`, `.jks`, `.keystore`, `.pem`, and `.key`.
+- Checked-in templates (`.env.example`, `.env.sample`, `.env.template`, `.env.dist`,
+  `.env.defaults`) and public certs (`*.pub`, `*.crt`, `*.cer`, `*.cert`, `ca.pem`,
+  `cert.pem`, `certificate.pem`, `chain.pem`, `fullchain.pem`) remain readable.
+- To inspect a blocked file, open it outside the agent session.
 
 ### Skills not loading
 

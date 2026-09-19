@@ -51,15 +51,17 @@ External checks are also executed by a scheduled non-blocking workflow.
 | Command docs parity validation | `npm run validate:commands` | `validate-command-matrices` |
 | Agent eval harness | `npm run eval:agents` | `validate-agent-evals` |
 | Agent eval trend snapshot | `npm run eval:agents:json` + `npm run eval:agents:trend` | `validate-agent-evals` (artifact upload) |
-| Risk-scored review path | _CI-driven_ | `validate-risk-path` |
+| Risk-scored review path (advisory) | _CI-driven_ | `validate-risk-path` |
 | Docs internal links | `npm run validate:docs` | `validate-docs` |
 | Changelog capability labels | `npm run validate:changelog` | `validate-changelog` |
 | Session state contract | `npm run validate:session` | `validate-session-state` |
+| Plugin guard tests | `npm run validate:plugin-guards` | `validate-tooling-tests` |
 | Docs external links (optional) | `npm run validate:docs:external` | `validate-external-links` (scheduled, non-blocking) |
 | Tooling regression tests | `npm run doctor` | `validate-tooling-tests` |
 | Context size check | `npm run validate:context` | `validate-context` |
 | Markdown lint | `npm run lint:md` | `lint-markdown` |
 | Workflow lint | _CI-only_ | `lint-workflows` |
 
-`validate-risk-path` derives changed files from git context and, on pull requests,
-checks that the PR template risk level acknowledges medium/high changes.
+`validate-risk-path` derives changed files from git context and reports a computed
+risk level plus whether the PR template acknowledges it. The check is **advisory**
+and does not block merges.

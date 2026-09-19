@@ -23,6 +23,28 @@ function log(color, message) {
   console.log(`${color}${message}${colors.reset}`);
 }
 
+// Permission keys recognized by the OpenCode config schema. Any other top-level
+// key under `permission:` is inert (it is treated as a permission name that no
+// tool matches). Command/path patterns must be nested under the relevant
+// permission, e.g. bash: { "*": "ask", "rm -rf *": "deny" }.
+const KNOWN_PERMISSION_KEYS = new Set([
+  'read',
+  'edit',
+  'glob',
+  'grep',
+  'list',
+  'bash',
+  'task',
+  'external_directory',
+  'todowrite',
+  'question',
+  'webfetch',
+  'websearch',
+  'lsp',
+  'doom_loop',
+  'skill',
+]);
+
 function getKnownSkills() {
   const skillsDir = path.join(process.cwd(), '.opencode', 'skills');
   const skills = new Set();
@@ -86,6 +108,37 @@ function parsePermissionMap(block, indent = 4) {
   }
 
   return map;
+}
+
+function extractPermissionSection(frontmatter) {
+  const match = frontmatter.match(/^permission\s*:\s*\n([\s\S]*?)(?=^\S|(?![\s\S]))/m);
+  return match ? match[1] : null;
+}
+
+function parseTopLevelPermissionKeys(block) {
+  const keys = [];
+  for (const line of block.split('\n')) {
+    if (!line.trim() || /^\s*#/.test(line)) continue;
+    const match = line.match(/^ {2}(?!#)([^\s:][^:]*?)\s*:\s*(.*)$/);
+    if (!match) continue;
+    const key = match[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+    if (key) keys.push(key);
+  }
+  return keys;
+}
+
+function validatePermissionKeys(record, errors) {
+  const section = extractPermissionSection(record.frontmatter);
+  if (!section) return;
+
+  for (const key of parseTopLevelPermissionKeys(section)) {
+    if (key === '*' || KNOWN_PERMISSION_KEYS.has(key)) continue;
+    errors.push(
+      `${record.name}: permission key '${key}' is not a recognized permission. ` +
+      'Command or path patterns must be nested under the relevant permission ' +
+      '(for example: bash: { "*": "ask", "rm -rf *": "deny" }).'
+    );
+  }
 }
 
 function resolveAgentDirectory(repoRoot) {
@@ -293,6 +346,10 @@ function main() {
     if (!/^permission\s*:/m.test(frontmatter)) {
       warnings.push(`${file.name}: Missing 'permission' section`);
     }
+
+    // Reject inert top-level permission keys (e.g. command patterns that should
+    // be nested under bash: instead of sitting at the permission root).
+    validatePermissionKeys(record, errors);
 
     // Check for a meaningful introductory heading in body
     // Accept: Role, Description, Responsibilities, Core Responsibilities,

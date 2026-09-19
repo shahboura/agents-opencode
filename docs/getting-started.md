@@ -96,8 +96,9 @@ npx agents-opencode --status
 - Project backups: `<project>/.opencode/.backups/<timestamp>--<operation>--<scope>/`
 - Global backups: `~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/`
 - Backup retention: latest 10 sessions and sessions newer than 30 days.
-- Installer only merges missing permission defaults into existing `opencode.json`.
-- Existing provider/model/instruction configuration remains unchanged.
+- Installer only manages `$schema`, `plugin`, and missing `permission` defaults in
+  `opencode.json`; a newly created config contains only those keys.
+- Other config keys (provider, model, instructions, share, compaction, watcher, ...) are never written or modified.
 
 To restore files, use `backup-manifest.json` from a backup session and copy the files back to their original paths.
 

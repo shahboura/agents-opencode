@@ -35,6 +35,8 @@ Use this format when creating a multi-phase plan:
 
 ## Agent Selection Guide
 
+**Delegation model:** Only `subagent`/`all` agents can be invoked by the orchestrator with the Task tool; `primary` agents (`em-advisor`, `blogger`) require a manual switch (Tab) or a user `@mention`. The orchestrator's `permission.task` allowlist enforces this. Below, `@`-prefixed entries are delegation targets; un-prefixed entries are `primary` agents the user invokes directly.
+
 **@codebase** — Feature implementation, bug fixes, refactoring, test creation. Use for cross-domain or unfamiliar-stack work (multi-language validation, auto-detection). For single-file/single-domain changes, orchestrator may implement directly — see Implementation Routing in the orchestrator agent.
 
 **@docs** — README updates, API documentation, architecture docs, user guides.
@@ -43,9 +45,9 @@ Use this format when creating a multi-phase plan:
 
 **@planner** — Read-only codebase analysis, detailed implementation planning, risk assessment before implementation.
 
-**@em-advisor** — Engineering leadership guidance, stakeholder communication, team execution and prioritization.
+**em-advisor** *(primary — manual handoff)* — Engineering leadership guidance, stakeholder communication, team execution and prioritization.
 
-**@blogger** — Blog post creation, YouTube scripts, podcast outlines.
+**blogger** *(primary — manual handoff)* — Blog post creation, YouTube scripts, podcast outlines.
 
 **@brutal-critic** — Content quality reviews, framework-based scoring, pre-publish validation.
 
@@ -91,7 +93,7 @@ orchestrator → @codebase (generate solution)
             → @codebase (iterate based on feedback) ⊛ loop
             → @review (final gate)
 ```
-Use when quality criteria are well-defined and iterative refinement demonstrably improves output. The evaluator (`@review` or `@brutal-critic`) provides feedback; the generator (`@codebase` or `@blogger`) iterates. Run up to 3 refinement cycles before gating. (Note: this is an implementation refinement loop; the Pre-Commit Review Gate uses 2 cycles for its adversarial review — see Pattern 8.)
+Use when quality criteria are well-defined and iterative refinement demonstrably improves output. The evaluator (`@review` or `@brutal-critic`) provides feedback; the generator (`@codebase`, or `blogger` via manual handoff) iterates. Run up to 3 refinement cycles before gating. (Note: this is an implementation refinement loop; the Pre-Commit Review Gate uses 2 cycles for its adversarial review — see Pattern 8.)
 
 ### Pattern 6: Parallelized Sub-Tasks
 ```
