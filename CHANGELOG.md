@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.2](https://github.com/shahboura/agents-opencode/compare/v2.4.1...v2.4.2) (2026-09-20)
+
+
+### Bug Fixes
+
+* **package:** add bugs/test metadata and document Socket license false positive ([#89](https://github.com/shahboura/agents-opencode/issues/89)) ([f9afabb](https://github.com/shahboura/agents-opencode/commit/f9afabb258155fd15fbacaf8fc64d66c2f114d82))
+
 ## [2.4.1](https://github.com/shahboura/agents-opencode/compare/v2.4.0...v2.4.1) (2026-09-19)
 
 
