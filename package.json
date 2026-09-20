@@ -18,10 +18,14 @@
     "url": "git+https://github.com/shahboura/agents-opencode.git"
   },
   "homepage": "https://shahboura.github.io/agents-opencode/",
+  "bugs": {
+    "url": "https://github.com/shahboura/agents-opencode/issues"
+  },
   "bin": {
     "agents-opencode": "install.js"
   },
   "scripts": {
+    "test": "npm run doctor",
     "doctor": "node scripts/doctor.js",
     "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --ignore \"dist/**\" --ignore \"handoff/**\" --ignore \"evals/reports/**\"",
     "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --ignore \"dist/**\" --ignore \"handoff/**\" --ignore \"evals/reports/**\" --fix",

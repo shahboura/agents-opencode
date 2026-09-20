@@ -105,6 +105,18 @@ description: Common issues and solutions for OpenCode agent configurations.
 - `"deny"` blocks the action entirely; `"ask"` prompts for confirmation
 - Edit the agent file to change permission levels
 
+### Socket.dev shows a license warning
+
+- This is a known false positive in Socket's file scanner, not a real licensing issue.
+- The package is MIT (`license` field in `package.json` plus the root `LICENSE` file).
+- Socket reads `.opencode/skills/legal-advisor/references/license-matrix.md` — a reference that
+  documents third-party license types for the `@legal-advisor` agent — and unions the SPDX
+  identifiers it finds there into a synthetic `AND` license.
+- That synthetic union triggers `mixedLicense`, `licenseSpdxDisj`, `copyleftLicense`, and
+  `nonpermissiveLicense` alerts and lowers Socket's License score.
+- No third-party license text is redistributed; the matrix ships intentionally so `@legal-advisor`
+  can assess dependency compatibility offline.
+
 ## Help
 
 - [Getting Started](./getting-started)
