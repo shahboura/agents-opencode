@@ -18,6 +18,7 @@ This repository contains customized agents for OpenCode.ai, aligned with Anthrop
 - **Coordination patterns & templates:** See `.opencode/instructions/orchestrator-reference.instructions.md`.
 - **Validation workflow:** See `.opencode/skills/docs-validation/SKILL.md`.
 - **Skill policy governance:** Cross-agent skill verification criteria (CI-enforced) are in `scripts/validate-agents.js`.
+- **Backlog:** Deferred review items and the OpenCode v2 migration plan are tracked in `BACKLOG.md`.
 
 ## Quality Requirements
 
