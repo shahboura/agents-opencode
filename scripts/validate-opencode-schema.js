@@ -75,6 +75,9 @@ function validatePermission(frontmatter, label) {
   for (const childKey of ['skill', 'task']) {
     const child = permissionChildBlock(analysis.block, childKey);
     if (!child) continue;
+    if (child.duplicate) {
+      errors.push(`${label}: duplicate permission.${childKey} block (fail-closed)`);
+    }
     if (child.inline) {
       errors.push(`${label}: permission.${childKey} must be a block mapping (fail-closed)`);
     } else if (parseMapEntries(child.block).size === 0) {

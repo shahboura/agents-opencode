@@ -276,6 +276,10 @@ function main() {
       warnings.push(`${file.name}: Missing 'permission.skill' allowlist (recommended when skill tool is enabled)`);
     }
 
+    if (skillChild && skillChild.duplicate) {
+      errors.push(`${file.name}: duplicate 'permission.skill' block (fail-closed)`);
+    }
+
     if (skillChild && skillChild.inline) {
       errors.push(`${file.name}: permission.skill must be a block mapping (fail-closed)`);
     }
@@ -318,6 +322,10 @@ function main() {
 
     if (hasTaskAccess && !taskChild) {
       warnings.push(`${file.name}: Missing 'permission.task' allowlist (recommended when task tool is enabled)`);
+    }
+
+    if (taskChild && taskChild.duplicate) {
+      errors.push(`${file.name}: duplicate 'permission.task' block (fail-closed)`);
     }
 
     if (taskChild && taskChild.inline) {

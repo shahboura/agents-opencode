@@ -134,10 +134,13 @@ function permissionKeys(block) {
 
 // Extracts a nested permission child block (e.g. `skill:` / `task:`) at the
 // permission block's shallowest indentation, so it is not sensitive to the
-// exact indent width. Returns { inline, block } or null.
+// exact indent width. Returns { present, inline, block, duplicate } or null.
 function permissionChildBlock(block, key) {
   const lines = block.split('\n').map((line) => line.replace(/\r$/, ''));
   let baseIndent = null;
+  let matchIndex = -1;
+  let duplicate = false;
+
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     if (!line.trim() || /^\s*#/.test(line)) continue;
@@ -146,23 +149,30 @@ function permissionChildBlock(block, key) {
     const indent = indentMatch[1].length;
     if (baseIndent === null) baseIndent = indent;
     if (indent !== baseIndent) continue;
-    const keyMatch = indentMatch[2].match(/^["']?([^\s:#][^:"']*?)["']?\s*:\s*(.*)$/);
+    const keyMatch = indentMatch[2].match(/^["']?([^\s:#][^:"']*?)["']?\s*:(.*)$/);
     if (!keyMatch) continue;
     const name = keyMatch[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
     if (name !== key) continue;
-    const inlineValue = keyMatch[2].replace(/(?:^|\s)#.*$/, '').trim();
-    if (inlineValue.length > 0) return { present: true, inline: true, block: '' };
-    const sub = [];
-    for (let j = i + 1; j < lines.length; j += 1) {
-      const next = lines[j];
-      if (!next.trim()) { sub.push(next); continue; }
-      const nextIndent = next.match(/^([ \t]+)/);
-      if (!nextIndent || nextIndent[1].length <= baseIndent) break;
-      sub.push(next);
-    }
-    return { present: true, inline: false, block: sub.join('\n') };
+    if (matchIndex === -1) matchIndex = i;
+    else duplicate = true;
   }
-  return null;
+
+  if (matchIndex === -1) return null;
+
+  const valueMatch = lines[matchIndex].match(/^([ \t]+)(.*)$/)[2]
+    .match(/^["']?([^\s:#][^:"']*?)["']?\s*:(.*)$/);
+  const inlineValue = valueMatch[2].replace(/(?:^|\s)#.*$/, '').trim();
+  if (inlineValue.length > 0) return { present: true, inline: true, block: '', duplicate };
+
+  const sub = [];
+  for (let j = matchIndex + 1; j < lines.length; j += 1) {
+    const next = lines[j];
+    if (!next.trim()) { sub.push(next); continue; }
+    const nextIndent = next.match(/^([ \t]+)/);
+    if (!nextIndent || nextIndent[1].length <= baseIndent) break;
+    sub.push(next);
+  }
+  return { present: true, inline: false, block: sub.join('\n'), duplicate };
 }
 
 // Parses `key: value` entries at a block's shallowest indentation into a Map.

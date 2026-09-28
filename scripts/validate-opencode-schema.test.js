@@ -222,6 +222,28 @@ function testTrailingCommentOnChildKeyPasses() {
   assert(result.status === 0, `Expected trailing comment on child key to parse as block. Output: ${result.output}`);
 }
 
+function testDuplicateNestedPermissionFails() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'permission:',
+      '  "*": "deny"',
+      '  skill:',
+      '    "*": "deny"',
+      '  skill:',
+      '    "*": "allow"',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status !== 0, 'Expected duplicate nested permission.skill to fail');
+  assert(result.output.includes('duplicate permission.skill block'), 'Expected nested duplicate message');
+}
+
 function testDuplicatePermissionFails() {
   const result = withFixture((root) => {
     writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
@@ -421,6 +443,7 @@ function main() {
     testInlineNestedPermissionFails();
     testEmptyNestedPermissionFails();
     testTrailingCommentOnChildKeyPasses();
+    testDuplicateNestedPermissionFails();
     testDuplicatePermissionFails();
     testUnknownCommandFieldFails();
     testUnknownPermissionKeyFails();
