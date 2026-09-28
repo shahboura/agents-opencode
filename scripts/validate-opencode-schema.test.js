@@ -200,6 +200,31 @@ function testNestedPermissionPatternsAllowed() {
   assert(result.status === 0, `Expected nested bash patterns to be accepted. Output: ${result.output}`);
 }
 
+function testFoldedDescriptionPasses() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'skills', 'good', 'SKILL.md'), [
+      '---',
+      'name: good',
+      'description: >-',
+      '  A folded description that spans',
+      '  multiple lines for the good skill.',
+      '---',
+      '',
+      '# Good',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status === 0, `Expected folded (>) description to parse. Output: ${result.output}`);
+}
+
+function testMissingConfigFails() {
+  const result = withFixture((root) => {
+    fs.rmSync(path.join(root, 'opencode.json'), { force: true });
+  });
+  assert(result.status !== 0, 'Expected missing opencode.json to fail');
+  assert(result.output.includes('file not found'), 'Expected file-not-found message');
+}
+
 function testV2ReportsGaps() {
   const result = withFixture((root) => {
     writeFile(root, 'opencode.json', JSON.stringify({ $schema: 'https://opencode.ai/config.json', plugin: ['x'] }, null, 2));
@@ -242,6 +267,8 @@ function main() {
     testUnknownPermissionKeyFails();
     testInlinePermissionFailsClosed();
     testNestedPermissionPatternsAllowed();
+    testFoldedDescriptionPasses();
+    testMissingConfigFails();
     testV2ReportsGaps();
     testV2PreservesFailure();
     testWarningsOnlyExitsZero();

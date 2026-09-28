@@ -286,7 +286,6 @@ function runCommandRoutingRule(issues, commands, knownAgents) {
     const description = extractField(command.frontmatter, 'description');
     const agent = extractField(command.frontmatter, 'agent');
     const subtask = extractField(command.frontmatter, 'subtask');
-    const argumentHint = extractField(command.frontmatter, 'argument-hint');
 
     if (!description) {
       addIssue(issues, RULES.COMMAND_ROUTING_METADATA, command.relativePath, 'Missing required frontmatter field: description');
@@ -300,14 +299,6 @@ function runCommandRoutingRule(issues, commands, knownAgents) {
 
     if (!subtask || !['true', 'false'].includes(subtask)) {
       addIssue(issues, RULES.COMMAND_ROUTING_METADATA, command.relativePath, 'subtask must be an explicit boolean value');
-    }
-
-    if (!argumentHint) {
-      addIssue(issues, RULES.COMMAND_ROUTING_METADATA, command.relativePath, 'Missing required frontmatter field: argument-hint');
-    }
-
-    if (command.body.includes('$ARGUMENTS') && !argumentHint) {
-      addIssue(issues, RULES.COMMAND_ROUTING_METADATA, command.relativePath, 'Command uses $ARGUMENTS but argument-hint is missing');
     }
   }
 }

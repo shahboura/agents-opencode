@@ -67,21 +67,21 @@ Trigger policy:
 OpenCode commands delegate directly to a target agent.
 Arguments passed in `/command-name [argument]` are forwarded to the command body via `$ARGUMENTS`.
 
-| Command | Target agent | Argument hint | Purpose |
-|---|---|---|---|
-| `/api-docs` | `docs` | `[module, file, or endpoint path]` | Generate API reference documentation |
-| `/architecture-decision` | `docs` | `[decision topic or system name]` | Create an ADR |
-| `/architecture-review` | `review` | `[system, component, or design document]` | Review design for quality attributes |
-| `/code-review` | `review` | `[file, PR, or scope — blank for current changes]` | Security, performance, and style review |
-| `/content-review` | `brutal-critic` | `[content text, file path, or topic]` | Score and critique content quality |
-| `/create-readme` | `docs` | `[project name or path]` | Generate or improve a README |
-| `/generate-tests` | `codebase` | `[file, class, or function name]` | Generate targeted tests |
-| `/1-on-1-prep` | `em-advisor` | `[person] [context]` | Prepare for a focused 1-on-1 |
-| `/execution-loop` | `orchestrator` | `[task goal or deliverable]` | Bounded verify-and-continue execution loop |
-| `/plan-project` | `orchestrator` | `[feature, objective, or epic]` | Multi-phase implementation plan |
-| `/refactor-plan` | `planner` | `[target module, file, or scope]` | Safe staged refactor strategy |
-| `/security-audit` | `review` | `[scope, file, component, or 'full project']` | Security-focused code and config review |
-| `/stop-loop` | `orchestrator` | `[optional reason or scope]` | Halt loop execution and report current state |
-| `/checkpoint` | `orchestrator` | `[phase name or description]` | Structured phase-boundary checkpoint for human decision |
-| `/blog-post` | `blogger` | `[topic or title]` | Draft a blog post |
-| `/legal-review` | `legal-advisor` | `[dependency, file, or scope]` | Review licenses, compliance, and data privacy |
+| Command | Target agent | Purpose |
+| --- | --- | --- |
+| `/api-docs` | `docs` | Generate API reference documentation |
+| `/architecture-decision` | `docs` | Create an ADR |
+| `/architecture-review` | `review` | Review design for quality attributes |
+| `/code-review` | `review` | Security, performance, and style review |
+| `/content-review` | `brutal-critic` | Score and critique content quality |
+| `/create-readme` | `docs` | Generate or improve a README |
+| `/generate-tests` | `codebase` | Generate targeted tests |
+| `/1-on-1-prep` | `em-advisor` | Prepare for a focused 1-on-1 |
+| `/execution-loop` | `orchestrator` | Bounded verify-and-continue execution loop |
+| `/plan-project` | `orchestrator` | Multi-phase implementation plan |
+| `/refactor-plan` | `planner` | Safe staged refactor strategy |
+| `/security-audit` | `review` | Security-focused code and config review |
+| `/stop-loop` | `orchestrator` | Halt loop execution and report current state |
+| `/checkpoint` | `orchestrator` | Structured phase-boundary checkpoint for human decision |
+| `/blog-post` | `blogger` | Draft a blog post |
+| `/legal-review` | `legal-advisor` | Review licenses, compliance, and data privacy |

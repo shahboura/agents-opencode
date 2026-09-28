@@ -1,7 +1,6 @@
 ---
 description: Document an architectural decision with context, options, and rationale
 agent: docs
-argument-hint: "[decision topic or system name]"
 subtask: true
 ---
 

@@ -1,7 +1,6 @@
 ---
 description: Stop iterative loop execution and report current state
 agent: orchestrator
-argument-hint: "[optional reason or scope]"
 subtask: true
 ---
 

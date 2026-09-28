@@ -1,7 +1,6 @@
 ---
 description: Execute work with a bounded verify-and-continue loop
 agent: orchestrator
-argument-hint: "[task goal or deliverable]"
 subtask: true
 ---
 

@@ -1,7 +1,6 @@
 ---
 description: Validate a system or feature design for robustness and scalability
 agent: review
-argument-hint: "[system, component, or design document]"
 subtask: true
 ---
 

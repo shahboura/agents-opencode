@@ -70,7 +70,7 @@ jobs:
           node-version: '24'
 
       - name: Validate OpenCode schema conformance
-        run: node scripts/validate-opencode-schema.js
+        run: node scripts/validate-opencode-schema.js --strict
 
   validate-command-matrices:
     name: Validate Command Matrix Docs

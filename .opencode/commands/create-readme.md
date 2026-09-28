@@ -1,7 +1,6 @@
 ---
 description: Create comprehensive README documentation for a project
 agent: docs
-argument-hint: "[project name or path]"
 subtask: true
 ---
 

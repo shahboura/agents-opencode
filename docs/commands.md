@@ -14,24 +14,24 @@ Type `/command-name` in the OpenCode TUI to run.
 Most commands accept an optional argument to scope the task:
 `/command-name [argument]` — the argument is passed directly to the target agent.
 
-| Command | Argument hint | Purpose |
-|---|---|---|
-| `/api-docs` | `[module, file, or endpoint path]` | Generate API reference docs |
-| `/architecture-decision` | `[decision topic or system name]` | Create an ADR |
-| `/architecture-review` | `[system, component, or design document]` | Review design for quality attributes |
-| `/blog-post` | `[topic or title]` | Write a blog post |
-| `/code-review` | `[file, PR, or scope — blank for current changes]` | Security, perf, and style review |
-| `/content-review` | `[content text, file path, or topic]` | Score and critique content quality |
-| `/create-readme` | `[project name or path]` | Generate or improve a README |
-| `/generate-tests` | `[file, class, or function name]` | Generate targeted tests |
-| `/plan-project` | `[feature, objective, or epic]` | Multi-phase implementation plan |
-| `/execution-loop` | `[task goal or deliverable]` | Bounded verify-and-continue execution loop |
-| `/legal-review` | `[dependency, file, or scope]` | Review licenses, compliance, and data privacy |
-| `/refactor-plan` | `[target module, file, or scope]` | Safe staged refactor strategy |
-| `/security-audit` | `[scope, file, component, or 'full project']` | Security-focused code review |
-| `/stop-loop` | `[optional reason or scope]` | Halt loop execution and report state |
-| `/checkpoint` | `[phase name or description]` | Structured phase-boundary pause for human decision |
-| `/1-on-1-prep` | `[person] [context]` | Prepare for a 1-on-1 meeting |
+| Command | Purpose |
+| --- | --- |
+| `/api-docs` | Generate API reference docs |
+| `/architecture-decision` | Create an ADR |
+| `/architecture-review` | Review design for quality attributes |
+| `/blog-post` | Write a blog post |
+| `/code-review` | Security, perf, and style review |
+| `/content-review` | Score and critique content quality |
+| `/create-readme` | Generate or improve a README |
+| `/generate-tests` | Generate targeted tests |
+| `/plan-project` | Multi-phase implementation plan |
+| `/execution-loop` | Bounded verify-and-continue execution loop |
+| `/legal-review` | Review licenses, compliance, and data privacy |
+| `/refactor-plan` | Safe staged refactor strategy |
+| `/security-audit` | Security-focused code review |
+| `/stop-loop` | Halt loop execution and report state |
+| `/checkpoint` | Structured phase-boundary pause for human decision |
+| `/1-on-1-prep` | Prepare for a 1-on-1 meeting |
 
 ## Skills
 

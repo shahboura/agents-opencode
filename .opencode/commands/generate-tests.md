@@ -1,7 +1,6 @@
 ---
 description: Generate comprehensive unit tests for selected code
 agent: codebase
-argument-hint: "[file, class, or function name]"
 subtask: true
 ---
 

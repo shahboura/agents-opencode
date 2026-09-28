@@ -14,7 +14,7 @@ const checks = [
   {
     name: 'Validate OpenCode schema conformance',
     command: process.execPath,
-    args: ['scripts/validate-opencode-schema.js'],
+    args: ['scripts/validate-opencode-schema.js', '--strict'],
   },
   {
     name: 'Validate command docs parity',

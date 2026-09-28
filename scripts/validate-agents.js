@@ -23,47 +23,14 @@ function log(color, message) {
   console.log(`${color}${message}${colors.reset}`);
 }
 
-// Permission keys recognized by the OpenCode config schema. Any other top-level
-// key under `permission:` is inert (it is treated as a permission name that no
-// tool matches). Command/path patterns must be nested under the relevant
-// permission, e.g. bash: { "*": "ask", "rm -rf *": "deny" }.
-const KNOWN_PERMISSION_KEYS = new Set([
-  'read',
-  'edit',
-  'glob',
-  'grep',
-  'list',
-  'bash',
-  'task',
-  'external_directory',
-  'todowrite',
-  'question',
-  'webfetch',
-  'websearch',
-  'lsp',
-  'doom_loop',
-  'skill',
-]);
-
-function getKnownSkills() {
-  const skillsDir = path.join(process.cwd(), '.opencode', 'skills');
-  const skills = new Set();
-
-  if (!fs.existsSync(skillsDir)) {
-    return skills;
-  }
-
-  const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    const skillFile = path.join(skillsDir, entry.name, 'SKILL.md');
-    if (fs.existsSync(skillFile)) {
-      skills.add(entry.name);
-    }
-  }
-
-  return skills;
-}
+const {
+  KNOWN_PERMISSION_KEYS,
+  frontmatterOf,
+  field,
+  analyzePermission,
+  permissionKeys,
+  getKnownSkills,
+} = require('./lib/opencode-schema');
 
 function extractPermissionBlock(frontmatter, key) {
   const permissionSectionMatch = frontmatter.match(
@@ -110,28 +77,11 @@ function parsePermissionMap(block, indent = 4) {
   return map;
 }
 
-function extractPermissionSection(frontmatter) {
-  const match = frontmatter.match(/^permission\s*:\s*\n([\s\S]*?)(?=^\S|(?![\s\S]))/m);
-  return match ? match[1] : null;
-}
-
-function parseTopLevelPermissionKeys(block) {
-  const keys = [];
-  for (const line of block.split('\n')) {
-    if (!line.trim() || /^\s*#/.test(line)) continue;
-    const match = line.match(/^ {2}(?!#)([^\s:][^:]*?)\s*:\s*(.*)$/);
-    if (!match) continue;
-    const key = match[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
-    if (key) keys.push(key);
-  }
-  return keys;
-}
-
 function validatePermissionKeys(record, errors) {
-  const section = extractPermissionSection(record.frontmatter);
-  if (!section) return;
+  const analysis = analyzePermission(record.frontmatter);
+  if (!analysis.present || analysis.inline) return;
 
-  for (const key of parseTopLevelPermissionKeys(section)) {
+  for (const key of permissionKeys(analysis.block)) {
     if (key === '*' || KNOWN_PERMISSION_KEYS.has(key)) continue;
     errors.push(
       `${record.name}: permission key '${key}' is not a recognized permission. ` +
@@ -162,8 +112,8 @@ function loadAgentRecords(agentFiles, errors) {
       continue;
     }
 
-    const frontmatterMatch = content.match(/^---\s*\n([\s\S]+?)\n---/);
-    if (!frontmatterMatch) {
+    const frontmatter = frontmatterOf(content);
+    if (!frontmatter) {
       errors.push(`${file.name}: Missing frontmatter (---...---)`);
       records.push({
         ...file,
@@ -177,7 +127,7 @@ function loadAgentRecords(agentFiles, errors) {
     records.push({
       ...file,
       content,
-      frontmatter: frontmatterMatch[1],
+      frontmatter,
       body: getBody(content),
     });
   }
@@ -209,42 +159,27 @@ function validateCommands(errors, warnings, knownAgents) {
       continue;
     }
 
-    const frontmatterMatch = content.match(/^---\s*\n([\s\S]+?)\n---/);
-    if (!frontmatterMatch) {
+    const frontmatter = frontmatterOf(content);
+    if (!frontmatter) {
       errors.push(`.opencode/commands/${file.name}: Missing frontmatter (---...---)`);
       continue;
     }
 
-    const frontmatter = frontmatterMatch[1];
     const body = getBody(content);
 
-    const hasField = (field) => new RegExp(`^(?!\\s*#)\\s*${field}\\s*:`, 'm').test(frontmatter);
-    const parseField = (field) => {
-      const m = frontmatter.match(new RegExp(`^(?!\\s*#)\\s*${field}\\s*:\\s*(.+)$`, 'm'));
-      return m ? m[1].trim().replace(/^"|"$/g, '') : null;
-    };
-
-    if (!hasField('description')) {
+    if (!field(frontmatter, 'description')) {
       errors.push(`.opencode/commands/${file.name}: Missing required field 'description'`);
     }
-    if (!hasField('agent')) {
+    if (!field(frontmatter, 'agent')) {
       errors.push(`.opencode/commands/${file.name}: Missing required field 'agent'`);
     }
-    if (!hasField('subtask')) {
+    if (field(frontmatter, 'subtask') === null) {
       warnings.push(`.opencode/commands/${file.name}: Missing recommended field 'subtask'`);
     }
 
-    const targetAgent = parseField('agent');
+    const targetAgent = field(frontmatter, 'agent');
     if (targetAgent && !knownAgents.has(targetAgent)) {
       errors.push(`.opencode/commands/${file.name}: Unknown agent '${targetAgent}' (known: ${[...knownAgents].join(', ')})`);
-    }
-
-    if (!hasField('argument-hint')) {
-      warnings.push(`.opencode/commands/${file.name}: Missing 'argument-hint' field`);
-    }
-
-    if (body.includes('$ARGUMENTS') && !hasField('argument-hint')) {
-      warnings.push(`.opencode/commands/${file.name}: Uses $ARGUMENTS but missing 'argument-hint' field`);
     }
 
     const bodyLines = body.split('\n').filter(l => l.trim().length > 0);

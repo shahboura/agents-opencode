@@ -98,7 +98,6 @@ function parseFrontmatter(content, filePath) {
   return {
     description: readField('description'),
     agent: readField('agent'),
-    argumentHint: readField('argument-hint'),
   };
 }
 
@@ -117,7 +116,6 @@ function loadCanonicalCommands() {
     commands.set(command, {
       command,
       agent: frontmatter.agent || '',
-      argumentHint: frontmatter.argumentHint || '',
       source: toPosix(path.relative(ROOT, filePath)),
     });
   }
@@ -150,7 +148,6 @@ function validateDocFile(filePath, canonicalCommands, errors) {
 
     foundCommandTable = true;
     const agentCol = table.header.findIndex((header) => header === 'agent' || header === 'target agent');
-    const argumentHintCol = table.header.findIndex((header) => header === 'argument hint');
 
     for (const row of table.rows) {
       const command = normalizeCommand(row.cells[commandCol]);
@@ -174,13 +171,6 @@ function validateDocFile(filePath, canonicalCommands, errors) {
         const documentedAgent = normalizeCell(row.cells[agentCol]);
         if (documentedAgent !== canonical.agent) {
           errors.push(`${rel}:${row.lineNumber} agent mismatch for '${command}' (docs='${documentedAgent}', canonical='${canonical.agent}')`);
-        }
-      }
-
-      if (argumentHintCol >= 0) {
-        const documentedHint = normalizeCell(row.cells[argumentHintCol]);
-        if (documentedHint !== canonical.argumentHint) {
-          errors.push(`${rel}:${row.lineNumber} argument hint mismatch for '${command}' (docs='${documentedHint}', canonical='${canonical.argumentHint}')`);
         }
       }
     }
