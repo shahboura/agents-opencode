@@ -103,12 +103,14 @@ function getKnownSkills() {
 // `permission:` line itself (e.g. `permission: {}`), which callers must fail
 // closed on rather than silently skip.
 function analyzePermission(frontmatter) {
+  const occurrences = frontmatter.match(/^(?!\s*#)["']?permission["']?\s*:.*$/gm) || [];
+  if (occurrences.length === 0) return { present: false, inline: false, block: null, duplicate: false };
   const line = frontmatter.match(/^(?!\s*#)["']?permission["']?\s*:(.*)$/m);
-  if (!line) return { present: false, inline: false, block: null };
   const rest = line[1].replace(/\s+#.*$/, '').trim();
-  if (rest.length > 0) return { present: true, inline: true, block: null };
+  const duplicate = occurrences.length > 1;
+  if (rest.length > 0) return { present: true, inline: true, block: null, duplicate };
   const block = frontmatter.match(/^(?!\s*#)["']?permission["']?\s*:\s*(?:#.*)?\n([\s\S]*?)(?=^[^\s]|(?![\s\S]))/m);
-  return { present: true, inline: false, block: block ? block[1] : '' };
+  return { present: true, inline: false, block: block ? block[1] : '', duplicate };
 }
 
 // Captures only the shallowest-indentation keys under `permission:` so nested
@@ -148,8 +150,8 @@ function permissionChildBlock(block, key) {
     if (!keyMatch) continue;
     const name = keyMatch[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
     if (name !== key) continue;
-    const inline = keyMatch[2].trim();
-    if (inline.length > 0) return { inline: true, block: '' };
+    const inlineValue = keyMatch[2].replace(/\s+#.*$/, '').trim();
+    if (inlineValue.length > 0) return { present: true, inline: true, block: '' };
     const sub = [];
     for (let j = i + 1; j < lines.length; j += 1) {
       const next = lines[j];
@@ -158,7 +160,7 @@ function permissionChildBlock(block, key) {
       if (!nextIndent || nextIndent[1].length <= baseIndent) break;
       sub.push(next);
     }
-    return { inline: false, block: sub.join('\n') };
+    return { present: true, inline: false, block: sub.join('\n') };
   }
   return null;
 }
@@ -178,7 +180,7 @@ function parseMapEntries(block) {
     const kv = indentMatch[2].match(/^["']?([^\s:#][^:"']*?)["']?\s*:\s*(.*)$/);
     if (!kv) continue;
     const key = kv[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
-    const value = kv[2].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+    const value = kv[2].replace(/\s+#.*$/, '').trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
     map.set(key, value);
   }
   return map;

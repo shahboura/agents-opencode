@@ -164,6 +164,27 @@ function testIndentedKeysIgnored() {
   assert(!result.output.includes("'audience'"), 'Expected nested audience key not flagged as top-level');
 }
 
+function testDuplicatePermissionFails() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'permission:',
+      '  "*": "deny"',
+      '  read: "allow"',
+      'permission:',
+      '  "*": "allow"',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status !== 0, 'Expected duplicate permission block to fail');
+  assert(result.output.includes("duplicate 'permission' block"), 'Expected duplicate permission message');
+}
+
 function testUnknownCommandFieldFails() {
   const result = withFixture((root) => {
     writeFile(root, path.join('.opencode', 'commands', 'bar.md'), [
@@ -339,6 +360,7 @@ function main() {
     testUnknownSkillFieldWarns();
     testQuotedUnknownKeyWarns();
     testIndentedKeysIgnored();
+    testDuplicatePermissionFails();
     testUnknownCommandFieldFails();
     testUnknownPermissionKeyFails();
     testInlinePermissionFailsClosed();

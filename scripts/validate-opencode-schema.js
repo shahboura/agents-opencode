@@ -50,6 +50,9 @@ function warnOrError(message) {
 
 function validatePermission(frontmatter, label) {
   const analysis = analyzePermission(frontmatter);
+  if (analysis.duplicate) {
+    errors.push(`${label}: duplicate 'permission' block (fail-closed)`);
+  }
   if (!analysis.present) {
     warnOrError(`${label}: no 'permission' section (runtime tool access is unbounded)`);
     return;
@@ -117,7 +120,13 @@ function validateAgents() {
 
 function validateSkills() {
   const base = path.join(process.cwd(), '.opencode', 'skills');
-  for (const name of listDirs(base)) {
+  const dirs = listDirs(base);
+  if (dirs.length === 0) {
+    if (strict) errors.push('.opencode/skills: no skills found (strict)');
+    else warnings.push('.opencode/skills: no skills found');
+    return;
+  }
+  for (const name of dirs) {
     const file = path.join(base, name, 'SKILL.md');
     const label = `.opencode/skills/${name}/SKILL.md`;
     if (!fs.existsSync(file)) {
