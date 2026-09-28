@@ -26,6 +26,9 @@ function seedFixture(root) {
     '---',
     'description: Test agent',
     'mode: subagent',
+    'permission:',
+    '  "*": "deny"',
+    '  read: "allow"',
     '---',
     '',
     '# Test Agent',
@@ -92,7 +95,6 @@ function testValidFixturePasses() {
 
 function testSkillNameMismatchFails() {
   const result = withFixture((root) => {
-    // Directory is 'good' but name claims 'other'.
     writeFile(root, path.join('.opencode', 'skills', 'good', 'SKILL.md'), [
       '---',
       'name: other',
@@ -107,7 +109,7 @@ function testSkillNameMismatchFails() {
   assert(result.output.includes('must match the directory name'), 'Expected mismatch message');
 }
 
-function testUnknownSkillFieldFails() {
+function testUnknownSkillFieldWarns() {
   const result = withFixture((root) => {
     writeFile(root, path.join('.opencode', 'skills', 'good', 'SKILL.md'), [
       '---',
@@ -120,8 +122,9 @@ function testUnknownSkillFieldFails() {
       '',
     ].join('\n'));
   });
-  assert(result.status !== 0, 'Expected unknown skill frontmatter field to fail');
-  assert(result.output.includes('unrecognized frontmatter field'), 'Expected unknown field message');
+  // OpenCode ignores unknown skill fields, so this must warn (not fail).
+  assert(result.status === 0, 'Expected unknown skill field to warn, not fail');
+  assert(result.output.includes('unrecognized frontmatter field'), 'Expected warning message');
 }
 
 function testUnknownCommandFieldFails() {
@@ -160,16 +163,73 @@ function testUnknownPermissionKeyFails() {
   assert(result.output.includes("unrecognized permission key 'bogus'"), 'Expected unknown permission message');
 }
 
-function testV2FlagIsNonFailing() {
+function testInlinePermissionFailsClosed() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'permission: {}',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status !== 0, 'Expected inline permission map to fail closed');
+  assert(result.output.includes('block mapping'), 'Expected fail-closed message for inline permission');
+}
+
+function testNestedPermissionPatternsAllowed() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'permission:',
+      '  "*": "deny"',
+      '  bash:',
+      '    "*": "ask"',
+      '    "rm -rf *": "deny"',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status === 0, `Expected nested bash patterns to be accepted. Output: ${result.output}`);
+}
+
+function testV2ReportsGaps() {
   const result = withFixture((root) => {
     writeFile(root, 'opencode.json', JSON.stringify({ $schema: 'https://opencode.ai/config.json', plugin: ['x'] }, null, 2));
-  });
-  // --v2 is informational; it must not change the exit code.
-  const resultV2 = withFixture((root) => {
-    writeFile(root, 'opencode.json', JSON.stringify({ $schema: 'https://opencode.ai/config.json', plugin: ['x'] }, null, 2));
   }, ['--v2']);
-  assert(result.status === 0, 'Expected v1 fixture to pass');
-  assert(resultV2.status === 0, 'Expected --v2 to remain non-failing');
+  assert(result.status === 0, 'Expected --v2 to remain non-failing for a clean fixture');
+  assert(result.output.includes('v2 readiness'), 'Expected --v2 to emit the readiness section');
+  assert(result.output.includes("'plugin' (singular)"), 'Expected --v2 to report the plugin gap');
+}
+
+function testV2PreservesFailure() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'skills', 'good', 'SKILL.md'), '---\nname: good\n---\n\n# Good\n');
+  }, ['--v2']);
+  assert(result.status !== 0, 'Expected a missing skill description to still fail under --v2');
+}
+
+function testWarningsOnlyExitsZero() {
+  const result = withFixture((root) => {
+    // Agent without a permission section -> warning only, must not fail.
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status === 0, 'Expected warnings-only run to exit 0');
 }
 
 function main() {
@@ -177,10 +237,14 @@ function main() {
     console.log('Running OpenCode schema validator tests...');
     testValidFixturePasses();
     testSkillNameMismatchFails();
-    testUnknownSkillFieldFails();
+    testUnknownSkillFieldWarns();
     testUnknownCommandFieldFails();
     testUnknownPermissionKeyFails();
-    testV2FlagIsNonFailing();
+    testInlinePermissionFailsClosed();
+    testNestedPermissionPatternsAllowed();
+    testV2ReportsGaps();
+    testV2PreservesFailure();
+    testWarningsOnlyExitsZero();
     console.log('✅ OpenCode schema validator tests passed');
   } catch (err) {
     console.error('❌ OpenCode schema validator tests failed');

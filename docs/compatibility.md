@@ -48,6 +48,7 @@ External checks are also executed by a scheduled non-blocking workflow.
 | Check | Local command | CI gate |
 |---|---|---|
 | Agent configuration validation | `npm run validate:agents` | `validate-agents` |
+| OpenCode schema conformance | `npm run validate:opencode-schema` | `validate-opencode-schema` |
 | Command docs parity validation | `npm run validate:commands` | `validate-command-matrices` |
 | Agent eval harness | `npm run eval:agents` | `validate-agent-evals` |
 | Agent eval trend snapshot | `npm run eval:agents:json` + `npm run eval:agents:trend` | `validate-agent-evals` (artifact upload) |
