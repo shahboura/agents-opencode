@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.1](https://github.com/shahboura/agents-opencode/compare/v2.5.0...v2.5.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* **validation:** close strict/parser gaps found in review ([abbb081](https://github.com/shahboura/agents-opencode/commit/abbb0813f245e9a845228bbf58e19105d57f1ece))
+
 ## [2.5.0](https://github.com/shahboura/agents-opencode/compare/v2.4.2...v2.5.0) (2026-09-28)
 
 
