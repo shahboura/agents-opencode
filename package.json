@@ -30,6 +30,7 @@
     "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --ignore \"dist/**\" --ignore \"handoff/**\" --ignore \"evals/reports/**\"",
     "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --ignore \"dist/**\" --ignore \"handoff/**\" --ignore \"evals/reports/**\" --fix",
     "validate:agents": "node scripts/validate-agents.js",
+    "validate:opencode-schema": "node scripts/validate-opencode-schema.js",
     "validate:plugin-guards": "node scripts/plugin-guards.test.js",
     "validate:commands": "node scripts/validate-command-matrices.js",
     "eval:agents": "node evals/harness/run-evals.js",

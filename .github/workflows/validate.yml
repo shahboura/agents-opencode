@@ -53,6 +53,25 @@ jobs:
       - name: Validate agents
         run: node scripts/validate-agents.js
 
+  validate-opencode-schema:
+    name: Validate OpenCode Schema Conformance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+
+      - name: Validate OpenCode schema conformance
+        run: node scripts/validate-opencode-schema.js
+
   validate-command-matrices:
     name: Validate Command Matrix Docs
     runs-on: ubuntu-latest
@@ -208,6 +227,9 @@ jobs:
       - name: Run agent validator tests
         run: node scripts/validate-agents.test.js
 
+      - name: Run OpenCode schema validator tests
+        run: node scripts/validate-opencode-schema.test.js
+
       - name: Run plugin guard tests
         run: node scripts/plugin-guards.test.js
 
@@ -341,13 +363,14 @@ jobs:
     name: Validation Summary
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [secrets-scan, validate-agents, validate-command-matrices, validate-risk-path, validate-docs, validate-changelog, validate-session-state, validate-tooling-tests, validate-agent-evals, validate-context, lint-markdown, lint-workflows]
+    needs: [secrets-scan, validate-agents, validate-opencode-schema, validate-command-matrices, validate-risk-path, validate-docs, validate-changelog, validate-session-state, validate-tooling-tests, validate-agent-evals, validate-context, lint-markdown, lint-workflows]
     if: always()
 
     steps:
       - name: Check validation results
         env:
           AGENTS_RESULT: ${{ needs.validate-agents.result }}
+          OPENCODE_SCHEMA_RESULT: ${{ needs.validate-opencode-schema.result }}
           COMMAND_MATRIX_RESULT: ${{ needs.validate-command-matrices.result }}
           RISK_PATH_RESULT: ${{ needs.validate-risk-path.result }}
           SECRETS_RESULT: ${{ needs.secrets-scan.result }}
@@ -362,6 +385,7 @@ jobs:
         run: |
           echo "Secret Scan: ${SECRETS_RESULT}"
           echo "Agent Validation: ${AGENTS_RESULT}"
+          echo "OpenCode Schema: ${OPENCODE_SCHEMA_RESULT}"
           echo "Command Matrix Docs: ${COMMAND_MATRIX_RESULT}"
           echo "Risk Path Validation (advisory): ${RISK_PATH_RESULT}"
           echo "Documentation Validation: ${DOCS_RESULT}"
@@ -375,6 +399,7 @@ jobs:
 
           if [ "${SECRETS_RESULT}" != "success" ] || \
              [ "${AGENTS_RESULT}" != "success" ] || \
+             [ "${OPENCODE_SCHEMA_RESULT}" != "success" ] || \
              [ "${COMMAND_MATRIX_RESULT}" != "success" ] || \
              [ "${DOCS_RESULT}" != "success" ] || \
              [ "${CHANGELOG_RESULT}" != "success" ] || \

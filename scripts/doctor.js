@@ -12,6 +12,11 @@ const checks = [
     args: ['scripts/validate-agents.js'],
   },
   {
+    name: 'Validate OpenCode schema conformance',
+    command: process.execPath,
+    args: ['scripts/validate-opencode-schema.js'],
+  },
+  {
     name: 'Validate command docs parity',
     command: process.execPath,
     args: ['scripts/validate-command-matrices.js'],
@@ -50,6 +55,11 @@ const checks = [
     name: 'Run agent validator tests',
     command: process.execPath,
     args: ['scripts/validate-agents.test.js'],
+  },
+  {
+    name: 'Run OpenCode schema validator tests',
+    command: process.execPath,
+    args: ['scripts/validate-opencode-schema.test.js'],
   },
   {
     name: 'Run plugin guard tests',
