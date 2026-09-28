@@ -22,7 +22,7 @@ const {
   KNOWN_PERMISSION_KEYS, COMMAND_KEYS, SKILL_KEYS, CONFIG_KEYS, AGENT_MODES,
   SKILL_NAME_RE, SKILL_DESCRIPTION_MAX, SKILL_NAME_MAX,
   frontmatterOf, topLevelKeys, field, descriptionOf, listDirs,
-  analyzePermission, permissionKeys,
+  analyzePermission, permissionKeys, permissionChildBlock, parseMapEntries,
 } = require('./lib/opencode-schema');
 
 const colors = {
@@ -69,6 +69,16 @@ function validatePermission(frontmatter, label) {
   for (const key of keys) {
     if (key !== '*' && !KNOWN_PERMISSION_KEYS.has(key)) {
       errors.push(`${label}: unrecognized permission key '${key}' (must be a known permission or nested pattern)`);
+    }
+  }
+  // Nested tool-allowlist children must be non-empty block mappings (fail-closed).
+  for (const childKey of ['skill', 'task']) {
+    const child = permissionChildBlock(analysis.block, childKey);
+    if (!child) continue;
+    if (child.inline) {
+      errors.push(`${label}: permission.${childKey} must be a block mapping (fail-closed)`);
+    } else if (parseMapEntries(child.block).size === 0) {
+      errors.push(`${label}: permission.${childKey} must be a non-empty mapping (fail-closed)`);
     }
   }
 }

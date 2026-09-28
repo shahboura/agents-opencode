@@ -106,7 +106,7 @@ function analyzePermission(frontmatter) {
   const occurrences = frontmatter.match(/^(?!\s*#)["']?permission["']?\s*:.*$/gm) || [];
   if (occurrences.length === 0) return { present: false, inline: false, block: null, duplicate: false };
   const line = frontmatter.match(/^(?!\s*#)["']?permission["']?\s*:(.*)$/m);
-  const rest = line[1].replace(/\s+#.*$/, '').trim();
+  const rest = line[1].replace(/(?:^|\s)#.*$/, '').trim();
   const duplicate = occurrences.length > 1;
   if (rest.length > 0) return { present: true, inline: true, block: null, duplicate };
   const block = frontmatter.match(/^(?!\s*#)["']?permission["']?\s*:\s*(?:#.*)?\n([\s\S]*?)(?=^[^\s]|(?![\s\S]))/m);
@@ -150,7 +150,7 @@ function permissionChildBlock(block, key) {
     if (!keyMatch) continue;
     const name = keyMatch[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
     if (name !== key) continue;
-    const inlineValue = keyMatch[2].replace(/\s+#.*$/, '').trim();
+    const inlineValue = keyMatch[2].replace(/(?:^|\s)#.*$/, '').trim();
     if (inlineValue.length > 0) return { present: true, inline: true, block: '' };
     const sub = [];
     for (let j = i + 1; j < lines.length; j += 1) {
@@ -180,7 +180,7 @@ function parseMapEntries(block) {
     const kv = indentMatch[2].match(/^["']?([^\s:#][^:"']*?)["']?\s*:\s*(.*)$/);
     if (!kv) continue;
     const key = kv[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
-    const value = kv[2].replace(/\s+#.*$/, '').trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+    const value = kv[2].replace(/(?:^|\s)#.*$/, '').trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
     map.set(key, value);
   }
   return map;

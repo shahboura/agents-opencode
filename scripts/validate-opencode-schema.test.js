@@ -164,6 +164,64 @@ function testIndentedKeysIgnored() {
   assert(!result.output.includes("'audience'"), 'Expected nested audience key not flagged as top-level');
 }
 
+function testInlineNestedPermissionFails() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'permission:',
+      '  "*": "deny"',
+      '  skill: { "*": "allow" }',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status !== 0, 'Expected inline nested permission.skill to fail');
+  assert(result.output.includes('permission.skill must be a block mapping'), 'Expected nested fail-closed message');
+}
+
+function testEmptyNestedPermissionFails() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'permission:',
+      '  "*": "deny"',
+      '  skill:',
+      '  task:',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status !== 0, 'Expected empty nested permission children to fail');
+}
+
+function testTrailingCommentOnChildKeyPasses() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'permission:',
+      '  "*": "deny"',
+      '  skill:  # allowlist',
+      '    "*": "deny"',
+      '    "good": "allow"',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status === 0, `Expected trailing comment on child key to parse as block. Output: ${result.output}`);
+}
+
 function testDuplicatePermissionFails() {
   const result = withFixture((root) => {
     writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
@@ -360,6 +418,9 @@ function main() {
     testUnknownSkillFieldWarns();
     testQuotedUnknownKeyWarns();
     testIndentedKeysIgnored();
+    testInlineNestedPermissionFails();
+    testEmptyNestedPermissionFails();
+    testTrailingCommentOnChildKeyPasses();
     testDuplicatePermissionFails();
     testUnknownCommandFieldFails();
     testUnknownPermissionKeyFails();
