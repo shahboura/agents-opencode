@@ -5,13 +5,13 @@ this file when items land or new gaps are found. Last updated: 2026-09-28.
 
 ## Validation hardening
 
-The validator review cycles produced these items. VAL-1, VAL-2, and VAL-3 landed
-in the `chore/validator-hardening` change.
+The validator review cycles produced these items. VAL-1 and VAL-3 landed in the
+`chore/validator-hardening` change; VAL-2 was reverted after review.
 
 | ID | Severity | Item | Files |
 |---|---|---|---|
 | VAL-1 | low | Done: `validate-agents.js` skill/task allowlist parsing migrated to shared, indentation-safe helpers | `scripts/validate-agents.js`, `scripts/lib/opencode-schema.js` |
-| VAL-2 | low | Done: pinned `setup-go` to `1.24.x` (actionlint v1.7.11 requires Go 1.24+) | `.github/workflows/validate.yml` |
+| VAL-2 | low | Reverted: CI keeps `setup-go` on `stable` (floating toolchain accepted); pin only if reproducible builds are required | `.github/workflows/validate.yml` |
 | VAL-3 | low | Done: regression tests for quoted vs indented frontmatter keys | `scripts/validate-opencode-schema.test.js` |
 | VAL-4 | info | Migrate remaining hand-rolled frontmatter/permission parsers to the shared module | `evals/harness/run-evals.js`, `scripts/validate-command-matrices.js` |
 
