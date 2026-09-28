@@ -127,6 +127,43 @@ function testUnknownSkillFieldWarns() {
   assert(result.output.includes('unrecognized frontmatter field'), 'Expected warning message');
 }
 
+function testQuotedUnknownKeyWarns() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'skills', 'good', 'SKILL.md'), [
+      '---',
+      'name: good',
+      'description: Has a quoted unknown key.',
+      '"allowed-tools": Bash',
+      '---',
+      '',
+      '# Good',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status === 0, 'Expected quoted unknown key to warn, not fail');
+  assert(result.output.includes('unrecognized frontmatter field'), 'Expected quoted key to be detected');
+}
+
+function testIndentedKeysIgnored() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'skills', 'good', 'SKILL.md'), [
+      '---',
+      'name: good',
+      'description: Has nested metadata.',
+      'metadata:',
+      '  audience: developers',
+      '  workflow: documentation',
+      '---',
+      '',
+      '# Good',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status === 0, `Expected indented keys to be ignored. Output: ${result.output}`);
+  assert(!result.output.includes("'workflow'"), 'Expected nested workflow key not flagged as top-level');
+  assert(!result.output.includes("'audience'"), 'Expected nested audience key not flagged as top-level');
+}
+
 function testUnknownCommandFieldFails() {
   const result = withFixture((root) => {
     writeFile(root, path.join('.opencode', 'commands', 'bar.md'), [
@@ -300,6 +337,8 @@ function main() {
     testValidFixturePasses();
     testSkillNameMismatchFails();
     testUnknownSkillFieldWarns();
+    testQuotedUnknownKeyWarns();
+    testIndentedKeysIgnored();
     testUnknownCommandFieldFails();
     testUnknownPermissionKeyFails();
     testInlinePermissionFailsClosed();

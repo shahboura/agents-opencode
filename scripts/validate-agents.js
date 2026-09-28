@@ -28,52 +28,17 @@ const {
   field,
   analyzePermission,
   permissionKeys,
+  permissionChildBlock,
+  parseMapEntries,
   getKnownSkills,
 } = require('./lib/opencode-schema');
 
-function extractPermissionBlock(frontmatter, key) {
-  const permissionSectionMatch = frontmatter.match(
-    /^permission\s*:\s*\n([\s\S]*?)(?=^\S|(?![\s\S]))/m
-  );
-  if (!permissionSectionMatch) return null;
-
-  const permissionBlock = permissionSectionMatch[1];
-  const sectionMatch = permissionBlock.match(
-    new RegExp(`^\\s{2}${key}\\s*:\\s*\\n([\\s\\S]*?)(?=^\\s{2}\\S|(?![\\s\\S]))`, 'm')
-  );
-
-  if (!sectionMatch) return null;
-  return sectionMatch[1];
-}
-
-function extractPermissionSkillBlock(frontmatter) {
-  return extractPermissionBlock(frontmatter, 'skill');
-}
-
-function extractPermissionTaskBlock(frontmatter) {
-  return extractPermissionBlock(frontmatter, 'task');
-}
-
-function parsePermissionMap(block, indent = 4) {
-  const map = new Map();
-  const lines = block.split('\n');
-
-  for (const line of lines) {
-    if (!line.trim()) continue;
-    if (/^\s*#/.test(line)) continue;
-
-    const indentRegex = new RegExp(`^\\s{${indent},}`);
-    if (!indentRegex.test(line)) continue;
-
-    const match = line.match(new RegExp(`^\\s{${indent},}([^:]+):\\s*(.+)\\s*$`));
-    if (!match) continue;
-
-    const key = match[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
-    const value = match[2].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
-    map.set(key, value);
-  }
-
-  return map;
+function permissionChildBlockOf(frontmatter, key) {
+  const analysis = analyzePermission(frontmatter);
+  if (!analysis.present || analysis.inline) return null;
+  const child = permissionChildBlock(analysis.block, key);
+  if (!child || child.inline) return null;
+  return child.block;
 }
 
 function validatePermissionKeys(record, errors) {
@@ -292,7 +257,7 @@ function main() {
       warnings.push(`${file.name}: Missing content headings`);
     }
 
-    const permissionSkillBlock = extractPermissionSkillBlock(frontmatter);
+    const permissionSkillBlock = permissionChildBlockOf(frontmatter, 'skill');
     const hasLegacySkillTool = /^\s*tools\s*:[\s\S]*?^\s*skill\s*:\s*true\s*$/m.test(frontmatter);
     const hasSkillAccess = hasLegacySkillTool || !!permissionSkillBlock;
 
@@ -305,7 +270,7 @@ function main() {
     }
 
     if (hasSkillAccess && permissionSkillBlock) {
-      const permissionMap = parsePermissionMap(permissionSkillBlock, 4);
+      const permissionMap = parseMapEntries(permissionSkillBlock);
 
       // Require deny-by-default rule
       if (permissionMap.get('*') !== 'deny') {
@@ -332,7 +297,7 @@ function main() {
       }
     }
 
-    const permissionTaskBlock = extractPermissionTaskBlock(frontmatter);
+    const permissionTaskBlock = permissionChildBlockOf(frontmatter, 'task');
     const hasLegacyTaskTool = /^\s*tools\s*:[\s\S]*?^\s*task\s*:\s*true\s*$/m.test(frontmatter);
     const hasTaskAccess = hasLegacyTaskTool || !!permissionTaskBlock;
 
@@ -341,7 +306,7 @@ function main() {
     }
 
     if (hasTaskAccess && permissionTaskBlock) {
-      const taskPermissionMap = parsePermissionMap(permissionTaskBlock, 4);
+      const taskPermissionMap = parseMapEntries(permissionTaskBlock);
       const wildcardDecision = taskPermissionMap.get('*');
 
       if (!wildcardDecision) {

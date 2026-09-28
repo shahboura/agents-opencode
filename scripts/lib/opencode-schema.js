@@ -130,6 +130,60 @@ function permissionKeys(block) {
   return keys;
 }
 
+// Extracts a nested permission child block (e.g. `skill:` / `task:`) at the
+// permission block's shallowest indentation, so it is not sensitive to the
+// exact indent width. Returns { inline, block } or null.
+function permissionChildBlock(block, key) {
+  const lines = block.split('\n').map((line) => line.replace(/\r$/, ''));
+  let baseIndent = null;
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!line.trim() || /^\s*#/.test(line)) continue;
+    const indentMatch = line.match(/^([ \t]+)(.*)$/);
+    if (!indentMatch) continue;
+    const indent = indentMatch[1].length;
+    if (baseIndent === null) baseIndent = indent;
+    if (indent !== baseIndent) continue;
+    const keyMatch = indentMatch[2].match(/^["']?([^\s:#][^:"']*?)["']?\s*:\s*(.*)$/);
+    if (!keyMatch) continue;
+    const name = keyMatch[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+    if (name !== key) continue;
+    const inline = keyMatch[2].trim();
+    if (inline.length > 0) return { inline: true, block: '' };
+    const sub = [];
+    for (let j = i + 1; j < lines.length; j += 1) {
+      const next = lines[j];
+      if (!next.trim()) { sub.push(next); continue; }
+      const nextIndent = next.match(/^([ \t]+)/);
+      if (!nextIndent || nextIndent[1].length <= baseIndent) break;
+      sub.push(next);
+    }
+    return { inline: false, block: sub.join('\n') };
+  }
+  return null;
+}
+
+// Parses `key: value` entries at a block's shallowest indentation into a Map.
+function parseMapEntries(block) {
+  const map = new Map();
+  let baseIndent = null;
+  for (const raw of block.split('\n')) {
+    const line = raw.replace(/\r$/, '');
+    if (!line.trim() || /^\s*#/.test(line)) continue;
+    const indentMatch = line.match(/^([ \t]+)(.*)$/);
+    if (!indentMatch) continue;
+    const indent = indentMatch[1].length;
+    if (baseIndent === null) baseIndent = indent;
+    if (indent !== baseIndent) continue;
+    const kv = indentMatch[2].match(/^["']?([^\s:#][^:"']*?)["']?\s*:\s*(.*)$/);
+    if (!kv) continue;
+    const key = kv[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+    const value = kv[2].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+    map.set(key, value);
+  }
+  return map;
+}
+
 module.exports = {
   KNOWN_PERMISSION_KEYS,
   COMMAND_KEYS,
@@ -147,4 +201,6 @@ module.exports = {
   getKnownSkills,
   analyzePermission,
   permissionKeys,
+  permissionChildBlock,
+  parseMapEntries,
 };
