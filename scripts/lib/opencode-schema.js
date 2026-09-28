@@ -103,12 +103,14 @@ function getKnownSkills() {
 // `permission:` line itself (e.g. `permission: {}`), which callers must fail
 // closed on rather than silently skip.
 function analyzePermission(frontmatter) {
+  const occurrences = frontmatter.match(/^(?!\s*#)["']?permission["']?\s*:.*$/gm) || [];
+  if (occurrences.length === 0) return { present: false, inline: false, block: null, duplicate: false };
   const line = frontmatter.match(/^(?!\s*#)["']?permission["']?\s*:(.*)$/m);
-  if (!line) return { present: false, inline: false, block: null };
-  const rest = line[1].replace(/\s+#.*$/, '').trim();
-  if (rest.length > 0) return { present: true, inline: true, block: null };
+  const rest = line[1].replace(/(?:^|\s)#.*$/, '').trim();
+  const duplicate = occurrences.length > 1;
+  if (rest.length > 0) return { present: true, inline: true, block: null, duplicate };
   const block = frontmatter.match(/^(?!\s*#)["']?permission["']?\s*:\s*(?:#.*)?\n([\s\S]*?)(?=^[^\s]|(?![\s\S]))/m);
-  return { present: true, inline: false, block: block ? block[1] : '' };
+  return { present: true, inline: false, block: block ? block[1] : '', duplicate };
 }
 
 // Captures only the shallowest-indentation keys under `permission:` so nested
@@ -130,6 +132,70 @@ function permissionKeys(block) {
   return keys;
 }
 
+// Extracts a nested permission child block (e.g. `skill:` / `task:`) at the
+// permission block's shallowest indentation, so it is not sensitive to the
+// exact indent width. Returns { present, inline, block, duplicate } or null.
+function permissionChildBlock(block, key) {
+  const lines = block.split('\n').map((line) => line.replace(/\r$/, ''));
+  let baseIndent = null;
+  let matchIndex = -1;
+  let duplicate = false;
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!line.trim() || /^\s*#/.test(line)) continue;
+    const indentMatch = line.match(/^([ \t]+)(.*)$/);
+    if (!indentMatch) continue;
+    const indent = indentMatch[1].length;
+    if (baseIndent === null) baseIndent = indent;
+    if (indent !== baseIndent) continue;
+    const keyMatch = indentMatch[2].match(/^["']?([^\s:#][^:"']*?)["']?\s*:(.*)$/);
+    if (!keyMatch) continue;
+    const name = keyMatch[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+    if (name !== key) continue;
+    if (matchIndex === -1) matchIndex = i;
+    else duplicate = true;
+  }
+
+  if (matchIndex === -1) return null;
+
+  const valueMatch = lines[matchIndex].match(/^([ \t]+)(.*)$/)[2]
+    .match(/^["']?([^\s:#][^:"']*?)["']?\s*:(.*)$/);
+  const inlineValue = valueMatch[2].replace(/(?:^|\s)#.*$/, '').trim();
+  if (inlineValue.length > 0) return { present: true, inline: true, block: '', duplicate };
+
+  const sub = [];
+  for (let j = matchIndex + 1; j < lines.length; j += 1) {
+    const next = lines[j];
+    if (!next.trim()) { sub.push(next); continue; }
+    const nextIndent = next.match(/^([ \t]+)/);
+    if (!nextIndent || nextIndent[1].length <= baseIndent) break;
+    sub.push(next);
+  }
+  return { present: true, inline: false, block: sub.join('\n'), duplicate };
+}
+
+// Parses `key: value` entries at a block's shallowest indentation into a Map.
+function parseMapEntries(block) {
+  const map = new Map();
+  let baseIndent = null;
+  for (const raw of block.split('\n')) {
+    const line = raw.replace(/\r$/, '');
+    if (!line.trim() || /^\s*#/.test(line)) continue;
+    const indentMatch = line.match(/^([ \t]+)(.*)$/);
+    if (!indentMatch) continue;
+    const indent = indentMatch[1].length;
+    if (baseIndent === null) baseIndent = indent;
+    if (indent !== baseIndent) continue;
+    const kv = indentMatch[2].match(/^["']?([^\s:#][^:"']*?)["']?\s*:\s*(.*)$/);
+    if (!kv) continue;
+    const key = kv[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+    const value = kv[2].replace(/(?:^|\s)#.*$/, '').trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+    map.set(key, value);
+  }
+  return map;
+}
+
 module.exports = {
   KNOWN_PERMISSION_KEYS,
   COMMAND_KEYS,
@@ -147,4 +213,6 @@ module.exports = {
   getKnownSkills,
   analyzePermission,
   permissionKeys,
+  permissionChildBlock,
+  parseMapEntries,
 };

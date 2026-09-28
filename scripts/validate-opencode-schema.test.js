@@ -127,6 +127,144 @@ function testUnknownSkillFieldWarns() {
   assert(result.output.includes('unrecognized frontmatter field'), 'Expected warning message');
 }
 
+function testQuotedUnknownKeyWarns() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'skills', 'good', 'SKILL.md'), [
+      '---',
+      'name: good',
+      'description: Has a quoted unknown key.',
+      '"allowed-tools": Bash',
+      '---',
+      '',
+      '# Good',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status === 0, 'Expected quoted unknown key to warn, not fail');
+  assert(result.output.includes('unrecognized frontmatter field'), 'Expected quoted key to be detected');
+}
+
+function testIndentedKeysIgnored() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'skills', 'good', 'SKILL.md'), [
+      '---',
+      'name: good',
+      'description: Has nested metadata.',
+      'metadata:',
+      '  audience: developers',
+      '  workflow: documentation',
+      '---',
+      '',
+      '# Good',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status === 0, `Expected indented keys to be ignored. Output: ${result.output}`);
+  assert(!result.output.includes("'workflow'"), 'Expected nested workflow key not flagged as top-level');
+  assert(!result.output.includes("'audience'"), 'Expected nested audience key not flagged as top-level');
+}
+
+function testInlineNestedPermissionFails() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'permission:',
+      '  "*": "deny"',
+      '  skill: { "*": "allow" }',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status !== 0, 'Expected inline nested permission.skill to fail');
+  assert(result.output.includes('permission.skill must be a block mapping'), 'Expected nested fail-closed message');
+}
+
+function testEmptyNestedPermissionFails() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'permission:',
+      '  "*": "deny"',
+      '  skill:',
+      '  task:',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status !== 0, 'Expected empty nested permission children to fail');
+}
+
+function testTrailingCommentOnChildKeyPasses() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'permission:',
+      '  "*": "deny"',
+      '  skill:  # allowlist',
+      '    "*": "deny"',
+      '    "good": "allow"',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status === 0, `Expected trailing comment on child key to parse as block. Output: ${result.output}`);
+}
+
+function testDuplicateNestedPermissionFails() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'permission:',
+      '  "*": "deny"',
+      '  skill:',
+      '    "*": "deny"',
+      '  skill:',
+      '    "*": "allow"',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status !== 0, 'Expected duplicate nested permission.skill to fail');
+  assert(result.output.includes('duplicate permission.skill block'), 'Expected nested duplicate message');
+}
+
+function testDuplicatePermissionFails() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'permission:',
+      '  "*": "deny"',
+      '  read: "allow"',
+      'permission:',
+      '  "*": "allow"',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  });
+  assert(result.status !== 0, 'Expected duplicate permission block to fail');
+  assert(result.output.includes("duplicate 'permission' block"), 'Expected duplicate permission message');
+}
+
 function testUnknownCommandFieldFails() {
   const result = withFixture((root) => {
     writeFile(root, path.join('.opencode', 'commands', 'bar.md'), [
@@ -300,6 +438,13 @@ function main() {
     testValidFixturePasses();
     testSkillNameMismatchFails();
     testUnknownSkillFieldWarns();
+    testQuotedUnknownKeyWarns();
+    testIndentedKeysIgnored();
+    testInlineNestedPermissionFails();
+    testEmptyNestedPermissionFails();
+    testTrailingCommentOnChildKeyPasses();
+    testDuplicateNestedPermissionFails();
+    testDuplicatePermissionFails();
     testUnknownCommandFieldFails();
     testUnknownPermissionKeyFails();
     testInlinePermissionFailsClosed();

@@ -82,12 +82,31 @@ function testInvalidPermissionKeyFails(tmpRoot) {
   );
 }
 
+function testInlineSkillChildFails(tmpRoot) {
+  const fixture = path.join(tmpRoot, 'inline-skill');
+  copyDirectory(path.join(fixturesRoot, 'inline-skill'), fixture);
+
+  const result = runValidator(fixture);
+  assert(result.status !== 0, 'Expected inline permission.skill to fail validation');
+  assert(result.output.includes('permission.skill must be a block mapping'), 'Expected fail-closed message for inline skill child');
+}
+
+function testIndentedPermissionPasses(tmpRoot) {
+  const fixture = path.join(tmpRoot, 'indented-permission');
+  copyDirectory(path.join(fixturesRoot, 'indented-permission'), fixture);
+
+  const result = runValidator(fixture);
+  assert(result.status === 0, `Expected non-2-space indentation to be parsed. Output: ${result.output}`);
+}
+
 function main() {
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agents-opencode-validate-agents-'));
 
   try {
     console.log('Running agent validator tests...');
     testValidFixturePasses(tmpRoot);
+    testInlineSkillChildFails(tmpRoot);
+    testIndentedPermissionPasses(tmpRoot);
     testUnknownSkillFails(tmpRoot);
     testInvalidPermissionKeyFails(tmpRoot);
     console.log('✅ Agent validator tests passed');

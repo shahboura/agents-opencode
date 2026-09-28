@@ -28,52 +28,16 @@ const {
   field,
   analyzePermission,
   permissionKeys,
+  permissionChildBlock,
+  parseMapEntries,
   getKnownSkills,
 } = require('./lib/opencode-schema');
 
-function extractPermissionBlock(frontmatter, key) {
-  const permissionSectionMatch = frontmatter.match(
-    /^permission\s*:\s*\n([\s\S]*?)(?=^\S|(?![\s\S]))/m
-  );
-  if (!permissionSectionMatch) return null;
-
-  const permissionBlock = permissionSectionMatch[1];
-  const sectionMatch = permissionBlock.match(
-    new RegExp(`^\\s{2}${key}\\s*:\\s*\\n([\\s\\S]*?)(?=^\\s{2}\\S|(?![\\s\\S]))`, 'm')
-  );
-
-  if (!sectionMatch) return null;
-  return sectionMatch[1];
-}
-
-function extractPermissionSkillBlock(frontmatter) {
-  return extractPermissionBlock(frontmatter, 'skill');
-}
-
-function extractPermissionTaskBlock(frontmatter) {
-  return extractPermissionBlock(frontmatter, 'task');
-}
-
-function parsePermissionMap(block, indent = 4) {
-  const map = new Map();
-  const lines = block.split('\n');
-
-  for (const line of lines) {
-    if (!line.trim()) continue;
-    if (/^\s*#/.test(line)) continue;
-
-    const indentRegex = new RegExp(`^\\s{${indent},}`);
-    if (!indentRegex.test(line)) continue;
-
-    const match = line.match(new RegExp(`^\\s{${indent},}([^:]+):\\s*(.+)\\s*$`));
-    if (!match) continue;
-
-    const key = match[1].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
-    const value = match[2].trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
-    map.set(key, value);
-  }
-
-  return map;
+function permissionChildBlockOf(frontmatter, key) {
+  const analysis = analyzePermission(frontmatter);
+  if (!analysis.present) return null;
+  if (analysis.inline) return { present: true, inline: true, block: '' };
+  return permissionChildBlock(analysis.block, key);
 }
 
 function validatePermissionKeys(record, errors) {
@@ -276,8 +240,16 @@ function main() {
     }
 
     // Check for permission section
-    if (!/^permission\s*:/m.test(frontmatter)) {
+    const permissionAnalysis = analyzePermission(frontmatter);
+    if (!permissionAnalysis.present) {
       warnings.push(`${file.name}: Missing 'permission' section`);
+    } else {
+      if (permissionAnalysis.inline) {
+        errors.push(`${file.name}: 'permission' must be a block mapping, not an inline value (fail-closed)`);
+      }
+      if (permissionAnalysis.duplicate) {
+        errors.push(`${file.name}: duplicate 'permission' block (fail-closed)`);
+      }
     }
 
     // Reject inert top-level permission keys (e.g. command patterns that should
@@ -292,20 +264,32 @@ function main() {
       warnings.push(`${file.name}: Missing content headings`);
     }
 
-    const permissionSkillBlock = extractPermissionSkillBlock(frontmatter);
+    const skillChild = permissionChildBlockOf(frontmatter, 'skill');
     const hasLegacySkillTool = /^\s*tools\s*:[\s\S]*?^\s*skill\s*:\s*true\s*$/m.test(frontmatter);
-    const hasSkillAccess = hasLegacySkillTool || !!permissionSkillBlock;
+    const hasSkillAccess = hasLegacySkillTool || !!skillChild;
 
     if (hasSkillAccess && !/^##\s+Skill Activation Policy\s*$/m.test(body)) {
       warnings.push(`${file.name}: Missing '## Skill Activation Policy' section (recommended when skill access is configured)`);
     }
 
-    if (hasSkillAccess && !permissionSkillBlock) {
+    if (hasSkillAccess && !skillChild) {
       warnings.push(`${file.name}: Missing 'permission.skill' allowlist (recommended when skill tool is enabled)`);
     }
 
-    if (hasSkillAccess && permissionSkillBlock) {
-      const permissionMap = parsePermissionMap(permissionSkillBlock, 4);
+    if (skillChild && skillChild.duplicate) {
+      errors.push(`${file.name}: duplicate 'permission.skill' block (fail-closed)`);
+    }
+
+    if (skillChild && skillChild.inline) {
+      errors.push(`${file.name}: permission.skill must be a block mapping (fail-closed)`);
+    }
+
+    if (skillChild && !skillChild.inline) {
+      const permissionMap = parseMapEntries(skillChild.block);
+
+      if (permissionMap.size === 0) {
+        errors.push(`${file.name}: permission.skill must be a non-empty mapping (fail-closed)`);
+      }
 
       // Require deny-by-default rule
       if (permissionMap.get('*') !== 'deny') {
@@ -332,16 +316,29 @@ function main() {
       }
     }
 
-    const permissionTaskBlock = extractPermissionTaskBlock(frontmatter);
+    const taskChild = permissionChildBlockOf(frontmatter, 'task');
     const hasLegacyTaskTool = /^\s*tools\s*:[\s\S]*?^\s*task\s*:\s*true\s*$/m.test(frontmatter);
-    const hasTaskAccess = hasLegacyTaskTool || !!permissionTaskBlock;
+    const hasTaskAccess = hasLegacyTaskTool || !!taskChild;
 
-    if (hasTaskAccess && !permissionTaskBlock) {
+    if (hasTaskAccess && !taskChild) {
       warnings.push(`${file.name}: Missing 'permission.task' allowlist (recommended when task tool is enabled)`);
     }
 
-    if (hasTaskAccess && permissionTaskBlock) {
-      const taskPermissionMap = parsePermissionMap(permissionTaskBlock, 4);
+    if (taskChild && taskChild.duplicate) {
+      errors.push(`${file.name}: duplicate 'permission.task' block (fail-closed)`);
+    }
+
+    if (taskChild && taskChild.inline) {
+      errors.push(`${file.name}: permission.task must be a block mapping (fail-closed)`);
+    }
+
+    if (taskChild && !taskChild.inline) {
+      const taskPermissionMap = parseMapEntries(taskChild.block);
+
+      if (taskPermissionMap.size === 0) {
+        errors.push(`${file.name}: permission.task must be a non-empty mapping (fail-closed)`);
+      }
+
       const wildcardDecision = taskPermissionMap.get('*');
 
       if (!wildcardDecision) {
