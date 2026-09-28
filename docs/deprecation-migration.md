@@ -90,5 +90,5 @@ When introducing Level B/C changes:
 ## Current Compatibility Commitments
 
 - Canonical agent path: `.opencode/agents/`
-- Legacy `.opencode/agent/` tolerated only for migration compatibility checks
+- Legacy `.opencode/agent/` (singular) is retired; only the canonical `.opencode/agents/` (plural) path is recognized
 - Command docs parity is enforced against canonical command frontmatter
