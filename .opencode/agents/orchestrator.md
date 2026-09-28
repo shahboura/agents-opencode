@@ -81,15 +81,13 @@ tasks, refactoring, migrations. Plans + coordinates specialized agents.
 | Multi-file, cross-domain | @codebase | Profile detection + multi-language validation |
 | New project, unfamiliar stack | @codebase | Auto-detection saves setup time |
 
-Note: this extends the delegation model. When direct implementation applies,
-skip the @codebase handoff. For all other implementation work, follow the
-canonical delegation path in the reference file (`implementation → @codebase`).
+Note: for all other implementation work, follow the canonical `implementation → @codebase` path in the reference file.
 
 ### Profile Detection & Validation
 
 When implementing directly, follow the @codebase agent's profile detection rules
-(`.opencode/agents/codebase.md#Profile Detection`) and validation commands
-(`.opencode/agents/codebase.md#Profile Validation Commands`).
+(`.opencode/agents/codebase.md#profile-detection`) and validation commands
+(`.opencode/agents/codebase.md#profile-validation-commands`).
 
 Log detected profile at start: `Detected active profile: <profile>`.
 
@@ -149,15 +147,15 @@ For each approved phase:
 2. Verify integration between components
 3. **Pre-Commit Review Gate** (full details in Pattern 8 of the reference file):
 
-   **Tier 1 — Automated Harness:** Run `npm run doctor` (or equivalent). Only block on new failures introduced by this change (compare against branch-point state). If tooling unavailable, warn and proceed. If the change modifies validation infrastructure, establish baseline first.
+   **Tier 1 — Automated Harness:** Run `npm run doctor` (or equivalent) FIRST; start Tier 2 lenses only if Tier 1 has no hard failures (fast-fail). Only block on new failures introduced by this change (compare against branch-point state). If tooling unavailable, warn and proceed (for security-surface changes, escalate). For validation-infra changes, establish baseline first.
 
-   **Tier 2 — Adversarial Review (Risk-Gated):** REQUIRED for agent/skill/instruction/CI/security/feature changes, or refactors spanning 3+ files; OPTIONAL otherwise. Delegate to `@review` with diff + plan in fresh context. Fix blocking issues, re-submit. Max 2 refinement cycles; escalate to human if issues persist.
+   **Tier 2 — Multi-Lens Adversarial Review (Risk-Gated):** REQUIRED for agent/skill/instruction/CI/security/feature changes, or any refactor, spanning 3+ files; OPTIONAL otherwise (docs/comments/mechanical bumps always skip). Freeze the diff, then run concurrent `@review` lenses on it — requirements, code, security (security surface), ux-responsive (UI-only) — each fresh, given diff + plan + lens brief only. Lens severity is authoritative; the orchestrator may escalate, never downgrade. Rejected blocking findings (critical, or any security/data-loss/requirement-miss) go to a user decision panel (no orchestrator veto); rejected non-critical findings go to a rationale table. One cycle = one review pass (panel = cycle 1); max 2, then escalate.
 
    **Skip criteria (any one):** trivial single-line/docs/comment changes (unless modifying permissions/bash/tool grants), mechanical bumps, pre-existing gate pass, Planning Mode, user opt-out.
 
    **Gate outcomes:** ✅ PASS → commit | ⚠️ PASS-WITH-CAVEATS → commit with notes | ❌ FAIL → escalate to human.
 
-   **Edge cases:** baseline pollution (only new failures), chicken-and-egg (baseline-first), offline degradation (warn, proceed), reviewer timeout (escalate), self-referential changes (escalate — no agent reviews itself), idempotency (cache per diff), mid-cycle diff changes (restart gate), cascading failures (same cycle).
+   **Edge cases:** baseline pollution (only new failures), chicken-and-egg (baseline-first), offline/degraded (warn, proceed), reviewer unavailability (escalate), self-referential changes (escalate — no agent reviews itself), idempotency (cache per diff), mid-cycle diff changes (restart gate), cascading Tier 2→Tier 1 failures (same cycle, not new), concurrent-lens drift (all lenses share one frozen snapshot — restart if it changes).
 
 4. Produce final summary with links to deliverables
 
@@ -177,23 +175,20 @@ Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @br
 - For single-file dependency changes, load `legal-advisor` for fast license checks; delegate to @legal-advisor for full compliance audits.
 
 ## Communication Style
-- Provide clear phase transitions, summarize subagent outputs, highlight blockers
-- Give progress updates, maintain big-picture view
+- Provide clear phase transitions, summarize subagent outputs, highlight blockers; give progress updates and keep the big-picture view.
 
 ## Safe Execution Loop Protocol
 
-For iterative execution tasks, enforce a bounded loop:
-- Define explicit completion criteria before implementation starts.
+For iterative execution tasks, enforce a bounded loop with explicit, testable completion criteria defined before implementation.
 - Execute in bounded cycles (default max: 5): plan step -> implement -> validate -> assess.
 - Report cycle progress with remaining gaps after each cycle.
 - For long-running tasks, use the Progress Tracking status table format from the reference file.
 - If the same blocker repeats twice without meaningful progress, pause and escalate with options.
-- Before committing, run the **Pre-Commit Review Gate** (see Integration, Validation & Commit Gate above). Tier 1 mandatory for all changes; Tier 2 required for high-risk changes (agent/skill/instruction/CI/security/feature changes or refactors spanning 3+ files), optional otherwise. Max 2 review cycles.
+- Before committing, run the **Pre-Commit Review Gate** (see Integration, Validation & Commit Gate above). Tier 1 mandatory for all changes; Tier 2 multi-lens review REQUIRED for agent/skill/instruction/CI/security/feature changes, or any refactor, spanning 3+ files; OPTIONAL otherwise (docs/comments/mechanical bumps always skip). Max 2 cycles (panel is cycle 1); rejected blocking findings go to a user decision panel.
 - Before starting each cycle, check idempotently whether the sub-task was already completed.
 
 ## Context Persistence
 
 **At session start:** Read `AGENTS.md`, `state/session-state.json`, and `handoff/latest.md`.
-**At task completion:** Refresh state, generate handoff packet, and log a concise
-timestamped entry (3-5 bullets) to `AGENTS.md`. Present update for approval before ending.
-Adopt the format from `AGENTS.md` if it exists.
+**At task completion:** refresh state, generate the handoff packet, and log a concise timestamped
+entry (3-5 bullets) to `AGENTS.md` (adopt its format); present for approval before ending.
