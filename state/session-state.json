@@ -1,7 +1,7 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
-  "current_phase": "agent-pack modernization",
-  "plugin_version": "2.4.0",
+  "current_phase": "multi-lens pre-commit review gate",
+  "plugin_version": "2.4.2",
   "decisions": [
     "Use deny-by-default permissions with explicit allowlists.",
     "Nest command patterns under the relevant permission (e.g. bash:) — top-level command keys are inert.",
@@ -13,28 +13,37 @@
     "Agent-level read: allow overrides OpenCode's built-in *.env read deny; the plugin secret guard is the compensating control.",
     "Installer writes only $schema/plugin/permission to user configs; opinionated package defaults must never propagate into a project or global opencode.json.",
     "Risk-path review gate is advisory (reports computed risk + PR acknowledgment but never blocks merges); enforcement stays human/Tier 2.",
-    "Installer lifecycle and npx package integrity tests now run in the CI tooling-tests job (previously local-only via doctor)."
+    "Installer lifecycle and npx package integrity tests now run in the CI tooling-tests job (previously local-only via doctor).",
+    "Pre-Commit Review Gate (Pattern 8) runs a concurrent multi-lens panel (requirements/code/security/ux-responsive) on a frozen diff; re-review is scoped to the delta.",
+    "Loop budgets use one binding per-task currency (<=8 reviewer dispatches, max 2 cycles, once per commit); gate cycles are a sub-loop and do not multiply the 5-cycle/Pattern 5 budgets.",
+    "Lens-reported severity is authoritative — the orchestrator may escalate but never downgrade; security/data-loss findings are panel-bound at any severity.",
+    "Pattern 5 (evaluator-optimizer) and Pattern 8 (commit gate) are mutually exclusive on the same artifact.",
+    "Tier 1 automated checks fast-fail before Tier 2 lenses; security-surface changes escalate if Tier 1 tooling is unavailable.",
+    "The security-audit skill is real and active; the session skill list is incomplete (it also omits adr/api-documentation)."
   ],
   "open_risks": [
     "Scenario-level behavioral eval coverage is still limited.",
-    "orchestrator and em-advisor sit near the 200-line agent budget (199 used).",
-    "Consumer-visible opencode.json defaults are not yet in the changelog."
+    "Agent/instruction line budgets remain tight even after trimming (orchestrator 194/200, reference 243/250).",
+    "Consumer-visible opencode.json defaults are not yet in the changelog.",
+    "Multi-lens panel shares one model — correlated blind spots are irreducible until per-lens model choice is available.",
+    "No lens owns schema/migration data-integrity safety yet."
   ],
   "blocked_by": [],
   "next_actions": [
-    "Commit the change set including the untracked validator fixture and new guard module/tests.",
-    "Add a changelog/docs note for the new consumer-visible opencode.json defaults.",
+    "Open a PR for feat/multi-lens-review-gate and merge via protected main.",
     "Introduce CODEOWNERS for governance-critical paths.",
-    "Expand eval fixtures toward capability/regression suites (pass@k) per Anthropic guidance."
+    "Expand eval fixtures toward capability/regression suites (pass@k) per Anthropic guidance.",
+    "Decide whether to add a data/migration lens or fold data-integrity into the code lens."
   ],
   "artifacts": [
-    ".opencode/plugins/agents-opencode.ts",
-    ".opencode/lib/guards.mjs",
-    "scripts/plugin-guards.test.js",
-    "scripts/validate-agents.js",
-    "opencode.json"
+    ".opencode/agents/orchestrator.md",
+    ".opencode/instructions/orchestrator-reference.instructions.md",
+    ".opencode/agents/review.md",
+    "CHANGELOG.md",
+    "AGENTS.md",
+    "state/session-state.json"
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-09-18T11:12:00Z"
+  "last_updated": "2026-09-28T00:20:09Z"
 }

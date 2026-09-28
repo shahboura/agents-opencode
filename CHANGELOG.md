@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/shahboura/agents-opencode/compare/v2.4.2...v2.5.0) (2026-09-28)
+
+
+### Features
+
+* **orchestrator:** multi-lens pre-commit review gate ([#92](https://github.com/shahboura/agents-opencode/issues/92)) ([67bfc7f](https://github.com/shahboura/agents-opencode/commit/67bfc7f14c70e31f3e3811edd86ef2a205c19a3e))
+
 ## [2.4.2](https://github.com/shahboura/agents-opencode/compare/v2.4.1...v2.4.2) (2026-09-20)
 
 
@@ -25,14 +32,22 @@
 
 ### Features
 
-* [capability:workflow] **Pre-Commit Review Gate** — Two-tier gate in orchestrator workflow: Tier 1 (automated harness — deterministic checks with baseline comparison) and Tier 2 (adversarial review via `@review` in fresh subagent context, risk-gated, max 2 cycles). Added Pattern 8 to coordination patterns. Gate outcomes: PASS / PASS-WITH-CAVEATS / FAIL with escalation. Skip criteria and 8 edge case mitigations included.
+* [capability:workflow] **Multi-Lens Pre-Commit Review Gate** — Two-tier gate in the orchestrator workflow: Tier 1 (automated `npm run doctor` harness with baseline comparison) plus Tier 2, upgraded from a single `@review` to a concurrent multi-lens panel (requirements / code / security / ux-responsive). Adds diff-freeze snapshotting, lens selection, a review triage flow, and a user decision panel for declined critical/security/data-loss/requirement findings (orchestrator has no veto). Defines the review cycle, adds a per-task global budget, and scopes re-review to the delta (2-cycle cap). `@review` gains Review Lenses: lens scope, an output contract, and the evidence rule. Gate outcomes: PASS / PASS-WITH-CAVEATS / FAIL with escalation.
 * [capability:workflow] **Interview pattern** — Structured Q&A (3-5 targeted questions) added to orchestrator Planning Phase before plan creation.
 * [capability:workflow] **Goal condition in checkpoints** — `**Goal:**` field added to Checkpoint Format for self-validating loops.
 * [capability:memory] **Progressive disclosure in AGENTS.md** — Trimmed from 231 to 202 lines. Replaced verbose skill/agent lists with on-demand reference pointers. Added `validate-agents.js` governance pointer.
+* [capability:workflow] add bounded loop execution workflow (`/execution-loop`, `/stop-loop`) with loop protocol guidance across orchestrator/codebase/review agents
+* [capability:validation] add `doctor` validation entrypoint and route `validate:all` through it
 
 ### Changed
 
 * [capability:validation] **Instruction file budget** — Bumped from 200 to 250 lines. Instruction files are loaded on-demand (progressive disclosure), not at session start, so the tighter agent-file budget (200) is the right context constraint.
+
+### Bug Fixes
+
+* [capability:validation] improve validation reliability by excluding `example/**` from markdown/docs checks and fixing Windows npm spawn behavior in doctor
+* [capability:agents] migrate agent layout to canonical `.opencode/agents/` and align installer/validation/docs to the plural standard
+* [capability:security] add CI secret scanning to validation summary gating
 
 ## [2.3.2](https://github.com/shahboura/agents-opencode/compare/v2.3.1...v2.3.2) (2026-07-08)
 
@@ -153,19 +168,6 @@
 ### Bug Fixes
 
 * **ci:** ensure gitleaks PR scan works in validation workflow ([21f65b1](https://github.com/shahboura/agents-opencode/commit/21f65b10e2dd624b8642c7f1b372c74f30350010))
-
-## [Unreleased]
-
-### Features
-
-* [capability:workflow] add bounded loop execution workflow (`/execution-loop`, `/stop-loop`) with loop protocol guidance across orchestrator/codebase/review agents
-* [capability:validation] add `doctor` validation entrypoint and route `validate:all` through it
-
-### Bug Fixes
-
-* [capability:validation] improve validation reliability by excluding `example/**` from markdown/docs checks and fixing Windows npm spawn behavior in doctor
-* [capability:agents] migrate agent layout to canonical `.opencode/agents/` and align installer/validation/docs to the plural standard
-* [capability:security] add CI secret scanning to validation summary gating
 
 ## [1.4.1](https://github.com/shahboura/agents-opencode/compare/v1.4.0...v1.4.1) (2026-03-15)
 

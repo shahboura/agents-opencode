@@ -64,6 +64,15 @@ All agents log milestone entries to this file using this format:
 
 ## Milestones
 
+### 2026-09-28 08:20 - Multi-lens pre-commit review gate + budget hardening
+
+**Agent:** orchestrator
+**Summary:** Upgraded the orchestrator's Pre-Commit Review Gate (Pattern 8) from a single `@review` to a concurrent multi-lens panel, hardened its loop/budget design via a full Tier 1 + Tier 2 + independent-researcher cycle, and shipped via `feat/multi-lens-review-gate`.
+- Pattern 8 Tier 2 now runs concurrent lenses (requirements/code/security/ux-responsive) on a frozen diff with lens selection, triage, a user decision panel (no orchestrator veto for blocking findings), and delta-only re-review; `@review` gained a Review Lenses section (scope, output contract, evidence rule) and activates `security-audit` for the security lens.
+- Design fixes from review + researcher: single binding per-task budget (<=8 dispatches, max 2 cycles, once per commit), Tier 1 fast-fail before Tier 2, lens-reported severity authoritative (no downgrade), sticky security/data-loss tags, and Pattern 5/Pattern 8 mutual exclusivity.
+- Correction: `security-audit` is a valid skill — the session skill list is incomplete (it also omits `adr`/`api-documentation`).
+- Validation: Tier 1 green (context-size, lint:md, validate:agents, changelog-labels); Tier 2 panel + delta re-review clean; budgets trimmed for headroom (orchestrator 194/200, reference 243/250).
+
 ### 2026-09-18 11:12 - Agent permission fix, plugin modernization, config uplift
 
 **Agent:** orchestrator
