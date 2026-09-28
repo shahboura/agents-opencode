@@ -1,0 +1,71 @@
+---
+layout: default
+title: Review Gate
+nav_order: 14
+description: How changes are reviewed before commit - automated Tier 1 checks plus a multi-lens adversarial Tier 2 panel with triage and human decision points.
+---
+
+# Review Gate
+
+The Review Gate is the final checkpoint before any commit. It has two tiers: a
+deterministic automated harness (Tier 1) and a risk-gated, multi-lens adversarial
+review (Tier 2). It is defined canonically in
+`.opencode/instructions/orchestrator-reference.instructions.md` (Pattern 8).
+
+## Tier 1 - Automated Harness
+
+- Run `npm run doctor` (or the stack equivalent) first.
+- Fast-fail: Tier 2 lenses only start when Tier 1 has no hard failures.
+- Only **new** failures block - compare against the branch-point state.
+- If tooling is unavailable, warn and proceed; for security-surface changes, escalate.
+
+## Tier 2 - Multi-Lens Adversarial Review
+
+Risk-gated: **required** for agent, skill, instruction, CI, security, or feature
+changes, or any refactor spanning 3+ files. Optional otherwise (docs, comments,
+and mechanical bumps always skip).
+
+The diff is frozen, then one fresh `@review` subagent runs per lens, concurrently.
+Each lens receives only the frozen diff, the plan, and its lens brief - never the
+implementation reasoning.
+
+### Lenses
+
+| Lens | Runs when | Focus |
+|---|---|---|
+| requirements | features / behavior changes | acceptance criteria met; nothing out of scope |
+| code | whenever Tier 2 triggers | logic errors, correctness, maintainability, tests, performance |
+| security | security surface touched | vulnerabilities, secrets, PII, authn/authz, dependency and license risk |
+| ux-responsive | UI / markup changes | accessibility, responsive logic, input modes, loading/empty/error states |
+
+### Triage and decision panel
+
+1. Classify each finding: critical / high / medium / low. Lens-reported severity is
+   authoritative - the orchestrator may escalate but never downgrade it.
+2. Apply objective, low-risk findings directly.
+3. Declined **blocking** findings (critical, or any security / data-loss /
+   requirement-miss at any severity) go to a **user decision panel** - the
+   orchestrator has no veto over them.
+4. Declined non-critical findings go to a rationale table for the user.
+
+## Cycles and Budget
+
+- A **cycle** is one review pass: the initial panel is cycle 1, and a scoped delta
+  re-review of the fixes is cycle 2.
+- Maximum **2 cycles** per gate (initial panel plus at most one delta re-review).
+- Binding task budget: **8 reviewer dispatches** per task.
+- The gate runs **once per commit**, not once per implementation chunk.
+- On exhaustion, escalate to the human with structured options.
+
+## Outcomes
+
+| Outcome | Action |
+|---|---|
+| PASS | Proceed to commit |
+| PASS-WITH-CAVEATS | Commit with documented notes - never a declined security/data-loss finding |
+| FAIL | Escalate to the human with structured options |
+
+## Related
+
+- [Approval Gates](approval-gates) - human-in-the-loop checkpoints.
+- [Compatibility](compatibility) - the CI validation checks matrix.
