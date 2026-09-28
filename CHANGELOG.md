@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/shahboura/agents-opencode/compare/v2.4.2...v2.5.0) (2026-09-28)
+
+
+### Features
+
+* **orchestrator:** multi-lens pre-commit review gate ([#92](https://github.com/shahboura/agents-opencode/issues/92)) ([67bfc7f](https://github.com/shahboura/agents-opencode/commit/67bfc7f14c70e31f3e3811edd86ef2a205c19a3e))
+
 ## [2.4.2](https://github.com/shahboura/agents-opencode/compare/v2.4.1...v2.4.2) (2026-09-20)
 
 
