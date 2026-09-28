@@ -51,7 +51,7 @@ function topLevelKeys(frontmatter) {
   for (const raw of frontmatter.split('\n')) {
     const line = raw.replace(/\r$/, '');
     if (!line.trim() || /^\s*#/.test(line)) continue;
-    const match = line.match(/^["']?([A-Za-z0-9_.-]+)["']?\s*:/);
+    const match = line.match(/^["']?([^\s"'\n:][^"'\n:]*)["']?\s*:/);
     if (match) keys.push(match[1]);
   }
   return keys;
@@ -105,9 +105,9 @@ function getKnownSkills() {
 function analyzePermission(frontmatter) {
   const line = frontmatter.match(/^(?!\s*#)["']?permission["']?\s*:(.*)$/m);
   if (!line) return { present: false, inline: false, block: null };
-  const rest = line[1].trim();
+  const rest = line[1].replace(/\s+#.*$/, '').trim();
   if (rest.length > 0) return { present: true, inline: true, block: null };
-  const block = frontmatter.match(/^(?!\s*#)["']?permission["']?\s*:\s*\n([\s\S]*?)(?=^[^\s]|(?![\s\S]))/m);
+  const block = frontmatter.match(/^(?!\s*#)["']?permission["']?\s*:\s*(?:#.*)?\n([\s\S]*?)(?=^[^\s]|(?![\s\S]))/m);
   return { present: true, inline: false, block: block ? block[1] : '' };
 }
 

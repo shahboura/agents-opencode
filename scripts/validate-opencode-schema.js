@@ -58,7 +58,12 @@ function validatePermission(frontmatter, label) {
     errors.push(`${label}: 'permission' must be a block mapping, not an inline value (fail-closed)`);
     return;
   }
-  for (const key of permissionKeys(analysis.block)) {
+  const keys = permissionKeys(analysis.block);
+  if (keys.length === 0) {
+    errors.push(`${label}: 'permission' must be a non-empty block mapping (fail-closed)`);
+    return;
+  }
+  for (const key of keys) {
     if (key !== '*' && !KNOWN_PERMISSION_KEYS.has(key)) {
       errors.push(`${label}: unrecognized permission key '${key}' (must be a known permission or nested pattern)`);
     }
@@ -83,7 +88,7 @@ function validateAgents() {
       continue;
     }
 
-    if (!field(frontmatter, 'description')) errors.push(`${label}: missing required field 'description'`);
+    if (!descriptionOf(frontmatter)) errors.push(`${label}: missing required field 'description'`);
 
     const mode = field(frontmatter, 'mode');
     if (!mode) errors.push(`${label}: missing required field 'mode'`);
@@ -171,7 +176,7 @@ function validateCommands(agentNames) {
       }
     }
 
-    if (!field(frontmatter, 'description')) errors.push(`${label}: missing required field 'description'`);
+    if (!descriptionOf(frontmatter)) errors.push(`${label}: missing required field 'description'`);
 
     const subtask = field(frontmatter, 'subtask');
     if (subtask !== null && !/^(true|false)$/.test(subtask)) {
@@ -206,16 +211,22 @@ function validateConfig() {
   if (!config.$schema) errors.push(`${label}: missing '$schema'`);
 
   for (const key of Object.keys(config)) {
-    if (!CONFIG_KEYS.has(key)) warnings.push(`${label}: unrecognized top-level config key '${key}'`);
+    if (!CONFIG_KEYS.has(key)) warnOrError(`${label}: unrecognized top-level config key '${key}'`);
   }
 
-  if (config.permission && typeof config.permission === 'object') {
-    for (const key of Object.keys(config.permission)) {
-      if (!KNOWN_PERMISSION_KEYS.has(key)) errors.push(`${label}: unrecognized permission key '${key}'`);
-    }
-    v2Gaps.push(`${label}: 'permission' object is v1-only — v2 uses a 'permissions' array`);
-    if (config.permission.doom_loop || config.permission.lsp) {
-      v2Gaps.push(`${label}: 'doom_loop'/'lsp' are not v2 permission actions`);
+  if (config.permission !== undefined) {
+    const perm = config.permission;
+    const isObject = perm && typeof perm === 'object' && !Array.isArray(perm);
+    if (!isObject || Object.keys(perm).length === 0) {
+      errors.push(`${label}: 'permission' must be a non-empty object`);
+    } else {
+      for (const key of Object.keys(perm)) {
+        if (!KNOWN_PERMISSION_KEYS.has(key)) errors.push(`${label}: unrecognized permission key '${key}'`);
+      }
+      v2Gaps.push(`${label}: 'permission' object is v1-only — v2 uses a 'permissions' array`);
+      if (perm.doom_loop || perm.lsp) {
+        v2Gaps.push(`${label}: 'doom_loop'/'lsp' are not v2 permission actions`);
+      }
     }
   }
   if (config.plugin) v2Gaps.push(`${label}: 'plugin' (singular) is v1-only — v2 uses 'plugins'`);

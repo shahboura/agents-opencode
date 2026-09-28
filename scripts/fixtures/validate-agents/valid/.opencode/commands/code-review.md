@@ -1,7 +1,6 @@
 ---
 description: review code
 agent: review
-argument-hint: "[scope]"
 subtask: true
 ---
 

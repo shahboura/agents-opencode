@@ -4,7 +4,6 @@
 /**
  * Agent Configuration Validator
  * Validates OpenCode agent .md files in .opencode/agents/
- * (legacy .opencode/agent/ is tolerated for migration compatibility)
  */
 
 const fs = require('fs');
@@ -261,10 +260,9 @@ function main() {
     const frontmatter = record.frontmatter;
 
     // Check required fields (anchored to reject commented-out lines)
-    for (const field of requiredFields) {
-      const fieldRegex = new RegExp(`^(?!\\s*#)\\s*${field}\\s*:`, 'm');
-      if (!fieldRegex.test(frontmatter)) {
-        errors.push(`${file.name}: Missing required field '${field}'`);
+    for (const requiredField of requiredFields) {
+      if (!field(frontmatter, requiredField)) {
+        errors.push(`${file.name}: Missing required field '${requiredField}'`);
       }
     }
 

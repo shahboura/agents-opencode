@@ -225,6 +225,43 @@ function testMissingConfigFails() {
   assert(result.output.includes('file not found'), 'Expected file-not-found message');
 }
 
+function testStrictPromotesMissingPermission() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  }, ['--strict']);
+  assert(result.status !== 0, 'Expected --strict to fail an agent without a permission block');
+}
+
+function testStrictPromotesLegacyTools() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'tools:',
+      '  write: true',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  }, ['--strict']);
+  assert(result.status !== 0, 'Expected --strict to fail a legacy tools: block');
+}
+
+function testStrictPassesCleanFixture() {
+  const result = withFixture(null, ['--strict']);
+  assert(result.status === 0, `Expected clean fixture to pass --strict. Output: ${result.output}`);
+}
+
 function testV2ReportsGaps() {
   const result = withFixture((root) => {
     writeFile(root, 'opencode.json', JSON.stringify({ $schema: 'https://opencode.ai/config.json', plugin: ['x'] }, null, 2));
@@ -269,6 +306,9 @@ function main() {
     testNestedPermissionPatternsAllowed();
     testFoldedDescriptionPasses();
     testMissingConfigFails();
+    testStrictPromotesMissingPermission();
+    testStrictPromotesLegacyTools();
+    testStrictPassesCleanFixture();
     testV2ReportsGaps();
     testV2PreservesFailure();
     testWarningsOnlyExitsZero();

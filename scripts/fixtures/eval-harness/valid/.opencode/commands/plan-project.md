@@ -1,7 +1,6 @@
 ---
 description: plan
 agent: orchestrator
-argument-hint: "[feature]"
 subtask: true
 ---
 
