@@ -1,49 +1,52 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
-  "current_phase": "multi-lens pre-commit review gate",
-  "plugin_version": "2.4.2",
+  "current_phase": "validator hardening and review-gate documentation",
+  "plugin_version": "2.5.1",
   "decisions": [
     "Use deny-by-default permissions with explicit allowlists.",
     "Nest command patterns under the relevant permission (e.g. bash:) — top-level command keys are inert.",
     "Keep em-advisor/blogger as primary agents (manual switch/@mention) rather than Task-delegatable subagents.",
     "Resolve plugin version/inventory at runtime from the installer marker and package layout, never from the consumer package.json.",
     "Secret-read guard: deny by default (.pem/.key included) with a public-cert allowlist (.crt/.cer/.pub, ca/cert/chain/fullchain .pem); accept the rare Keynote .key false positive.",
-    "Scope the skill pass to targeted fixes only; the three skills hidden from orchestrator are intentional.",
     "Disable session sharing (share: disabled) and enable compaction pruning (compaction.prune) for long agent sessions.",
-    "Agent-level read: allow overrides OpenCode's built-in *.env read deny; the plugin secret guard is the compensating control.",
     "Installer writes only $schema/plugin/permission to user configs; opinionated package defaults must never propagate into a project or global opencode.json.",
     "Risk-path review gate is advisory (reports computed risk + PR acknowledgment but never blocks merges); enforcement stays human/Tier 2.",
-    "Installer lifecycle and npx package integrity tests now run in the CI tooling-tests job (previously local-only via doctor).",
-    "Pre-Commit Review Gate (Pattern 8) runs a concurrent multi-lens panel (requirements/code/security/ux-responsive) on a frozen diff; re-review is scoped to the delta.",
+    "Pre-Commit Review Gate (Pattern 8) runs a concurrent multi-lens panel (requirements/code/security/ux-responsive) on a frozen diff; re-review is scoped to the delta, and the gate is documented for users in docs/review-gate.md.",
     "Loop budgets use one binding per-task currency (<=8 reviewer dispatches, max 2 cycles, once per commit); gate cycles are a sub-loop and do not multiply the 5-cycle/Pattern 5 budgets.",
     "Lens-reported severity is authoritative — the orchestrator may escalate but never downgrade; security/data-loss findings are panel-bound at any severity.",
     "Pattern 5 (evaluator-optimizer) and Pattern 8 (commit gate) are mutually exclusive on the same artifact.",
     "Tier 1 automated checks fast-fail before Tier 2 lenses; security-surface changes escalate if Tier 1 tooling is unavailable.",
-    "The security-audit skill is real and active; the session skill list is incomplete (it also omits adr/api-documentation)."
+    "Agent-config and schema validators fail closed on malformed permission structures: inline, empty, and duplicate permission blocks, plus duplicate/inline nested skill/task children, are errors.",
+    "Shared frontmatter/permission parsing lives in scripts/lib/opencode-schema.js; both validators import it as the single source of truth.",
+    "Command frontmatter is limited to description/agent/model/subtask; the non-standard argument-hint field was removed repo-wide.",
+    "Keep the CI Go toolchain on 'stable' (reproducibility nit tracked as VAL-2) rather than pinning a version.",
+    "OpenCode v2 support requires installer-time target adapters because v1 and v2 config keys are disjoint; the phased plan is tracked in BACKLOG.md."
   ],
   "open_risks": [
     "Scenario-level behavioral eval coverage is still limited.",
-    "Agent/instruction line budgets remain tight even after trimming (orchestrator 194/200, reference 243/250).",
+    "Agent/instruction line budgets remain tight (orchestrator 194/200, reference 243/250).",
     "Consumer-visible opencode.json defaults are not yet in the changelog.",
     "Multi-lens panel shares one model — correlated blind spots are irreducible until per-lens model choice is available.",
-    "No lens owns schema/migration data-integrity safety yet."
+    "evals/harness/run-evals.js still uses a hand-rolled permission parser (VAL-4) that can drift from the shared module.",
+    "OpenCode v2 is not yet supported; the plugin entrypoint is v1-only."
   ],
   "blocked_by": [],
   "next_actions": [
-    "Open a PR for feat/multi-lens-review-gate and merge via protected main.",
+    "Merge the chore/validator-hardening PR (fail-closed permissions + review-gate docs).",
+    "Complete VAL-4: migrate evals/harness/run-evals.js to the shared parser.",
     "Introduce CODEOWNERS for governance-critical paths.",
-    "Expand eval fixtures toward capability/regression suites (pass@k) per Anthropic guidance.",
-    "Decide whether to add a data/migration lens or fold data-integrity into the code lens."
+    "Plan OpenCode v2 support (dual-entrypoint plugin + installer --target) per BACKLOG.md.",
+    "Expand eval fixtures toward capability/regression suites (pass@k) per Anthropic guidance."
   ],
   "artifacts": [
-    ".opencode/agents/orchestrator.md",
-    ".opencode/instructions/orchestrator-reference.instructions.md",
-    ".opencode/agents/review.md",
-    "CHANGELOG.md",
-    "AGENTS.md",
+    "scripts/lib/opencode-schema.js",
+    "scripts/validate-agents.js",
+    "scripts/validate-opencode-schema.js",
+    "docs/review-gate.md",
+    "BACKLOG.md",
     "state/session-state.json"
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-09-28T00:20:09Z"
+  "last_updated": "2026-09-28T13:53:10Z"
 }

@@ -65,6 +65,15 @@ All agents log milestone entries to this file using this format:
 
 ## Milestones
 
+### 2026-09-28 21:53 - Validator fail-closed hardening, review-gate docs, backlog
+
+**Agent:** orchestrator
+**Summary:** Hardened the agent-config validators to fail closed on malformed permission structures, added the user-facing Review Gate doc and a backlog (including the OpenCode v2 plan), and shipped via `chore/validator-hardening`.
+- VAL-1: `validate-agents.js` skill/task allowlist parsing migrated to shared, indentation-safe helpers in `scripts/lib/opencode-schema.js`; VAL-3 regression tests added; VAL-2 (Go pin) reverted to `stable` after review (floating-toolchain nit tracked).
+- Fail-closed: inline/empty/duplicate permission blocks, duplicate/inline nested `skill`/`task` children, and trailing comments now error in both validators; `validate-opencode-schema.js --strict` validates nested children.
+- Docs: `docs/review-gate.md` documents Tier 1/Tier 2, lenses, cycles/budget, and the decision panel; `BACKLOG.md` tracks VAL-4, GATE-1/2, SKILL-1, and the OpenCode v2 migration plan.
+- Validation: full review cycle run (Tier 1 + multi-lens panel + two delta passes); `npm run doctor` green.
+
 ### 2026-09-28 08:20 - Multi-lens pre-commit review gate + budget hardening
 
 **Agent:** orchestrator
