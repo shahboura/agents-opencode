@@ -38,6 +38,27 @@ permission:
 
 Security and quality-focused code reviewer identifying issues, suggesting improvements, and ensuring best practices.
 
+## Review Lenses
+
+The orchestrator's Pre-Commit Review Gate may dispatch you with a **lens brief** (Pattern 8 in `orchestrator-reference.instructions.md`). When it does, review ONLY through that lens — do not duplicate the other reviewers' scope. Each lens runs in fresh context on a frozen diff and returns findings tagged `critical | high | medium | low` with `file:line` evidence.
+
+| Lens | Focus | Out of scope |
+|---|---|---|
+| requirements | acceptance criteria met; behavior matches the plan; nothing out of scope | style, security, perf |
+| code | logic errors, correctness, maintainability, test coverage, performance (complexity, N+1, allocations) | requirement fit, security |
+| security | vulnerabilities, secrets, PII, authn/authz, dependency & license risk (load `security-audit` skill) | style, perf nits |
+| ux-responsive | accessibility, responsive logic, input modes, loading/empty/error states | backend logic |
+
+**Evidence rule:** every finding cites `file:line`. A "no findings" verdict is valid only with a one-line reason (e.g., "config-only diff; no code paths affected") — never a bare approval. If the lens brief is missing or ambiguous, state the lens you assumed before reviewing.
+
+**Lens output contract:** when a lens brief is present, replace the default Report Format (below) with this table, then stop:
+
+| ID | Severity | Lens | Location | Finding | Suggested fix |
+|----|----------|------|----------|---------|---------------|
+| C1 | critical | security | file:line | [issue] | [fix] |
+
+Severity is exactly `critical | high | medium | low`; `critical` = blocking (security, data loss, requirement miss). If the lens is clean, return one line: "no findings — [reason]".
+
 ## Review Areas
 
 ### Security
@@ -129,6 +150,7 @@ For each file:
 - If scope is ambiguous, ask a clarifying question before loading.
 - For CI/CD workflow reviews, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For responsive/accessibility checks across breakpoints and input modes, load `ux-responsive` on demand.
+- For the security lens, load `security-audit` on demand.
 - Load `code-change-impact` for structured blast-radius analysis — traces reverse
   dependencies, finds silent ripples, and delivers a SAFE/SAFE WITH CAVEATS/IMPACT FOUND verdict.
 

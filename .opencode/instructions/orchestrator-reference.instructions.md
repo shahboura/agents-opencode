@@ -93,7 +93,7 @@ orchestrator → @codebase (generate solution)
             → @codebase (iterate based on feedback) ⊛ loop
             → @review (final gate)
 ```
-Use when quality criteria are well-defined and iterative refinement demonstrably improves output. The evaluator (`@review` or `@brutal-critic`) provides feedback; the generator (`@codebase`, or `blogger` via manual handoff) iterates. Run up to 3 refinement cycles before gating. (Note: this is an implementation refinement loop; the Pre-Commit Review Gate uses 2 cycles for its adversarial review — see Pattern 8.)
+Use when quality criteria are well-defined and iterative refinement demonstrably improves output. The evaluator (`@review` or `@brutal-critic`) provides feedback; the generator (`@codebase`, or `blogger` via manual handoff) iterates. Run up to 3 refinement cycles before gating. Use for generation quality (docs/content/writing) — do NOT run Pattern 5 and Pattern 8 on the same artifact; if the change will hit the Pre-Commit Review Gate (Pattern 8), skip Pattern 5, since the panel already evaluates and refines.
 
 ### Pattern 6: Parallelized Sub-Tasks
 ```
@@ -112,37 +112,67 @@ orchestrator → @planner (deep analysis, no code changes)
 ```
 Use for high-risk or unfamiliar codebases where understanding must precede action. The read-only planner phase prevents premature implementation.
 
-### Pattern 8: Pre-Commit Review Gate
+### Pattern 8: Pre-Commit Review Gate (Multi-Lens)
 ```
-orchestrator → @review (Tier 2 adversarial review: diff + plan, fresh context)
-            → if issues → @codebase (fix) → @review (re-verify) ⊛ max 2 cycles
-            → if clean → commit
-            → if still failing after 2 cycles → escalate to human
+orchestrator → chunk the work → implement (per Implementation Routing)
+            → freeze the diff snapshot
+            → Tier 1: automated harness (npm run doctor / stack equivalent) — fast-fail first
+            → Tier 2: concurrent @review lenses on the frozen snapshot (only if Tier 1 clean)
+                 requirements · code · security · ux-responsive (see Lens Selection)
+            → triage findings (see Review Triage & Decision Panel)
+            → apply accepted fixes → scoped re-review of delta only ⊛ max 2 cycles
+            → ✅ PASS → commit | ⚠️ caveats → commit with notes | ❌ FAIL → escalate
 ```
-Use as the final gate before any `git commit`.
+Use as the final gate before any `git commit` — run once per commit, not once per implementation chunk.
 
-**Tier 1 (Automated Harness):** Run `npm run doctor` (or equivalent). Only block on new failures — compare against branch-point state. If tooling unavailable, warn and proceed. For validation infra changes, establish baseline first.
+**Tier 1 (Automated Harness):** Run `npm run doctor` (or equivalent) FIRST; start Tier 2 lenses only if Tier 1 has no hard failures (fast-fail — don't spend 4 reviewer dispatches on a diff that does not build). Only block on new failures — compare against branch-point state. If tooling unavailable, warn and proceed (for security-surface changes, escalate instead). For validation infra changes, establish baseline first.
 
-**Tier 2 (Adversarial Review):** Fresh `@review` subagent with ONLY diff + plan (not implementation reasoning). REQUIRED for agent/skill/instruction/CI/security/feature changes spanning 3+ files; OPTIONAL for docs, comments, trivial refactors, mechanical bumps.
+**Tier 2 (Multi-Lens Adversarial Review):** REQUIRED for agent/skill/instruction/CI/security/feature changes, or any refactor, spanning 3+ files; OPTIONAL otherwise (docs/comments/mechanical bumps always skip). Freeze the diff, then dispatch one fresh `@review` subagent per lens, concurrently (Pattern 6 semantics), each receiving ONLY the frozen diff + plan + its lens brief — never the implementation reasoning. Restart the gate if the diff changes mid-cycle.
 
-**Review procedure:**
-1. Submit diff + plan to `@review`
-2. Categorize findings: critical (blocking), high (should fix), medium (nice to fix)
-3. Fix all critical and high findings. Delegate to `@codebase` for cross-domain fixes; fix single-domain issues directly.
-4. Re-submit to `@review` for verification
-5. Max 2 refinement cycles. Escalate to human if issues persist.
+**Lens Selection:**
+
+| Lens | Run when | Focus |
+|---|---|---|
+| requirements | features/behavior changes | acceptance criteria met; nothing out of scope |
+| code | whenever Tier 2 triggers | logic errors, correctness, maintainability, tests, performance |
+| security | security surface touched (auth, input, secrets, deps, data) | vulnerabilities, secrets, PII, license (load `security-audit` skill) |
+| ux-responsive | UI/markup changes | accessibility, responsive logic, input modes (load `ux-responsive` skill) |
+
+Precondition for the requirements lens: the plan must state concrete acceptance criteria; if it does not, flag this and skip that lens rather than review against a soft spec.
+
+**Review Triage & Decision Panel:**
+1. Classify each finding: critical (blocking) / high / medium / low; dedupe across lenses by `file:line` + finding. Lens-reported severity is authoritative — the orchestrator may escalate severity, never downgrade it.
+2. Apply objective, low-risk findings directly (style, minor perf, clarity).
+3. Blocking findings (critical, or any security/data-loss/requirement-miss at any severity) the orchestrator declines MUST go to the user decision panel — no orchestrator veto, and dedupe must never drop a security/data-loss tag.
+4. Non-critical declined findings go to the rationale table (informational).
+
+```
+## Decision Panel — Declined Blocking Findings (commit blocked)
+| ID | Lens | Finding (reviewer) | Location | Why declined | Decision |
+|----|------|--------------------|----------|--------------|----------|
+| C1 | security | [verbatim] | file:line | [orchestrator rationale] | [ ] Apply [ ] Accept risk [ ] Defer |
+```
+
+```
+## Review Triage — Declined Non-Critical Findings
+| ID | Lens | Reviewer comment | Severity | Why declined | Disposition |
+|----|------|------------------|----------|--------------|-------------|
+| M1 | code | [verbatim] | medium | [rationale] | informational |
+```
+
+**Re-review & budget:** After applying fixes, re-review ONLY the delta. A cycle = one review pass (the initial multi-lens panel, or a scoped delta re-review); the initial panel is cycle 1, so max 2 cycles = the initial panel plus at most one delta re-review. The gate runs once per commit, not per chunk. Binding task budget: ≤ 8 reviewer dispatches per task (a full panel = 4; delta re-reviews dispatch only affected lenses); it supersedes per-loop caps. Gate cycles are a sub-loop inside the outer execution loop and do not multiply the 5-cycle or Pattern 5 budgets. On exhaustion, escalate to human.
 
 **Gate outcomes:**
 
 | Outcome | Action |
 |---|---|
 | ✅ PASS | Proceed to commit |
-| ⚠️ PASS-WITH-CAVEATS | Commit with documented notes on remaining medium/low items |
+| ⚠️ PASS-WITH-CAVEATS | Commit with documented notes on remaining medium/low items — never a declined security/data-loss finding |
 | ❌ FAIL | Escalate to human with structured options |
 
 **Skip criteria (any one):** Trivial (single-line/docs/comment — unless modifying permissions/bash/tool grants), mechanical bumps, pre-existing gate pass, Planning Mode, user opt-out.
 
-**Edge cases:** Baseline pollution (only new failures, check branch-point); chicken-and-egg (baseline-first for validation infra changes); offline/degraded (warn, proceed); reviewer unavailability (escalate); self-referential changes (escalate to human, exempt from REQUIRED); idempotency (cache per diff, skip on rebase); mid-cycle diff changes (restart gate); cascading Tier 2→Tier 1 failures (same cycle, not new).
+**Edge cases:** Baseline pollution (only new failures, check branch-point); chicken-and-egg (baseline-first for validation infra changes); offline/degraded (warn, proceed); reviewer unavailability (escalate); self-referential changes (escalate to human, exempt from REQUIRED); idempotency (cache per diff, skip on rebase); mid-cycle diff changes (restart gate); cascading Tier 2→Tier 1 failures (same cycle, not new); concurrent-lens drift (all lenses share one frozen snapshot — restart if it changes).
 
 ## Checkpoint Format
 
@@ -183,7 +213,7 @@ orchestrator → @review (primary gate)
 ```
 
 Fallback patterns per failure type:
-- **Pre-commit review failure** → @planner diagnose root cause → @codebase fix → @review re-validate (max 2 review cycles). Failing after 2 cycles → escalate to human with structured options.
+- **Pre-commit review failure** → @planner diagnose root cause → @codebase fix → re-run the frozen-snapshot gate (delta re-review; max 2 cycles, ≤8 dispatches/task). Failing after 2 cycles → escalate to human with structured options.
 - **Build break** → @codebase fix (auto if safe) → build → re-validate
 - **Test failure** → @planner analyze → @codebase fix → test → re-validate
 - **Multiple cycles fail** → escalate with structured options (do not loop)
@@ -191,12 +221,8 @@ Fallback patterns per failure type:
 ## Idempotency & Resumption
 
 When resuming or retrying, avoid re-executing completed work:
-- Before each sub-task, check if it was already completed:
-  - `git diff --stat` for already-applied changes
-  - File existence for generated artifacts
-  - Test pass status for already-verified work
-- Skip completed sub-tasks; report them as "already done" in checkpoint.
-- Reference `state/session-state.json` for prior phase completion status.
+- Before each sub-task, check if it was already completed (`git diff --stat`, artifact existence, test-pass status).
+- Skip completed sub-tasks; report them as "already done" in checkpoint; reference `state/session-state.json` for prior phase status.
 
 ## Progress Tracking for Long-Running Work
 
@@ -213,7 +239,5 @@ Use this format:
 ```
 
 Update cadence:
-- Include the table at plan start for long-running/complex tasks.
-- Update status after each completed phase or loop cycle.
-- Keep exactly one active item as `🔄 In Progress` where possible.
-- Reflect blockers immediately with `⛔ Blocked` and mitigation options.
+- Include the table at plan start; update it after each phase or loop cycle.
+- Keep exactly one `🔄 In Progress`; reflect blockers immediately as `⛔ Blocked` with mitigations.
