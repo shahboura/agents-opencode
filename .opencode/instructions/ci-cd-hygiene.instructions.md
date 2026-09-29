@@ -6,7 +6,7 @@ description: CI/CD hygiene, validation gates, and security checks
 
 ## Pipelines
 - Fail fast: run lint/format/test/type-check gates before deploy stages.
-- Use `npm ci`/`pip install -r requirements.txt` (or `pip install --require-hashes -r requirements.txt` for pinned lockfiles)/`dotnet restore` as appropriate; avoid floating deps.
+- Use `npm ci`/`pip install --require-hashes -r requirements.txt`/`dotnet restore` as appropriate; avoid floating deps. Bare `pip install -r requirements.txt` is acceptable only when the file is fully pinned.
 - Cache dependencies with keys that include lockfiles; restore before install.
 - Separate build, test, and deploy jobs; reuse artifacts instead of rebuilding.
 

@@ -43,10 +43,10 @@ Use this as the canonical trigger reference for when agents should load skills.
 | Responsive UX across phone/tablet/desktop | `ux-responsive` | `codebase`, `review`, `planner`, `orchestrator` |
 | Content drafting (blogs, podcasts, YouTube, resumes, LinkedIn, bios) | `blogger` | `blogger`, `orchestrator`, `em-advisor` |
 | Content critique and scoring | `brutal-critic` | `brutal-critic`, `blogger`, `orchestrator` |
-| Docs quality checks (lint/link/structure) | `docs-validation` | `docs`, `review`, `orchestrator` |
+| Docs quality checks (lint/link/structure) | `docs-validation` | `docs`, `review`, `planner`, `orchestrator`, `em-advisor` |
 | Agent/package diagnostics and configuration checks | `agent-diagnostics` | `docs`, `review`, `planner`, `orchestrator`, `em-advisor` |
 | Project bootstrap scaffolding | `project-bootstrap` | `docs`, `planner`, `orchestrator`, `em-advisor` |
-| Legal research, compliance, contract review, license auditing, data privacy, IP, export controls | `legal-advisor` | `legal-advisor` |
+| Legal research, compliance, contract review, license auditing, data privacy, IP, export controls | `legal-advisor` | `legal-advisor`, `codebase`, `orchestrator`, `em-advisor` |
 | Code change impact/blast-radius analysis, regression check, safe-to-merge verification | `code-change-impact` | `review`, `codebase`, `orchestrator` |
 | Security-focused code and config review, vulnerability scanning, threat modeling | `security-audit` | `review` |
 | Safe staged refactoring, structural code improvements without behavior changes | `refactoring` | `codebase`, `planner`, `orchestrator` |

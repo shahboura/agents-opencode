@@ -5,13 +5,49 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { LANGUAGE_MAP, LANGUAGE_SKILL_DIRS, NON_LANGUAGE_SKILLS } = require('./lib/file-ops.js');
 
 const repoRoot = process.cwd();
 const installScript = path.join(repoRoot, 'install.js');
+const shippedSkillsDir = path.join(repoRoot, '.opencode', 'skills');
 
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
+  }
+}
+
+function listSkillDirs(dirPath) {
+  if (!fs.existsSync(dirPath)) return [];
+  return fs.readdirSync(dirPath, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+}
+
+// Assert the full language partition produced by a --languages run: exactly the
+// requested language dirs remain, every non-language dir is kept, and every
+// non-requested language dir is gone.
+function assertLanguagePartition(projectDir, requestedLanguages) {
+  const skillsDir = path.join(projectDir, '.opencode', 'skills');
+  const present = new Set(listSkillDirs(skillsDir));
+  const requestedDirs = new Set(requestedLanguages.map((lang) => LANGUAGE_MAP[lang]));
+
+  for (const dir of NON_LANGUAGE_SKILLS) {
+    assert(present.has(dir), `Non-language skill '${dir}' must be kept`);
+  }
+  for (const dir of LANGUAGE_SKILL_DIRS) {
+    if (requestedDirs.has(dir)) {
+      assert(present.has(dir), `Requested language skill '${dir}' must remain`);
+    } else {
+      assert(!present.has(dir), `Non-requested language skill '${dir}' must be removed`);
+    }
+  }
+  for (const dir of present) {
+    assert(
+      LANGUAGE_SKILL_DIRS.has(dir) || NON_LANGUAGE_SKILLS.has(dir),
+      `Unexpected skill directory after filter: '${dir}'`
+    );
   }
 }
 
@@ -222,20 +258,88 @@ function testUninstallRevertsInstallerPluginEntries(tmpRoot) {
   assert(revertedPlugins.includes('my-own-plugin'), 'User plugin entry should remain after uninstall');
 }
 
-function testLanguagesFilterPrunesNonRequestedSkills(tmpRoot) {
-  const projectDir = path.join(tmpRoot, 'language-filter');
+function testSkillClassificationCoversShippedSkills() {
+  // C1: derive the expectation from the filesystem so adding a skill directory
+  // without classifying it fails CI instead of silently breaking --languages.
+  const dirs = listSkillDirs(shippedSkillsDir);
+  assert(dirs.length > 0, 'Shipped skills directory should contain skill directories');
+
+  for (const dir of dirs) {
+    const inLanguage = LANGUAGE_SKILL_DIRS.has(dir);
+    const inNonLanguage = NON_LANGUAGE_SKILLS.has(dir);
+    assert(
+      inLanguage !== inNonLanguage,
+      `Skill '${dir}' must be classified by exactly one of LANGUAGE_SKILL_DIRS or ` +
+      `NON_LANGUAGE_SKILLS (language=${inLanguage}, nonLanguage=${inNonLanguage})`
+    );
+  }
+  for (const dir of LANGUAGE_SKILL_DIRS) {
+    assert(dirs.includes(dir), `LANGUAGE_SKILL_DIRS entry '${dir}' has no matching skill directory`);
+  }
+  for (const dir of NON_LANGUAGE_SKILLS) {
+    assert(dirs.includes(dir), `NON_LANGUAGE_SKILLS entry '${dir}' has no matching skill directory`);
+  }
+}
+
+function testLanguagesFilterFullPartition(tmpRoot) {
+  const single = path.join(tmpRoot, 'language-single');
+  createDir(single);
+  runInstaller(['--project', '.', '--languages', 'python'], { cwd: single });
+  assertLanguagePartition(single, ['python']);
+  assert(fs.existsSync(path.join(single, '.opencode', 'instructions', 'ci-cd-hygiene.instructions.md')), 'Always-installed instruction should remain');
+  assert(fs.existsSync(path.join(single, 'opencode.json')), 'Language-filtered install should still complete cleanly');
+
+  const multi = path.join(tmpRoot, 'language-multi');
+  createDir(multi);
+  runInstaller(['--project', '.', '--languages', 'python,typescript'], { cwd: multi });
+  assertLanguagePartition(multi, ['python', 'typescript']);
+}
+
+function testLanguagesFilterCicdAlias(tmpRoot) {
+  const aliasOnly = path.join(tmpRoot, 'language-cicd-only');
+  createDir(aliasOnly);
+  runInstaller(['--project', '.', '--languages', 'cicd'], { cwd: aliasOnly });
+
+  const skillsDir = path.join(aliasOnly, '.opencode', 'skills');
+  for (const dir of LANGUAGE_SKILL_DIRS) {
+    assert(fs.existsSync(path.join(skillsDir, dir, 'SKILL.md')), `cicd alias should keep all language skills; missing '${dir}'`);
+  }
+  for (const dir of NON_LANGUAGE_SKILLS) {
+    assert(fs.existsSync(path.join(skillsDir, dir, 'SKILL.md')), `cicd alias should keep non-language skill '${dir}'`);
+  }
+  assert(fs.existsSync(path.join(aliasOnly, '.opencode', 'instructions', 'ci-cd-hygiene.instructions.md')), 'ci-cd-hygiene instruction should remain for the cicd alias');
+
+  // Mixing the alias with a real language still filters to that language.
+  const mixed = path.join(tmpRoot, 'language-cicd-mixed');
+  createDir(mixed);
+  runInstaller(['--project', '.', '--languages', 'cicd,python'], { cwd: mixed });
+  assertLanguagePartition(mixed, ['python']);
+}
+
+function testLanguagesFilterIdempotent(tmpRoot) {
+  const projectDir = path.join(tmpRoot, 'language-idempotent');
   createDir(projectDir);
 
   runInstaller(['--project', '.', '--languages', 'python'], { cwd: projectDir });
+  const first = listSkillDirs(path.join(projectDir, '.opencode', 'skills'));
 
-  const skillsDir = path.join(projectDir, '.opencode', 'skills');
-  assert(fs.existsSync(path.join(skillsDir, 'python', 'SKILL.md')), 'Requested language skill should be kept');
-  assert(!fs.existsSync(path.join(skillsDir, 'rust', 'SKILL.md')), 'Non-requested language skill should be removed');
-  assert(!fs.existsSync(path.join(skillsDir, 'dotnet', 'SKILL.md')), 'Non-requested language skill should be removed');
-  assert(fs.existsSync(path.join(skillsDir, 'ux-responsive', 'SKILL.md')), 'Non-language skill should be retained');
-  assert(fs.existsSync(path.join(skillsDir, 'legal-advisor', 'SKILL.md')), 'Non-language skill should be retained');
-  assert(fs.existsSync(path.join(projectDir, '.opencode', 'instructions', 'ci-cd-hygiene.instructions.md')), 'Always-installed instruction should remain');
-  assert(fs.existsSync(path.join(projectDir, 'opencode.json')), 'Language-filtered install should still complete cleanly');
+  runInstaller(['--project', '.', '--languages', 'python'], { cwd: projectDir });
+  const second = listSkillDirs(path.join(projectDir, '.opencode', 'skills'));
+
+  assert(JSON.stringify(first) === JSON.stringify(second), 'Re-running --languages must be idempotent');
+  assertLanguagePartition(projectDir, ['python']);
+}
+
+function testLanguagesFilterBacksUpPrunedSkills(tmpRoot) {
+  const projectDir = path.join(tmpRoot, 'language-backup');
+  createDir(projectDir);
+  runInstaller(['--project', '.', '--languages', 'python'], { cwd: projectDir });
+
+  const sessions = listProjectBackupSessions(projectDir);
+  assert(sessions.length >= 1, 'Pruning skills should create a backup session');
+  const latestSession = sessions[sessions.length - 1];
+  assert(hasBackedUpFile(latestSession, path.join('.opencode', 'skills', 'rust', 'SKILL.md')), 'Pruned language skill file should be backed up before deletion');
+  assert(!fs.existsSync(path.join(projectDir, '.opencode', 'skills', 'rust')), 'Pruned language skill directory should be removed');
 }
 
 function testLanguagesFilterUnknownKeepsAllSkills(tmpRoot) {
@@ -261,7 +365,11 @@ function main() {
     testFreshConfigContainsOnlyManagedKeys(tmpRoot);
     testManifestlessUninstallRemovesCreatedConfig(tmpRoot);
     testUninstallRevertsInstallerPluginEntries(tmpRoot);
-    testLanguagesFilterPrunesNonRequestedSkills(tmpRoot);
+    testSkillClassificationCoversShippedSkills();
+    testLanguagesFilterFullPartition(tmpRoot);
+    testLanguagesFilterCicdAlias(tmpRoot);
+    testLanguagesFilterIdempotent(tmpRoot);
+    testLanguagesFilterBacksUpPrunedSkills(tmpRoot);
     testLanguagesFilterUnknownKeepsAllSkills(tmpRoot);
     testGlobalAndProjectLifecycle(tmpRoot);
 

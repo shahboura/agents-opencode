@@ -90,13 +90,15 @@ the `skill` tool when work matches a language/domain. Skills are not preloaded e
 | UX Responsive | Breakpoints, reflow, touch/pointer and keyboard accessibility |
 | Ruby | MVC, ActiveRecord, RSpec |
 | Rust | Ownership, Result/Option, clippy |
-| CI/CD | Fail-fast gates, security, caching |
 | SQL | Safe migrations, constraints, indexes |
 | Blogger | Content style, SEO, research validation |
 | Brutal Critic | Framework-based scoring, review process |
 
 For detailed standards, open the corresponding skill at `.opencode/skills/<name>/SKILL.md`
 (for example `.opencode/skills/python/SKILL.md`, `.opencode/skills/ux-responsive/SKILL.md`).
+
+CI/CD hygiene is not a skill: it ships as the always-installed instruction
+`.opencode/instructions/ci-cd-hygiene.instructions.md`.
 
 ### Execution Loop
 

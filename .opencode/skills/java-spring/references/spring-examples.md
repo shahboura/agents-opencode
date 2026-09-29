@@ -186,9 +186,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-            .csrf(csrf -> csrf.disable()) // For APIs, consider enabling
+            // CSRF stays enabled for cookie/session auth; disabling is safe only for
+            // stateless token APIs that authenticate via the Authorization header.
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
@@ -200,3 +202,13 @@ public class SecurityConfig {
     }
 }
 ```
+
+CSRF and matcher guidance:
+
+- **Disable CSRF only for stateless token APIs** (credentials in an `Authorization` header,
+  no cookies or server session). Keep CSRF enabled for cookie/session authentication, where
+  the browser attaches credentials automatically and enables cross-site request forgery.
+- **Scope `permitAll()` to concrete endpoints** (for example `login`/`register`) instead of
+  broad prefixes like `/api/auth/**`, so newly added routes are authenticated by default.
+- Keep `SessionCreationPolicy.STATELESS` only when no session is required; session-based auth
+  must retain the default session policy for CSRF protection to remain meaningful.

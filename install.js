@@ -476,7 +476,10 @@ function installScope(options) {
     }
 
     if (languages) {
-        fileOps.filterLanguages(paths.opencodeDir, languages, { warning: warning, info: info, success: success });
+        fileOps.filterLanguages(paths.opencodeDir, languages, { warning: warning, info: info, success: success }, {
+            backupSession: backupSession,
+            relativeBase: paths.rootDir,
+        });
     }
 
     let configBackedUp = false;
@@ -845,6 +848,8 @@ INSTALL OPTIONS:
     -g, --global                Install agents globally (available in all projects)
     -p, --project [DIR]         Install agents for project directory (defaults to current directory)
     -l, --languages LANGS       Keep only these language skills (comma-separated)
+                                Choices: dotnet, python, typescript, flutter, go, java,
+                                node, react, ruby, rust, sql. Pruned dirs are backed up.
 
 LIFECYCLE OPTIONS:
     -U, --update                Update existing installation(s)
@@ -879,6 +884,9 @@ NOTES:
     - Global backups:  ~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/
     - Retention: keeps latest 10 sessions and prunes sessions older than 30 days.
     - --languages prunes non-requested language skills; non-language skills always remain.
+    - --languages backs up each pruned skill directory into the backup session first.
+    - The 'cicd' alias is accepted for backward compatibility but filters no skill;
+      ci-cd-hygiene.instructions.md is always installed (not a language skill).
 
 For more information, visit: https://github.com/shahboura/agents-opencode
 `);

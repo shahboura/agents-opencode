@@ -76,8 +76,9 @@ Session compaction reduces context window usage without relying on context alone
 
 ## Memory Budget Recommendations
 
-- **Instruction files**: Keep each `.opencode/instructions/*.md` file under 200 lines. Use
-  progressive disclosure — load details on demand rather than eagerly.
+- **Instruction files**: Keep each `.opencode/instructions/*.md` file under 250 lines
+  (checked by `scripts/check-context-size.js`). Use progressive disclosure — load details
+  on demand rather than eagerly.
 - **AGENTS.md**: Hard limit of 100 KB with auto-pruning at 75 KB. Entries follow
   `### YYYY-MM-DD` dated milestone format with a max of 5 top-level bullets per entry.
 - **Progressive disclosure pattern**: Ship concise instructions first, then expand on
