@@ -133,6 +133,35 @@ function getManagedSourceFiles(sourceOpencodeDir) {
   });
 }
 
+// Win32 ignores trailing dots/spaces when resolving a name, so a segment like
+// `.. ` still denotes the parent directory. Normalize the same way before the
+// traversal check (but keep a bare `..` — which strips to '' — as the parent).
+function isParentSegment(segment) {
+  const stripped = segment.replace(/[. ]+$/, '');
+  if (stripped === '..') {
+    return true;
+  }
+  return stripped === '' && segment.replace(/ +$/, '') === '..';
+}
+
+function isUnsafeBackupKey(key) {
+  if (!key) {
+    return true;
+  }
+  // Any colon is rejected: it covers drive-absolute (`C:\x`) and drive-relative
+  // (`C:foo`) keys, which escape the backup directory on Windows.
+  if (key.includes(':')) {
+    return true;
+  }
+  if (path.isAbsolute(key)) {
+    return true;
+  }
+  if (key.startsWith('\\\\') || key.startsWith('//')) {
+    return true;
+  }
+  return key.split(/[\\/]+/).some(isParentSegment);
+}
+
 function filesEqual(pathA, pathB) {
   try {
     const statA = fs.statSync(pathA);
@@ -206,12 +235,20 @@ function installManagedTree(sourceOpencodeDir, sourceFiles, destinationOpencodeD
 // Copy every file under dirPath into the active backup session before the
 // directory is recursively deleted. relativeBase is the managed root used to
 // record restore paths; when omitted the session derives it from its own root.
+//
+// Fail-closed contract: callers may only delete dirPath when the backup is
+// provably complete. The return value reports the evidence for that decision:
+//   - count:   regular files confirmed present in the backup session
+//   - files:   regular files encountered (the expected backup count)
+//   - failed:  hard failures (unreadable subdir, backup threw/declined)
+//   - skipped: entries that cannot be backed up (symlinks/junctions/sockets)
+// count === files && failed === 0 && skipped === 0 means a complete backup.
 function backupDirectoryTree(dirPath, backupSession, relativeBase, logWarning) {
+  const result = { count: 0, files: 0, failed: 0, skipped: 0 };
   if (!backupSession || !fs.existsSync(dirPath)) {
-    return 0;
+    return result;
   }
 
-  let count = 0;
   const stack = [dirPath];
 
   while (stack.length > 0) {
@@ -220,6 +257,7 @@ function backupDirectoryTree(dirPath, backupSession, relativeBase, logWarning) {
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
     } catch (err) {
+      result.failed += 1;
       if (logWarning) logWarning(`Could not read ${current} for backup: ${err.message}`);
       continue;
     }
@@ -228,26 +266,60 @@ function backupDirectoryTree(dirPath, backupSession, relativeBase, logWarning) {
       const absolutePath = path.join(current, entry.name);
       if (entry.isDirectory()) {
         stack.push(absolutePath);
-      } else if (entry.isFile()) {
-        try {
-          const relativePath = relativeBase ? path.relative(relativeBase, absolutePath) : undefined;
-          if (backupSession.backupFile(absolutePath, relativePath)) {
-            count += 1;
-          }
-        } catch (err) {
-          if (logWarning) logWarning(`Could not back up ${absolutePath}: ${err.message}`);
+        continue;
+      }
+
+      // Symlinks/junctions/sockets are not traversed by rmSync and cannot be
+      // copied verbatim — record them so a partial backup never deletes them.
+      if (!entry.isFile()) {
+        result.skipped += 1;
+        if (logWarning) logWarning(`Skipping non-file entry during backup: ${absolutePath}`);
+        continue;
+      }
+
+      result.files += 1;
+      const relativePath = relativeBase ? path.relative(relativeBase, absolutePath) : undefined;
+      // Resolve the key once and hand the *same* value to both the backup and
+      // the dedupe probe. install.js's backupFile derives its own key when none
+      // is supplied (`relativePathFromRoot || path.relative(rootDir, absolutePath)`);
+      // probing with a bare `undefined` never matched, so a genuinely deduped
+      // file was mis-counted as failed. The absolute path is the fallback used
+      // when no relativeBase is given (a real session still rejects it as
+      // unsafe, keeping the failure closed).
+      const backupKey = relativePath || absolutePath;
+
+      try {
+        let backedUp = backupSession.backupFile(absolutePath, backupKey);
+        if (!backedUp && typeof backupSession.has === 'function' && backupSession.has(backupKey)) {
+          // backupFile returns false for a file already captured earlier in the
+          // same session (dedupe) — that still counts as a complete backup.
+          backedUp = true;
         }
+        if (backedUp) {
+          result.count += 1;
+        } else {
+          result.failed += 1;
+          if (logWarning) logWarning(`Could not back up ${absolutePath}: backup session declined the file`);
+        }
+      } catch (err) {
+        result.failed += 1;
+        if (logWarning) logWarning(`Could not back up ${absolutePath}: ${err.message}`);
       }
     }
   }
 
-  return count;
+  return result;
 }
 
 // Prune language skill directories that were not requested. Non-language
 // skills are always retained. Each pruned directory is copied into
 // backupContext.backupSession before it is recursively deleted. Returns a
 // summary so callers/tests can assert the effective partition.
+//
+// Fail-closed: a language directory is deleted only when its backup is complete
+// (see backupDirectoryTree) and a backup session exists. Anything else — no
+// session, partial backup, or a skipped symlinked dir — is kept and reported in
+// `failed`/`skipped`; the success log is suppressed whenever either is non-empty.
 function filterLanguages(installDir, languages, logFns, backupContext) {
   const logWarning = logFns && logFns.warning;
   const logInfo = logFns && logFns.info;
@@ -258,7 +330,7 @@ function filterLanguages(installDir, languages, logFns, backupContext) {
   const skillsDir = path.join(installDir, 'skills');
   if (!fs.existsSync(skillsDir)) {
     if (logWarning) logWarning('No skills directory found — skipping language filter.');
-    return { removed: [], failed: [], kept: [] };
+    return { removed: [], failed: [], skipped: [], kept: [] };
   }
 
   const acceptedLanguages = Object.keys(LANGUAGE_MAP).concat(Array.from(LANGUAGE_ALIASES));
@@ -276,7 +348,7 @@ function filterLanguages(installDir, languages, logFns, backupContext) {
       logInfo('The cicd alias filters no skill; ci-cd-hygiene.instructions.md is always installed.');
     }
     if (logWarning) logWarning('No valid languages specified — keeping all skills.');
-    return { removed: [], failed: [], kept: [] };
+    return { removed: [], failed: [], skipped: [], kept: [] };
   }
 
   const keepDirs = new Set(valid.map(function (l) { return LANGUAGE_MAP[l]; }));
@@ -284,6 +356,8 @@ function filterLanguages(installDir, languages, logFns, backupContext) {
   const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
   const removed = [];
   const failed = [];
+  const skipped = [];
+  const noBackupSession = !backupSession;
 
   for (var i = 0; i < entries.length; i++) {
     var entry = entries[i];
@@ -293,9 +367,10 @@ function filterLanguages(installDir, languages, logFns, backupContext) {
 
     if (!entry.isDirectory()) {
       // A symlinked/junctioned language directory is not traversed by rmSync;
-      // surface it instead of silently keeping stale skills.
+      // surface and record it instead of silently keeping stale skills.
       if (entry.isSymbolicLink() && isLanguageDir) {
-        if (logWarning) logWarning(`Skipping symlinked language skill directory: ${dirName}`);
+        skipped.push(dirName);
+        if (logWarning) logWarning(`Skipping symlinked language skill directory (kept): ${dirName}`);
       }
       continue;
     }
@@ -311,7 +386,25 @@ function filterLanguages(installDir, languages, logFns, backupContext) {
     }
 
     var dirPath = path.join(skillsDir, dirName);
-    backupDirectoryTree(dirPath, backupSession, relativeBase, logWarning);
+
+    if (noBackupSession) {
+      failed.push(dirName);
+      if (logWarning) logWarning(`Not removing ${dirName}: no backup session (pruning skipped to avoid data loss).`);
+      continue;
+    }
+
+    var backup = backupDirectoryTree(dirPath, backupSession, relativeBase, logWarning);
+    var backupComplete = backup.failed === 0 && backup.skipped === 0 && backup.count === backup.files;
+    if (!backupComplete) {
+      failed.push(dirName);
+      if (logWarning) {
+        logWarning(
+          `Not removing ${dirName}: backup incomplete (${backup.count}/${backup.files} file(s) backed up, ` +
+          `${backup.failed} failure(s), ${backup.skipped} skipped entry(ies)).`
+        );
+      }
+      continue;
+    }
 
     try {
       fs.rmSync(dirPath, { recursive: true, force: true });
@@ -326,14 +419,22 @@ function filterLanguages(installDir, languages, logFns, backupContext) {
     if (logInfo) logInfo(`Removed ${removed.length} language skill(s): ${removed.join(', ')}`);
   }
   if (failed.length > 0) {
-    if (logWarning) logWarning(`Language filter incomplete: ${failed.length} skill(s) could not be removed: ${failed.join(', ')}`);
-  } else if (removed.length === 0) {
-    if (logInfo) logInfo(`No language skills needed removal (kept: ${valid.join(', ')}).`);
-  } else {
-    if (logSuccess) logSuccess(`✓ Applied language filter: ${valid.join(', ')}`);
+    if (logWarning) logWarning(`Language filter incomplete: ${failed.length} skill(s) not removed: ${failed.join(', ')}`);
+  }
+  if (skipped.length > 0) {
+    if (logWarning) logWarning(`Language filter skipped ${skipped.length} symlinked skill dir(s): ${skipped.join(', ')}`);
   }
 
-  return { removed, failed, kept: Array.from(keepDirs) };
+  // Never report success when anything was skipped or failed.
+  if (failed.length === 0 && skipped.length === 0) {
+    if (removed.length > 0) {
+      if (logSuccess) logSuccess(`✓ Applied language filter: ${valid.join(', ')}`);
+    } else {
+      if (logInfo) logInfo(`No language skills needed removal (kept: ${valid.join(', ')}).`);
+    }
+  }
+
+  return { removed, failed, skipped, kept: Array.from(keepDirs) };
 }
 
 function pruneEmptyDirectories(directories, stopAtDirectory) {
@@ -373,6 +474,7 @@ module.exports = {
   writeJsonFile,
   removeIfExists,
   removeManagedFile,
+  isUnsafeBackupKey,
   getManagedSourceFiles,
   buildManagedFilesFromSource,
   installManagedTree,

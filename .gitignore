@@ -63,3 +63,6 @@ evals/reports/*
 # Generated handoff output
 handoff/*
 !handoff/.gitkeep
+
+# Pre-Commit Review Gate artifacts
+.gate/

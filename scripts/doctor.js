@@ -67,6 +67,11 @@ const checks = [
     args: ['scripts/plugin-guards.test.js'],
   },
   {
+    name: 'Run pre-commit gate tests',
+    command: process.execPath,
+    args: ['scripts/gate/gate.test.js'],
+  },
+  {
     name: 'Run agent eval harness',
     command: process.execPath,
     args: ['evals/harness/run-evals.js'],

@@ -123,11 +123,16 @@ orchestrator → chunk the work → implement (per Implementation Routing)
             → apply accepted fixes → scoped re-review of delta only ⊛ max 2 cycles
             → ✅ PASS → commit | ⚠️ caveats → commit with notes | ❌ FAIL → escalate
 ```
-Use as the final gate before a commit leaves your machine (push / PR / merge) — run once per push, or once per commit when committing to a tracked/shared branch. A WIP commit may be created **only** to freeze the diff snapshot; remediate findings via amend/fixup or a follow-up fix commit, and never push an ungated commit.
+Use as the final gate before a commit leaves your machine (push / PR / merge) — run once per push, or once per commit when committing to a tracked/shared branch. Never push an ungated commit. (Using a WIP commit as a freeze fallback is discouraged — prefer `gate:freeze`.)
 
 **Tier 1 (Automated Harness):** Run `npm run doctor` (or equivalent) FIRST; start Tier 2 lenses only if Tier 1 has no hard failures (fast-fail — don't spend 4 reviewer dispatches on a diff that does not build). Only block on new failures — compare against branch-point state. If tooling unavailable, warn and proceed (for security-surface changes, escalate instead). For validation infra changes, establish baseline first.
 
 **Tier 2 (Multi-Lens Adversarial Review):** REQUIRED for agent/skill/instruction/CI/security/feature changes, or any refactor, spanning 3+ files; OPTIONAL otherwise (docs/comments/mechanical bumps always skip). Freeze the diff, then dispatch one fresh `@review` subagent per lens, concurrently (Pattern 6 semantics), each receiving ONLY the frozen diff + plan + its lens brief — never the implementation reasoning. Restart the gate if the diff changes mid-cycle.
+
+**Freeze mechanism:** run `npm run gate:freeze` to write `.gate/diff.patch` plus
+`.gate/manifest.json` (base/head SHA, staged-tree hash). Pass lenses the `.gate/diff.patch`
+path (they `read` it; they cannot run git). After ✅ PASS, run `npm run gate:pass` to record
+`.gate/pass.json`; commit only once that marker exists.
 
 **Lens Selection:**
 

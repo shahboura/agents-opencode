@@ -2,7 +2,7 @@
 layout: default
 title: Review Gate
 nav_order: 14
-description: How changes are reviewed before commit - automated Tier 1 checks plus a multi-lens adversarial Tier 2 panel with triage and human decision points.
+description: How changes are reviewed before changes leave your machine (push/PR) - automated Tier 1 checks plus a multi-lens adversarial Tier 2 panel with triage and human decision points.
 ---
 
 # Review Gate
@@ -67,6 +67,47 @@ implementation reasoning.
 | PASS | Proceed to commit |
 | PASS-WITH-CAVEATS | Commit with documented notes - never a declined security/data-loss finding |
 | FAIL | Escalate to the human with structured options |
+
+## Enforcement
+
+A versioned Git hook stops commits that have not passed the gate. Enable it once
+per clone:
+
+```bash
+npm run gate:install   # core.hooksPath=.githooks + executable bit on the hook
+```
+
+Flow for each push:
+
+```bash
+npm run gate:freeze                          # .gate/diff.patch + .gate/manifest.json
+# Tier 1 (npm run doctor) + Tier 2 lenses review the frozen diff
+npm run gate:pass -- --verdict PASS          # record .gate/pass.json
+git commit                                   # hook verifies + consumes the marker
+```
+
+The hook allows a commit only when `.gate/pass.json` carries a `PASS` or
+`PASS-WITH-CAVEATS` verdict whose `stagedHash` matches the staged tree, then
+consumes the marker so one approval cannot be reused. `gate:pass` also requires
+`.gate/manifest.json` and refuses if the index moved after `gate:freeze`, so a
+pass binds only to the snapshot the lenses reviewed.
+
+`SKIP_GATE=1` is a **per-command** bootstrap/emergency escape hatch - prefix the
+single command (`SKIP_GATE=1 git commit ...`). Do **not** export it in a shell
+profile or CI job; that would disable the gate for every command.
+
+## Limitations
+
+The pre-commit hook is a **local workflow guardrail, not a security boundary**:
+
+- `.gate/pass.json` is an unsigned, plain-text marker - it can be forged.
+- `git commit --no-verify` bypasses the hook entirely.
+- Non-fast-forward `git merge` (the `pre-merge-commit` hook) is outside the
+  pre-commit hook's scope.
+
+It exists for honest-operator discipline, not to stop a motivated bypass. Commits
+made with `--no-verify`, or merges that produce a merge commit, must be gated
+manually before they reach a shared branch.
 
 ## Related
 

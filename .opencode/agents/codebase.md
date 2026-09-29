@@ -129,6 +129,9 @@ test(scope): description
 docs(scope): description
 ```
 
+> **Never run `git commit` or `git push`.** Leave changes staged/unstaged for the
+> orchestrator's Pre-Commit Review Gate — the orchestrator owns commits.
+
 ## Safety
 - Never implement without approval
 - Ask before executing risky terminal commands

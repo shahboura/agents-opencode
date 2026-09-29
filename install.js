@@ -148,6 +148,9 @@ function createBackupSession(paths, operation) {
         if (!normalizedRelativePath || seen.has(normalizedRelativePath)) {
             return false;
         }
+        if (fileOps.isUnsafeBackupKey(normalizedRelativePath)) {
+            throw new Error(`Refusing to back up '${normalizedRelativePath}': path escapes the backup directory.`);
+        }
 
         const targetPath = path.join(backupDir, normalizedRelativePath);
         fileOps.ensureDir(path.dirname(targetPath));
@@ -155,6 +158,12 @@ function createBackupSession(paths, operation) {
         entries.push({ path: normalizedRelativePath });
         seen.add(normalizedRelativePath);
         return true;
+    }
+
+    // Reports whether a path was already captured in this session (dedupe).
+    // Lets callers confirm a complete backup when backupFile returns false.
+    function has(relativePathFromRoot) {
+        return Boolean(relativePathFromRoot) && seen.has(relativePathFromRoot);
     }
 
     function finalize() {
@@ -184,7 +193,7 @@ function createBackupSession(paths, operation) {
         };
     }
 
-    return { backupFile, finalize };
+    return { backupFile, has, finalize };
 }
 
 function printBackupRestoreHint(backupResult) {
