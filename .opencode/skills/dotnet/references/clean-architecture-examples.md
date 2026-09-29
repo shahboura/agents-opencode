@@ -1,10 +1,6 @@
----
-description: Extended reference for .NET Clean Architecture and C# best practices
----
-
 # .NET Clean Architecture Reference
 
-Detailed code examples and extended guidance for the .NET Clean Architecture instruction set.
+Detailed code examples and extended guidance for the `dotnet` skill.
 
 ## C# Coding Standards
 

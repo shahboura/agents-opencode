@@ -222,6 +222,33 @@ function testUninstallRevertsInstallerPluginEntries(tmpRoot) {
   assert(revertedPlugins.includes('my-own-plugin'), 'User plugin entry should remain after uninstall');
 }
 
+function testLanguagesFilterPrunesNonRequestedSkills(tmpRoot) {
+  const projectDir = path.join(tmpRoot, 'language-filter');
+  createDir(projectDir);
+
+  runInstaller(['--project', '.', '--languages', 'python'], { cwd: projectDir });
+
+  const skillsDir = path.join(projectDir, '.opencode', 'skills');
+  assert(fs.existsSync(path.join(skillsDir, 'python', 'SKILL.md')), 'Requested language skill should be kept');
+  assert(!fs.existsSync(path.join(skillsDir, 'rust', 'SKILL.md')), 'Non-requested language skill should be removed');
+  assert(!fs.existsSync(path.join(skillsDir, 'dotnet', 'SKILL.md')), 'Non-requested language skill should be removed');
+  assert(fs.existsSync(path.join(skillsDir, 'ux-responsive', 'SKILL.md')), 'Non-language skill should be retained');
+  assert(fs.existsSync(path.join(skillsDir, 'legal-advisor', 'SKILL.md')), 'Non-language skill should be retained');
+  assert(fs.existsSync(path.join(projectDir, '.opencode', 'instructions', 'ci-cd-hygiene.instructions.md')), 'Always-installed instruction should remain');
+  assert(fs.existsSync(path.join(projectDir, 'opencode.json')), 'Language-filtered install should still complete cleanly');
+}
+
+function testLanguagesFilterUnknownKeepsAllSkills(tmpRoot) {
+  const projectDir = path.join(tmpRoot, 'language-filter-unknown');
+  createDir(projectDir);
+
+  runInstaller(['--project', '.', '--languages', 'klingon'], { cwd: projectDir });
+
+  const skillsDir = path.join(projectDir, '.opencode', 'skills');
+  assert(fs.existsSync(path.join(skillsDir, 'python', 'SKILL.md')), 'Unknown language should keep all skills');
+  assert(fs.existsSync(path.join(skillsDir, 'rust', 'SKILL.md')), 'Unknown language should keep all skills');
+}
+
 function main() {
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agents-opencode-installer-'));
 
@@ -234,6 +261,8 @@ function main() {
     testFreshConfigContainsOnlyManagedKeys(tmpRoot);
     testManifestlessUninstallRemovesCreatedConfig(tmpRoot);
     testUninstallRevertsInstallerPluginEntries(tmpRoot);
+    testLanguagesFilterPrunesNonRequestedSkills(tmpRoot);
+    testLanguagesFilterUnknownKeepsAllSkills(tmpRoot);
     testGlobalAndProjectLifecycle(tmpRoot);
 
     console.log('✅ Installer lifecycle tests passed');

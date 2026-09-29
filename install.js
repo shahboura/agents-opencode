@@ -844,7 +844,7 @@ USAGE:
 INSTALL OPTIONS:
     -g, --global                Install agents globally (available in all projects)
     -p, --project [DIR]         Install agents for project directory (defaults to current directory)
-    -l, --languages LANGS       Filter language instruction reference files (comma-separated)
+    -l, --languages LANGS       Keep only these language skills (comma-separated)
 
 LIFECYCLE OPTIONS:
     -U, --update                Update existing installation(s)
@@ -859,7 +859,7 @@ GENERAL:
 EXAMPLES:
     node install.js --global
     node install.js --project .
-    node install.js --global --languages python,typescript
+    node install.js --global --languages python,typescript  # keep only Python/TypeScript language skills
     node install.js --update                    # updates detected installs (global and/or current project)
     node install.js --update --all              # force update both scopes
     node install.js --uninstall                 # uninstall current project scope (default)
@@ -878,7 +878,7 @@ NOTES:
     - Project backups: <project>/.opencode/.backups/<timestamp>--<operation>--<scope>/
     - Global backups:  ~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/
     - Retention: keeps latest 10 sessions and prunes sessions older than 30 days.
-    - --languages filters instruction reference files; skill loading remains on-demand.
+    - --languages prunes non-requested language skills; non-language skills always remain.
 
 For more information, visit: https://github.com/shahboura/agents-opencode
 `);

@@ -41,6 +41,7 @@ permission:
     "docs": "allow"
     "general": "allow"
     "explore": "allow"
+    "legal-advisor": "allow"
 ---
 
 # Codebase Development Agent

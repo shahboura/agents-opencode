@@ -6,26 +6,42 @@ const { toManagedPath } = require('./paths.js');
 
 const BACKUP_DIR = '.backups';
 
+// Language → on-demand skill directory under .opencode/skills/<dir>/.
 const LANGUAGE_MAP = {
-  dotnet: 'dotnet-clean-architecture.instructions.md',
-  python: 'python-best-practices.instructions.md',
-  typescript: 'typescript-strict.instructions.md',
-  flutter: 'flutter.instructions.md',
-  go: 'go.instructions.md',
-  java: 'java-spring-boot.instructions.md',
-  node: 'node-express.instructions.md',
-  react: 'react-next.instructions.md',
-  ruby: 'ruby-on-rails.instructions.md',
-  rust: 'rust.instructions.md',
-  sql: 'sql-migrations.instructions.md',
-  cicd: 'ci-cd-hygiene.instructions.md',
+  dotnet: 'dotnet',
+  python: 'python',
+  typescript: 'typescript',
+  flutter: 'flutter',
+  go: 'go',
+  java: 'java-spring',
+  node: 'node-express',
+  react: 'react-next',
+  ruby: 'ruby-rails',
+  rust: 'rust',
+  sql: 'sql-migrations',
 };
 
-const LANGUAGE_INSTRUCTIONS = new Set(Object.values(LANGUAGE_MAP));
+// Accepted but non-filterable aliases (no matching language skill directory).
+// ci-cd-hygiene.instructions.md is always installed, so `cicd` is a silent no-op.
+const LANGUAGE_ALIASES = new Set(['cicd']);
 
-const ALWAYS_KEEP = [
-  'ci-cd-hygiene.instructions.md',
-];
+const LANGUAGE_SKILL_DIRS = new Set(Object.values(LANGUAGE_MAP));
+
+// Non-language skills are never pruned by the language filter.
+const NON_LANGUAGE_SKILLS = new Set([
+  'adr',
+  'agent-diagnostics',
+  'api-documentation',
+  'blogger',
+  'brutal-critic',
+  'code-change-impact',
+  'docs-validation',
+  'legal-advisor',
+  'project-bootstrap',
+  'refactoring',
+  'security-audit',
+  'ux-responsive',
+]);
 
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -184,53 +200,59 @@ function filterLanguages(installDir, languages, logFns) {
   const logInfo = logFns && logFns.info;
   const logSuccess = logFns && logFns.success;
 
-  const instructionsDir = path.join(installDir, 'instructions');
-  if (!fs.existsSync(instructionsDir)) {
-    if (logWarning) logWarning('No instructions directory found — skipping language filter.');
+  const skillsDir = path.join(installDir, 'skills');
+  if (!fs.existsSync(skillsDir)) {
+    if (logWarning) logWarning('No skills directory found — skipping language filter.');
     return;
   }
 
-  const validLanguages = Object.keys(LANGUAGE_MAP);
+  const acceptedLanguages = Object.keys(LANGUAGE_MAP).concat(Array.from(LANGUAGE_ALIASES));
   const requested = languages.split(',').map(function (l) { return l.trim().toLowerCase(); }).filter(Boolean);
-  const invalid = requested.filter(function (l) { return !validLanguages.includes(l); });
+  const invalid = requested.filter(function (l) { return !acceptedLanguages.includes(l); });
 
   if (invalid.length > 0) {
     if (logWarning) logWarning(`Unknown language(s): ${invalid.join(', ')}`);
-    if (logInfo) logInfo(`Available: ${validLanguages.join(', ')}`);
+    if (logInfo) logInfo(`Available: ${acceptedLanguages.join(', ')}`);
   }
 
-  const valid = requested.filter(function (l) { return validLanguages.includes(l); });
+  const valid = requested.filter(function (l) { return Object.prototype.hasOwnProperty.call(LANGUAGE_MAP, l); });
   if (valid.length === 0) {
-    if (logWarning) logWarning('No valid languages specified — keeping all instruction files.');
+    if (requested.some(function (l) { return LANGUAGE_ALIASES.has(l); }) && logInfo) {
+      logInfo('ci-cd-hygiene.instructions.md is always installed; the cicd alias filters no skill.');
+    }
+    if (logWarning) logWarning('No valid languages specified — keeping all skills.');
     return;
   }
 
-  const keepFiles = new Set(ALWAYS_KEEP);
-  for (var i = 0; i < valid.length; i++) {
-    if (LANGUAGE_MAP[valid[i]]) {
-      keepFiles.add(LANGUAGE_MAP[valid[i]]);
-    }
-  }
+  const keepDirs = new Set(valid.map(function (l) { return LANGUAGE_MAP[l]; }));
 
-  const allFiles = fs.readdirSync(instructionsDir);
+  const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
   const removed = [];
 
-  for (var j = 0; j < allFiles.length; j++) {
-    var file = allFiles[j];
-    if (keepFiles.has(file) || !LANGUAGE_INSTRUCTIONS.has(file)) {
+  for (var i = 0; i < entries.length; i++) {
+    var entry = entries[i];
+    if (!entry.isDirectory()) {
+      continue;
+    }
+    var dirName = entry.name;
+    // Never prune non-language skills or directories that are not language skills.
+    if (NON_LANGUAGE_SKILLS.has(dirName) || !LANGUAGE_SKILL_DIRS.has(dirName)) {
+      continue;
+    }
+    if (keepDirs.has(dirName)) {
       continue;
     }
     try {
-      fs.unlinkSync(path.join(instructionsDir, file));
-      removed.push(file);
+      fs.rmSync(path.join(skillsDir, dirName), { recursive: true, force: true });
+      removed.push(dirName);
     } catch (err) {
-      if (logWarning) logWarning(`Could not remove ${file}: ${err.message}`);
+      if (logWarning) logWarning(`Could not remove ${dirName}: ${err.message}`);
     }
   }
 
   if (logSuccess) logSuccess(`✓ Applied language filter: ${valid.join(', ')}`);
   if (removed.length > 0) {
-    if (logInfo) logInfo(`Removed ${removed.length} instruction file(s): ${removed.join(', ')}`);
+    if (logInfo) logInfo(`Removed ${removed.length} language skill(s): ${removed.join(', ')}`);
   }
 }
 

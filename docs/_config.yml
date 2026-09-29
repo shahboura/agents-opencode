@@ -1,6 +1,6 @@
 # Just the Docs Configuration
 title: OpenCode Agents
-description: Lean agent pack with 8 specialized agents, 14 coding standards, and slash commands for OpenCode workflows
+description: Lean agent pack with 9 specialized agents, 23 on-demand skills covering coding standards, and slash commands for OpenCode workflows
 url: https://shahboura.github.io
 baseurl: /agents-opencode
 

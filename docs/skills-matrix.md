@@ -31,6 +31,7 @@ Quick read:
 - Baseline rule for all agents with skill access: `"*": "deny"`.
 - Skills load on demand via the `skill` tool.
 - Keep allowlists narrow by role to reduce context/tool noise.
+- Installer `--languages` prunes non-requested language skill directories; non-language skills are always kept.
 
 ## Skill Trigger Guide (Canonical)
 
