@@ -39,7 +39,7 @@ Type `/command-name` in the TUI to run.
 
 Skills live in `.opencode/skills/` and can be loaded on demand:
 
-- Example skills: `ux-responsive`, `project-bootstrap`, `agent-diagnostics`, `docs-validation`
+- Example skills: `ux-responsive`, `project-bootstrap`, `agent-diagnostics`, `docs-validation`, `decision-grounding`
 - For the canonical current list, use the [Skills Matrix](./skills-matrix)
 
 Recommended policy:

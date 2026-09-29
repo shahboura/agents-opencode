@@ -30,9 +30,11 @@ permission:
     "agent-diagnostics": "allow"
     "code-change-impact": "allow"
     "security-audit": "allow"
+    "decision-grounding": "allow"
   task:
     "*": "deny"
     "explore": "allow"
+    "researcher": "allow"
 ---
 
 # Code Review Agent

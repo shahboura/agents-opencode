@@ -40,6 +40,7 @@ permission:
     "code-change-impact": "allow"
     "refactoring": "allow"
     "legal-advisor": "allow"
+    "decision-grounding": "allow"
   task:
     "*": "deny"
     "codebase": "allow"
@@ -48,6 +49,7 @@ permission:
     "planner": "allow"
     "brutal-critic": "allow"
     "legal-advisor": "allow"
+    "researcher": "allow"
     "general": "allow"
     "explore": "allow"
 ---
@@ -130,7 +132,8 @@ Log detected profile at start: `Detected active profile: <profile>`.
 ### Execution Phase (Optional - After User Approval)
 
 For each approved phase:
-1. Prepare context and requirements
+1. Prepare context and requirements. For high-stakes decisions (Pattern 9), dispatch
+   `@researcher` to ground the approach before implementing it.
 2. Hand off to appropriate specialized agent (see Agent Selection Guide in reference)
 3. Follow the coordination pattern from the reference file that matches the task type
 4. Monitor completion and integrate outputs
@@ -145,8 +148,8 @@ For each approved phase:
 
 1. Ensure all phases complete successfully
 2. Verify integration between components
-3. **Pre-Commit Review Gate** — run before the commit leaves your machine (push/PR). Canonical spec: Pattern 8 in
-   `.opencode/instructions/orchestrator-reference.instructions.md` and `docs/review-gate.md`.
+3. **Pre-Commit Review Gate** — run before the commit leaves your machine (push/PR). Canonical spec:
+   `docs/review-gate.md`; compact summary: Pattern 8 in `.opencode/instructions/orchestrator-reference.instructions.md`.
 
    - **Tier 1:** run `npm run doctor` first; fast-fail on new hard failures vs. the branch point.
    - **Tier 2:** freeze the diff and run concurrent fresh `@review` lenses (requirements · code · security ·
@@ -159,9 +162,9 @@ For each approved phase:
 
 ## Planning & Templates
 
-When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains: Planning Template, Agent Selection Guide, Coordination Patterns (8 patterns including Pre-Commit Review Gate), Checkpoint Format, Fallback Routing, and Progress Tracking.
+When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains: Planning Template, Agent Selection Guide, Coordination Patterns (9 patterns including Pre-Commit Review Gate and Decision Grounding Gate), Checkpoint Format, Fallback Routing, and Progress Tracking.
 
-Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @brutal-critic, @legal-advisor (plus built-ins general/explore); manual handoff (Tab; `primary`, not Task-invocable) → `em-advisor`, `blogger`.
+Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @brutal-critic, @legal-advisor, @researcher (plus built-ins general/explore); manual handoff (Tab; `primary`, not Task-invocable) → `em-advisor`, `blogger`.
 
 ## Skill Activation Policy
 
@@ -171,6 +174,7 @@ Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @br
 - For cross-device UX/responsive phases, load `ux-responsive` on demand.
 - For high-risk refactors or cross-cutting changes, load `code-change-impact` to assess blast radius before delegating implementation.
 - For single-file dependency changes, load `legal-advisor` for fast license checks; delegate to @legal-advisor for full compliance audits.
+- For one-way/high-stakes decisions, load `decision-grounding` and dispatch `@researcher` to ground the approach.
 
 ## Communication Style
 - Provide clear phase transitions, summarize subagent outputs, highlight blockers; give progress updates and keep the big-picture view.
@@ -182,7 +186,8 @@ For iterative execution tasks, enforce a bounded loop with explicit, testable co
 - Report cycle progress with remaining gaps after each cycle.
 - For long-running tasks, use the Progress Tracking status table format from the reference file.
 - If the same blocker repeats twice without meaningful progress, pause and escalate with options.
-- Before pushing (or committing to a tracked branch), run the **Pre-Commit Review Gate** (see Integration, Validation & Commit Gate above; full spec in Pattern 8 of the reference file and `docs/review-gate.md`).
+- Ground high-stakes decisions before implementing them (Pattern 9 in the reference file).
+- Before pushing (or committing to a tracked branch), run the **Pre-Commit Review Gate** (see Integration, Validation & Commit Gate above; canonical spec in `docs/review-gate.md`, compact summary in Pattern 8).
 - Before starting each cycle, check idempotently whether the sub-task was already completed.
 
 ## Context Persistence

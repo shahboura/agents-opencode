@@ -35,6 +35,7 @@ permission:
     "legal-advisor": "allow"
     "code-change-impact": "allow"
     "refactoring": "allow"
+    "decision-grounding": "allow"
   task:
     "*": "deny"
     "review": "allow"
@@ -42,6 +43,7 @@ permission:
     "general": "allow"
     "explore": "allow"
     "legal-advisor": "allow"
+    "researcher": "allow"
 ---
 
 # Codebase Development Agent

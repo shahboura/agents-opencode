@@ -3,7 +3,7 @@ layout: default
 title: Home
 nav_order: 1
 permalink: /
-description: Lean OpenCode agents pack with 9 specialized agents, core language/domain skills, and slash commands.
+description: Lean OpenCode agents pack with 10 specialized agents, core language/domain skills, and slash commands.
 keywords: opencode, ai agents, code generation, development workflow, .NET, Python, TypeScript, Flutter, code review, documentation
 ---
 
@@ -57,6 +57,7 @@ Also available as a Claude Code plugin:
 | `@planner` | Read-only architecture/planning |
 | `@codebase` | Feature implementation |
 | `@review` | Security/performance/code quality |
+| `@researcher` | Grounding high-stakes decisions in current best practice |
 | `@docs` | Documentation updates |
 | `@em-advisor` | EM/leadership guidance |
 | `@blogger` | Blog/video/podcast drafting |
@@ -76,6 +77,7 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](skills
 - [Agent Evals](agent-evals)
 - [Approval Gates](approval-gates)
 - [Review Gate](review-gate)
+- [Decision Grounding](decision-grounding)
 - [Compatibility](compatibility)
 - [Deprecation & Migration Policy](deprecation-migration)
 - [State Management](state-management)

@@ -39,6 +39,7 @@
 
 ### Features
 
+* [capability:workflow] **Decision Grounding Gate** — New read-only `@researcher` subagent plus a `decision-grounding` skill and orchestrator Pattern 9: ground high-stakes (T1–T4) decisions in current primary sources before implementation. Triggered by decision structure (one-way door, blast radius, workaround smell, volatility) rather than self-reported confidence; fail-closed parent acceptance; bounded budget (≤3 decisions/task, ≤6 fetches). Widens the pack to 10 agents and 24 skills.
 * [capability:workflow] **Multi-Lens Pre-Commit Review Gate** — Two-tier gate in the orchestrator workflow: Tier 1 (automated `npm run doctor` harness with baseline comparison) plus Tier 2, upgraded from a single `@review` to a concurrent multi-lens panel (requirements / code / security / ux-responsive). Adds diff-freeze snapshotting, lens selection, a review triage flow, and a user decision panel for declined critical/security/data-loss/requirement findings (orchestrator has no veto). Defines the review cycle, adds a per-task global budget, and scopes re-review to the delta (2-cycle cap). `@review` gains Review Lenses: lens scope, an output contract, and the evidence rule. Gate outcomes: PASS / PASS-WITH-CAVEATS / FAIL with escalation.
 * [capability:workflow] **Interview pattern** — Structured Q&A (3-5 targeted questions) added to orchestrator Planning Phase before plan creation.
 * [capability:workflow] **Goal condition in checkpoints** — `**Goal:**` field added to Checkpoint Format for self-validating loops.

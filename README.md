@@ -6,17 +6,17 @@
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://shahboura.github.io/agents-opencode/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Nine specialist agents. 23 on-demand skills. One install.**
+**Ten specialist agents. 24 on-demand skills. One install.**
 
 Turn a single prompt into a full delivery loop — plan → implement → review → document —
 without leaving the terminal you already use. Built for [OpenCode](https://opencode.ai).
-Already on Claude Code? The same 23 skills ship as a [plugin](./adapters/claude-code/).
+Already on Claude Code? The same 24 skills ship as a [plugin](./adapters/claude-code/).
 
 ## Why this pack is different
 
 - **One prompt, four disciplines.** `@orchestrator` scopes the work, then hands off to
   `@codebase` for implementation, `@review` for quality, and `@docs` for documentation — in one session.
-- **Skills that don't tax context.** All 23 skills load only when invoked, so an idle skill costs nothing.
+- **Skills that don't tax context.** All 24 skills load only when invoked, so an idle skill costs nothing.
 - **Least privilege by default.** Every agent starts at `"*": "deny"` and grants narrow allows for
   the tools and skills it actually needs.
 - **Verified, not vibes.** Agent contracts, command matrices, docs links, and plugin guards are
@@ -74,7 +74,7 @@ You approve the checkpoints; the specialists handle the handoffs.
 
 ## Agents
 
-Nine agents ship in the pack: **six delegation targets** that the orchestrator calls, and
+Ten agents ship in the pack: **seven delegation targets** that the orchestrator calls, and
 **three primary agents** you run directly.
 
 | Agent | Type | Best for |
@@ -83,6 +83,7 @@ Nine agents ship in the pack: **six delegation targets** that the orchestrator c
 | `@codebase` | Delegation target | Code across 10+ languages with auto-detected project conventions |
 | `@planner` | Delegation target | Architecture reviews, risk assessment, step-by-step plans |
 | `@review` | Delegation target | Bugs, security holes, and perf issues before they ship |
+| `@researcher` | Delegation target | Grounding high-stakes decisions in current best practice |
 | `@docs` | Delegation target | READMEs, API docs, ADRs, wiki pages |
 | `@brutal-critic` | Delegation target | Ruthless content QA scored against proven frameworks |
 | `@legal-advisor` | Delegation target | License auditing, compliance checks, IP review, export controls |
@@ -119,12 +120,13 @@ Type `/command-name` in the TUI to run:
 
 ## Skills
 
-23 skills live under `.opencode/skills/`, each defined in a `SKILL.md`:
+24 skills live under `.opencode/skills/`, each defined in a `SKILL.md`:
 
 - **11 language skills** — .NET, Flutter, Go, Java/Spring, Node/Express, Python, React/Next.js,
   Ruby/Rails, Rust, SQL migrations, TypeScript.
-- **12 workflow skills** — API docs, ADRs, docs validation, project bootstrap, agent diagnostics,
-  refactoring, security audit, code-change impact, UX/responsive, blogging, brutal critique, legal compliance.
+- **13 workflow skills** — API docs, ADRs, docs validation, project bootstrap, agent diagnostics,
+  refactoring, security audit, code-change impact, UX/responsive, decision grounding, blogging,
+  brutal critique, legal compliance.
 
 Skills load on demand via the `skill` tool. Coding standards and language guidance live in these
 skills — not in a sprawling instruction directory. A small set of shared reference instructions
@@ -198,7 +200,7 @@ Omit `--global` to install into the current project instead.
 /plugin update agents-opencode@shahboura
 ```
 
-This gives Claude Code access to the same 23 on-demand skills, which load only when invoked —
+This gives Claude Code access to the same 24 on-demand skills, which load only when invoked —
 no context cost until you use them. See [adapters/claude-code/](./adapters/claude-code/) for the
 plugin manifest and generator script.
 
@@ -219,6 +221,7 @@ metadata. `npm run eval:agents:json` writes machine-readable output.
 - **[Deprecation & Migration Policy](./docs/deprecation-migration.md)**
 - **[State Management](./docs/state-management.md)**
 - **[Skills Matrix](./docs/skills-matrix.md)**
+- **[Decision Grounding](./docs/decision-grounding.md)**
 - **[Full Documentation](https://shahboura.github.io/agents-opencode/)**
 
 ## License

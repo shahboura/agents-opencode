@@ -3,7 +3,7 @@ layout: default
 title: Agents
 nav_order: 3
 has_children: false
-description: Overview of the 9 built-in OpenCode agents and their recommended workflow.
+description: Overview of the 10 built-in OpenCode agents and their recommended workflow.
 ---
 # Agents
 
@@ -23,6 +23,7 @@ Lean reference for the built-in agents.
 | `@planner` | Read-only architecture/planning |
 | `@codebase` | Feature implementation |
 | `@review` | Security/performance/code quality |
+| `@researcher` | Grounding high-stakes decisions in current best practice |
 | `@docs` | Documentation updates |
 | `@em-advisor` | Engineering leadership guidance |
 | `@blogger` | Blog/video/podcast drafts |
@@ -42,7 +43,7 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](../ski
 
 ## Skill Usage Guardrails
 
-- All built-in agents support the `skill` tool.
+- All built-in agents support the `skill` tool, except the skill-free `@researcher`.
 - Skills are loaded on demand (not eagerly).
 - Use one relevant skill per phase by default; add another only for clear cross-domain dependencies.
 - If stack/domain is unclear, clarify before loading.

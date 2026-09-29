@@ -49,7 +49,7 @@ Non-language skills always remain, and runtime skills still load on demand via a
 /plugin install agents-opencode@shahboura
 ```
 
-All 23 skills are available immediately. Type `/` in Claude Code to see the full
+All 24 skills are available immediately. Type `/` in Claude Code to see the full
 skill list. Skills load on demand — no context cost until invoked.
 
 ### Via curl

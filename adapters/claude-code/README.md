@@ -12,10 +12,10 @@ Install the agents-opencode skill pack for Claude Code.
 /plugin install agents-opencode@shahboura
 ```
 
-23 on-demand skills covering:
+24 on-demand skills covering:
 
 - **Languages:** .NET, Python, TypeScript, Go, Java, Rust, Ruby, Flutter, React/Next.js, Node.js, SQL
-- **Quality:** code review, security audit, refactoring, impact analysis
+- **Quality:** code review, security audit, refactoring, impact analysis, decision grounding
 - **Documentation:** API docs, ADRs, README generation
 - **Content:** blogging, content critique, career content
 - **Leadership:** engineering management, legal compliance

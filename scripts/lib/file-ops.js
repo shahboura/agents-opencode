@@ -43,6 +43,7 @@ const NON_LANGUAGE_SKILLS = new Set([
   'blogger',
   'brutal-critic',
   'code-change-impact',
+  'decision-grounding',
   'docs-validation',
   'legal-advisor',
   'project-bootstrap',
