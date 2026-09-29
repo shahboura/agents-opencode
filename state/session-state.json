@@ -1,10 +1,10 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
-  "current_phase": "validator hardening and review-gate documentation",
+  "current_phase": "instruction health, enforced review gate, and decision grounding (branch chore/instruction-health-readme)",
   "plugin_version": "2.5.1",
   "decisions": [
     "Use deny-by-default permissions with explicit allowlists.",
-    "Nest command patterns under the relevant permission (e.g. bash:) — top-level command keys are inert.",
+    "Nest command patterns under the relevant permission (e.g. bash:) - top-level command keys are inert.",
     "Keep em-advisor/blogger as primary agents (manual switch/@mention) rather than Task-delegatable subagents.",
     "Resolve plugin version/inventory at runtime from the installer marker and package layout, never from the consumer package.json.",
     "Secret-read guard: deny by default (.pem/.key included) with a public-cert allowlist (.crt/.cer/.pub, ca/cert/chain/fullchain .pem); accept the rare Keynote .key false positive.",
@@ -12,41 +12,56 @@
     "Installer writes only $schema/plugin/permission to user configs; opinionated package defaults must never propagate into a project or global opencode.json.",
     "Risk-path review gate is advisory (reports computed risk + PR acknowledgment but never blocks merges); enforcement stays human/Tier 2.",
     "Pre-Commit Review Gate (Pattern 8) runs a concurrent multi-lens panel (requirements/code/security/ux-responsive) on a frozen diff; re-review is scoped to the delta, and the gate is documented for users in docs/review-gate.md.",
-    "Loop budgets use one binding per-task currency (<=8 reviewer dispatches, max 2 cycles, once per commit); gate cycles are a sub-loop and do not multiply the 5-cycle/Pattern 5 budgets.",
-    "Lens-reported severity is authoritative — the orchestrator may escalate but never downgrade; security/data-loss findings are panel-bound at any severity.",
+    "Loop budgets use one binding per-task currency (<=8 reviewer dispatches, max 2 cycles); gate cycles are a sub-loop and do not multiply the 5-cycle/Pattern 5 budgets.",
+    "Lens-reported severity is authoritative - the orchestrator may escalate but never downgrade; security/data-loss findings are panel-bound at any severity.",
     "Pattern 5 (evaluator-optimizer) and Pattern 8 (commit gate) are mutually exclusive on the same artifact.",
     "Tier 1 automated checks fast-fail before Tier 2 lenses; security-surface changes escalate if Tier 1 tooling is unavailable.",
     "Agent-config and schema validators fail closed on malformed permission structures: inline, empty, and duplicate permission blocks, plus duplicate/inline nested skill/task children, are errors.",
     "Shared frontmatter/permission parsing lives in scripts/lib/opencode-schema.js; both validators import it as the single source of truth.",
     "Command frontmatter is limited to description/agent/model/subtask; the non-standard argument-hint field was removed repo-wide.",
     "Keep the CI Go toolchain on 'stable' (reproducibility nit tracked as VAL-2) rather than pinning a version.",
-    "OpenCode v2 support requires installer-time target adapters because v1 and v2 config keys are disjoint; the phased plan is tracked in BACKLOG.md."
+    "OpenCode v2 support requires installer-time target adapters because v1 and v2 config keys are disjoint; the phased plan is tracked in BACKLOG.md.",
+    "Unreferenced instruction files are dead weight: OpenCode only loads AGENTS.md plus opencode.json.instructions, so standards live in skills; the instruction dir now holds only shared references (review-gate, ci-cd-hygiene, em-advisor-meetings).",
+    "The installer --languages flag filters language skill directories (not instruction files); non-language skills are always kept, and pruned directories are backed up first (fail-closed).",
+    "Review-before-commit is enforced in three layers: Pattern 8 staged-diff freeze artifact, a codebase 'never commit' rule, and a versioned pre-commit hook bound to a staged-tree hash via .gate/pass.json. The gate runs before a commit leaves the machine (push/PR); a WIP commit is allowed only to freeze the snapshot.",
+    "The pre-commit hook is a local honest-operator guardrail, not a security boundary: the marker is forgeable and --no-verify bypasses it.",
+    "Decision grounding (Pattern 9) is triggered by decision structure (T1 one-way door, T2 blast radius, T3 workaround smell, T4 volatility), never by self-reported LLM confidence; a fail-closed parent acceptance rule applies on INSUFFICIENT_EVIDENCE for T1/T2.",
+    "GitHub Pages is not deprecated; migrating docs to Astro Starlight on Cloudflare Workers Static Assets is optional and tracked as DOCS-1/DOCS-2, with the constraint that Cloudflare/Astro docs artifacts must be excluded from the published npm package."
   ],
   "open_risks": [
     "Scenario-level behavioral eval coverage is still limited.",
-    "Agent/instruction line budgets remain tight (orchestrator 194/200, reference 243/250).",
+    "Agent/instruction line budgets remain tight (orchestrator 197/200, reference 215/250); adding to either requires trimming.",
     "Consumer-visible opencode.json defaults are not yet in the changelog.",
-    "Multi-lens panel shares one model — correlated blind spots are irreducible until per-lens model choice is available.",
+    "Multi-lens panel shares one model - correlated blind spots are irreducible until per-lens model choice is available.",
     "evals/harness/run-evals.js still uses a hand-rolled permission parser (VAL-4) that can drift from the shared module.",
-    "OpenCode v2 is not yet supported; the plugin entrypoint is v1-only."
+    "OpenCode v2 is not yet supported; the plugin entrypoint is v1-only.",
+    "The pre-commit hook cannot distinguish skip-eligible docs/comment commits from risky ones - it blocks unconditionally, so documentation-only commits need an explicit SKIP_GATE=1 or a marker.",
+    "Hardening a new mechanism can legitimately exceed the <=8-dispatch gate budget; the gate on the gate itself ran 5+ cycles.",
+    "The pre-commit hook's untrusted-content and read/grep scope rules are instruction-level, not runtime-enforced (the plugin guards only read, not grep)."
   ],
   "blocked_by": [],
   "next_actions": [
-    "Merge the chore/validator-hardening PR (fail-closed permissions + review-gate docs).",
+    "Merge the chore/instruction-health-readme PR (6 commits: instruction health, README, enforced gate, decision grounding).",
+    "DOCS-1/DOCS-2: migrate docs to Astro Starlight on Cloudflare Workers Static Assets; exclude Cloudflare/Astro artifacts from the published package.",
+    "Consider simplifying the pre-commit gate or encoding skip-eligibility so trivial docs commits do not require a marker.",
     "Complete VAL-4: migrate evals/harness/run-evals.js to the shared parser.",
-    "Introduce CODEOWNERS for governance-critical paths.",
     "Plan OpenCode v2 support (dual-entrypoint plugin + installer --target) per BACKLOG.md.",
     "Expand eval fixtures toward capability/regression suites (pass@k) per Anthropic guidance."
   ],
   "artifacts": [
-    "scripts/lib/opencode-schema.js",
-    "scripts/validate-agents.js",
-    "scripts/validate-opencode-schema.js",
+    ".opencode/agents/researcher.md",
+    ".opencode/skills/decision-grounding/SKILL.md",
+    ".opencode/instructions/orchestrator-reference.instructions.md",
+    ".githooks/pre-commit",
+    "scripts/gate",
+    "scripts/lib/file-ops.js",
     "docs/review-gate.md",
+    "docs/decision-grounding.md",
+    "README.md",
     "BACKLOG.md",
     "state/session-state.json"
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-09-28T13:53:10Z"
+  "last_updated": "2026-09-29T02:59:00Z"
 }

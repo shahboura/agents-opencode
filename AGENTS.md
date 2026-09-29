@@ -65,6 +65,16 @@ All agents log milestone entries to this file using this format:
 
 ## Milestones
 
+### 2026-09-29 10:59 - Instruction health, README rewrite, enforced review gate, decision grounding
+
+**Agent:** orchestrator
+**Summary:** Landed six commits on `chore/instruction-health-readme`: pruned the dead instruction layer, repointed `--languages` to skills, rewrote the README, made review-before-commit enforceable, then added decision grounding.
+- Instruction layer: fixed unreachable capabilities (`legal-advisor` task allow on `codebase`, `question` tool on `review`/`brutal-critic`), deleted 18 dead instruction files (20 of 22 were never loaded by any agent), repointed the installer `--languages` flag to prune language **skills**, and relocated two code annexes into `skills/*/references/`.
+- Enforcement (the lesson of this session): the gate was prose-only and got violated twice, so it was mechanized in three layers - Pattern 8 staged-diff freeze artifact, a `codebase` "never commit" rule, and a versioned pre-commit hook (`scripts/gate/*`, marker bound to the staged tree) that blocks ungated commits; it enforced itself on its first real commit.
+- README rewritten (reviewed by `@brutal-critic`): outcome-first hook, accurate counts, added the missing `/legal-review`, removed unsupported cost multipliers; confirmed GitHub Pages is **not** deprecated.
+- Decision grounding (Pattern 9): new read-only `@researcher` subagent + `decision-grounding` skill, triggered by decision structure (T1-T4), never self-reported confidence; pack now 10 agents / 24 skills.
+- Validation: `npm run doctor` 21/21 each phase; Tier 2 gated every commit (cycles 1-5 hardening the gate itself; Phase 3 cycle 1 caught 2 highs pre-commit - missing injection boundary + dropped budget invariant); all commits GPG-signed.
+
 ### 2026-09-28 21:53 - Validator fail-closed hardening, review-gate docs, backlog
 
 **Agent:** orchestrator
