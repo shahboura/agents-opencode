@@ -7,7 +7,8 @@ description: How changes are reviewed before commit - automated Tier 1 checks pl
 
 # Review Gate
 
-The Review Gate is the final checkpoint before any commit. It has two tiers: a
+The Review Gate is the final checkpoint before a commit leaves your machine
+(push / PR / merge) - not merely before the first local commit. It has two tiers: a
 deterministic automated harness (Tier 1) and a risk-gated, multi-lens adversarial
 review (Tier 2). It is defined canonically in
 `.opencode/instructions/orchestrator-reference.instructions.md` (Pattern 8).
@@ -54,7 +55,9 @@ implementation reasoning.
   re-review of the fixes is cycle 2.
 - Maximum **2 cycles** per gate (initial panel plus at most one delta re-review).
 - Binding task budget: **8 reviewer dispatches** per task.
-- The gate runs **once per commit**, not once per implementation chunk.
+- The gate runs **once per push** (or per tracked-branch commit), not once per implementation chunk.
+- A WIP commit may be used **only** to freeze the snapshot; after findings, amend/fixup or
+  add a follow-up fix commit before pushing - never push an ungated commit.
 - On exhaustion, escalate to the human with structured options.
 
 ## Outcomes

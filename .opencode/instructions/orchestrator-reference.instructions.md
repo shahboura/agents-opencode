@@ -123,7 +123,7 @@ orchestrator → chunk the work → implement (per Implementation Routing)
             → apply accepted fixes → scoped re-review of delta only ⊛ max 2 cycles
             → ✅ PASS → commit | ⚠️ caveats → commit with notes | ❌ FAIL → escalate
 ```
-Use as the final gate before any `git commit` — run once per commit, not once per implementation chunk.
+Use as the final gate before a commit leaves your machine (push / PR / merge) — run once per push, or once per commit when committing to a tracked/shared branch. A WIP commit may be created **only** to freeze the diff snapshot; remediate findings via amend/fixup or a follow-up fix commit, and never push an ungated commit.
 
 **Tier 1 (Automated Harness):** Run `npm run doctor` (or equivalent) FIRST; start Tier 2 lenses only if Tier 1 has no hard failures (fast-fail — don't spend 4 reviewer dispatches on a diff that does not build). Only block on new failures — compare against branch-point state. If tooling unavailable, warn and proceed (for security-surface changes, escalate instead). For validation infra changes, establish baseline first.
 
@@ -160,7 +160,7 @@ Precondition for the requirements lens: the plan must state concrete acceptance 
 | M1 | code | [verbatim] | medium | [rationale] | informational |
 ```
 
-**Re-review & budget:** After applying fixes, re-review ONLY the delta. A cycle = one review pass (the initial multi-lens panel, or a scoped delta re-review); the initial panel is cycle 1, so max 2 cycles = the initial panel plus at most one delta re-review. The gate runs once per commit, not per chunk. Binding task budget: ≤ 8 reviewer dispatches per task (a full panel = 4; delta re-reviews dispatch only affected lenses); it supersedes per-loop caps. Gate cycles are a sub-loop inside the outer execution loop and do not multiply the 5-cycle or Pattern 5 budgets. On exhaustion, escalate to human.
+**Re-review & budget:** After applying fixes, re-review ONLY the delta. A cycle = one review pass (the initial multi-lens panel, or a scoped delta re-review); the initial panel is cycle 1, so max 2 cycles = the initial panel plus at most one delta re-review. The gate runs once per push (or per tracked-branch commit), not per chunk. Binding task budget: ≤ 8 reviewer dispatches per task (a full panel = 4; delta re-reviews dispatch only affected lenses); it supersedes per-loop caps. Gate cycles are a sub-loop inside the outer execution loop and do not multiply the 5-cycle or Pattern 5 budgets. On exhaustion, escalate to human.
 
 **Gate outcomes:**
 
@@ -172,7 +172,7 @@ Precondition for the requirements lens: the plan must state concrete acceptance 
 
 **Skip criteria (any one):** Trivial (single-line/docs/comment — unless modifying permissions/bash/tool grants), mechanical bumps, pre-existing gate pass, Planning Mode, user opt-out.
 
-**Edge cases:** Baseline pollution (only new failures, check branch-point); chicken-and-egg (baseline-first for validation infra changes); offline/degraded (warn, proceed); reviewer unavailability (escalate); self-referential changes (escalate to human, exempt from REQUIRED); idempotency (cache per diff, skip on rebase); mid-cycle diff changes (restart gate); cascading Tier 2→Tier 1 failures (same cycle, not new); concurrent-lens drift (all lenses share one frozen snapshot — restart if it changes).
+**Edge cases:** Baseline pollution (only new failures, check branch-point); chicken-and-egg (baseline-first for validation infra changes); offline/degraded (warn, proceed); reviewer unavailability (escalate); self-referential changes (escalate to human, exempt from REQUIRED); idempotency (cache per diff, skip on rebase); mid-cycle diff changes (restart gate); cascading Tier 2→Tier 1 failures (same cycle, not new); concurrent-lens drift (all lenses share one frozen snapshot — restart if it changes); committed-before-gating (treat branch-tip vs base as the frozen snapshot and remediate via amend/fixup before push).
 
 ## Checkpoint Format
 
