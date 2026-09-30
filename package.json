@@ -54,6 +54,10 @@
   "devDependencies": {
     "markdownlint-cli": "^0.49.1"
   },
+  "overrides": {
+    "js-yaml": "^5.4.1",
+    "markdown-it": "~14.3.1"
+  },
   "keywords": [
     "opencode",
     "ai-agents",
