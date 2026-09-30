@@ -3,8 +3,7 @@
 [![Validate Agents & Documentation](https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml/badge.svg)](https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml)
 [![npm version](https://img.shields.io/npm/v/agents-opencode)](https://www.npmjs.com/package/agents-opencode)
 [![Socket Badge](https://badge.socket.dev/npm/package/agents-opencode)](https://socket.dev/npm/package/agents-opencode)
-<!-- TODO: set the final Cloudflare Workers URL -->
-[![Documentation](https://img.shields.io/badge/docs-Cloudflare%20Workers-blue)](https://agents-opencode-docs.example.workers.dev/)
+[![Documentation](https://img.shields.io/badge/docs-Cloudflare%20Workers-blue)](https://agnts.elkodr.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Ten specialist agents. 24 on-demand skills. One install.**
@@ -94,7 +93,7 @@ Ten agents ship in the pack: **seven delegation targets** that the orchestrator 
 `@blogger` and `@em-advisor` are **primary agents** — switch to them with Tab or mention them
 directly. They are not Task-invocable subagents, so the orchestrator will not delegate to them.
 
-Canonical source for exact allowlists and skill triggers: [Skills Matrix](https://agents-opencode-docs.example.workers.dev/skills-matrix/).
+Canonical source for exact allowlists and skill triggers: [Skills Matrix](https://agnts.elkodr.com/skills-matrix/).
 
 ## Commands
 
@@ -209,23 +208,21 @@ plugin manifest and generator script.
 
 Run `npm run doctor` for the complete local validation suite (agent contracts, markdown linting,
 docs links, session state, eval trends, and more). For the full check mapping (local commands ↔ CI
-gates), see **[Compatibility](https://agents-opencode-docs.example.workers.dev/compatibility/)**.
+gates), see **[Compatibility](https://agnts.elkodr.com/compatibility/)**.
 
 Agent evals: `npm run eval:agents` runs deterministic contract checks for agent and command
 metadata. `npm run eval:agents:json` writes machine-readable output.
 
 ## Docs
 
-<!-- TODO: set the final Cloudflare Workers URL -->
-
-- **[Getting Started](https://agents-opencode-docs.example.workers.dev/getting-started/)**
-- **[Approval Gates](https://agents-opencode-docs.example.workers.dev/approval-gates/)**
-- **[Compatibility](https://agents-opencode-docs.example.workers.dev/compatibility/)**
-- **[Deprecation & Migration Policy](https://agents-opencode-docs.example.workers.dev/deprecation-migration/)**
-- **[State Management](https://agents-opencode-docs.example.workers.dev/state-management/)**
-- **[Skills Matrix](https://agents-opencode-docs.example.workers.dev/skills-matrix/)**
-- **[Decision Grounding](https://agents-opencode-docs.example.workers.dev/decision-grounding/)**
-- **[Full Documentation](https://agents-opencode-docs.example.workers.dev/)**
+- **[Getting Started](https://agnts.elkodr.com/getting-started/)**
+- **[Approval Gates](https://agnts.elkodr.com/approval-gates/)**
+- **[Compatibility](https://agnts.elkodr.com/compatibility/)**
+- **[Deprecation & Migration Policy](https://agnts.elkodr.com/deprecation-migration/)**
+- **[State Management](https://agnts.elkodr.com/state-management/)**
+- **[Skills Matrix](https://agnts.elkodr.com/skills-matrix/)**
+- **[Decision Grounding](https://agnts.elkodr.com/decision-grounding/)**
+- **[Full Documentation](https://agnts.elkodr.com/)**
 
 ## License
 

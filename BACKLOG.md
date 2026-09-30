@@ -35,7 +35,7 @@ convenience move, not a correctness fix. Landed on `feat/docs-astro-cloudflare`.
 
 | ID | Severity | Item | Files |
 |---|---|---|---|
-| DOCS-1 | low | Done: docs site moved to Astro Starlight (`site/`) on Cloudflare **Workers Static Assets**; Jekyll (`docs/`) and the Pages workflow removed; deploy via `deploy-docs.yml` + `site/wrangler.jsonc`. Old-URL redirects still to plan before launch. | `.github/workflows/deploy-docs.yml`, `site/wrangler.jsonc`, `README.md`, `package.json` |
+| DOCS-1 | low | Done: docs site moved to Astro Starlight (`site/`) on Cloudflare **Workers Static Assets**; Jekyll (`docs/`) and the Pages workflow removed; deploy via `deploy-docs.yml` + `site/wrangler.jsonc`. Docs origin: <https://agnts.elkodr.com/> (Worker custom domain). Old-URL redirects remain optional (none ship by default). | `.github/workflows/deploy-docs.yml`, `site/wrangler.jsonc`, `README.md`, `package.json` |
 | DOCS-2 | low | Done: docs-site artifacts excluded from the published npm package (root `files` allowlist omits `site/`; asserted via `npm pack --dry-run` in `scripts/test-npx-integrity.js`). | `package.json` (`files`), `scripts/test-npx-integrity.js` |
 
 **Decommission checklist (GitHub Pages → Cloudflare Workers):**

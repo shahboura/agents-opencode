@@ -4,10 +4,9 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-  // TODO: set this to the real Cloudflare Workers URL before launch. This origin
-  // is used for canonical URLs, the sitemap, and absolute links, so it MUST
-  // match the deployed Worker (or custom domain) at release time.
-  site: 'https://agents-opencode-docs.example.workers.dev',
+  // Production docs origin (Cloudflare Worker custom domain). Used for canonical
+  // URLs, the sitemap, and absolute links, so it MUST match the deployed Worker.
+  site: 'https://agnts.elkodr.com',
   base: '',
   integrations: [
     starlight({
