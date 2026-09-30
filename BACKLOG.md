@@ -30,13 +30,22 @@ The validator review cycles produced these items. VAL-1 and VAL-3 landed in the
 
 ## Docs hosting migration
 
-Note: GitHub Pages is **not** deprecated (verified 2026-09-29) — this is an optional
-convenience move, not a correctness fix. Queued after `chore/instruction-health-readme`.
+Note: GitHub Pages is **not** deprecated (verified 2026-09-29) — this was an optional
+convenience move, not a correctness fix. Landed on `feat/docs-astro-cloudflare`.
 
 | ID | Severity | Item | Files |
 |---|---|---|---|
-| DOCS-1 | low | Move the docs site to Astro Starlight on Cloudflare **Workers Static Assets** (not Pages); plan old-URL redirects before launch; keep the Jekyll build until Starlight is green | `.github/workflows/pages.yml`, `docs/_config.yml`, `docs/Gemfile`, `README.md`, `package.json`, new `wrangler.jsonc` |
-| DOCS-2 | low | **Exclude the Cloudflare/Astro docs artifacts from the published npm package** (site sources, build output, `wrangler.jsonc`, CF deploy config) via the `files` allowlist / `.npmignore` — CF documentation must not ship in the final package | `package.json` (`files`), `.npmignore` |
+| DOCS-1 | low | Done: docs site moved to Astro Starlight (`site/`) on Cloudflare **Workers Static Assets**; Jekyll (`docs/`) and the Pages workflow removed; deploy via `deploy-docs.yml` + `site/wrangler.jsonc`. Old-URL redirects still to plan before launch. | `.github/workflows/deploy-docs.yml`, `site/wrangler.jsonc`, `README.md`, `package.json` |
+| DOCS-2 | low | Done: docs-site artifacts excluded from the published npm package (root `files` allowlist omits `site/`; asserted via `npm pack --dry-run` in `scripts/test-npx-integrity.js`). | `package.json` (`files`), `scripts/test-npx-integrity.js` |
+
+**Decommission checklist (GitHub Pages → Cloudflare Workers):**
+
+- Disable GitHub Pages in repo settings: **Settings → Pages → Source: None**.
+  This removes the old `shahboura.github.io/agents-opencode/*` site.
+- Once Pages is disabled, old `shahboura.github.io/agents-opencode/*` URLs will
+  **404 with no redirect**. Mapping those paths to the new Worker origin with
+  Cloudflare redirect rules is the optional follow-up (no redirects ship by
+  default).
 
 ## OpenCode v2 migration plan
 
@@ -74,4 +83,4 @@ Guardrails:
 
 - Validator schema audit and multi-lens review cycles (2026-09-28).
 - Independent OpenCode v1/v2 standards research (2026-09-28).
-- `docs/deprecation-migration.md` defines the Level A/B/C change policy referenced above.
+- `site/src/content/docs/deprecation-migration.md` defines the Level A/B/C change policy referenced above.

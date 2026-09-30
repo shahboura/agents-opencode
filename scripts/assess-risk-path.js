@@ -20,7 +20,7 @@ const MEDIUM_RULES = [
   { category: 'command-routing', test: (p) => p.startsWith('.opencode/commands/') },
   { category: 'validation-scripts', test: (p) => p.startsWith('scripts/') },
   { category: 'agent-evals', test: (p) => p.startsWith('evals/') },
-  { category: 'approval-policy-docs', test: (p) => p === 'docs/approval-gates.md' },
+  { category: 'approval-policy-docs', test: (p) => p === 'site/src/content/docs/approval-gates.md' },
   { category: 'pr-policy-template', test: (p) => p === '.github/pull_request_template.md' },
 ];
 

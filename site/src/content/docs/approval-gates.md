@@ -1,8 +1,8 @@
 ---
-layout: default
 title: Approval Gates
-nav_order: 10
 description: Human approval rubric for medium and high risk repository operations.
+sidebar:
+  order: 10
 ---
 
 # Human Approval Gates

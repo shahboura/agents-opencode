@@ -1,8 +1,8 @@
 ---
-layout: default
 title: Getting Started
-nav_order: 2
 description: Install and configure agents for OpenCode (npx/curl) or Claude Code (plugin).
+sidebar:
+  order: 2
 ---
 
 # Getting Started
@@ -139,7 +139,7 @@ To restore files, use `backup-manifest.json` from a backup session and copy the 
 
 ## Next Steps
 
-- **[Agents](./agents/README)**
-- **[Coding Standards](./customization)**
-- **[Commands & Skills](./commands)**
-- **[Troubleshooting](./troubleshooting)**
+- **[Agents](/agents/)**
+- **[Coding Standards](/customization/)**
+- **[Commands & Skills](/commands/)**
+- **[Troubleshooting](/troubleshooting/)**

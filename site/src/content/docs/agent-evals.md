@@ -1,8 +1,8 @@
 ---
-layout: default
 title: Agent Evals
-nav_order: 9
 description: Deterministic contract checks for agent and command behavior metadata.
+sidebar:
+  order: 9
 ---
 
 # Agent Eval Harness

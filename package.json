@@ -17,7 +17,7 @@
     "type": "git",
     "url": "git+https://github.com/shahboura/agents-opencode.git"
   },
-  "homepage": "https://shahboura.github.io/agents-opencode/",
+  "homepage": "https://agents-opencode-docs.example.workers.dev/",
   "bugs": {
     "url": "https://github.com/shahboura/agents-opencode/issues"
   },
@@ -27,8 +27,8 @@
   "scripts": {
     "test": "npm run doctor",
     "doctor": "node scripts/doctor.js",
-    "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --ignore \"dist/**\" --ignore \"handoff/**\" --ignore \"evals/reports/**\"",
-    "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --ignore \"dist/**\" --ignore \"handoff/**\" --ignore \"evals/reports/**\" --fix",
+    "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --ignore \"dist/**\" --ignore \"handoff/**\" --ignore \"evals/reports/**\" --ignore \"site/node_modules\" --ignore \"site/dist\" --ignore \"site/.astro\"",
+    "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --ignore \"dist/**\" --ignore \"handoff/**\" --ignore \"evals/reports/**\" --ignore \"site/node_modules\" --ignore \"site/dist\" --ignore \"site/.astro\" --fix",
     "validate:agents": "node scripts/validate-agents.js",
     "validate:opencode-schema": "node scripts/validate-opencode-schema.js --strict",
     "validate:plugin-guards": "node scripts/plugin-guards.test.js",

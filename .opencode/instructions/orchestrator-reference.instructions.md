@@ -129,7 +129,7 @@ per push, or once per tracked-branch commit. Budget: ≤8 reviewer dispatches pe
 (a full panel = 4; delta re-reviews dispatch only affected lenses), max 2 cycles per push;
 it **supersedes per-loop caps** and does not multiply the 5-cycle or Pattern 5 budgets.
 **Canonical spec — tier rules, lens selection, triage and decision-panel templates, freeze
-mechanism, skip criteria, and edge cases: `docs/review-gate.md`.**
+mechanism, skip criteria, and edge cases: `site/src/content/docs/review-gate.md`.**
 
 ### Pattern 9: Decision Grounding Gate
 ```

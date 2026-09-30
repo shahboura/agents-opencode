@@ -1,8 +1,8 @@
 ---
-layout: default
 title: Customization
-nav_order: 6
 description: Customize agents, commands, skills, and project context for your workflow.
+sidebar:
+  order: 6
 ---
 
 # Customization
@@ -40,7 +40,7 @@ Type `/command-name` in the TUI to run.
 Skills live in `.opencode/skills/` and can be loaded on demand:
 
 - Example skills: `ux-responsive`, `project-bootstrap`, `agent-diagnostics`, `docs-validation`, `decision-grounding`
-- For the canonical current list, use the [Skills Matrix](./skills-matrix)
+- For the canonical current list, use the [Skills Matrix](/skills-matrix/)
 
 Recommended policy:
 
@@ -137,5 +137,5 @@ pack's full behavior, add these keys to `opencode.json`:
 
 ## Next Steps
 
-- **[Getting Started](./getting-started)**
-- **[Agents](./agents/README)**
+- **[Getting Started](/getting-started/)**
+- **[Agents](/agents/)**

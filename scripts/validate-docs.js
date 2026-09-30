@@ -88,8 +88,10 @@ function loadExternalAllowlist(options) {
 
 /**
  * Recursively find all .md files, excluding node_modules and .git directories.
+ * The docs site's dependency/build output (site/node_modules, site/dist,
+ * site/.astro) is skipped; its authored content is validated from source.
  */
-function findMarkdownFiles(dir) {
+function findMarkdownFiles(dir, rootDir = dir) {
   const results = [];
 
   let entries;
@@ -107,10 +109,15 @@ function findMarkdownFiles(dir) {
         continue;
       }
 
+      const relPath = path.relative(rootDir, fullPath).split(path.sep).join('/');
+      if (relPath === 'site/dist' || relPath === 'site/.astro') {
+        continue;
+      }
+
       if (entry.name === 'fixtures' && path.basename(dir) === 'scripts') {
         continue;
       }
-      results.push(...findMarkdownFiles(fullPath));
+      results.push(...findMarkdownFiles(fullPath, rootDir));
     } else if (entry.isFile() && entry.name.endsWith('.md')) {
       results.push(fullPath);
     }
@@ -131,6 +138,70 @@ function extractMarkdownLinks(content) {
   }
 
   return links;
+}
+
+const STARLIGHT_CONTENT_ROOT = ['site', 'src', 'content', 'docs'];
+
+/**
+ * True when a source file lives inside the docs site's content collection.
+ * The Starlight route fallback only applies to pages authored there, so
+ * root-absolute links in ordinary repo docs keep resolving against the repo root.
+ */
+function isUnderStarlightContent(rootDir, filePath) {
+  const contentRoot = path.resolve(rootDir, ...STARLIGHT_CONTENT_ROOT);
+  const relative = path.relative(contentRoot, path.resolve(filePath));
+  return relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative);
+}
+
+/**
+ * Resolve a root-absolute Starlight route (e.g. `/skills-matrix/`) against the
+ * docs site's content collection. Returns the matching .md path, or null.
+ *
+ * Guards:
+ * - Rejects `..` traversal segments outright.
+ * - Treats a trailing `index` segment as the section root
+ *   (`/agents/index` resolves to `/agents/`).
+ * - Verifies the resolved candidate stays inside the content collection.
+ */
+function resolveStarlightRoute(rootDir, cleanPath) {
+  if (!cleanPath.startsWith('/')) {
+    return null;
+  }
+
+  const segments = cleanPath
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '')
+    .split('/')
+    .filter((segment) => segment !== '');
+
+  if (segments.some((segment) => segment === '..')) {
+    return null;
+  }
+
+  if (segments[segments.length - 1] === 'index') {
+    segments.pop();
+  }
+
+  const contentRoot = path.resolve(rootDir, ...STARLIGHT_CONTENT_ROOT);
+  const routePath = segments.join(path.sep);
+  const basePath = path.join(contentRoot, routePath);
+
+  const candidates = routePath === ''
+    ? [path.join(contentRoot, 'index.md')]
+    : [`${basePath}.md`, path.join(basePath, 'index.md')];
+
+  for (const candidate of candidates) {
+    const resolved = path.resolve(candidate);
+    const relative = path.relative(contentRoot, resolved);
+    if (relative.startsWith('..') || path.isAbsolute(relative)) {
+      continue;
+    }
+    if (fs.existsSync(resolved)) {
+      return resolved;
+    }
+  }
+
+  return null;
 }
 
 function resolveInternalLink(rootDir, filePath, rawLinkPath) {
@@ -174,6 +245,19 @@ function resolveInternalLink(rootDir, filePath, rawLinkPath) {
       return {
         found: true,
         targetPath: altPath,
+      };
+    }
+  }
+
+  // Starlight page links are root-absolute (e.g. `/skills-matrix/`) and live in
+  // the docs site content collection, not at the repository root. Only apply
+  // this fallback to pages authored inside that collection.
+  if (isUnderStarlightContent(rootDir, filePath)) {
+    const starlightPath = resolveStarlightRoute(rootDir, cleanPath);
+    if (starlightPath) {
+      return {
+        found: true,
+        targetPath: starlightPath,
       };
     }
   }

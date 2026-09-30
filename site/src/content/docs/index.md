@@ -1,10 +1,9 @@
 ---
-layout: default
 title: Home
-nav_order: 1
-permalink: /
 description: Lean OpenCode agents pack with 10 specialized agents, core language/domain skills, and slash commands.
 keywords: opencode, ai agents, code generation, development workflow, .NET, Python, TypeScript, Flutter, code review, documentation
+sidebar:
+  order: 1
 ---
 
 # OpenCode Agents
@@ -18,7 +17,7 @@ Lean agent pack for OpenCode workflows.
 - **Safe skill model:** on-demand loading + least-privilege allowlists.
 - **Release-ready defaults:** validation and CI/CD hygiene included.
 
-Quick jump: [Agents](agents/README) · [Skills Matrix](skills-matrix) · [Commands](commands)
+Quick jump: [Agents](/agents/) · [Skills Matrix](/skills-matrix/) · [Commands](/commands/)
 
 ## Quick Start
 
@@ -64,23 +63,23 @@ Also available as a Claude Code plugin:
 | `@brutal-critic` | Final content quality gate |
 | `@legal-advisor` | Legal research, jurisdiction-aware compliance, contract review, license auditing, data privacy, IP, export controls |
 
-Canonical source for exact allowlists and skill triggers: [Skills Matrix](skills-matrix).
+Canonical source for exact allowlists and skill triggers: [Skills Matrix](/skills-matrix/).
 
 ## Docs
 
-- [Getting Started](getting-started)
-- [Agents](agents/README)
-- [Coding Standards](customization)
-- [Commands & Skills](commands)
-- [Troubleshooting](troubleshooting)
-- [Skills Matrix](skills-matrix)
-- [Agent Evals](agent-evals)
-- [Approval Gates](approval-gates)
-- [Review Gate](review-gate)
-- [Decision Grounding](decision-grounding)
-- [Compatibility](compatibility)
-- [Deprecation & Migration Policy](deprecation-migration)
-- [State Management](state-management)
+- [Getting Started](/getting-started/)
+- [Agents](/agents/)
+- [Coding Standards](/customization/)
+- [Commands & Skills](/commands/)
+- [Troubleshooting](/troubleshooting/)
+- [Skills Matrix](/skills-matrix/)
+- [Agent Evals](/agent-evals/)
+- [Approval Gates](/approval-gates/)
+- [Review Gate](/review-gate/)
+- [Decision Grounding](/decision-grounding/)
+- [Compatibility](/compatibility/)
+- [Deprecation & Migration Policy](/deprecation-migration/)
+- [State Management](/state-management/)
 
 ## Skill Loading Model
 

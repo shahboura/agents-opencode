@@ -71,6 +71,29 @@ function testBrokenInternalLinkFails(tmpRoot) {
   assert(result.output.includes('Broken'), 'Expected output to mention broken links');
 }
 
+function testStarlightFallbackResolvesWithinContentCollection(tmpRoot) {
+  const testDir = path.join(tmpRoot, 'starlight-valid');
+  copyDirectory(path.join(fixturesRoot, 'starlight-valid'), testDir);
+
+  const result = runValidator(testDir);
+  assert(
+    result.status === 0,
+    'Expected root-absolute Starlight routes to resolve into the content collection'
+  );
+}
+
+function testStarlightFallbackFailsWhenRouteMissing(tmpRoot) {
+  const testDir = path.join(tmpRoot, 'starlight-broken');
+  copyDirectory(path.join(fixturesRoot, 'starlight-broken'), testDir);
+
+  const result = runValidator(testDir);
+  assert(
+    result.status !== 0,
+    'Expected an unresolvable Starlight route to fail validation'
+  );
+  assert(result.output.includes('Broken'), 'Expected output to mention broken links');
+}
+
 function testInvalidArgsFailFast(tmpRoot) {
   const testDir = path.join(tmpRoot, 'invalid-args');
   copyDirectory(path.join(fixturesRoot, 'valid'), testDir);
@@ -87,6 +110,8 @@ function main() {
     console.log('Running docs validator tests...');
     testRelativeAndExtensionlessLinks(tmpRoot);
     testBrokenInternalLinkFails(tmpRoot);
+    testStarlightFallbackResolvesWithinContentCollection(tmpRoot);
+    testStarlightFallbackFailsWhenRouteMissing(tmpRoot);
     testInvalidArgsFailFast(tmpRoot);
     console.log('✅ Docs validator tests passed');
   } catch (err) {

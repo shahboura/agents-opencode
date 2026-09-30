@@ -149,7 +149,8 @@ For each approved phase:
 1. Ensure all phases complete successfully
 2. Verify integration between components
 3. **Pre-Commit Review Gate** — run before the commit leaves your machine (push/PR). Canonical spec:
-   `docs/review-gate.md`; compact summary: Pattern 8 in `.opencode/instructions/orchestrator-reference.instructions.md`.
+   `site/src/content/docs/review-gate.md`; compact summary: Pattern 8 in
+   `.opencode/instructions/orchestrator-reference.instructions.md`.
 
    - **Tier 1:** run `npm run doctor` first; fast-fail on new hard failures vs. the branch point.
    - **Tier 2:** freeze the diff and run concurrent fresh `@review` lenses (requirements · code · security ·
@@ -187,7 +188,7 @@ For iterative execution tasks, enforce a bounded loop with explicit, testable co
 - For long-running tasks, use the Progress Tracking status table format from the reference file.
 - If the same blocker repeats twice without meaningful progress, pause and escalate with options.
 - Ground high-stakes decisions before implementing them (Pattern 9 in the reference file).
-- Before pushing (or committing to a tracked branch), run the **Pre-Commit Review Gate** (see Integration, Validation & Commit Gate above; canonical spec in `docs/review-gate.md`, compact summary in Pattern 8).
+- Before pushing (or committing to a tracked branch), run the **Pre-Commit Review Gate** (see Integration, Validation & Commit Gate above; canonical spec in `site/src/content/docs/review-gate.md`, compact summary in Pattern 8).
 - Before starting each cycle, check idempotently whether the sub-task was already completed.
 
 ## Context Persistence

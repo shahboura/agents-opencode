@@ -1,8 +1,8 @@
 ---
-layout: default
 title: Compatibility
-nav_order: 11
 description: Runtime and tooling compatibility matrix for install and validation workflows.
+sidebar:
+  order: 11
 ---
 
 # Compatibility Matrix
@@ -16,7 +16,7 @@ This matrix captures tested runtime/tooling targets for this repository.
 | Node.js (local validation scripts) | 24.x | Matches CI and publish workflows. |
 | Node.js (CI validation) | 24.x | `validate.yml` jobs use Node 24. |
 | npm publish runtime | 24.x | `publish.yml` uses Node 24 with trusted publishing. |
-| Ruby (docs build) | 3.2 | Used by GitHub Pages workflow. |
+| Node.js (docs build) | 24.x | Astro Starlight build, deployed by the Cloudflare Workers workflow. |
 | OS support for installer | Windows / Linux / macOS | Uses Node + filesystem APIs only. |
 
 ## Expected Tooling Availability

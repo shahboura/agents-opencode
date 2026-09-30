@@ -1,8 +1,8 @@
 ---
-layout: default
 title: Review Gate
-nav_order: 14
 description: How changes are reviewed before changes leave your machine (push/PR) - automated Tier 1 checks plus a multi-lens adversarial Tier 2 panel with triage and human decision points.
+sidebar:
+  order: 14
 ---
 
 # Review Gate
@@ -154,5 +154,5 @@ manually before they reach a shared branch.
 
 ## Related
 
-- [Approval Gates](approval-gates) - human-in-the-loop checkpoints.
-- [Compatibility](compatibility) - the CI validation checks matrix.
+- [Approval Gates](/approval-gates/) - human-in-the-loop checkpoints.
+- [Compatibility](/compatibility/) - the CI validation checks matrix.

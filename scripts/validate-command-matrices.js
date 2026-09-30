@@ -12,8 +12,8 @@ const path = require('path');
 const ROOT = process.cwd();
 const COMMANDS_DIR = path.join(ROOT, '.opencode', 'commands');
 const DOC_FILES = [
-  path.join(ROOT, 'docs', 'commands.md'),
-  path.join(ROOT, 'docs', 'skills-matrix.md'),
+  path.join(ROOT, 'site', 'src', 'content', 'docs', 'commands.md'),
+  path.join(ROOT, 'site', 'src', 'content', 'docs', 'skills-matrix.md'),
   path.join(ROOT, '.opencode', 'commands', 'README.md'),
 ];
 

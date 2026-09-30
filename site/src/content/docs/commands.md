@@ -1,8 +1,8 @@
 ---
-layout: default
 title: Commands & Skills
-nav_order: 4
 description: Slash commands and reusable skills for OpenCode agent workflows.
+sidebar:
+  order: 4
 ---
 
 # Commands & Skills
@@ -41,7 +41,7 @@ Skills are reusable behaviors loaded on demand. Common utility skills include:
 - `agent-diagnostics` - Validate agent setup and instruction coverage
 - `docs-validation` - Outline docs lint and link checks
 
-For the canonical current skill inventory and agent allowlists, see [Skills Matrix](./skills-matrix).
+For the canonical current skill inventory and agent allowlists, see [Skills Matrix](/skills-matrix/).
 
 ### Using Skills
 
@@ -137,5 +137,5 @@ See [OpenCode Commands docs](https://opencode.ai/docs/commands/) for full refere
 
 ## Next Steps
 
-- **[Agents](./agents/README)**
-- **[Customization](./customization)**
+- **[Agents](/agents/)**
+- **[Customization](/customization/)**

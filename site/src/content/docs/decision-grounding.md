@@ -1,8 +1,8 @@
 ---
-layout: default
 title: Decision Grounding
-nav_order: 15
 description: Ground high-stakes decisions in current best practice - triggered by decision structure, not self-reported confidence - to avoid workarounds and wrong calls.
+sidebar:
+  order: 15
 ---
 
 # Decision Grounding
@@ -72,5 +72,5 @@ confidence.
 
 ## Related
 
-- [Review Gate](review-gate) — the pre-commit gate that runs before a push.
-- [Skills Matrix](skills-matrix) — agent-to-skill allowlists and triggers.
+- [Review Gate](/review-gate/) — the pre-commit gate that runs before a push.
+- [Skills Matrix](/skills-matrix/) — agent-to-skill allowlists and triggers.
