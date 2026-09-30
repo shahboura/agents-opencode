@@ -1,6 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["agents-opencode"],
   "share": "disabled",
   "subagent_depth": 2,
   "compaction": {

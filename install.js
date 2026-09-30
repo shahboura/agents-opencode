@@ -340,12 +340,11 @@ function revertInstallerConfig(targetConfigPath, configPatch, sourceConfig, onBe
     }
 
     if (Array.isArray(configPatch.addedPluginEntries) && Array.isArray(existing.plugin)) {
-        var sourcePlugins = sourceConfig && Array.isArray(sourceConfig.plugin) ? sourceConfig.plugin : [];
+        // Trust the manifest: addedPluginEntries only records entries the installer
+        // itself pushed, so revert them regardless of the current source config
+        // (which may no longer list a retired plugin entry).
         for (var p = 0; p < configPatch.addedPluginEntries.length; p++) {
             var pluginEntry = configPatch.addedPluginEntries[p];
-            if (sourcePlugins.indexOf(pluginEntry) === -1) {
-                continue;
-            }
             var pluginIndex = existing.plugin.indexOf(pluginEntry);
             if (pluginIndex === -1) {
                 continue;

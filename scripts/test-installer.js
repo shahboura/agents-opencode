@@ -174,7 +174,7 @@ function testFreshConfigContainsOnlyManagedKeys(tmpRoot) {
   for (const key of Object.keys(config)) {
     assert(allowed.has(key), `Fresh install config must not contain opinionated key '${key}'`);
   }
-  assert(Array.isArray(config.plugin) && config.plugin.includes('agents-opencode'), 'Fresh config should register the plugin');
+  assert(!('plugin' in config), 'Fresh config should not register a plugin entry (the local plugin auto-loads)');
   assert(config.permission && config.permission.doom_loop === 'deny', 'Fresh config should include installer permission defaults');
   assert(!('share' in config), 'Fresh config must not set share');
   assert(!('compaction' in config), 'Fresh config must not set compaction');
@@ -233,8 +233,8 @@ function testManifestlessUninstallRemovesCreatedConfig(tmpRoot) {
   assert(!fs.existsSync(configPath), 'Installer-created config should be removed on manifestless uninstall');
 }
 
-function testUninstallRevertsInstallerPluginEntries(tmpRoot) {
-  const projectDir = path.join(tmpRoot, 'config-plugin-revert');
+function testInstallerPreservesUserPluginEntries(tmpRoot) {
+  const projectDir = path.join(tmpRoot, 'config-plugin-preserve');
   createDir(projectDir);
 
   const configPath = path.join(projectDir, 'opencode.json');
@@ -247,15 +247,49 @@ function testUninstallRevertsInstallerPluginEntries(tmpRoot) {
   runInstaller(['--project', '.'], { cwd: projectDir });
 
   const installed = readJson(configPath);
-  assert(Array.isArray(installed.plugin) && installed.plugin.includes('agents-opencode'), 'Installer plugin should be added');
-  assert(installed.plugin.includes('my-own-plugin'), 'User plugin entry should be preserved');
+  const installedPlugins = Array.isArray(installed.plugin) ? installed.plugin : [];
+  assert(installedPlugins.includes('my-own-plugin'), 'User plugin entry should be preserved on install');
+  assert(!installedPlugins.includes('agents-opencode'), 'Installer should not add a plugin entry (local plugin auto-loads)');
 
   runInstaller(['--uninstall', '--project', '.'], { cwd: projectDir });
 
   const reverted = readJson(configPath);
   const revertedPlugins = Array.isArray(reverted.plugin) ? reverted.plugin : [];
-  assert(!revertedPlugins.includes('agents-opencode'), 'Installer plugin entry should be removed on uninstall');
   assert(revertedPlugins.includes('my-own-plugin'), 'User plugin entry should remain after uninstall');
+}
+
+function testUninstallRevertsLegacyInstallerPluginEntry(tmpRoot) {
+  const projectDir = path.join(tmpRoot, 'legacy-plugin-revert');
+  createDir(projectDir);
+
+  const configPath = path.join(projectDir, 'opencode.json');
+  const manifestPath = path.join(projectDir, '.opencode', '.agents-opencode-manifest.json');
+
+  // Pre-existing user config → the installer does not own the file.
+  writeJson(configPath, {
+    $schema: 'https://opencode.ai/config.json',
+    permission: { bash: 'ask' },
+  });
+
+  runInstaller(['--project', '.'], { cwd: projectDir });
+
+  // Simulate a legacy install (pre-retirement) that recorded the plugin entry.
+  const legacyConfig = readJson(configPath);
+  legacyConfig.plugin = ['agents-opencode', 'my-own-plugin'];
+  writeJson(configPath, legacyConfig);
+
+  const legacyManifest = readJson(manifestPath);
+  legacyManifest.configPatch = Object.assign({}, legacyManifest.configPatch, {
+    addedPluginEntries: ['agents-opencode'],
+  });
+  writeJson(manifestPath, legacyManifest);
+
+  runInstaller(['--uninstall', '--project', '.'], { cwd: projectDir });
+
+  const reverted = readJson(configPath);
+  const plugins = Array.isArray(reverted.plugin) ? reverted.plugin : [];
+  assert(!plugins.includes('agents-opencode'), 'Legacy installer plugin entry should be reverted on uninstall');
+  assert(plugins.includes('my-own-plugin'), 'User plugin entry should remain after legacy uninstall');
 }
 
 function testSkillClassificationCoversShippedSkills() {
@@ -559,7 +593,8 @@ function main() {
     testConfigMergePreservesUserData(tmpRoot);
     testFreshConfigContainsOnlyManagedKeys(tmpRoot);
     testManifestlessUninstallRemovesCreatedConfig(tmpRoot);
-    testUninstallRevertsInstallerPluginEntries(tmpRoot);
+    testInstallerPreservesUserPluginEntries(tmpRoot);
+  testUninstallRevertsLegacyInstallerPluginEntry(tmpRoot);
     testSkillClassificationCoversShippedSkills();
     testLanguagesFilterFullPartition(tmpRoot);
     testLanguagesFilterCicdAlias(tmpRoot);

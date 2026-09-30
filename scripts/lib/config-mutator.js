@@ -9,6 +9,10 @@ const { readJsonFile, writeJsonFile, isObject } = require('./file-ops.js');
 // must never leak into a user's project or global configuration.
 const MANAGED_CONFIG_KEYS = ['$schema', 'plugin', 'permission'];
 
+// Plugin entries the installer added in earlier versions and must still strip on
+// cleanup even though they are no longer present in the source config.
+const RETIRED_PLUGIN_ENTRIES = ['agents-opencode'];
+
 function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite, logWarning) {
   const patch = {
     createdFile: false,
@@ -203,8 +207,11 @@ function manifestlessCleanup(configPath, sourceConfig, onBeforeMutate, logWarnin
     }
   }
 
-  if (Array.isArray(sourceConfig.plugin) && Array.isArray(existing.plugin)) {
-    const managedPlugins = new Set(sourceConfig.plugin);
+  const managedPlugins = new Set([
+    ...(Array.isArray(sourceConfig.plugin) ? sourceConfig.plugin : []),
+    ...RETIRED_PLUGIN_ENTRIES,
+  ]);
+  if (managedPlugins.size > 0 && Array.isArray(existing.plugin)) {
     const remainingPlugins = existing.plugin.filter((entry) => !managedPlugins.has(entry));
     if (remainingPlugins.length !== existing.plugin.length) {
       changed = true;
