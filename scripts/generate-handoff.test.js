@@ -30,7 +30,7 @@ function testGenerateHandoff(tmpRoot) {
         open_risks: ['Need CODEOWNERS.'],
         blocked_by: [],
         next_actions: ['Draft CODEOWNERS', 'Review branch protections', 'Publish docs'],
-        artifacts: ['docs/compatibility.md'],
+        artifacts: ['site/src/content/docs/compatibility.md'],
         last_updated: '2026-04-25T00:00:00Z',
       },
       null,

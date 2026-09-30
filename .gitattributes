@@ -3,8 +3,8 @@
 # ─── Export-ignore: exclude development files from GitHub release archives ───
 # git clone is unaffected — developers get the full source tree.
 
-# Documentation site (available on GitHub Pages)
-docs/ export-ignore
+# Documentation site (Astro Starlight on Cloudflare Workers; dev-only, not in package)
+site/ export-ignore
 
 # CI/CD workflows
 .github/ export-ignore

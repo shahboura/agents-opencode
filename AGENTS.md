@@ -7,7 +7,7 @@ This repository contains customized agents for OpenCode.ai, aligned with Anthrop
 - `.opencode/agents/` - Custom agent configurations for OpenCode (canonical path)
 - `.opencode/instructions/` - Reference instructions (loaded on demand)
 - `.opencode/skills/` - Language and domain skills (loaded on demand via `skill` tool)
-- `docs/` - Documentation for agents and usage
+- `site/src/content/docs/` - Documentation site (Astro Starlight, deployed to Cloudflare Workers)
 - `AGENTS.md` - This file with project instructions and session history
 
 ## On-Demand References

@@ -1,8 +1,8 @@
 ---
-layout: default
 title: Deprecation & Migration Policy
-nav_order: 12
 description: Contract change policy for agents and commands with deprecation windows and migration steps.
+sidebar:
+  order: 12
 ---
 
 # Deprecation & Migration Policy

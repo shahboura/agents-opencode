@@ -39,11 +39,6 @@ coverage/
 .opencode-agents-version
 *.backup-*/
 
-# Jekyll build output
-docs/_site/
-docs/.jekyll-cache/
-docs/Gemfile.lock
-
 # User-generated task files
 tasks/*
 

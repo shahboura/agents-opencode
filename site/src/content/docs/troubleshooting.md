@@ -1,8 +1,8 @@
 ---
-layout: default
 title: Troubleshooting
-nav_order: 7
 description: Common issues and solutions for OpenCode agent configurations.
+sidebar:
+  order: 7
 ---
 
 # Troubleshooting
@@ -119,6 +119,6 @@ description: Common issues and solutions for OpenCode agent configurations.
 
 ## Help
 
-- [Getting Started](./getting-started)
-- [Agents](./agents/README)
-- [Commands & Skills](./commands)
+- [Getting Started](/getting-started/)
+- [Agents](/agents/)
+- [Commands & Skills](/commands/)

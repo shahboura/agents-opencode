@@ -1,9 +1,8 @@
 ---
-layout: default
 title: Agents
-nav_order: 3
-has_children: false
 description: Overview of the 10 built-in OpenCode agents and their recommended workflow.
+sidebar:
+  order: 3
 ---
 # Agents
 
@@ -30,7 +29,7 @@ Lean reference for the built-in agents.
 | `@brutal-critic` | Final content quality gate |
 | `@legal-advisor` | Legal research, jurisdiction-aware compliance, contract review, license auditing, data privacy, IP, export controls |
 
-Canonical source for exact allowlists and skill triggers: [Skills Matrix](../skills-matrix).
+Canonical source for exact allowlists and skill triggers: [Skills Matrix](/skills-matrix/).
 
 ## Suggested Flow
 
@@ -67,6 +66,6 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](../ski
 
 ## Next Steps
 
-- **[Commands & Skills](../commands)**
-- **[Coding Standards](../customization)**
-- **[Customization](../customization)**
+- **[Commands & Skills](/commands/)**
+- **[Coding Standards](/customization/)**
+- **[Customization](/customization/)**

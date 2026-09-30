@@ -17,10 +17,10 @@
   "comment_MD033": "Allow inline HTML for badges, emoji images, and formatting in documentation that can't be achieved with pure Markdown",
 
   "MD041": false,
-  "comment_MD041": "Allow front matter and metadata at the top of files before the first heading (needed for Jekyll/YAML front matter)",
+  "comment_MD041": "Allow front matter and metadata at the top of files before the first heading (needed for Astro/Starlight frontmatter)",
 
   "MD025": false,
-  "comment_MD025": "Allow multiple H1 headings when Jekyll front matter creates title (common in static site generators)",
+  "comment_MD025": "Allow multiple H1 headings when Astro/Starlight frontmatter creates the title (common in static site generators)",
 
   "MD040": false,
   "comment_MD040": "Allow code blocks without language specification for generic examples and configuration snippets",

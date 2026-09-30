@@ -11,7 +11,7 @@
     "Disable session sharing (share: disabled) and enable compaction pruning (compaction.prune) for long agent sessions.",
     "Installer writes only $schema/plugin/permission to user configs; opinionated package defaults must never propagate into a project or global opencode.json.",
     "Risk-path review gate is advisory (reports computed risk + PR acknowledgment but never blocks merges); enforcement stays human/Tier 2.",
-    "Pre-Commit Review Gate (Pattern 8) runs a concurrent multi-lens panel (requirements/code/security/ux-responsive) on a frozen diff; re-review is scoped to the delta, and the gate is documented for users in docs/review-gate.md.",
+    "Pre-Commit Review Gate (Pattern 8) runs a concurrent multi-lens panel (requirements/code/security/ux-responsive) on a frozen diff; re-review is scoped to the delta, and the gate is documented for users in site/src/content/docs/review-gate.md.",
     "Loop budgets use one binding per-task currency (<=8 reviewer dispatches, max 2 cycles); gate cycles are a sub-loop and do not multiply the 5-cycle/Pattern 5 budgets.",
     "Lens-reported severity is authoritative - the orchestrator may escalate but never downgrade; security/data-loss findings are panel-bound at any severity.",
     "Pattern 5 (evaluator-optimizer) and Pattern 8 (commit gate) are mutually exclusive on the same artifact.",
@@ -26,7 +26,7 @@
     "Review-before-commit is enforced in three layers: Pattern 8 staged-diff freeze artifact, a codebase 'never commit' rule, and a versioned pre-commit hook bound to a staged-tree hash via .gate/pass.json. The gate runs before a commit leaves the machine (push/PR); a WIP commit is allowed only to freeze the snapshot.",
     "The pre-commit hook is a local honest-operator guardrail, not a security boundary: the marker is forgeable and --no-verify bypasses it.",
     "Decision grounding (Pattern 9) is triggered by decision structure (T1 one-way door, T2 blast radius, T3 workaround smell, T4 volatility), never by self-reported LLM confidence; a fail-closed parent acceptance rule applies on INSUFFICIENT_EVIDENCE for T1/T2.",
-    "GitHub Pages is not deprecated; migrating docs to Astro Starlight on Cloudflare Workers Static Assets is optional and tracked as DOCS-1/DOCS-2, with the constraint that Cloudflare/Astro docs artifacts must be excluded from the published npm package."
+    "GitHub Pages is not deprecated, but the docs site now runs on Astro Starlight (site/) deployed to Cloudflare Workers Static Assets (DOCS-1 implemented on feat/docs-astro-cloudflare); Cloudflare/Astro docs artifacts stay excluded from the published npm package (DOCS-2 implemented)."
   ],
   "open_risks": [
     "Scenario-level behavioral eval coverage is still limited.",
@@ -42,7 +42,7 @@
   "blocked_by": [],
   "next_actions": [
     "Merge the chore/instruction-health-readme PR (6 commits: instruction health, README, enforced gate, decision grounding).",
-    "DOCS-1/DOCS-2: migrate docs to Astro Starlight on Cloudflare Workers Static Assets; exclude Cloudflare/Astro artifacts from the published package.",
+    "Decommission GitHub Pages (Settings -> Pages -> Source: None) and decide on old-URL redirects; DOCS-1/DOCS-2 are implemented on feat/docs-astro-cloudflare.",
     "Consider simplifying the pre-commit gate or encoding skip-eligibility so trivial docs commits do not require a marker.",
     "Complete VAL-4: migrate evals/harness/run-evals.js to the shared parser.",
     "Plan OpenCode v2 support (dual-entrypoint plugin + installer --target) per BACKLOG.md.",
@@ -55,13 +55,15 @@
     ".githooks/pre-commit",
     "scripts/gate",
     "scripts/lib/file-ops.js",
-    "docs/review-gate.md",
-    "docs/decision-grounding.md",
+    "site/src/content/docs/review-gate.md",
+    "site/src/content/docs/decision-grounding.md",
+    "site/public/_headers",
+    ".github/workflows/deploy-docs.yml",
     "README.md",
     "BACKLOG.md",
     "state/session-state.json"
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-09-29T02:59:00Z"
+  "last_updated": "2026-09-29T23:56:05Z"
 }

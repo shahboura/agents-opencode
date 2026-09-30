@@ -1,8 +1,8 @@
 ---
-layout: default
 title: State Management
-nav_order: 13
 description: Structured session state contract and handoff packet workflow for agentic continuity.
+sidebar:
+  order: 13
 ---
 
 # State Management

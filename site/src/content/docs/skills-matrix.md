@@ -1,8 +1,8 @@
 ---
-layout: default
 title: Skills Matrix
-nav_order: 8
 description: Agent-to-skill allowlist matrix for OpenCode least-privilege configuration.
+sidebar:
+  order: 8
 ---
 
 # Agent Skills Matrix
