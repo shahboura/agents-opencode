@@ -1,7 +1,7 @@
 {
   "name": "agents-opencode",
   "version": "2.5.1",
-  "description": "OpenCode Agents: Intelligent AI assistants for software development. Features 9 specialized agents (including legal-advisor for license auditing and compliance), 14 coding standards, automated code review, documentation generation, OpenCode plugin compatibility, and cross-platform installation. Supports .NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, and Rust with plan-first execution and context-aware assistance.",
+  "description": "OpenCode Agents: Intelligent AI assistants for software development. Features 10 specialized agents (including researcher for decision grounding and legal-advisor for license auditing and compliance), 24 on-demand skills delivering language coding standards and domain guidance, automated code review, documentation generation, OpenCode plugin compatibility, and cross-platform installation. Supports .NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, Rust, and SQL with plan-first execution and context-aware assistance.",
   "files": [
     "install.js",
     ".opencode/agents",
@@ -32,6 +32,11 @@
     "validate:agents": "node scripts/validate-agents.js",
     "validate:opencode-schema": "node scripts/validate-opencode-schema.js --strict",
     "validate:plugin-guards": "node scripts/plugin-guards.test.js",
+    "validate:gate": "node scripts/gate/gate.test.js",
+    "gate:freeze": "node scripts/gate/freeze.js",
+    "gate:pass": "node scripts/gate/record-pass.js",
+    "gate:check": "node scripts/gate/precommit-check.js",
+    "gate:install": "node scripts/gate/install-hooks.js",
     "validate:commands": "node scripts/validate-command-matrices.js",
     "eval:agents": "node evals/harness/run-evals.js",
     "eval:agents:json": "node evals/harness/run-evals.js --json --out evals/reports/latest.json",

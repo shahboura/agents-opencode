@@ -1,7 +1,7 @@
 # Backlog
 
 Deferred work from review cycles and the OpenCode v2 readiness assessment. Update
-this file when items land or new gaps are found. Last updated: 2026-09-28.
+this file when items land or new gaps are found. Last updated: 2026-09-29.
 
 ## Validation hardening
 
@@ -27,6 +27,16 @@ The validator review cycles produced these items. VAL-1 and VAL-3 landed in the
 | ID | Severity | Item | Files |
 |---|---|---|---|
 | SKILL-1 | low | Ship deterministic `scripts/` for operational skills | `.opencode/skills/docs-validation`, `.opencode/skills/code-change-impact` |
+
+## Docs hosting migration
+
+Note: GitHub Pages is **not** deprecated (verified 2026-09-29) — this is an optional
+convenience move, not a correctness fix. Queued after `chore/instruction-health-readme`.
+
+| ID | Severity | Item | Files |
+|---|---|---|---|
+| DOCS-1 | low | Move the docs site to Astro Starlight on Cloudflare **Workers Static Assets** (not Pages); plan old-URL redirects before launch; keep the Jekyll build until Starlight is green | `.github/workflows/pages.yml`, `docs/_config.yml`, `docs/Gemfile`, `README.md`, `package.json`, new `wrangler.jsonc` |
+| DOCS-2 | low | **Exclude the Cloudflare/Astro docs artifacts from the published npm package** (site sources, build output, `wrangler.jsonc`, CF deploy config) via the `files` allowlist / `.npmignore` — CF documentation must not ship in the final package | `package.json` (`files`), `.npmignore` |
 
 ## OpenCode v2 migration plan
 

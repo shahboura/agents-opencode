@@ -148,6 +148,9 @@ function createBackupSession(paths, operation) {
         if (!normalizedRelativePath || seen.has(normalizedRelativePath)) {
             return false;
         }
+        if (fileOps.isUnsafeBackupKey(normalizedRelativePath)) {
+            throw new Error(`Refusing to back up '${normalizedRelativePath}': path escapes the backup directory.`);
+        }
 
         const targetPath = path.join(backupDir, normalizedRelativePath);
         fileOps.ensureDir(path.dirname(targetPath));
@@ -155,6 +158,12 @@ function createBackupSession(paths, operation) {
         entries.push({ path: normalizedRelativePath });
         seen.add(normalizedRelativePath);
         return true;
+    }
+
+    // Reports whether a path was already captured in this session (dedupe).
+    // Lets callers confirm a complete backup when backupFile returns false.
+    function has(relativePathFromRoot) {
+        return Boolean(relativePathFromRoot) && seen.has(relativePathFromRoot);
     }
 
     function finalize() {
@@ -184,7 +193,7 @@ function createBackupSession(paths, operation) {
         };
     }
 
-    return { backupFile, finalize };
+    return { backupFile, has, finalize };
 }
 
 function printBackupRestoreHint(backupResult) {
@@ -331,12 +340,11 @@ function revertInstallerConfig(targetConfigPath, configPatch, sourceConfig, onBe
     }
 
     if (Array.isArray(configPatch.addedPluginEntries) && Array.isArray(existing.plugin)) {
-        var sourcePlugins = sourceConfig && Array.isArray(sourceConfig.plugin) ? sourceConfig.plugin : [];
+        // Trust the manifest: addedPluginEntries only records entries the installer
+        // itself pushed, so revert them regardless of the current source config
+        // (which may no longer list a retired plugin entry).
         for (var p = 0; p < configPatch.addedPluginEntries.length; p++) {
             var pluginEntry = configPatch.addedPluginEntries[p];
-            if (sourcePlugins.indexOf(pluginEntry) === -1) {
-                continue;
-            }
             var pluginIndex = existing.plugin.indexOf(pluginEntry);
             if (pluginIndex === -1) {
                 continue;
@@ -476,7 +484,10 @@ function installScope(options) {
     }
 
     if (languages) {
-        fileOps.filterLanguages(paths.opencodeDir, languages, { warning: warning, info: info, success: success });
+        fileOps.filterLanguages(paths.opencodeDir, languages, { warning: warning, info: info, success: success }, {
+            backupSession: backupSession,
+            relativeBase: paths.rootDir,
+        });
     }
 
     let configBackedUp = false;
@@ -844,7 +855,9 @@ USAGE:
 INSTALL OPTIONS:
     -g, --global                Install agents globally (available in all projects)
     -p, --project [DIR]         Install agents for project directory (defaults to current directory)
-    -l, --languages LANGS       Filter language instruction reference files (comma-separated)
+    -l, --languages LANGS       Keep only these language skills (comma-separated)
+                                Choices: dotnet, python, typescript, flutter, go, java,
+                                node, react, ruby, rust, sql. Pruned dirs are backed up.
 
 LIFECYCLE OPTIONS:
     -U, --update                Update existing installation(s)
@@ -859,7 +872,7 @@ GENERAL:
 EXAMPLES:
     node install.js --global
     node install.js --project .
-    node install.js --global --languages python,typescript
+    node install.js --global --languages python,typescript  # keep only Python/TypeScript language skills
     node install.js --update                    # updates detected installs (global and/or current project)
     node install.js --update --all              # force update both scopes
     node install.js --uninstall                 # uninstall current project scope (default)
@@ -878,7 +891,10 @@ NOTES:
     - Project backups: <project>/.opencode/.backups/<timestamp>--<operation>--<scope>/
     - Global backups:  ~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/
     - Retention: keeps latest 10 sessions and prunes sessions older than 30 days.
-    - --languages filters instruction reference files; skill loading remains on-demand.
+    - --languages prunes non-requested language skills; non-language skills always remain.
+    - --languages backs up each pruned skill directory into the backup session first.
+    - The 'cicd' alias is accepted for backward compatibility but filters no skill;
+      ci-cd-hygiene.instructions.md is always installed (not a language skill).
 
 For more information, visit: https://github.com/shahboura/agents-opencode
 `);

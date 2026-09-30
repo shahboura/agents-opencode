@@ -39,7 +39,7 @@ Type `/command-name` in the TUI to run.
 
 Skills live in `.opencode/skills/` and can be loaded on demand:
 
-- Example skills: `ux-responsive`, `project-bootstrap`, `agent-diagnostics`, `docs-validation`
+- Example skills: `ux-responsive`, `project-bootstrap`, `agent-diagnostics`, `docs-validation`, `decision-grounding`
 - For the canonical current list, use the [Skills Matrix](./skills-matrix)
 
 Recommended policy:
@@ -90,17 +90,21 @@ the `skill` tool when work matches a language/domain. Skills are not preloaded e
 | UX Responsive | Breakpoints, reflow, touch/pointer and keyboard accessibility |
 | Ruby | MVC, ActiveRecord, RSpec |
 | Rust | Ownership, Result/Option, clippy |
-| CI/CD | Fail-fast gates, security, caching |
 | SQL | Safe migrations, constraints, indexes |
 | Blogger | Content style, SEO, research validation |
 | Brutal Critic | Framework-based scoring, review process |
 
-For detailed standards, open the corresponding file in `.opencode/instructions/`.
+For detailed standards, open the corresponding skill at `.opencode/skills/<name>/SKILL.md`
+(for example `.opencode/skills/python/SKILL.md`, `.opencode/skills/ux-responsive/SKILL.md`).
+
+CI/CD hygiene is not a skill: it ships as the always-installed instruction
+`.opencode/instructions/ci-cd-hygiene.instructions.md`.
 
 ### Execution Loop
 
-Use `.opencode/instructions/loop-execution.instructions.md` for bounded iterative
-execution with completion criteria, cycle limits, escalation rules, and verification gates.
+Use the **Safe Execution Loop Protocol** defined in `.opencode/agents/orchestrator.md` (and the
+`/execution-loop` command) for bounded iterative execution with completion criteria, cycle limits,
+escalation rules, and verification gates.
 
 For multi-phase coordination patterns, checkpoints, fallback routing, and agent delegation
 guidance, see `.opencode/instructions/orchestrator-reference.instructions.md`.

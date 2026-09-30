@@ -53,6 +53,8 @@ Use this format when creating a multi-phase plan:
 
 **@legal-advisor** — Legal research, regulatory compliance, license auditing, data privacy, export control, contract evaluation.
 
+**@researcher** — Read-only grounding of high-stakes (T1–T4) decisions in current primary sources; see Pattern 9.
+
 ## Coordination Patterns
 
 ### Pattern 1: Implementation Cycle
@@ -114,65 +116,35 @@ Use for high-risk or unfamiliar codebases where understanding must precede actio
 
 ### Pattern 8: Pre-Commit Review Gate (Multi-Lens)
 ```
-orchestrator → chunk the work → implement (per Implementation Routing)
+orchestrator → chunk → implement (per Implementation Routing)
             → freeze the diff snapshot
             → Tier 1: automated harness (npm run doctor / stack equivalent) — fast-fail first
             → Tier 2: concurrent @review lenses on the frozen snapshot (only if Tier 1 clean)
-                 requirements · code · security · ux-responsive (see Lens Selection)
-            → triage findings (see Review Triage & Decision Panel)
+            → triage findings (lens severity authoritative; declined blocking → user panel)
             → apply accepted fixes → scoped re-review of delta only ⊛ max 2 cycles
             → ✅ PASS → commit | ⚠️ caveats → commit with notes | ❌ FAIL → escalate
 ```
-Use as the final gate before any `git commit` — run once per commit, not once per implementation chunk.
+Use as the final gate before a commit leaves your machine (push / PR / merge) — run once
+per push, or once per tracked-branch commit. Budget: ≤8 reviewer dispatches per task
+(a full panel = 4; delta re-reviews dispatch only affected lenses), max 2 cycles per push;
+it **supersedes per-loop caps** and does not multiply the 5-cycle or Pattern 5 budgets.
+**Canonical spec — tier rules, lens selection, triage and decision-panel templates, freeze
+mechanism, skip criteria, and edge cases: `docs/review-gate.md`.**
 
-**Tier 1 (Automated Harness):** Run `npm run doctor` (or equivalent) FIRST; start Tier 2 lenses only if Tier 1 has no hard failures (fast-fail — don't spend 4 reviewer dispatches on a diff that does not build). Only block on new failures — compare against branch-point state. If tooling unavailable, warn and proceed (for security-surface changes, escalate instead). For validation infra changes, establish baseline first.
-
-**Tier 2 (Multi-Lens Adversarial Review):** REQUIRED for agent/skill/instruction/CI/security/feature changes, or any refactor, spanning 3+ files; OPTIONAL otherwise (docs/comments/mechanical bumps always skip). Freeze the diff, then dispatch one fresh `@review` subagent per lens, concurrently (Pattern 6 semantics), each receiving ONLY the frozen diff + plan + its lens brief — never the implementation reasoning. Restart the gate if the diff changes mid-cycle.
-
-**Lens Selection:**
-
-| Lens | Run when | Focus |
-|---|---|---|
-| requirements | features/behavior changes | acceptance criteria met; nothing out of scope |
-| code | whenever Tier 2 triggers | logic errors, correctness, maintainability, tests, performance |
-| security | security surface touched (auth, input, secrets, deps, data) | vulnerabilities, secrets, PII, license (load `security-audit` skill) |
-| ux-responsive | UI/markup changes | accessibility, responsive logic, input modes (load `ux-responsive` skill) |
-
-Precondition for the requirements lens: the plan must state concrete acceptance criteria; if it does not, flag this and skip that lens rather than review against a soft spec.
-
-**Review Triage & Decision Panel:**
-1. Classify each finding: critical (blocking) / high / medium / low; dedupe across lenses by `file:line` + finding. Lens-reported severity is authoritative — the orchestrator may escalate severity, never downgrade it.
-2. Apply objective, low-risk findings directly (style, minor perf, clarity).
-3. Blocking findings (critical, or any security/data-loss/requirement-miss at any severity) the orchestrator declines MUST go to the user decision panel — no orchestrator veto, and dedupe must never drop a security/data-loss tag.
-4. Non-critical declined findings go to the rationale table (informational).
-
+### Pattern 9: Decision Grounding Gate
 ```
-## Decision Panel — Declined Blocking Findings (commit blocked)
-| ID | Lens | Finding (reviewer) | Location | Why declined | Decision |
-|----|------|--------------------|----------|--------------|----------|
-| C1 | security | [verbatim] | file:line | [orchestrator rationale] | [ ] Apply [ ] Accept risk [ ] Defer |
+orchestrator → detect a high-stakes decision by structure (T1–T4), not self-reported confidence
+            → @researcher (input contract: question + context + planned approach)
+            → read the output contract (verdict, deprecation_status, claims[])
+            → fail-closed parent acceptance:
+                 USE_REPLACEMENT → adopt, or document why not
+                 INSUFFICIENT_EVIDENCE on T1/T2 → surface/escalate; never silently keep the workaround
+            → record the decision + sources (plan / ADR / PR)
 ```
-
-```
-## Review Triage — Declined Non-Critical Findings
-| ID | Lens | Reviewer comment | Severity | Why declined | Disposition |
-|----|------|------------------|----------|--------------|-------------|
-| M1 | code | [verbatim] | medium | [rationale] | informational |
-```
-
-**Re-review & budget:** After applying fixes, re-review ONLY the delta. A cycle = one review pass (the initial multi-lens panel, or a scoped delta re-review); the initial panel is cycle 1, so max 2 cycles = the initial panel plus at most one delta re-review. The gate runs once per commit, not per chunk. Binding task budget: ≤ 8 reviewer dispatches per task (a full panel = 4; delta re-reviews dispatch only affected lenses); it supersedes per-loop caps. Gate cycles are a sub-loop inside the outer execution loop and do not multiply the 5-cycle or Pattern 5 budgets. On exhaustion, escalate to human.
-
-**Gate outcomes:**
-
-| Outcome | Action |
-|---|---|
-| ✅ PASS | Proceed to commit |
-| ⚠️ PASS-WITH-CAVEATS | Commit with documented notes on remaining medium/low items — never a declined security/data-loss finding |
-| ❌ FAIL | Escalate to human with structured options |
-
-**Skip criteria (any one):** Trivial (single-line/docs/comment — unless modifying permissions/bash/tool grants), mechanical bumps, pre-existing gate pass, Planning Mode, user opt-out.
-
-**Edge cases:** Baseline pollution (only new failures, check branch-point); chicken-and-egg (baseline-first for validation infra changes); offline/degraded (warn, proceed); reviewer unavailability (escalate); self-referential changes (escalate to human, exempt from REQUIRED); idempotency (cache per diff, skip on rebase); mid-cycle diff changes (restart gate); cascading Tier 2→Tier 1 failures (same cycle, not new); concurrent-lens drift (all lenses share one frozen snapshot — restart if it changes).
+**When:** before implementing or "flipping" a high-stakes (T1–T4) decision — one-way doors,
+cross-module/security blast radius, workaround-smell, or volatile APIs. Not on routine
+two-way-door work with in-repo precedent. **Skill:** load `decision-grounding`.
+**Budget:** ≤3 grounded decisions per task, ≤6 fetches each, depth 1.
 
 ## Checkpoint Format
 

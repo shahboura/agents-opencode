@@ -39,3 +39,5 @@ dotnet build
 dotnet format
 dotnet test
 ```
+
+See `references/clean-architecture-examples.md` for worked examples.

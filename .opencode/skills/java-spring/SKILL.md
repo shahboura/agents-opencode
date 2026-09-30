@@ -39,3 +39,5 @@ Use this when working on Java Spring Boot projects.
 ./mvnw clean compile
 ./mvnw test
 ```
+
+See `references/spring-examples.md` for worked examples.

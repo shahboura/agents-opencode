@@ -26,7 +26,7 @@ npx agents-opencode --global
 # Project install
 npx agents-opencode --project .
 
-# Filter language instruction references for a lighter install
+# Keep only selected language skills for a lighter install
 npx agents-opencode --global --languages python,typescript
 
 # Update existing installation
@@ -36,7 +36,8 @@ npx agents-opencode --update
 npx agents-opencode --update --all
 ```
 
-`--languages` filters language instruction reference files. Runtime skills still load on demand via agent skill allowlists.
+`--languages` keeps only the requested language skills, pruning the others from `.opencode/skills/`.
+Non-language skills always remain, and runtime skills still load on demand via agent skill allowlists.
 
 ### Claude Code Plugin
 
@@ -48,7 +49,7 @@ npx agents-opencode --update --all
 /plugin install agents-opencode@shahboura
 ```
 
-All 23 skills are available immediately. Type `/` in Claude Code to see the full
+All 24 skills are available immediately. Type `/` in Claude Code to see the full
 skill list. Skills load on demand — no context cost until invoked.
 
 ### Via curl
@@ -133,8 +134,8 @@ To restore files, use `backup-manifest.json` from a backup session and copy the 
 - OpenCode runtime command: `opencode`
 - Git is not required for `npx`/`npm` installs.
 - `AGENTS.md` is created on first run or via `/init`.
-- Coding standards in `.opencode/instructions/` are available as
-  reference for agents.
+- Coding standards are delivered as on-demand skills in
+  `.opencode/skills/<name>/SKILL.md`.
 
 ## Next Steps
 

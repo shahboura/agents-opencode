@@ -233,6 +233,9 @@ jobs:
       - name: Run plugin guard tests
         run: node scripts/plugin-guards.test.js
 
+      - name: Run pre-commit gate tests
+        run: node scripts/gate/gate.test.js
+
       - name: Run risk-path assessment tests
         run: node scripts/assess-risk-path.test.js
 

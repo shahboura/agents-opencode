@@ -131,7 +131,7 @@ export const AgentsOpencodePlugin: Plugin = async ({ client }) => {
 You are operating with the agents-opencode v${PACK.version} agent pack.
 
 Available agents:
-- Task-delegatable agents (subagent/all): @codebase, @docs, @review, @planner, @brutal-critic, @legal-advisor
+- Task-delegatable agents (subagent/all): @codebase, @docs, @review, @planner, @brutal-critic, @legal-advisor, @researcher
 - Primary agents (user switches with Tab; not Task-invocable): orchestrator, em-advisor, blogger
 
 Active inventory: ${PACK.inventory} available as skills and slash commands.

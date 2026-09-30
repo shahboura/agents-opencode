@@ -1,10 +1,6 @@
----
-description: Extended reference for Java Spring Boot best practices
----
-
 # Java Spring Boot Reference
 
-Detailed code examples and extended guidance for the Java Spring Boot instruction set.
+Detailed code examples and extended guidance for the `java-spring` skill.
 
 ## Dependency Injection
 
@@ -68,6 +64,10 @@ public class UserController {
     @PostMapping
     public ResponseEntity<UserDto> createUser(@Valid @RequestBody CreateUserRequest request) {
         User user = userService.createUser(request);
+        java.net.URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(user.getId())
+            .toUri();
         return ResponseEntity.created(uri).body(userMapper.toDto(user));
     }
 
@@ -106,11 +106,13 @@ public class GlobalExceptionHandler {
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class UserServiceTest {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    UserServiceTest(UserService userService, UserRepository userRepository) {
+        this.userService = userService;
+        this.userRepository = userRepository;
+    }
 
     @Test
     void shouldCreateUserSuccessfully() {
@@ -184,9 +186,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-            .csrf(csrf -> csrf.disable()) // For APIs, consider enabling
+            // CSRF stays enabled for cookie/session auth; disabling is safe only for
+            // stateless token APIs that authenticate via the Authorization header.
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
@@ -198,3 +202,13 @@ public class SecurityConfig {
     }
 }
 ```
+
+CSRF and matcher guidance:
+
+- **Disable CSRF only for stateless token APIs** (credentials in an `Authorization` header,
+  no cookies or server session). Keep CSRF enabled for cookie/session authentication, where
+  the browser attaches credentials automatically and enables cross-site request forgery.
+- **Scope `permitAll()` to concrete endpoints** (for example `login`/`register`) instead of
+  broad prefixes like `/api/auth/**`, so newly added routes are authenticated by default.
+- Keep `SessionCreationPolicy.STATELESS` only when no session is required; session-based auth
+  must retain the default session policy for CSRF protection to remain meaningful.

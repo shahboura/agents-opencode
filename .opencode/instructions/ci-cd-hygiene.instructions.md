@@ -6,7 +6,7 @@ description: CI/CD hygiene, validation gates, and security checks
 
 ## Pipelines
 - Fail fast: run lint/format/test/type-check gates before deploy stages.
-- Use `npm ci`/`pip install --no-deps -r requirements.txt`/`dotnet restore` as appropriate; avoid floating deps.
+- Use `npm ci`/`pip install --require-hashes -r requirements.txt`/`dotnet restore` as appropriate; avoid floating deps. Bare `pip install -r requirements.txt` is acceptable only when the file is fully pinned.
 - Cache dependencies with keys that include lockfiles; restore before install.
 - Separate build, test, and deploy jobs; reuse artifacts instead of rebuilding.
 
@@ -16,7 +16,7 @@ description: CI/CD hygiene, validation gates, and security checks
 - Pin third-party actions by tag/sha; prefer official maintained actions.
 
 ## Quality Gates
-- Include lint/format checks (ESLint/black/ruff/gofmt/golint/etc.) and tests.
+- Include lint/format checks (ESLint, `ruff check`/`ruff format`, `gofmt`/`golangci-lint`, `dotnet format`, etc.) and tests.
 - For typed languages, run type checks (`tsc --noEmit`, `mypy`, `dotnet build` with warnings as errors where feasible).
 - Enforce status checks on protected branches.
 

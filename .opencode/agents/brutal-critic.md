@@ -12,6 +12,7 @@ permission:
   grep: "allow"
   read: "allow"
   webfetch: "allow"
+  question: "allow"
   skill:
     "*": "deny"
     "brutal-critic": "allow"

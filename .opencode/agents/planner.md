@@ -32,9 +32,11 @@ permission:
     "agent-diagnostics": "allow"
     "adr": "allow"
     "refactoring": "allow"
+    "decision-grounding": "allow"
   task:
     "*": "deny"
     "explore": "allow"
+    "researcher": "allow"
 ---
 
 # Planning Agent

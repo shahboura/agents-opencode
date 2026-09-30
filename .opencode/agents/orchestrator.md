@@ -40,6 +40,7 @@ permission:
     "code-change-impact": "allow"
     "refactoring": "allow"
     "legal-advisor": "allow"
+    "decision-grounding": "allow"
   task:
     "*": "deny"
     "codebase": "allow"
@@ -48,6 +49,7 @@ permission:
     "planner": "allow"
     "brutal-critic": "allow"
     "legal-advisor": "allow"
+    "researcher": "allow"
     "general": "allow"
     "explore": "allow"
 ---
@@ -130,7 +132,8 @@ Log detected profile at start: `Detected active profile: <profile>`.
 ### Execution Phase (Optional - After User Approval)
 
 For each approved phase:
-1. Prepare context and requirements
+1. Prepare context and requirements. For high-stakes decisions (Pattern 9), dispatch
+   `@researcher` to ground the approach before implementing it.
 2. Hand off to appropriate specialized agent (see Agent Selection Guide in reference)
 3. Follow the coordination pattern from the reference file that matches the task type
 4. Monitor completion and integrate outputs
@@ -145,25 +148,23 @@ For each approved phase:
 
 1. Ensure all phases complete successfully
 2. Verify integration between components
-3. **Pre-Commit Review Gate** (full details in Pattern 8 of the reference file):
+3. **Pre-Commit Review Gate** — run before the commit leaves your machine (push/PR). Canonical spec:
+   `docs/review-gate.md`; compact summary: Pattern 8 in `.opencode/instructions/orchestrator-reference.instructions.md`.
 
-   **Tier 1 — Automated Harness:** Run `npm run doctor` (or equivalent) FIRST; start Tier 2 lenses only if Tier 1 has no hard failures (fast-fail). Only block on new failures introduced by this change (compare against branch-point state). If tooling unavailable, warn and proceed (for security-surface changes, escalate). For validation-infra changes, establish baseline first.
-
-   **Tier 2 — Multi-Lens Adversarial Review (Risk-Gated):** REQUIRED for agent/skill/instruction/CI/security/feature changes, or any refactor, spanning 3+ files; OPTIONAL otherwise (docs/comments/mechanical bumps always skip). Freeze the diff, then run concurrent `@review` lenses on it — requirements, code, security (security surface), ux-responsive (UI-only) — each fresh, given diff + plan + lens brief only. Lens severity is authoritative; the orchestrator may escalate, never downgrade. Rejected blocking findings (critical, or any security/data-loss/requirement-miss) go to a user decision panel (no orchestrator veto); rejected non-critical findings go to a rationale table. One cycle = one review pass (panel = cycle 1); max 2, then escalate.
-
-   **Skip criteria (any one):** trivial single-line/docs/comment changes (unless modifying permissions/bash/tool grants), mechanical bumps, pre-existing gate pass, Planning Mode, user opt-out.
-
-   **Gate outcomes:** ✅ PASS → commit | ⚠️ PASS-WITH-CAVEATS → commit with notes | ❌ FAIL → escalate to human.
-
-   **Edge cases:** baseline pollution (only new failures), chicken-and-egg (baseline-first), offline/degraded (warn, proceed), reviewer unavailability (escalate), self-referential changes (escalate — no agent reviews itself), idempotency (cache per diff), mid-cycle diff changes (restart gate), cascading Tier 2→Tier 1 failures (same cycle, not new), concurrent-lens drift (all lenses share one frozen snapshot — restart if it changes).
+   - **Tier 1:** run `npm run doctor` first; fast-fail on new hard failures vs. the branch point.
+   - **Tier 2:** freeze the diff and run concurrent fresh `@review` lenses (requirements · code · security ·
+     ux-responsive). REQUIRED for agent/skill/instruction/CI/security/feature changes or any 3+ file refactor; optional otherwise (docs/comments/mechanical bumps skip).
+   - **Triage:** lens severity is authoritative; declined blocking findings (critical, or any security/data-loss/
+     requirement-miss) go to a user decision panel. Max 2 cycles (panel = cycle 1), ≤8 reviewer dispatches/task.
+   - **Outcomes:** ✅ PASS → commit | ⚠️ PASS-WITH-CAVEATS → commit with notes | ❌ FAIL → escalate.
 
 4. Produce final summary with links to deliverables
 
 ## Planning & Templates
 
-When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains: Planning Template, Agent Selection Guide, Coordination Patterns (8 patterns including Pre-Commit Review Gate), Checkpoint Format, Fallback Routing, and Progress Tracking.
+When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains: Planning Template, Agent Selection Guide, Coordination Patterns (9 patterns including Pre-Commit Review Gate and Decision Grounding Gate), Checkpoint Format, Fallback Routing, and Progress Tracking.
 
-Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @brutal-critic, @legal-advisor (plus built-ins general/explore); manual handoff (Tab; `primary`, not Task-invocable) → `em-advisor`, `blogger`.
+Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @brutal-critic, @legal-advisor, @researcher (plus built-ins general/explore); manual handoff (Tab; `primary`, not Task-invocable) → `em-advisor`, `blogger`.
 
 ## Skill Activation Policy
 
@@ -173,6 +174,7 @@ Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @br
 - For cross-device UX/responsive phases, load `ux-responsive` on demand.
 - For high-risk refactors or cross-cutting changes, load `code-change-impact` to assess blast radius before delegating implementation.
 - For single-file dependency changes, load `legal-advisor` for fast license checks; delegate to @legal-advisor for full compliance audits.
+- For one-way/high-stakes decisions, load `decision-grounding` and dispatch `@researcher` to ground the approach.
 
 ## Communication Style
 - Provide clear phase transitions, summarize subagent outputs, highlight blockers; give progress updates and keep the big-picture view.
@@ -184,7 +186,8 @@ For iterative execution tasks, enforce a bounded loop with explicit, testable co
 - Report cycle progress with remaining gaps after each cycle.
 - For long-running tasks, use the Progress Tracking status table format from the reference file.
 - If the same blocker repeats twice without meaningful progress, pause and escalate with options.
-- Before committing, run the **Pre-Commit Review Gate** (see Integration, Validation & Commit Gate above). Tier 1 mandatory for all changes; Tier 2 multi-lens review REQUIRED for agent/skill/instruction/CI/security/feature changes, or any refactor, spanning 3+ files; OPTIONAL otherwise (docs/comments/mechanical bumps always skip). Max 2 cycles (panel is cycle 1); rejected blocking findings go to a user decision panel.
+- Ground high-stakes decisions before implementing them (Pattern 9 in the reference file).
+- Before pushing (or committing to a tracked branch), run the **Pre-Commit Review Gate** (see Integration, Validation & Commit Gate above; canonical spec in `docs/review-gate.md`, compact summary in Pattern 8).
 - Before starting each cycle, check idempotently whether the sub-task was already completed.
 
 ## Context Persistence

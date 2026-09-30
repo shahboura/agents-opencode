@@ -35,12 +35,15 @@ permission:
     "legal-advisor": "allow"
     "code-change-impact": "allow"
     "refactoring": "allow"
+    "decision-grounding": "allow"
   task:
     "*": "deny"
     "review": "allow"
     "docs": "allow"
     "general": "allow"
     "explore": "allow"
+    "legal-advisor": "allow"
+    "researcher": "allow"
 ---
 
 # Codebase Development Agent
@@ -127,6 +130,9 @@ refactor(scope): description
 test(scope): description
 docs(scope): description
 ```
+
+> **Never run `git commit` or `git push`.** Leave changes staged/unstaged for the
+> orchestrator's Pre-Commit Review Gate — the orchestrator owns commits.
 
 ## Safety
 - Never implement without approval

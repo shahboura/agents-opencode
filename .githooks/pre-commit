@@ -1,0 +1,5 @@
+#!/bin/sh
+# Versioned Pre-Commit Review Gate hook.
+# Install with: npm run gate:install  (sets core.hooksPath + the +x index bit)
+# Bootstrap/escape hatch: SKIP_GATE=1 git commit ...
+exec node "$(dirname "$0")/../scripts/gate/precommit-check.js"
