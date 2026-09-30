@@ -28,7 +28,8 @@
     "Decision grounding (Pattern 9) is triggered by decision structure (T1 one-way door, T2 blast radius, T3 workaround smell, T4 volatility), never by self-reported LLM confidence; a fail-closed parent acceptance rule applies on INSUFFICIENT_EVIDENCE for T1/T2.",
     "GitHub Pages is not deprecated, but the docs site now runs on Astro Starlight (site/) deployed to Cloudflare Workers Static Assets (DOCS-1 implemented on feat/docs-astro-cloudflare); Cloudflare/Astro docs artifacts stay excluded from the published npm package (DOCS-2 implemented).",
     "The docs site is a self-contained Astro Starlight project in site/ with its own package.json, isolating Astro/wrangler deps from the published pack; it deploys via .github/workflows/deploy-docs.yml (wrangler-action pinned to a commit SHA, environment: production).",
-    "GitHub Pages is a convenience move, not a correctness fix - the migration was gated (cycle 1 found 2 highs: unpinned action with a live token + dangling old-Pages refs) rather than rushed."
+    "GitHub Pages is a convenience move, not a correctness fix - the migration was gated (cycle 1 found 2 highs: unpinned action with a live token + dangling old-Pages refs) rather than rushed.",
+    "The docs site is served at https://agnts.elkodr.com/ (Cloudflare Worker custom domain); this origin is the single source for canonical URLs, the sitemap, and README/package links."
   ],
   "open_risks": [
     "Scenario-level behavioral eval coverage is still limited.",
@@ -40,13 +41,12 @@
     "The pre-commit hook cannot distinguish skip-eligible docs/comment commits from risky ones - it blocks unconditionally, so documentation-only commits need an explicit SKIP_GATE=1 or a marker.",
     "Hardening a new mechanism can legitimately exceed the <=8-dispatch gate budget; the gate on the gate itself ran 5+ cycles.",
     "The pre-commit hook's untrusted-content and read/grep scope rules are instruction-level, not runtime-enforced (the plugin guards only read, not grep).",
-    "The docs-site origin is still a launch placeholder (agents-opencode-docs.example.workers.dev) in README/package.json/astro.config; the real Workers URL must be set before release.",
     "feat/docs-astro-cloudflare is stacked on chore/instruction-health-readme and must be rebased onto main after that PR merges."
   ],
   "blocked_by": [],
   "next_actions": [
     "Push and open PRs for chore/instruction-health-readme and feat/docs-astro-cloudflare; merge the first, then rebase the migration branch.",
-    "Launch the docs site: set the real Cloudflare Workers URL in README/package.json/astro.config, add CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID secrets, and disable GitHub Pages (Settings -> Pages -> Source: None).",
+    "Launch the docs site: origin is set to https://agnts.elkodr.com/ (README/package.json/astro.config); remaining steps are adding CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID secrets and disabling GitHub Pages (Settings -> Pages -> Source: None).",
     "Consider simplifying the pre-commit gate or encoding skip-eligibility so trivial docs commits do not require a marker.",
     "Complete VAL-4: migrate evals/harness/run-evals.js to the shared parser.",
     "Plan OpenCode v2 support (dual-entrypoint plugin + installer --target) per BACKLOG.md.",
@@ -72,5 +72,5 @@
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-09-30T00:08:00Z"
+  "last_updated": "2026-09-30T01:05:00Z"
 }
