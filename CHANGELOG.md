@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.6.0](https://github.com/shahboura/agents-opencode/compare/v2.5.1...v2.6.0) (2026-09-30)
+
+
+### Features
+
+* **agents:** review gate, decision grounding, instruction cleanup ([#101](https://github.com/shahboura/agents-opencode/issues/101)) ([530dfbb](https://github.com/shahboura/agents-opencode/commit/530dfbbbea2447e8e0672e56061d865b3cb0c678))
+* **docs:** migrate docs site to Astro Starlight on Cloudflare Workers ([546fa84](https://github.com/shahboura/agents-opencode/commit/546fa84d4cc5aed2b415d0538d4ad88152512e2b))
+
+
+### Bug Fixes
+
+* **validation:** fail closed on malformed permission structures + review-gate docs ([#96](https://github.com/shahboura/agents-opencode/issues/96)) ([5e50446](https://github.com/shahboura/agents-opencode/commit/5e5044630917a93a288fd1753458206286394cbc))
+
 ## [2.5.1](https://github.com/shahboura/agents-opencode/compare/v2.5.0...v2.5.1) (2026-09-28)
 
 
