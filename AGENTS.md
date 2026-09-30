@@ -65,6 +65,16 @@ All agents log milestone entries to this file using this format:
 
 ## Milestones
 
+### 2026-09-30 08:08 - Docs site migrated to Astro Starlight on Cloudflare Workers
+
+**Agent:** orchestrator
+**Summary:** Replaced the GitHub Pages (Jekyll) docs site with an Astro Starlight project deployed to Cloudflare Workers Static Assets, on `feat/docs-astro-cloudflare`.
+- New `site/` Starlight project; all 14 docs migrated from `docs/` (front-matter `nav_order`→`sidebar.order`, links rewritten to Starlight routes, styles ported) and the GitHub Pages artifacts deleted (`pages.yml`, `docs/_config.yml`, `docs/Gemfile`, `docs/_sass`, `docs/`).
+- Deploy: `site/wrangler.jsonc` (Static Assets, 404-page) + `.github/workflows/deploy-docs.yml` with `wrangler-action` SHA-pinned, least-privilege `contents: read`, and `environment: production`.
+- DOCS-2: `site/` stays out of the npm package (excluded by the `files` allowlist; asserted in `test-npx-integrity.js`). Added `site/public/_headers` (nosniff, referrer, clickjacking, CSP verified at the Workers runtime).
+- Gate: cycle 1 caught 2 highs (unpinned action holding a live CF token; dangling old-Pages/doc-path refs) - both fixed; cycle 2 clean (no open security/data-loss). GitHub Pages is **not** deprecated - this was a deliberate convenience move.
+- Launch TODOs: set the real Workers URL (README/package.json/astro.config carry the placeholder), add `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID`, and disable Pages in repo settings.
+
 ### 2026-09-29 10:59 - Instruction health, README rewrite, enforced review gate, decision grounding
 
 **Agent:** orchestrator

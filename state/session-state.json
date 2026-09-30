@@ -1,6 +1,6 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
-  "current_phase": "instruction health, enforced review gate, and decision grounding (branch chore/instruction-health-readme)",
+  "current_phase": "docs site migration to Astro Starlight on Cloudflare Workers (branch feat/docs-astro-cloudflare)",
   "plugin_version": "2.5.1",
   "decisions": [
     "Use deny-by-default permissions with explicit allowlists.",
@@ -26,7 +26,9 @@
     "Review-before-commit is enforced in three layers: Pattern 8 staged-diff freeze artifact, a codebase 'never commit' rule, and a versioned pre-commit hook bound to a staged-tree hash via .gate/pass.json. The gate runs before a commit leaves the machine (push/PR); a WIP commit is allowed only to freeze the snapshot.",
     "The pre-commit hook is a local honest-operator guardrail, not a security boundary: the marker is forgeable and --no-verify bypasses it.",
     "Decision grounding (Pattern 9) is triggered by decision structure (T1 one-way door, T2 blast radius, T3 workaround smell, T4 volatility), never by self-reported LLM confidence; a fail-closed parent acceptance rule applies on INSUFFICIENT_EVIDENCE for T1/T2.",
-    "GitHub Pages is not deprecated, but the docs site now runs on Astro Starlight (site/) deployed to Cloudflare Workers Static Assets (DOCS-1 implemented on feat/docs-astro-cloudflare); Cloudflare/Astro docs artifacts stay excluded from the published npm package (DOCS-2 implemented)."
+    "GitHub Pages is not deprecated, but the docs site now runs on Astro Starlight (site/) deployed to Cloudflare Workers Static Assets (DOCS-1 implemented on feat/docs-astro-cloudflare); Cloudflare/Astro docs artifacts stay excluded from the published npm package (DOCS-2 implemented).",
+    "The docs site is a self-contained Astro Starlight project in site/ with its own package.json, isolating Astro/wrangler deps from the published pack; it deploys via .github/workflows/deploy-docs.yml (wrangler-action pinned to a commit SHA, environment: production).",
+    "GitHub Pages is a convenience move, not a correctness fix - the migration was gated (cycle 1 found 2 highs: unpinned action with a live token + dangling old-Pages refs) rather than rushed."
   ],
   "open_risks": [
     "Scenario-level behavioral eval coverage is still limited.",
@@ -37,12 +39,14 @@
     "OpenCode v2 is not yet supported; the plugin entrypoint is v1-only.",
     "The pre-commit hook cannot distinguish skip-eligible docs/comment commits from risky ones - it blocks unconditionally, so documentation-only commits need an explicit SKIP_GATE=1 or a marker.",
     "Hardening a new mechanism can legitimately exceed the <=8-dispatch gate budget; the gate on the gate itself ran 5+ cycles.",
-    "The pre-commit hook's untrusted-content and read/grep scope rules are instruction-level, not runtime-enforced (the plugin guards only read, not grep)."
+    "The pre-commit hook's untrusted-content and read/grep scope rules are instruction-level, not runtime-enforced (the plugin guards only read, not grep).",
+    "The docs-site origin is still a launch placeholder (agents-opencode-docs.example.workers.dev) in README/package.json/astro.config; the real Workers URL must be set before release.",
+    "feat/docs-astro-cloudflare is stacked on chore/instruction-health-readme and must be rebased onto main after that PR merges."
   ],
   "blocked_by": [],
   "next_actions": [
-    "Merge the chore/instruction-health-readme PR (6 commits: instruction health, README, enforced gate, decision grounding).",
-    "Decommission GitHub Pages (Settings -> Pages -> Source: None) and decide on old-URL redirects; DOCS-1/DOCS-2 are implemented on feat/docs-astro-cloudflare.",
+    "Push and open PRs for chore/instruction-health-readme and feat/docs-astro-cloudflare; merge the first, then rebase the migration branch.",
+    "Launch the docs site: set the real Cloudflare Workers URL in README/package.json/astro.config, add CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID secrets, and disable GitHub Pages (Settings -> Pages -> Source: None).",
     "Consider simplifying the pre-commit gate or encoding skip-eligibility so trivial docs commits do not require a marker.",
     "Complete VAL-4: migrate evals/harness/run-evals.js to the shared parser.",
     "Plan OpenCode v2 support (dual-entrypoint plugin + installer --target) per BACKLOG.md.",
@@ -55,15 +59,18 @@
     ".githooks/pre-commit",
     "scripts/gate",
     "scripts/lib/file-ops.js",
+    "site/astro.config.mjs",
+    "site/wrangler.jsonc",
+    "site/public/_headers",
     "site/src/content/docs/review-gate.md",
     "site/src/content/docs/decision-grounding.md",
-    "site/public/_headers",
     ".github/workflows/deploy-docs.yml",
+    "scripts/validate-docs.js",
     "README.md",
     "BACKLOG.md",
     "state/session-state.json"
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-09-29T23:56:05Z"
+  "last_updated": "2026-09-30T00:08:00Z"
 }
