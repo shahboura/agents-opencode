@@ -65,6 +65,16 @@ All agents log milestone entries to this file using this format:
 
 ## Milestones
 
+### 2026-10-15 01:00 - `--target auto` host detection + UI/UX backlog entry
+
+**Agent:** orchestrator
+**Summary:** Landed OpenCode host-version detection for `--target auto` on `feat/auto-target-detection`, plus the deferred UI/UX (ui-ux-pro-max) backlog entry.
+- `auto` runs `opencode --version` (spawnSync, pinned `cwd` to avoid repo-local shim resolution, 4s timeout, stderr fallback) and selects v2 when the major is >= 2, else v1; explicit `--target` and a manifest-recorded target still win; detection runs once per process, after structural guards, and fails open to v1. `AGENTS_OPENCODE_HOST_VERSION` overrides detection (tests/CI).
+- Gated PASS-WITH-CAVEATS (Tier 1 + Tier 2 requirements/code/security over 2 cycles). The security lens flagged the Windows CWD-before-PATH shim risk — the sole blocking item — fixed by pinning the spawn `cwd`.
+- Also fixed the CI-only installer failure that turned main red: `testGlobalAndProjectLifecycle` wasn't hermetic under an ambient `XDG_CONFIG_HOME` (GitHub runners set it); landed on `fix/installer-test-xdg-hermetic` (merged).
+- Lesson (recurring): `git checkout -b <branch> origin/main` sets the branch upstream to `origin/main`, so a bare `git push` pushes straight to main. Use `git switch -c` / `--no-track` and protect `main`.
+- BACKLOG: Phase 1 marked partly shipped; new "UI/UX skill integration (deferred)" section (UIUX-1).
+
 ### 2026-10-15 00:30 - OpenCode v1/v2 dual support (target adapter, dual plugin, plugin-spec install, XDG fix)
 
 **Agent:** orchestrator

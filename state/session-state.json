@@ -1,6 +1,6 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
-  "current_phase": "OpenCode v1/v2 dual support shipped on branch feat/opencode-v2-dual-support (target adapter + dual-entrypoint plugin + plugin-spec install + XDG fix); docs site already migrated to Astro Starlight on Cloudflare Workers.",
+  "current_phase": "OpenCode v1/v2 dual support shipped (target adapter + dual plugin + plugin-spec install + XDG fix); --target auto host detection landed on branch feat/auto-target-detection; docs site on Astro Starlight/Cloudflare Workers.",
   "plugin_version": "2.6.0",
   "decisions": [
     "Use deny-by-default permissions with explicit allowlists.",
@@ -34,7 +34,8 @@
     "One plugin file serves both hosts: a v1 named export (AgentsOpencodePlugin) and a v2 default export { id, server, setup } (server is the v1 function, matching the documented dual pattern); v2 setup feature-detects a v1-shaped ctx and no-ops quietly.",
     "Install model is hybrid: the file installer delivers agents/commands/skills/config; a plugin-spec install (plugins: [\"agents-opencode\"]) delivers skills + hooks/guards only, because a v2 plugin cannot register agents or global config. A coexistence guard skips skill registration when the pack is file-installed.",
     "The global config dir honors XDG_CONFIG_HOME (absolute only) with a legacy-path split-brain warning; verified empirically against opencode 1.19.0 (opencode debug paths resolves config to $XDG_CONFIG_HOME/opencode).",
-    "v2 agent/command/config compatibility relies on v2's in-memory translation of v1-shaped files; documented but not yet verified against a live v2 host."
+    "v2 agent/command/config compatibility relies on v2's in-memory translation of v1-shaped files; documented but not yet verified against a live v2 host.",
+    "--target auto detects the host via 'opencode --version' (spawnSync with a pinned cwd to avoid repo-local shim resolution, 4s timeout, stderr fallback); major >= 2 selects v2 else v1; AGENTS_OPENCODE_HOST_VERSION overrides detection for tests/CI."
   ],
   "open_risks": [
     "Scenario-level behavioral eval coverage is still limited.",
@@ -44,7 +45,7 @@
     "evals/harness/run-evals.js still uses a hand-rolled permission parser (VAL-4) that can drift from the shared module.",
     "OpenCode v2 runtime is unverified end-to-end (no live v2 host/Bun in CI): the v2 plugin hooks and skill registration are grounded from docs, not runtime-tested, and are marked experimental.",
     "v2 agent/command compatibility depends on v2 translating v1-shaped frontmatter (the pack relies on auto-translation); if v2 removes it, agents could silently lose permission restrictions.",
-    "Host-version detection for --target auto is not wired, so auto resolves to v1 today (documented in help/docs).",
+    "Host detection runs 'opencode --version' via spawnSync; the Windows cmd.exe CWD-vs-PATH behavior is mitigated by a pinned cwd but was not executed on a live Windows opencode.cmd host.",
     "The v2 secret-read guard is best-effort: if a beta v2 host does not expose the tool hook, the plugin warns but the guard is absent.",
     "The pre-commit hook cannot distinguish skip-eligible docs/comment commits from risky ones - it blocks unconditionally, so documentation-only commits need an explicit SKIP_GATE=1 or a marker.",
     "Hardening a new mechanism can legitimately exceed the <=8-dispatch gate budget; the gate on the gate itself ran 5+ cycles.",
@@ -57,7 +58,7 @@
     "Commit the gated feat/opencode-v2-dual-support branch (Review Gate PASS-WITH-CAVEATS).",
     "Push and open PRs for chore/instruction-health-readme and feat/docs-astro-cloudflare; merge the first, then rebase the migration branch.",
     "Launch the docs site: add CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID secrets and disable GitHub Pages (Settings -> Pages -> Source: None).",
-    "Wire host-version detection into --target auto (Phase 1 remainder).",
+    "Verify feat/auto-target-detection on CI (both-target installer e2e + --v2-strict jobs).",
     "Complete VAL-4: migrate evals/harness/run-evals.js to the shared parser.",
     "Expand eval fixtures toward capability/regression suites (pass@k) per Anthropic guidance."
   ],
@@ -86,5 +87,5 @@
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-10-15T00:30:00Z"
+  "last_updated": "2026-10-15T01:00:00Z"
 }
