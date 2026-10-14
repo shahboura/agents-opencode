@@ -53,7 +53,7 @@ npx agents-opencode --status
 
 # Choose an OpenCode config target (default: auto)
 npx agents-opencode --global --target v2    # emit v2 keys ('permissions'; 'plugins' only if a plugin entry exists)
-npx agents-opencode --global --target auto  # v1 today unless a v2 host is detected
+npx agents-opencode --global --target auto  # detect the installed OpenCode version (v2 if major >= 2, else v1)
 ```
 
 `--languages` prunes non-requested **language skill directories** only — shared workflow skills always stay.
@@ -198,8 +198,9 @@ Omit `--global` to install into the current project instead.
 ### OpenCode v1/v2 support
 
 OpenCode v1 and v2 use different config keys, so the installer emits per-target output and never
-mixes the two. Select a target with `--target v1|v2|auto` (default `auto`; resolves to v1 today
-until v2 host detection lands). The installer records the target so uninstall reverts the right keys.
+mixes the two. Select a target with `--target v1|v2|auto` (default `auto` detects the installed
+OpenCode version — v2 when the major is >= 2, else v1; it falls back to v1 when OpenCode is not
+detected). The installer records the target so uninstall reverts the right keys.
 
 A file install adds no plugin entry: OpenCode auto-loads the bundled plugin from `.opencode/plugins/`.
 To deliver **skills and hooks/guards only** (no agents or global config), add the package as a plugin

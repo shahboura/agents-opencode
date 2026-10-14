@@ -23,10 +23,11 @@ This matrix captures tested runtime/tooling targets for this repository.
 
 The pack fully supports OpenCode v1 and prepares v2 support; the two use
 **disjoint config keys**. The installer emits per-target output
-(`--target v1|v2|auto`; `auto` resolves to v1 today) and never co-writes both key
-sets. The **v2 runtime path is experimental** — the plugin-spec path and the
-reliance on v2 translating v1-shaped agent/command files are not yet verified
-against a live v2 host (see [OpenCode v1/v2 support](/opencode-v1-v2-support/)).
+(`--target v1|v2|auto`; `auto` detects the installed OpenCode version — v2 when the
+major is >= 2, else v1) and never co-writes both key sets. The **v2 runtime path
+is experimental** — the plugin-spec path and the reliance on v2 translating
+v1-shaped agent/command files are not yet verified against a live v2 host
+(see [OpenCode v1/v2 support](/opencode-v1-v2-support/)).
 
 | Concern | v1 | v2 |
 |---|---|---|

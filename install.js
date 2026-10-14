@@ -465,7 +465,7 @@ function verifyInstallation(opencodeDir, scope) {
  * Resolve the effective target for an install/update. An explicit v1/v2 always
  * wins. Under 'auto' we prefer the target recorded by a previous install (so an
  * update never silently flips a v2 install back to v1), then fall back to the
- * adapter's host-version detection (currently v1 until Phase 1 lands).
+ * adapter's host-version detection.
  */
 function resolveTargetForScope(requested, existingManifest, detectedVersion) {
   if (requested === 'v1' || requested === 'v2') {
@@ -478,6 +478,27 @@ function resolveTargetForScope(requested, existingManifest, detectedVersion) {
   }
 
   return opencodeTarget.resolveTarget({ requested: 'auto', detectedVersion });
+}
+
+// Host-version detection is memoised so a single run (including --all across
+// scopes) probes the host at most once and prints one concise info line.
+let hostVersionDetection;
+
+function detectHostVersionOnce() {
+    if (hostVersionDetection === undefined) {
+        const version = opencodeTarget.detectHostVersion();
+        hostVersionDetection = { version };
+        // Print only the parsed major: the raw host string is attacker-influenced
+        // (it comes from `opencode` stdout/stderr) and could carry ANSI/control chars.
+        const major = opencodeTarget.parseHostMajor(version);
+        if (typeof major === 'number') {
+            const resolved = opencodeTarget.resolveTarget({ requested: 'auto', detectedVersion: version });
+            info(`Detected OpenCode major ${major} → target ${resolved}`);
+        } else {
+            info('OpenCode host not detected → target v1');
+        }
+    }
+    return hostVersionDetection.version;
 }
 
 function globalInstallExists(dirPath) {
@@ -528,7 +549,6 @@ function installScope(options) {
 
   const paths = pathsMod.getScopePaths(scope, projectDir);
   const existingManifest = readManifest(paths.manifestPath);
-  const resolvedTarget = resolveTargetForScope(targetRequested, existingManifest);
 
     if (scope === 'project' && !fs.existsSync(paths.rootDir)) {
         error(`Project directory does not exist: ${paths.rootDir}`);
@@ -547,6 +567,17 @@ function installScope(options) {
     if (scope === 'global') {
         warnOnGlobalConfigSplit();
     }
+
+    // Host detection runs only after the structural guards above, so a doomed
+    // invocation never spawns the `opencode --version` probe. Explicit v1/v2 and
+    // a manifest-recorded target both win: only a fresh 'auto' install with no
+    // recorded target probes the host (once per run).
+    const recordedTarget = existingManifest && (existingManifest.target === 'v1' || existingManifest.target === 'v2')
+        ? existingManifest.target
+        : null;
+    const explicitTarget = targetRequested === 'v1' || targetRequested === 'v2';
+    const detectedVersion = !explicitTarget && !recordedTarget ? detectHostVersionOnce() : undefined;
+    const resolvedTarget = resolveTargetForScope(targetRequested, existingManifest, detectedVersion);
 
     fileOps.ensureDir(paths.opencodeDir);
 
@@ -965,8 +996,10 @@ INSTALL OPTIONS:
                                 v1 writes 'plugin'/'permission'; v2 writes
                                 'permissions' (and 'plugins' only if the source config
                                 lists a plugin entry). Never both in one config.
-                                auto resolves to v1 today unless a v2 host is detected
-                                (host-version detection is not yet wired).
+                                auto detects the installed OpenCode version and
+                                selects v2 when its major version is >= 2, else v1;
+                                it falls back to v1 when OpenCode is not detected.
+                                Set AGENTS_OPENCODE_HOST_VERSION to override.
 
 LIFECYCLE OPTIONS:
     -U, --update                Update existing installation(s)
@@ -983,7 +1016,7 @@ EXAMPLES:
     node install.js --project .
     node install.js --global --languages python,typescript  # keep only Python/TypeScript language skills
     node install.js --global --target v2         # emit v2 keys (permissions; plugins only if a plugin entry exists)
-    node install.js --global --target auto       # default; v1 unless a v2 host is detected
+    node install.js --global --target auto       # default; detects OpenCode (v2 if major >= 2, else v1)
     node install.js --update                    # updates detected installs (global and/or current project)
     node install.js --update --all              # force update both scopes
     node install.js --uninstall                 # uninstall current project scope (default)

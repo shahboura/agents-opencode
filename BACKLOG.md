@@ -79,11 +79,12 @@ Phases:
      (`npm run validate:opencode-schema:v2`, its own CI job); the old
      `install.js --v2-strict` no-op stub was removed.
    - v1/v2 compatibility docs.
-2. Phase 1 (2.x, compatibility window): **remaining** — wire host-version detection
-   so `auto` selects v2 automatically; add install end-to-end tests for both
-   targets. Live v2 validation is also outstanding: no OpenCode v2 run has
-   exercised the plugin-spec path yet (the v2 plugin API is beta), so treat
-   plugin-spec as experimental.
+2. Phase 1 (2.x, compatibility window): **partly shipped** — `--target auto` now
+   detects the installed OpenCode version (`opencode --version`; major >= 2 selects
+   v2, else v1; `AGENTS_OPENCODE_HOST_VERSION` overrides detection) and install
+   end-to-end tests cover both targets. **Remaining:** live v2 validation — no
+   OpenCode v2 run has exercised the plugin-spec path yet (the v2 plugin API is
+   beta), so treat plugin-spec as experimental.
 3. Phase 2 (3.0.0, breaking): stop emitting v1 keys and remove the v1 plugin branch.
 
 Guardrails:
@@ -92,6 +93,30 @@ Guardrails:
 - Preserve secret-read protection in the ported plugin hook (v2 only `ask`s on `*.env`).
 - Keep `AGENTS.md` as the instruction mechanism (v2 ignores the `instructions` config).
 - Support both through 2.x; reserve the major release for dropping v1.
+
+## UI/UX skill integration (deferred)
+
+Evaluated embedding [`nextlevelbuilder/ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)
+(MIT) for richer UI/UX guidance. Deferred: it is a Python-3 search engine plus a
+large CSV data subtree (`scripts/search.py`, styles/palettes/fonts/UX/icons), and
+its `SKILL.md` uses Claude-Code path conventions (`${CLAUDE_PLUGIN_ROOT}`), so
+embedding adds a runtime dependency, package-size and maintenance cost, and an
+upstream version to track. It also overlaps the existing `ux-responsive` skill.
+
+| Option | Pros | Cons |
+|---|---|---|
+| **External install + thin wrapper** (recommended first) | Zero maintenance; upstream versioning; no Python/CSV in the tarball | Not "embedded"; requires `uipro init --ai opencode`; agent must run their CLI |
+| **Hybrid** (embed data/scripts, thin wrapper) | Offline, embedded | We own the Python dependency + data subtree + attribution |
+| **Full vendor into `.opencode/skills/`** | Self-contained, one install | Heaviest: size, license/NOTICE, Python, upstream drift, pruning complexity |
+
+If adopted: add a thin `ui-design` skill/command that detects and delegates to the
+upstream skill (falling back to `ux-responsive`), add it to `ALWAYS_KEEP` in the
+installer pruning, and add a NOTICE/attribution. Do **not** ship two competing UX
+skills — scope `ux-responsive` as the lightweight fallback.
+
+| ID | Severity | Item | Files |
+|---|---|---|---|
+| UIUX-1 | low | Decide + implement the UI/UX skill integration model (external wrapper vs hybrid vs vendor) | `.opencode/skills/ux-responsive`, `install.js` (ALWAYS_KEEP), `package.json` (`files`) |
 
 ## Provenance
 

@@ -115,10 +115,11 @@ installer emits per-target output and never mixes key sets:
 ```bash
 npx agents-opencode --global --target v1    # plugin / permission
 npx agents-opencode --global --target v2    # permissions (plugins only if a plugin entry exists)
-npx agents-opencode --global --target auto  # default; v1 unless a v2 host is detected
+npx agents-opencode --global --target auto  # detect the installed OpenCode version (v2 if major >= 2, else v1)
 ```
 
-- `auto` resolves to **v1 today**; host-version detection is not yet wired.
+- `auto` detects the installed OpenCode version (v2 when the major is >= 2, else v1)
+  and falls back to v1 when OpenCode is not detected.
 - The installer records the target so uninstall reverts the correct keys.
 - A **file install** delivers agents, markdown commands, skills, and config/permissions; the bundled
   plugin (auto-loaded from `.opencode/plugins/`) adds the runtime hooks/guards. On a file install the
