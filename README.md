@@ -6,17 +6,17 @@
 [![Documentation](https://img.shields.io/badge/docs-Cloudflare%20Workers-blue)](https://agnts.elkodr.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Ten specialist agents. 24 on-demand skills. One install.**
+**Ten specialist agents. 27 on-demand skills. One install.**
 
 Turn a single prompt into a full delivery loop — plan → implement → review → document —
 without leaving the terminal you already use. Built for [OpenCode](https://opencode.ai).
-Already on Claude Code? The same 24 skills ship as a [plugin](./adapters/claude-code/).
+Already on Claude Code? The same 27 skills ship as a [plugin](./adapters/claude-code/).
 
 ## Why this pack is different
 
 - **One prompt, four disciplines.** `@orchestrator` scopes the work, then hands off to
   `@codebase` for implementation, `@review` for quality, and `@docs` for documentation — in one session.
-- **Skills that don't tax context.** All 24 skills load only when invoked, so an idle skill costs nothing.
+- **Skills that don't tax context.** All 27 skills load only when invoked, so an idle skill costs nothing.
 - **Least privilege by default.** Every agent starts at `"*": "deny"` and grants narrow allows for
   the tools and skills it actually needs.
 - **Verified, not vibes.** Agent contracts, command matrices, docs links, and plugin guards are
@@ -128,13 +128,14 @@ Type `/command-name` in the TUI to run:
 
 ## Skills
 
-24 skills live under `.opencode/skills/`, each defined in a `SKILL.md`:
+27 skills live under `.opencode/skills/`, each defined in a `SKILL.md`:
 
 - **11 language skills** — .NET, Flutter, Go, Java/Spring, Node/Express, Python, React/Next.js,
   Ruby/Rails, Rust, SQL migrations, TypeScript.
-- **13 workflow skills** — API docs, ADRs, docs validation, project bootstrap, agent diagnostics,
-  refactoring, security audit, code-change impact, UX/responsive, decision grounding, blogging,
-  brutal critique, legal compliance.
+- **16 workflow skills** — API docs, ADRs, docs validation, project bootstrap, agent diagnostics,
+  refactoring, security audit, code-change impact, UX/responsive, decision grounding, systematic
+  debugging, test-driven development, verification before completion, blogging, brutal critique,
+  legal compliance.
 
 Skills load on demand via the `skill` tool. Coding standards and language guidance live in these
 skills — not in a sprawling instruction directory. A small set of shared reference instructions
@@ -223,7 +224,7 @@ See [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 /plugin update agents-opencode@shahboura
 ```
 
-This gives Claude Code access to the same 24 on-demand skills, which load only when invoked —
+This gives Claude Code access to the same 27 on-demand skills, which load only when invoked —
 no context cost until you use them. See [adapters/claude-code/](./adapters/claude-code/) for the
 plugin manifest and generator script.
 
@@ -250,6 +251,7 @@ metadata. `npm run eval:agents:json` writes machine-readable output.
 
 ## License
 
-[MIT](./LICENSE) © 2025–2026 Shehab Elhadidy.
+[MIT](./LICENSE) © 2025–2026 Shehab Elhadidy. Portions adapted from third-party
+projects — see [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
 
 If this pack saves you time, [star the repo](https://github.com/shahboura/agents-opencode) so others can find it.

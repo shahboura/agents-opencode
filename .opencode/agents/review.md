@@ -31,6 +31,7 @@ permission:
     "code-change-impact": "allow"
     "security-audit": "allow"
     "decision-grounding": "allow"
+    "verification-before-completion": "allow"
   task:
     "*": "deny"
     "explore": "allow"
