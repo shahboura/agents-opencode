@@ -7,9 +7,12 @@
  * documented OpenCode schema (v1).
  *
  * Flags:
- * - `--v2`     also print a v2-readiness report (informational; never changes exit code)
- * - `--strict` promote security-relevant warnings (missing permission block,
- *              legacy tools:) to errors so CI fails closed on them
+ * - `--v2`         also print a v2-readiness report (informational; never changes exit code)
+ * - `--strict`     promote security-relevant warnings (missing permission block,
+ *                  legacy tools:) to errors so CI fails closed on them
+ * - `--v2-strict`  dedicated fail-closed v2 conformance mode: derive the v2 target
+ *                  output via scripts/lib/opencode-target.js and error if it is not
+ *                  v2-conformant, then scan agents/commands for untranslatable tokens
  *
  * Parsing is fail-closed: malformed frontmatter/permission input surfaces as an
  * ERROR, never a silent skip. Shared helpers live in scripts/lib/opencode-schema.js.
@@ -24,6 +27,7 @@ const {
   frontmatterOf, topLevelKeys, field, descriptionOf, listDirs,
   analyzePermission, permissionKeys, permissionChildBlock, parseMapEntries,
 } = require('./lib/opencode-schema');
+const opencodeTarget = require('./lib/opencode-target.js');
 
 const colors = {
   red: '\x1b[31m',
@@ -260,7 +264,209 @@ function validateConfig() {
   }
 }
 
+// --- v2-strict conformance -------------------------------------------------
+// A v1 config cannot express v2 keys; the v2 target output is produced by the
+// install-target adapter (scripts/lib/opencode-target.js). These checks make the
+// previously no-op --v2-strict flag real and fail-closed so a v1/v2 key-set
+// regression cannot ship silently.
+
+// Top-level keys the installer is allowed to emit for a v2 target.
+const V2_CONFIG_ALLOWLIST = new Set(['$schema', 'plugins', 'permissions']);
+// v1-only config keys that must never appear in a v2 config.
+const V1_ONLY_CONFIG_KEYS = ['permission', 'plugin'];
+// Actions v2 does not accept: bash/task are renamed (shell/subagent); the rest
+// have no v2 core equivalent and are dropped by the adapter.
+const FORBIDDEN_V2_ACTIONS = new Set(['bash', 'task', 'doom_loop', 'lsp']);
+// Valid v2 permission actions: the v1 permission keys with the adapter's renames
+// applied (bash->shell, task->subagent, write/patch->edit), minus dropped actions.
+const V2_PERMISSION_ACTIONS = new Set([
+  'read', 'edit', 'glob', 'grep', 'list', 'shell', 'subagent',
+  'external_directory', 'todowrite', 'question', 'webfetch', 'websearch', 'skill',
+]);
+
+// Agent/command frontmatter tokens that v2 does NOT translate. v2 auto-translates
+// agent 'permission'/'temperature' and command 'subtask' in memory (the approved
+// design), so those are informational; only genuinely untranslatable tokens fail.
+const V2_UNTRANSLATED_TOKENS = [
+  { re: /^(?!\s*#)["']?tools["']?\s*:/m, description: "legacy 'tools:' block (v2 does not translate it)" },
+];
+
+function isPlainObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+// Rule (c), STRICT form — INSTALLER ADAPTER OUTPUT ONLY. The v2 adapter
+// (scripts/lib/opencode-target.js emitConfig) only ever produces the
+// installer-managed keys, so any other top-level key in its output is an
+// installer bug. This must NOT be applied to a user's whole config file: a
+// hand-authored v2 config legitimately carries extra keys (share, model,
+// provider, compaction, watcher, subagent_depth, instructions, agent, mcp, ...).
+function validateV2AdapterTopLevelKeys(config) {
+  const problems = [];
+  for (const key of Object.keys(config)) {
+    if (!V2_CONFIG_ALLOWLIST.has(key)) {
+      problems.push(`unexpected installer-managed v2 config key '${key}' (allowed: ${[...V2_CONFIG_ALLOWLIST].join(', ')})`);
+    }
+  }
+  return problems;
+}
+
+// Pure, fail-closed check of one v2 config object. Returns human-readable errors
+// (empty when conformant). Rules:
+//   (a) no v1-only keys (permission, plugin) — these are installer leaks from a
+//       stale v1 config and must never survive into a v2 config
+//   (b) never co-declare permission+permissions or plugin+plugins
+//   (d) permission rules are { action, resource, effect } with a valid v2 action
+// Rule (c) (top-level key policy) is deliberately not here: it differs by source.
+// The installer's adapter output is held to the strict V2_CONFIG_ALLOWLIST (see
+// validateV2AdapterTopLevelKeys / validateV2AdapterOutput), while a hand-authored
+// in-place file may carry any legitimate v2 key.
+function validateV2Conformance(config) {
+  const problems = [];
+
+  for (const key of V1_ONLY_CONFIG_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(config, key)) {
+      problems.push(`v2 config must not contain the v1-only key '${key}'`);
+    }
+  }
+
+  if ('permission' in config && 'permissions' in config) {
+    problems.push("'permission' and 'permissions' must never co-exist");
+  }
+  if ('plugin' in config && 'plugins' in config) {
+    problems.push("'plugin' and 'plugins' must never co-exist");
+  }
+
+  if (config.permissions !== undefined) {
+    if (!Array.isArray(config.permissions)) {
+      problems.push("'permissions' must be an array of { action, resource, effect } rules");
+    } else {
+      config.permissions.forEach((rule, index) => {
+        const at = `permission rule ${index}`;
+        if (!isPlainObject(rule)) {
+          problems.push(`${at} must be an object with { action, resource, effect }`);
+          return;
+        }
+        for (const key of ['action', 'resource', 'effect']) {
+          if (typeof rule[key] !== 'string' || rule[key].length === 0) {
+            problems.push(`${at} must have a non-empty string '${key}'`);
+          }
+        }
+        const extra = Object.keys(rule).filter((key) => !['action', 'resource', 'effect'].includes(key));
+        if (extra.length > 0) {
+          problems.push(`${at} has unexpected key(s): ${extra.join(', ')}`);
+        }
+        if (typeof rule.action === 'string') {
+          if (FORBIDDEN_V2_ACTIONS.has(rule.action)) {
+            problems.push(`${at}: '${rule.action}' is not a v2 action (v2 renames bash->shell, task->subagent)`);
+          } else if (!V2_PERMISSION_ACTIONS.has(rule.action)) {
+            problems.push(`${at}: unrecognized v2 action '${rule.action}'`);
+          }
+        }
+      });
+    }
+  }
+
+  return problems;
+}
+
+// Full v2 conformance for the installer's adapter output: the shared rules
+// (a)/(b)/(d) plus the strict installer-managed top-level allowlist — rule (c),
+// strict form. Only emitConfig(source, 'v2') is ever validated this way.
+function validateV2AdapterOutput(config) {
+  return [...validateV2Conformance(config), ...validateV2AdapterTopLevelKeys(config)];
+}
+
+// Scans agent/command frontmatter for v2-untranslatable tokens (errors) and
+// counts files that rely on v2's approved in-memory auto-translation (info).
+function scanV2Artifacts() {
+  const errors = [];
+  const groups = [
+    { dir: path.join(process.cwd(), '.opencode', 'agents'), kind: 'agent' },
+    { dir: path.join(process.cwd(), '.opencode', 'commands'), kind: 'command' },
+  ];
+  let autoTranslated = 0;
+
+  for (const { dir, kind } of groups) {
+    if (!fs.existsSync(dir)) continue;
+    const files = fs.readdirSync(dir).filter((f) => f.endsWith('.md') && f !== 'README.md');
+    for (const file of files) {
+      const label = `.opencode/${kind}s/${file}`;
+      const frontmatter = frontmatterOf(fs.readFileSync(path.join(dir, file), 'utf8')) || '';
+      for (const token of V2_UNTRANSLATED_TOKENS) {
+        if (token.re.test(frontmatter)) errors.push(`${label}: ${token.description}`);
+      }
+      const usesAutoTranslated =
+        (kind === 'agent' && (
+          /^(?!\s*#)["']?permission["']?\s*:/m.test(frontmatter) ||
+          /^(?!\s*#)["']?temperature["']?\s*:/m.test(frontmatter)
+        )) ||
+        (kind === 'command' && /^(?!\s*#)["']?subtask["']?\s*:/m.test(frontmatter));
+      if (usesAutoTranslated) autoTranslated += 1;
+    }
+  }
+
+  return { errors, autoTranslated };
+}
+
+// --v2-strict is a dedicated, fail-closed mode; it does not replace the v1
+// --strict checks (doctor runs both). It always validates the adapter's v2
+// target output and additionally validates any v2 keys the file declares itself.
+function validateV2Strict() {
+  log(colors.cyan, 'Validating OpenCode v2-strict conformance...\n');
+  const errors = [];
+
+  const artifacts = scanV2Artifacts();
+  errors.push(...artifacts.errors);
+
+  const file = path.join(process.cwd(), 'opencode.json');
+  if (!fs.existsSync(file)) {
+    errors.push('opencode.json: file not found');
+  } else {
+    let source;
+    try {
+      source = JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch {
+      // Do not echo the parser message: excerpts can leak config secrets.
+      errors.push('opencode.json: invalid JSON — fix syntax before validating');
+      source = null;
+    }
+    if (isPlainObject(source)) {
+      // Always validate the adapter's v2 target output (the installer-managed
+      // keys derived from the v1 source). Only this output is held to the strict
+      // installer allowlist (rule c); it can never legitimately carry extra keys.
+      errors.push(...validateV2AdapterOutput(opencodeTarget.emitConfig(source, 'v2')));
+      // If the file itself already carries v2 keys, validate those in place too:
+      // a hand-authored v2 config must be conformant even though the installer
+      // did not write it. Extra legitimate v2 keys (share, model, ...) are fine.
+      if ('permissions' in source || 'plugins' in source) {
+        errors.push(...validateV2Conformance(source));
+      }
+    }
+  }
+
+  if (artifacts.autoTranslated > 0) {
+    log(colors.yellow, `ℹ️  ${artifacts.autoTranslated} agent/command file(s) rely on v2 in-memory auto-translation (agent 'permission'/'temperature', command 'subtask'); approved design, not an error.`);
+    console.log('');
+  }
+
+  if (errors.length > 0) {
+    log(colors.red, '❌ v2-strict validation failed:');
+    log(colors.red, `  • ${errors[0]}`);
+    for (const problem of errors.slice(1)) log(colors.red, `  • ${problem}`);
+    process.exit(1);
+  }
+
+  log(colors.green, '✅ v2-strict validation passed');
+  process.exit(0);
+}
+
 function main() {
+  if (process.argv.includes('--v2-strict')) {
+    validateV2Strict();
+    return;
+  }
+
   const showV2 = process.argv.includes('--v2');
   log(colors.cyan, `Validating OpenCode schema conformance${strict ? ' (strict)' : ''}...\n`);
 

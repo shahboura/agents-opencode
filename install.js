@@ -17,6 +17,7 @@ const os = require('os');
 const pathsMod = require('./scripts/lib/paths.js');
 const fileOps = require('./scripts/lib/file-ops.js');
 const configMutator = require('./scripts/lib/config-mutator.js');
+const opencodeTarget = require('./scripts/lib/opencode-target.js');
 
 const PACKAGE_NAME = 'agents-opencode';
 const BACKUP_DIR = '.backups';
@@ -314,46 +315,72 @@ function revertInstallerConfig(targetConfigPath, configPatch, sourceConfig, onBe
         return { changed: false, removedFile: false };
     }
 
+    // Older manifests predate the target field; they are always v1.
+    var resolvedTarget = configPatch.target === 'v2' ? 'v2' : 'v1';
+    var targetKeys = opencodeTarget.configKeysFor(resolvedTarget);
+    var permissionKey = configPatch.permissionKey || targetKeys.permissionKey;
+    var pluginKey = configPatch.pluginKey || targetKeys.pluginKey;
+
     let changed = false;
 
-    if (Array.isArray(configPatch.addedPermissionKeys) && fileOps.isObject(existing.permission)) {
+    // v1 permission object: remove the installer-added subkeys.
+    if (Array.isArray(configPatch.addedPermissionKeys) && fileOps.isObject(existing[permissionKey])) {
         for (var i = 0; i < configPatch.addedPermissionKeys.length; i++) {
             var key = configPatch.addedPermissionKeys[i];
-            if (!(key in existing.permission)) {
+            if (!(key in existing[permissionKey])) {
                 continue;
             }
 
             var sourceValue = sourceConfig && fileOps.isObject(sourceConfig.permission) ? sourceConfig.permission[key] : undefined;
-            if (sourceValue !== undefined && JSON.stringify(existing.permission[key]) !== JSON.stringify(sourceValue)) {
+            if (sourceValue !== undefined && JSON.stringify(existing[permissionKey][key]) !== JSON.stringify(sourceValue)) {
                 warning(`Keeping modified permission key '${key}' in ${targetConfigPath}; value differs from installer default.`);
                 continue;
             }
 
-            delete existing.permission[key];
+            delete existing[permissionKey][key];
             changed = true;
         }
 
-        if (Object.keys(existing.permission).length === 0) {
-            delete existing.permission;
+        if (Object.keys(existing[permissionKey]).length === 0) {
+            delete existing[permissionKey];
             changed = true;
         }
     }
 
-    if (Array.isArray(configPatch.addedPluginEntries) && Array.isArray(existing.plugin)) {
+    // v2 permissions array: remove the installer-added rules.
+    if (Array.isArray(configPatch.addedPermissionRules) && Array.isArray(existing[permissionKey])) {
+        var addedRules = configPatch.addedPermissionRules;
+        var remainingRules = existing[permissionKey].filter(function (rule) {
+            return !addedRules.some(function (candidate) {
+                return configMutator.deepEqualOrderInsensitive(candidate, rule);
+            });
+        });
+        if (remainingRules.length !== existing[permissionKey].length) {
+            changed = true;
+        }
+        if (remainingRules.length > 0) {
+            existing[permissionKey] = remainingRules;
+        } else {
+            delete existing[permissionKey];
+            changed = true;
+        }
+    }
+
+    if (Array.isArray(configPatch.addedPluginEntries) && Array.isArray(existing[pluginKey])) {
         // Trust the manifest: addedPluginEntries only records entries the installer
         // itself pushed, so revert them regardless of the current source config
         // (which may no longer list a retired plugin entry).
         for (var p = 0; p < configPatch.addedPluginEntries.length; p++) {
             var pluginEntry = configPatch.addedPluginEntries[p];
-            var pluginIndex = existing.plugin.indexOf(pluginEntry);
+            var pluginIndex = existing[pluginKey].indexOf(pluginEntry);
             if (pluginIndex === -1) {
                 continue;
             }
-            existing.plugin.splice(pluginIndex, 1);
+            existing[pluginKey].splice(pluginIndex, 1);
             changed = true;
         }
-        if (existing.plugin.length === 0) {
-            delete existing.plugin;
+        if (existing[pluginKey].length === 0) {
+            delete existing[pluginKey];
             changed = true;
         }
     }
@@ -434,21 +461,74 @@ function verifyInstallation(opencodeDir, scope) {
     }
 }
 
-function installScope(options) {
-    const {
-        sourceDir,
-        sourceConfig,
-        sourceOpencodeDir,
-        sourceManagedFiles,
-        sourceVersion,
-        operation,
-        scope,
-        projectDir,
-        languages,
-    } = options;
+/**
+ * Resolve the effective target for an install/update. An explicit v1/v2 always
+ * wins. Under 'auto' we prefer the target recorded by a previous install (so an
+ * update never silently flips a v2 install back to v1), then fall back to the
+ * adapter's host-version detection (currently v1 until Phase 1 lands).
+ */
+function resolveTargetForScope(requested, existingManifest, detectedVersion) {
+  if (requested === 'v1' || requested === 'v2') {
+    return requested;
+  }
 
-    const paths = pathsMod.getScopePaths(scope, projectDir);
-    const existingManifest = readManifest(paths.manifestPath);
+  const recorded = existingManifest && existingManifest.target;
+  if (recorded === 'v1' || recorded === 'v2') {
+    return recorded;
+  }
+
+  return opencodeTarget.resolveTarget({ requested: 'auto', detectedVersion });
+}
+
+function globalInstallExists(dirPath) {
+    if (fs.existsSync(path.join(dirPath, pathsMod.MANIFEST_FILE))) {
+        return true;
+    }
+    return !!pathsMod.resolveAgentDirectory(dirPath);
+}
+
+function warnOnGlobalConfigSplit() {
+    const resolvedDir = pathsMod.getGlobalConfigDir();
+    const legacyDir = pathsMod.getLegacyGlobalConfigDir();
+    if (resolvedDir === legacyDir) {
+        return;
+    }
+
+    const legacyInstalled = globalInstallExists(legacyDir);
+    const resolvedInstalled = globalInstallExists(resolvedDir);
+
+    if (legacyInstalled && !resolvedInstalled) {
+        warning(`A previous global install was found at the legacy path: ${legacyDir}`);
+        warning(`OpenCode reads its global config from: ${resolvedDir} (XDG_CONFIG_HOME is set).`);
+        warning(`OpenCode will NOT see the install at ${legacyDir}. Re-run the global install to populate ${resolvedDir}; remove the old files manually once you no longer need them.`);
+    } else if (resolvedInstalled && !legacyInstalled) {
+        warning(`The global install is at the active path: ${resolvedDir}`);
+        warning(`The legacy default path is empty: ${legacyDir} (XDG_CONFIG_HOME is set).`);
+        warning('OpenCode reads the active path, so this is expected; tools that assume the legacy default will not find the install there.');
+    } else if (legacyInstalled && resolvedInstalled) {
+        warning(`Global installs were found at BOTH the active path and the legacy path.`);
+        warning(`Active: ${resolvedDir} (XDG_CONFIG_HOME is set) - OpenCode reads this one.`);
+        warning(`Legacy: ${legacyDir} - stale and will not be seen by OpenCode; remove those files to avoid confusion.`);
+    }
+}
+
+function installScope(options) {
+  const {
+    sourceDir,
+    sourceConfig,
+    sourceOpencodeDir,
+    sourceManagedFiles,
+    sourceVersion,
+    operation,
+    scope,
+    projectDir,
+    languages,
+    targetRequested,
+  } = options;
+
+  const paths = pathsMod.getScopePaths(scope, projectDir);
+  const existingManifest = readManifest(paths.manifestPath);
+  const resolvedTarget = resolveTargetForScope(targetRequested, existingManifest);
 
     if (scope === 'project' && !fs.existsSync(paths.rootDir)) {
         error(`Project directory does not exist: ${paths.rootDir}`);
@@ -462,6 +542,10 @@ function installScope(options) {
         AGENT_DIR: pathsMod.AGENT_DIR,
     })) {
         return false;
+    }
+
+    if (scope === 'global') {
+        warnOnGlobalConfigSplit();
     }
 
     fileOps.ensureDir(paths.opencodeDir);
@@ -500,7 +584,8 @@ function installScope(options) {
         }
     };
 
-    const configPatch = configMutator.mergeInstallerConfig(paths.configPath, sourceConfig, backupConfigBeforeWrite, warning);
+    info(`Install target: ${resolvedTarget}`);
+    const configPatch = configMutator.mergeInstallerConfig(paths.configPath, sourceConfig, backupConfigBeforeWrite, warning, resolvedTarget);
     if (configPatch.skipped) {
         warning('Config merge skipped due to invalid existing JSON; continuing with agent files only.');
     } else if (configPatch.createdFile) {
@@ -530,6 +615,7 @@ function installScope(options) {
         schemaVersion: 1,
         package: PACKAGE_NAME,
         scope,
+        target: resolvedTarget,
         rootDir: paths.rootDir,
         sourceVersion: sourceVersion || 'unknown',
         updatedAt: new Date().toISOString(),
@@ -733,9 +819,11 @@ function showStatus(sourceConfig) {
     const projectInstalled = isInstalled('project', process.cwd(), sourceConfig);
 
     console.log('OpenCode Agents installation status:\n');
-    console.log(`- Global (~/.config/opencode): ${globalInstalled ? 'installed' : 'not installed'}`);
+    console.log(`- Global (${pathsMod.getGlobalConfigDir()}): ${globalInstalled ? 'installed' : 'not installed'}`);
     console.log(`- Project (${process.cwd()}): ${projectInstalled ? 'installed' : 'not installed'}`);
     console.log('\nConfig precedence reminder: project config overrides global config.');
+
+    warnOnGlobalConfigSplit();
 }
 
 function parseArgs(argv) {
@@ -746,6 +834,7 @@ function parseArgs(argv) {
         uninstall: false,
         all: false,
         languages: null,
+        target: 'auto',
         status: false,
         version: false,
         help: false,
@@ -788,6 +877,20 @@ function parseArgs(argv) {
                     throw new Error('--languages requires a comma-separated language list');
                 }
                 parsed.languages = next;
+                i += 1;
+                break;
+            }
+            case '--target': {
+                const next = args[i + 1];
+                if (!next || next.startsWith('-')) {
+                    throw new Error('--target requires one of: v1, v2, auto');
+                }
+                try {
+                    opencodeTarget.resolveTarget({ requested: next });
+                } catch (err) {
+                    throw new Error(err.message);
+                }
+                parsed.target = next.toLowerCase();
                 i += 1;
                 break;
             }
@@ -858,6 +961,12 @@ INSTALL OPTIONS:
     -l, --languages LANGS       Keep only these language skills (comma-separated)
                                 Choices: dotnet, python, typescript, flutter, go, java,
                                 node, react, ruby, rust, sql. Pruned dirs are backed up.
+    --target TARGET             OpenCode target: v1, v2, or auto (default: auto).
+                                v1 writes 'plugin'/'permission'; v2 writes
+                                'permissions' (and 'plugins' only if the source config
+                                lists a plugin entry). Never both in one config.
+                                auto resolves to v1 today unless a v2 host is detected
+                                (host-version detection is not yet wired).
 
 LIFECYCLE OPTIONS:
     -U, --update                Update existing installation(s)
@@ -873,6 +982,8 @@ EXAMPLES:
     node install.js --global
     node install.js --project .
     node install.js --global --languages python,typescript  # keep only Python/TypeScript language skills
+    node install.js --global --target v2         # emit v2 keys (permissions; plugins only if a plugin entry exists)
+    node install.js --global --target auto       # default; v1 unless a v2 host is detected
     node install.js --update                    # updates detected installs (global and/or current project)
     node install.js --update --all              # force update both scopes
     node install.js --uninstall                 # uninstall current project scope (default)
@@ -882,17 +993,19 @@ EXAMPLES:
     npx agents-opencode --global
 
 INSTALLATION LOCATIONS:
-    Global:  ~/.config/opencode/
+    Global:  ${pathsMod.getGlobalConfigDir()}
     Project: <project>/.opencode/
 
 NOTES:
     - Config updates are merged safely (non-destructive).
     - Uninstall removes only installer-managed files using a manifest.
     - Project backups: <project>/.opencode/.backups/<timestamp>--<operation>--<scope>/
-    - Global backups:  ~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/
+    - Global backups:  ${path.join(pathsMod.getGlobalConfigDir(), '.backups')}/<timestamp>--<operation>--<scope>/
     - Retention: keeps latest 10 sessions and prunes sessions older than 30 days.
     - --languages prunes non-requested language skills; non-language skills always remain.
     - --languages backs up each pruned skill directory into the backup session first.
+    - v2 conformance is validated separately from installing; run
+      'npm run validate:opencode-schema:v2' (the installer does not run it).
     - The 'cicd' alias is accepted for backward compatibility but filters no skill;
       ci-cd-hygiene.instructions.md is always installed (not a language skill).
 
@@ -995,6 +1108,7 @@ function main() {
                 scope: scope2,
                 projectDir: projectDir2,
                 languages: parsed.languages,
+                targetRequested: parsed.target,
             });
             if (!ok2) {
                 process.exit(1);
@@ -1033,6 +1147,7 @@ function main() {
             scope: 'global',
             projectDir: null,
             languages: parsed.languages,
+            targetRequested: parsed.target,
         });
         if (!ok3) {
             process.exit(1);
@@ -1048,6 +1163,7 @@ function main() {
             scope: 'project',
             projectDir: parsed.project || process.cwd(),
             languages: parsed.languages,
+            targetRequested: parsed.target,
         });
         if (!ok4) {
             process.exit(1);

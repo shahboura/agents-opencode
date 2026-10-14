@@ -13,6 +13,12 @@
     "opencode.json",
     "scripts/lib"
   ],
+  "main": "./.opencode/plugins/agents-opencode.ts",
+  "exports": {
+    ".": "./.opencode/plugins/agents-opencode.ts",
+    "./server": "./.opencode/plugins/agents-opencode.ts",
+    "./package.json": "./package.json"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shahboura/agents-opencode.git"
@@ -31,7 +37,10 @@
     "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore .github --ignore \"example/**\" --ignore \"dist/**\" --ignore \"handoff/**\" --ignore \"evals/reports/**\" --ignore \"site/node_modules\" --ignore \"site/dist\" --ignore \"site/.astro\" --fix",
     "validate:agents": "node scripts/validate-agents.js",
     "validate:opencode-schema": "node scripts/validate-opencode-schema.js --strict",
+    "validate:opencode-schema:v2": "node scripts/validate-opencode-schema.js --v2-strict",
     "validate:plugin-guards": "node scripts/plugin-guards.test.js",
+    "validate:plugin-v2": "node scripts/plugin-v2.test.js",
+    "validate:target": "node scripts/opencode-target.test.js",
     "validate:gate": "node scripts/gate/gate.test.js",
     "gate:freeze": "node scripts/gate/freeze.js",
     "gate:pass": "node scripts/gate/record-pass.js",

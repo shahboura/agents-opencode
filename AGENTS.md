@@ -65,6 +65,16 @@ All agents log milestone entries to this file using this format:
 
 ## Milestones
 
+### 2026-10-15 00:30 - OpenCode v1/v2 dual support (target adapter, dual plugin, plugin-spec install, XDG fix)
+
+**Agent:** orchestrator
+**Summary:** Shipped OpenCode v1/v2 dual support on `feat/opencode-v2-dual-support`; gated PASS-WITH-CAVEATS after a full multi-lens review (2 cycles) plus an independent adversarial pass.
+- Installer target adapter (`scripts/lib/opencode-target.js`, `--target v1|v2|auto`): v1 `plugin`/`permission` vs v2 `plugins`/`permissions`, never co-written; manifest records the target; uninstall reverts per-target keys.
+- One dual-entrypoint plugin (v1 named export + v2 default `{ id, server, setup }`); v2 hook mapping with feature-detect + per-registration containment; secret-read guard parity (throws on both hosts). Verified `opencode 1.19.0` loads the plugin (`opencode debug info`).
+- Hybrid install model: file installer delivers agents/commands/skills/config; a plugin-spec install (`plugins: ["agents-opencode"]`, via new package `exports`) delivers skills + hooks/guards only; coexistence guard prevents double registration.
+- Fix: installer now honors `XDG_CONFIG_HOME` (verified via `opencode debug paths`) with a legacy-path split-brain warning; new real `--v2-strict` validator + CI job.
+- Caveats: v2 runtime unverified (no live v2/Bun); v2 agent/command compat relies on v2 auto-translation (documented as the load-bearing assumption); `--target auto` still resolves v1 (detection not wired).
+
 ### 2026-09-30 08:08 - Docs site migrated to Astro Starlight on Cloudflare Workers
 
 **Agent:** orchestrator

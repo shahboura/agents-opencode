@@ -50,14 +50,22 @@ npx agents-opencode --uninstall
 
 # Show detected installation scopes
 npx agents-opencode --status
+
+# Choose an OpenCode config target (default: auto)
+npx agents-opencode --global --target v2    # emit v2 keys ('permissions'; 'plugins' only if a plugin entry exists)
+npx agents-opencode --global --target auto  # v1 today unless a v2 host is detected
 ```
 
 `--languages` prunes non-requested **language skill directories** only — shared workflow skills always stay.
 
 **Install:** npm package and installer command: `agents-opencode`. OpenCode runtime command: `opencode`.
 **Uninstall:** targets the current project by default; timestamped backups are created before removal.
-**Config:** the installer only manages `$schema`, `plugin`, and missing permission defaults in
-`opencode.json`. It never rewrites your provider, model, instructions, share, or compaction settings.
+**Config:** the installer only manages a small, target-specific key set in `opencode.json`: `$schema`,
+the plugin key (`plugin` on v1 / `plugins` on v2), and permission defaults (`permission` on v1 /
+`permissions` on v2). It never writes both key sets, and it never rewrites your provider, model,
+instructions, share, or compaction settings.
+**Targets:** `--target v1|v2|auto` (default `auto`). See
+[OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 
 </details>
 
@@ -187,6 +195,20 @@ npx agents-opencode --global
 
 Omit `--global` to install into the current project instead.
 
+### OpenCode v1/v2 support
+
+OpenCode v1 and v2 use different config keys, so the installer emits per-target output and never
+mixes the two. Select a target with `--target v1|v2|auto` (default `auto`; resolves to v1 today
+until v2 host detection lands). The installer records the target so uninstall reverts the right keys.
+
+A file install adds no plugin entry: OpenCode auto-loads the bundled plugin from `.opencode/plugins/`.
+To deliver **skills and hooks/guards only** (no agents or global config), add the package as a plugin
+spec in `opencode.json`: `"plugin": ["agents-opencode"]` (v1) or `"plugins": ["agents-opencode"]` (v2);
+a version pin like `agents-opencode@X.Y.Z` also works (use a build that ships plugin-spec support).
+Do not combine a file install with the plugin spec. The plugin-spec runtime path is **experimental**
+(no live v2 run yet; the v2 plugin API is beta).
+See [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
+
 ### Claude Code plugin
 
 ```bash
@@ -222,6 +244,7 @@ metadata. `npm run eval:agents:json` writes machine-readable output.
 - **[State Management](https://agnts.elkodr.com/state-management/)**
 - **[Skills Matrix](https://agnts.elkodr.com/skills-matrix/)**
 - **[Decision Grounding](https://agnts.elkodr.com/decision-grounding/)**
+- **[OpenCode v1/v2 Support](https://agnts.elkodr.com/opencode-v1-v2-support/)**
 - **[Full Documentation](https://agnts.elkodr.com/)**
 
 ## License

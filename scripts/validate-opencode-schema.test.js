@@ -432,6 +432,113 @@ function testWarningsOnlyExitsZero() {
   assert(result.status === 0, 'Expected warnings-only run to exit 0');
 }
 
+// --- v2-strict ------------------------------------------------------------
+// The emitted v2 config (from the v1 source) must be v2-conformant. Rules:
+// (a) no v1-only keys, (b) no co-declared key sets, (d) { action, resource,
+// effect } v2 rules. Rule (c) top-level key policy is source-dependent: the
+// installer's adapter output is held to the strict allowlist, but a hand-authored
+// in-place v2 file may carry extra legitimate v2 keys (share, model, ...).
+
+function testV2StrictPassesCleanFixture() {
+  const result = withFixture(null, ['--v2-strict']);
+  assert(result.status === 0, `Expected clean fixture to pass --v2-strict. Output: ${result.output}`);
+  assert(result.output.includes('v2-strict validation passed'), 'Expected v2-strict pass summary');
+}
+
+function testV2StrictPassesValidV2Config() {
+  const result = withFixture((root) => {
+    writeFile(root, 'opencode.json', JSON.stringify({
+      $schema: 'https://opencode.ai/config.json',
+      permissions: [{ action: 'external_directory', resource: '*', effect: 'deny' }],
+    }, null, 2));
+  }, ['--v2-strict']);
+  assert(result.status === 0, `Expected a valid v2 config to pass --v2-strict. Output: ${result.output}`);
+}
+
+function testV2StrictNotesAutoTranslation() {
+  const result = withFixture(null, ['--v2-strict']);
+  assert(result.status === 0, 'Expected auto-translated frontmatter to be informational, not failing');
+  assert(result.output.includes('auto-translation'), 'Expected an auto-translation info note');
+}
+
+function testV2StrictFailsCoDeclaredKeySets() {
+  const result = withFixture((root) => {
+    writeFile(root, 'opencode.json', JSON.stringify({
+      $schema: 'https://opencode.ai/config.json',
+      permission: { read: 'allow' },
+      permissions: [{ action: 'read', resource: '*', effect: 'allow' }],
+    }, null, 2));
+  }, ['--v2-strict']);
+  assert(result.status !== 0, 'Expected co-declared permission+permissions to fail');
+  assert(result.output.includes("'permission' and 'permissions' must never co-exist"), 'Expected co-existence message');
+}
+
+function testV2StrictAllowsInPlaceExtraV2Keys() {
+  const result = withFixture((root) => {
+    writeFile(root, 'opencode.json', JSON.stringify({
+      $schema: 'https://opencode.ai/config.json',
+      permissions: [{ action: 'read', resource: '*', effect: 'allow' }],
+      share: 'disabled',
+      model: 'anthropic/claude-sonnet-4',
+    }, null, 2));
+  }, ['--v2-strict']);
+  assert(result.status === 0, `Expected extra legitimate v2 keys to pass --v2-strict. Output: ${result.output}`);
+  assert(!result.output.includes("'share'"), 'Expected the v2 key share not to be flagged');
+  assert(!result.output.includes("'model'"), 'Expected the v2 key model not to be flagged');
+}
+
+function testV2StrictFailsInstallerLeakedV1Key() {
+  const result = withFixture((root) => {
+    writeFile(root, 'opencode.json', JSON.stringify({
+      $schema: 'https://opencode.ai/config.json',
+      permissions: [{ action: 'read', resource: '*', effect: 'allow' }],
+      permission: { read: 'allow' },
+    }, null, 2));
+  }, ['--v2-strict']);
+  assert(result.status !== 0, 'Expected an installer-leaked v1-only key to fail in place');
+  assert(result.output.includes("v1-only key 'permission'"), 'Expected installer-leaked v1-only key message');
+}
+
+function testV2StrictFailsRenamedAction() {
+  const result = withFixture((root) => {
+    writeFile(root, 'opencode.json', JSON.stringify({
+      $schema: 'https://opencode.ai/config.json',
+      permissions: [{ action: 'bash', resource: '*', effect: 'deny' }],
+    }, null, 2));
+  }, ['--v2-strict']);
+  assert(result.status !== 0, 'Expected a v1 action name in a v2 rule to fail');
+  assert(result.output.includes("'bash' is not a v2 action"), 'Expected v1-action message');
+}
+
+function testV2StrictFailsMalformedRuleShape() {
+  const result = withFixture((root) => {
+    writeFile(root, 'opencode.json', JSON.stringify({
+      $schema: 'https://opencode.ai/config.json',
+      permissions: [{ action: 'read', resource: '*' }],
+    }, null, 2));
+  }, ['--v2-strict']);
+  assert(result.status !== 0, 'Expected a rule missing its effect to fail');
+  assert(result.output.includes("non-empty string 'effect'"), 'Expected rule-shape message');
+}
+
+function testV2StrictFailsUntranslatedAgentToken() {
+  const result = withFixture((root) => {
+    writeFile(root, path.join('.opencode', 'agents', 'foo.md'), [
+      '---',
+      'description: Test agent',
+      'mode: subagent',
+      'tools:',
+      '  write: true',
+      '---',
+      '',
+      '# Test Agent',
+      '',
+    ].join('\n'));
+  }, ['--v2-strict']);
+  assert(result.status !== 0, "Expected an untranslatable 'tools:' block to fail --v2-strict");
+  assert(result.output.includes('does not translate'), 'Expected untranslated-token message');
+}
+
 function main() {
   try {
     console.log('Running OpenCode schema validator tests...');
@@ -457,6 +564,15 @@ function main() {
     testV2ReportsGaps();
     testV2PreservesFailure();
     testWarningsOnlyExitsZero();
+    testV2StrictPassesCleanFixture();
+    testV2StrictPassesValidV2Config();
+    testV2StrictNotesAutoTranslation();
+    testV2StrictFailsCoDeclaredKeySets();
+    testV2StrictAllowsInPlaceExtraV2Keys();
+    testV2StrictFailsInstallerLeakedV1Key();
+    testV2StrictFailsRenamedAction();
+    testV2StrictFailsMalformedRuleShape();
+    testV2StrictFailsUntranslatedAgentToken();
     console.log('✅ OpenCode schema validator tests passed');
   } catch (err) {
     console.error('❌ OpenCode schema validator tests failed');

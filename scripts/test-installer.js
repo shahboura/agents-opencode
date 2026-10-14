@@ -6,6 +6,8 @@ const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { LANGUAGE_MAP, LANGUAGE_SKILL_DIRS, NON_LANGUAGE_SKILLS, filterLanguages, isUnsafeBackupKey } = require('./lib/file-ops.js');
+const configMutator = require('./lib/config-mutator.js');
+const opencodeTarget = require('./lib/opencode-target.js');
 
 const repoRoot = process.cwd();
 const installScript = path.join(repoRoot, 'install.js');
@@ -387,6 +389,260 @@ function testLanguagesFilterUnknownKeepsAllSkills(tmpRoot) {
   assert(fs.existsSync(path.join(skillsDir, 'rust', 'SKILL.md')), 'Unknown language should keep all skills');
 }
 
+// --- Workstream A Phase 2: dual-target (v1/v2) config emission ---
+
+function testDualTargetConfig(tmpRoot) {
+  const v2Dir = path.join(tmpRoot, 'target-v2');
+  createDir(v2Dir);
+
+  runInstaller(['--project', '.', '--target', 'v2'], { cwd: v2Dir });
+
+  const v2Config = readJson(path.join(v2Dir, 'opencode.json'));
+  assert(!('plugin' in v2Config), 'v2 install must not write the v1 plugin key');
+  assert(!('permission' in v2Config), 'v2 install must not write the v1 permission key');
+  assert(Array.isArray(v2Config.permissions), 'v2 install should write a v2 permissions array');
+  assert(!('plugin' in v2Config && 'plugins' in v2Config), 'must not co-write plugin and plugins');
+  assert(!('permission' in v2Config && 'permissions' in v2Config), 'must not co-write permission and permissions');
+  for (const key of Object.keys(v2Config)) {
+    assert(['$schema', 'plugins', 'permissions'].includes(key), `v2 config must not contain unexpected key '${key}'`);
+  }
+
+  const v2Manifest = readJson(path.join(v2Dir, '.opencode', '.agents-opencode-manifest.json'));
+  assert(v2Manifest.target === 'v2', 'manifest should record resolved target v2');
+
+  runInstaller(['--uninstall', '--project', '.'], { cwd: v2Dir });
+  assert(!fs.existsSync(path.join(v2Dir, 'opencode.json')), 'installer-created v2 config should be removed on uninstall');
+
+  const v1Dir = path.join(tmpRoot, 'target-v1');
+  createDir(v1Dir);
+  runInstaller(['--project', '.', '--target', 'v1'], { cwd: v1Dir });
+
+  const v1Config = readJson(path.join(v1Dir, 'opencode.json'));
+  assert(v1Config.permission && v1Config.permission.doom_loop === 'deny', 'v1 install keeps the permission object');
+  assert(!('permissions' in v1Config), 'v1 install must not write permissions');
+  assert(!('plugins' in v1Config), 'v1 install must not write plugins');
+}
+
+function testTargetAutoDefaultsToV1(tmpRoot) {
+  const dir = path.join(tmpRoot, 'target-auto');
+  createDir(dir);
+
+  runInstaller(['--project', '.', '--target', 'auto'], { cwd: dir });
+
+  const config = readJson(path.join(dir, 'opencode.json'));
+  assert(config.permission, 'auto target should emit the v1 permission object without a detected v2 host');
+  assert(!('permissions' in config), 'auto target should not emit v2 permissions without a detected v2 host');
+}
+
+function testV2InstallDoesNotCoWriteUserPermission(tmpRoot) {
+  const dir = path.join(tmpRoot, 'target-v2-userperm');
+  createDir(dir);
+
+  const configPath = path.join(dir, 'opencode.json');
+  writeJson(configPath, {
+    $schema: 'https://opencode.ai/config.json',
+    permission: { bash: 'ask' },
+  });
+
+  runInstaller(['--project', '.', '--target', 'v2'], { cwd: dir });
+
+  const config = readJson(configPath);
+  assert(!('permission' in config && 'permissions' in config), 'v2 install must not co-write permission and permissions');
+  assert(config.permission && config.permission.bash === 'ask', 'user-owned v1 permission must be preserved');
+  assert(!('permissions' in config), 'v2 install should defer to v2 auto-translation when the user owns the v1 permission key');
+}
+
+// M1 regression: stripping the other target's installer-shaped keys mutates the
+// config in place, so it must mark the patch changed and persist the strip even
+// when the merge adds no new permission/plugin entries. Otherwise an existing
+// file can retain both the v1 and v2 key sets, violating the XOR invariant.
+function testMergePersistsOtherTargetStrip(tmpRoot) {
+  const dir = path.join(tmpRoot, 'target-strip-persist');
+  createDir(dir);
+  const configPath = path.join(dir, 'opencode.json');
+
+  const sourceConfig = {
+    $schema: 'https://opencode.ai/config.json',
+    plugin: ['agents-opencode'],
+    permission: {
+      external_directory: 'ask',
+      doom_loop: 'deny',
+      bash: { '*': 'ask' },
+    },
+  };
+
+  // The target (v1) keys are already present, so the merge adds nothing; the
+  // other target (v2) keys are installer-shaped and must be stripped.
+  writeJson(configPath, {
+    $schema: 'https://opencode.ai/config.json',
+    plugin: ['agents-opencode'],
+    permission: {
+      external_directory: 'ask',
+      doom_loop: 'deny',
+      bash: { '*': 'ask' },
+    },
+    plugins: ['agents-opencode'],
+    permissions: opencodeTarget.emitConfig(sourceConfig, 'v2').permissions,
+  });
+
+  const patch = configMutator.mergeInstallerConfig(configPath, sourceConfig, () => {}, () => {}, 'v1');
+
+  assert(patch.changed === true, 'Stripping the other target keys must mark the patch changed');
+  assert(patch.addedPermissionKeys.length === 0, 'Merge should add no permission keys (all already present)');
+  assert(patch.addedPluginEntries.length === 0, 'Merge should add no plugin entries (all already present)');
+
+  const config = readJson(configPath);
+  assert(!('permissions' in config), 'The other target permissions key must be stripped from disk');
+  assert(!('plugins' in config), 'The other target plugins key must be stripped from disk');
+  assert(!('permission' in config && 'permissions' in config), 'permission and permissions must never co-exist');
+  assert(!('plugin' in config && 'plugins' in config), 'plugin and plugins must never co-exist');
+  assert(config.permission && config.permission.doom_loop === 'deny', 'Target v1 permission must be preserved');
+}
+
+// C2/C6 (XOR): a user-owned v2 `permissions` array must NOT cause the installer to
+// write a v1 `permission` object — the file must never carry both key sets. The
+// merge skips (with a warning) and preserves the user's value.
+function testV1TargetSkipsPermissionWhenUserOwnsV2Permissions(tmpRoot) {
+  const dir = path.join(tmpRoot, 'target-v1-userpermissions');
+  createDir(dir);
+  const configPath = path.join(dir, 'opencode.json');
+  writeJson(configPath, {
+    $schema: 'https://opencode.ai/config.json',
+    permissions: [{ action: 'shell', resource: '*', effect: 'ask' }],
+  });
+
+  runInstaller(['--project', '.', '--target', 'v1'], { cwd: dir });
+
+  const config = readJson(configPath);
+  assert(
+    !('permission' in config),
+    'v1 target must not write a permission object while a user-owned v2 permissions array is present'
+  );
+  assert(
+    Array.isArray(config.permissions) && config.permissions.length === 1,
+    'the user-owned v2 permissions array must be preserved'
+  );
+}
+
+// C6: when the user owns the other target's permission key AND this target's key
+// already exists, appending would leave permission + permissions co-existing.
+// The guard must skip the append so the XOR invariant holds in both directions.
+function testV2MergeSkipsWhenUserOwnsV1Permission(tmpRoot) {
+  const dir = path.join(tmpRoot, 'target-v2-userperm-existing');
+  createDir(dir);
+  const configPath = path.join(dir, 'opencode.json');
+  writeJson(configPath, {
+    $schema: 'https://opencode.ai/config.json',
+    permission: { bash: 'ask' },
+    permissions: [],
+  });
+
+  runInstaller(['--project', '.', '--target', 'v2'], { cwd: dir });
+
+  const config = readJson(configPath);
+  assert(config.permission && config.permission.bash === 'ask', 'user-owned v1 permission must be preserved');
+  assert(
+    Array.isArray(config.permissions) && config.permissions.length === 0,
+    'v2 merge must not append installer rules when the user owns the v1 permission object'
+  );
+}
+
+// S3: a user's non-array `permissions` value must not be clobbered with [] plus
+// installer rules; mirror the v1 guard (warn + skip).
+function testV2MergeSkipsNonArrayPermissions(tmpRoot) {
+  const dir = path.join(tmpRoot, 'target-v2-nonarray-permissions');
+  createDir(dir);
+  const configPath = path.join(dir, 'opencode.json');
+  writeJson(configPath, {
+    $schema: 'https://opencode.ai/config.json',
+    permissions: 'not-an-array',
+  });
+
+  runInstaller(['--project', '.', '--target', 'v2'], { cwd: dir });
+
+  const config = readJson(configPath);
+  assert(config.permissions === 'not-an-array', 'v2 merge must not clobber a non-array permissions value');
+}
+
+// C5: uninstall must match installer v2 rules regardless of object key order.
+function testUninstallRevertsReorderedV2PermissionRules(tmpRoot) {
+  const dir = path.join(tmpRoot, 'v2-rule-reorder-revert');
+  createDir(dir);
+  const configPath = path.join(dir, 'opencode.json');
+
+  // Pre-existing user config (kept file, so uninstall reverts rather than deletes).
+  writeJson(configPath, {
+    $schema: 'https://opencode.ai/config.json',
+    provider: { anthropic: { options: { apiKey: '{env:ANTHROPIC_API_KEY}' } } },
+  });
+
+  runInstaller(['--project', '.', '--target', 'v2'], { cwd: dir });
+
+  const installed = readJson(configPath);
+  assert(
+    Array.isArray(installed.permissions) && installed.permissions.length > 0,
+    'v2 install should write installer permission rules'
+  );
+
+  // Reformat each rule with a different key order; values are unchanged.
+  installed.permissions = installed.permissions.map((rule) => ({
+    effect: rule.effect,
+    resource: rule.resource,
+    action: rule.action,
+  }));
+  writeJson(configPath, installed);
+
+  runInstaller(['--uninstall', '--project', '.'], { cwd: dir });
+
+  const reverted = readJson(configPath);
+  assert(!('permissions' in reverted), 'uninstall must revert reordered-but-equal v2 permission rules');
+  assert(reverted.provider && reverted.provider.anthropic, 'user config must remain after revert');
+}
+
+// C9: a retired installer plugin entry must be stripped from either plugin key
+// during a cross-target switch (so a stale v1 entry cannot survive v1 -> v2).
+function testTargetSwitchStripsRetiredPluginEntries(tmpRoot) {
+  const dir = path.join(tmpRoot, 'v1-to-v2-retired-plugin');
+  createDir(dir);
+  const configPath = path.join(dir, 'opencode.json');
+  writeJson(configPath, {
+    $schema: 'https://opencode.ai/config.json',
+    plugin: ['agents-opencode', 'my-own-plugin'],
+  });
+
+  runInstaller(['--project', '.', '--target', 'v2'], { cwd: dir });
+
+  const config = readJson(configPath);
+  const plugins = Array.isArray(config.plugin) ? config.plugin : [];
+  assert(!plugins.includes('agents-opencode'), 'retired installer plugin entry must be stripped from the v1 plugin key on a v1->v2 switch');
+  assert(plugins.includes('my-own-plugin'), 'user plugin entries must survive the retired-entry strip');
+  assert(!('plugin' in config && 'plugins' in config), 'plugin and plugins must never co-exist');
+}
+
+// C8: the split-brain warning must also fire when BOTH global dirs have an
+// install (the most misleading case), not only when exactly one does.
+function testGlobalBothInstallsWarning(tmpRoot) {
+  const homeDir = path.join(tmpRoot, 'both-home');
+  const xdgDir = path.join(tmpRoot, 'both-xdg');
+  const projectDir = path.join(tmpRoot, 'both-project');
+  createDir(homeDir);
+  createDir(xdgDir);
+  createDir(projectDir);
+
+  const legacyDir = path.join(homeDir, '.config', 'opencode');
+  const resolvedDir = path.join(xdgDir, 'opencode');
+  createDir(legacyDir);
+  createDir(resolvedDir);
+  fs.writeFileSync(path.join(legacyDir, '.agents-opencode-manifest.json'), '{"package":"agents-opencode"}\n');
+  fs.writeFileSync(path.join(resolvedDir, '.agents-opencode-manifest.json'), '{"package":"agents-opencode"}\n');
+
+  const env = { HOME: homeDir, USERPROFILE: homeDir, XDG_CONFIG_HOME: xdgDir };
+  const output = runInstaller(['--status'], { cwd: projectDir, env });
+
+  assert(output.includes(resolvedDir) && output.includes(legacyDir), 'Both-installs warning must name both paths');
+  assert(output.includes('BOTH the active path'), 'Both-installs warning must call out that installs exist at both paths');
+}
+
 // --- Unit coverage for the fail-closed prune path (S-1/C8/C9/C10/S-2) ---
 
 function createSkillsTree(rootDir, dirs) {
@@ -582,6 +838,85 @@ function testIsUnsafeBackupKeyRejectsEscapes() {
   );
 }
 
+// --- Global path resolution (XDG_CONFIG_HOME) ---
+
+function testGlobalRespectsXdgConfigHome(tmpRoot) {
+  const homeDir = path.join(tmpRoot, 'xdg-home');
+  const xdgDir = path.join(tmpRoot, 'xdg-config');
+  const projectDir = path.join(tmpRoot, 'xdg-project');
+  createDir(homeDir);
+  createDir(xdgDir);
+  createDir(projectDir);
+
+  const env = { HOME: homeDir, USERPROFILE: homeDir, XDG_CONFIG_HOME: xdgDir };
+  runInstaller(['--global'], { cwd: projectDir, env });
+
+  assert(
+    fs.existsSync(path.join(xdgDir, 'opencode', '.agents-opencode-manifest.json')),
+    'Global install should land under $XDG_CONFIG_HOME/opencode'
+  );
+  assert(
+    !fs.existsSync(path.join(homeDir, '.config', 'opencode', '.agents-opencode-manifest.json')),
+    'Global install must not land under ~/.config/opencode when XDG_CONFIG_HOME is set'
+  );
+}
+
+function testGlobalFallsBackOnInvalidXdgConfigHome(tmpRoot) {
+  const homeDir = path.join(tmpRoot, 'xdg-fallback-home');
+  const projectDir = path.join(tmpRoot, 'xdg-fallback-project');
+  createDir(homeDir);
+  createDir(projectDir);
+
+  const legacyManifest = path.join(homeDir, '.config', 'opencode', '.agents-opencode-manifest.json');
+
+  // A relative value must be ignored per the XDG Base Directory spec.
+  runInstaller(['--global'], {
+    cwd: projectDir,
+    env: { HOME: homeDir, USERPROFILE: homeDir, XDG_CONFIG_HOME: 'relative/config' },
+  });
+  assert(fs.existsSync(legacyManifest), 'A relative XDG_CONFIG_HOME must fall back to ~/.config/opencode');
+
+  // An empty value must be treated as unset.
+  fs.rmSync(path.join(homeDir, '.config'), { recursive: true, force: true });
+  runInstaller(['--global'], {
+    cwd: projectDir,
+    env: { HOME: homeDir, USERPROFILE: homeDir, XDG_CONFIG_HOME: '' },
+  });
+  assert(fs.existsSync(legacyManifest), 'An empty XDG_CONFIG_HOME must fall back to ~/.config/opencode');
+}
+
+function testLegacyGlobalInstallWarning(tmpRoot) {
+  const homeDir = path.join(tmpRoot, 'legacy-warn-home');
+  const xdgDir = path.join(tmpRoot, 'legacy-warn-xdg');
+  const projectDir = path.join(tmpRoot, 'legacy-warn-project');
+  createDir(homeDir);
+  createDir(xdgDir);
+  createDir(projectDir);
+
+  const legacyDir = path.join(homeDir, '.config', 'opencode');
+  createDir(legacyDir);
+  fs.writeFileSync(path.join(legacyDir, '.agents-opencode-manifest.json'), '{"package":"agents-opencode"}\n');
+
+  const env = { HOME: homeDir, USERPROFILE: homeDir, XDG_CONFIG_HOME: xdgDir };
+  const output = runInstaller(['--global'], { cwd: projectDir, env });
+
+  assert(output.includes(legacyDir), 'Warning should name the legacy install location');
+  assert(output.includes('will NOT see'), 'Warning should state OpenCode will not see the legacy install');
+  assert(
+    fs.existsSync(path.join(xdgDir, 'opencode', '.agents-opencode-manifest.json')),
+    'Split-brain warning must not stop the install from reaching the active path'
+  );
+
+  // The warning must not fire when XDG_CONFIG_HOME is unset (resolved === legacy).
+  const plainHome = path.join(tmpRoot, 'legacy-warn-plain');
+  createDir(plainHome);
+  const plainOutput = runInstaller(['--global'], {
+    cwd: projectDir,
+    env: { HOME: plainHome, USERPROFILE: plainHome, XDG_CONFIG_HOME: '' },
+  });
+  assert(!plainOutput.includes('will NOT see'), 'No legacy warning when the resolved and legacy dirs coincide');
+}
+
 function main() {
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agents-opencode-installer-'));
 
@@ -594,7 +929,17 @@ function main() {
     testFreshConfigContainsOnlyManagedKeys(tmpRoot);
     testManifestlessUninstallRemovesCreatedConfig(tmpRoot);
     testInstallerPreservesUserPluginEntries(tmpRoot);
-  testUninstallRevertsLegacyInstallerPluginEntry(tmpRoot);
+    testUninstallRevertsLegacyInstallerPluginEntry(tmpRoot);
+    testDualTargetConfig(tmpRoot);
+    testTargetAutoDefaultsToV1(tmpRoot);
+    testV2InstallDoesNotCoWriteUserPermission(tmpRoot);
+    testMergePersistsOtherTargetStrip(tmpRoot);
+    testV1TargetSkipsPermissionWhenUserOwnsV2Permissions(tmpRoot);
+    testV2MergeSkipsWhenUserOwnsV1Permission(tmpRoot);
+    testV2MergeSkipsNonArrayPermissions(tmpRoot);
+    testUninstallRevertsReorderedV2PermissionRules(tmpRoot);
+    testTargetSwitchStripsRetiredPluginEntries(tmpRoot);
+    testGlobalBothInstallsWarning(tmpRoot);
     testSkillClassificationCoversShippedSkills();
     testLanguagesFilterFullPartition(tmpRoot);
     testLanguagesFilterCicdAlias(tmpRoot);
@@ -609,6 +954,9 @@ function main() {
     testFilterLanguagesDedupeWithoutRelativeBase(tmpRoot);
     testIsUnsafeBackupKeyRejectsEscapes();
     testGlobalAndProjectLifecycle(tmpRoot);
+    testGlobalRespectsXdgConfigHome(tmpRoot);
+    testGlobalFallsBackOnInvalidXdgConfigHome(tmpRoot);
+    testLegacyGlobalInstallWarning(tmpRoot);
 
     console.log('✅ Installer lifecycle tests passed');
   } catch (err) {

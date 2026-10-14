@@ -120,8 +120,8 @@ because it calls each specialist directly.
 
 ### Recommended Project Config
 
-The installer writes only `$schema`, `plugin`, and permission defaults. To get the
-pack's full behavior, add these keys to `opencode.json`:
+The installer writes only its target's keys (`$schema`, the plugin key, and
+permission defaults). To get the pack's full behavior, add these keys to `opencode.json`:
 
 ```json
 {
@@ -132,8 +132,16 @@ pack's full behavior, add these keys to `opencode.json`:
 ```
 
 - `subagent_depth: 2` enables nested delegation (see above).
-- `compaction.prune` drops stale tool output to save context on long sessions.
+- `compaction.prune` drops stale tool output in **v1**. OpenCode v2 accepts the key but it has
+  **no runtime effect** there.
 - `share: "disabled"` prevents accidental session sharing.
+
+### OpenCode v1/v2 config keys
+
+v1 and v2 use disjoint config keys. The installer emits one target's keys and
+never mixes them (`--target v1|v2|auto`). In v2, agent `request.body.temperature`
+is preserved but not yet sent to the model, and command `subtask` is a deprecated
+alias for `subagent`. See **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.
 
 ## Next Steps
 

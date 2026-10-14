@@ -1,7 +1,7 @@
 # Backlog
 
 Deferred work from review cycles and the OpenCode v2 readiness assessment. Update
-this file when items land or new gaps are found. Last updated: 2026-09-29.
+this file when items land or new gaps are found. Last updated: 2026-10-15.
 
 ## Validation hardening
 
@@ -56,20 +56,34 @@ static file cannot express both. Generate per target instead of concatenating.
 |---|---|---|
 | Permissions | `permission` object | `permissions` array (`shell` / `subagent` actions) |
 | Plugin config | `plugin` | `plugins` |
-| Commands | `subtask` | `subagent` (`subtask` deprecated alias) |
-| Agents | top-level `temperature`, `permission` | `request.body`; no legacy top-level fields |
+| Commands | `subtask` | `subagent` (`subtask` deprecated alias; v2 docs conflict on whether it still delegates) |
+| Agents | top-level `temperature`, `permission` | `request.body` — accepted, but `request.body.temperature` is **inert** (preserved, not yet sent to the model) |
 | Actions | `doom_loop`, `lsp` | not v2 actions |
-| Compaction | `compaction.prune` | `{ auto, keep, buffer }` |
-| Plugin runtime | v1 hook objects | `Plugin.define({ setup })` — v1 plugins do not run in v2 |
+| Compaction | `compaction.prune` | `{ auto, keep, buffer }`; `compaction.prune` is accepted by v2 but has **no runtime effect** |
+| Plugin runtime | v1 hook object (named export) | default export `{ id, setup }`; v1 plugins do not run in v2 |
+| Skills | `.opencode/skills/` copied by the installer | project `.opencode/skills/` auto-discovered (v2 core 2.0.4+) |
 
 Phases:
 
-1. Phase 0 (2.x, non-breaking): dual-entrypoint plugin (v1 `server()` plus v2
-   `Plugin.define({ setup })`); installer `--target v1|v2|auto`; a target-adapter
-   module that emits config and agent frontmatter per target; `--v2-strict`
-   validation in a CI matrix; v1/v2 compatibility docs.
-2. Phase 1 (2.x, compatibility window): auto-select v2 when detected; add install
-   end-to-end tests for both targets.
+1. Phase 0 (2.x, non-breaking) — **shipped in the dual-support upgrade**:
+   - Installer target adapter `--target v1|v2|auto` (default `auto`); v1 emits
+     `plugin`/`permission`, v2 emits `plugins`/`permissions`; the two key sets are
+     never co-written; the manifest records `target` and uninstall reverts the
+     correct per-target keys.
+   - Dual-entrypoint plugin (v1 named export plus v2 default `{ id, setup }`).
+   - Plugin-spec entrypoint (delivers skills plus hooks/guards only) with the
+     installer-marker coexistence guard (`.opencode-agents-version`).
+   - XDG fix: global config dir honors `XDG_CONFIG_HOME` (absolute only) with a
+     split-brain warning.
+   - `--v2-strict` is now a real, fail-closed validator
+     (`npm run validate:opencode-schema:v2`, its own CI job); the old
+     `install.js --v2-strict` no-op stub was removed.
+   - v1/v2 compatibility docs.
+2. Phase 1 (2.x, compatibility window): **remaining** — wire host-version detection
+   so `auto` selects v2 automatically; add install end-to-end tests for both
+   targets. Live v2 validation is also outstanding: no OpenCode v2 run has
+   exercised the plugin-spec path yet (the v2 plugin API is beta), so treat
+   plugin-spec as experimental.
 3. Phase 2 (3.0.0, breaking): stop emitting v1 keys and remove the v1 plugin branch.
 
 Guardrails:

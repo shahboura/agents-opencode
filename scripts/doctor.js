@@ -17,6 +17,11 @@ const checks = [
     args: ['scripts/validate-opencode-schema.js', '--strict'],
   },
   {
+    name: 'Validate OpenCode v2-strict schema conformance',
+    command: process.execPath,
+    args: ['scripts/validate-opencode-schema.js', '--v2-strict'],
+  },
+  {
     name: 'Validate command docs parity',
     command: process.execPath,
     args: ['scripts/validate-command-matrices.js'],
@@ -65,6 +70,16 @@ const checks = [
     name: 'Run plugin guard tests',
     command: process.execPath,
     args: ['scripts/plugin-guards.test.js'],
+  },
+  {
+    name: 'Run plugin v2 guard parity tests',
+    command: process.execPath,
+    args: ['scripts/plugin-v2.test.js'],
+  },
+  {
+    name: 'Run OpenCode target adapter tests',
+    command: process.execPath,
+    args: ['scripts/opencode-target.test.js'],
   },
   {
     name: 'Run pre-commit gate tests',

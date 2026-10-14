@@ -40,6 +40,7 @@ Examples:
 - legacy field still accepted but discouraged
 - old command token still parsed with warning
 - migration compatibility fallback retained
+- OpenCode v2 accepts the v1 `subtask` command field as a deprecated alias for `subagent`
 
 Required actions:
 
@@ -92,3 +93,6 @@ When introducing Level B/C changes:
 - Canonical agent path: `.opencode/agents/`
 - Legacy `.opencode/agent/` (singular) is retired; only the canonical `.opencode/agents/` (plural) path is recognized
 - Command docs parity is enforced against canonical command frontmatter
+- OpenCode v1 and v2 are both supported through 2.x via the install-target adapter
+  (`--target v1|v2|auto`); the two config key sets are never co-written. See
+  **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.

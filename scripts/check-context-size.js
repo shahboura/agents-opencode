@@ -8,7 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
+const { getGlobalConfigDir } = require('./lib/paths.js');
 
 // Colors for output (matches install.js pattern)
 const colors = {
@@ -136,7 +136,7 @@ function main() {
   const checkOnly = args.includes('--check') || args.includes('--dry-run');
 
   // Check for global installation first, then local
-  const globalContextFile = path.join(os.homedir(), '.config', 'opencode', 'AGENTS.md');
+  const globalContextFile = path.join(getGlobalConfigDir(), 'AGENTS.md');
   const localContextFile = path.join(process.cwd(), 'AGENTS.md');
 
   let contextFile = null;

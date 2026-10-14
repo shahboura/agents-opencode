@@ -133,6 +133,12 @@ subtask: true
 ---
 ```
 
+In OpenCode **v1**, `subtask: true` runs the command as a subtask. In **v2**,
+`subtask` is a **deprecated alias** for `subagent`; the shipped commands still use
+`subtask` because v2 auto-translates it in memory. OpenCode v2 docs conflict on
+whether the alias still delegates, so prefer `subagent` in new v2-native commands.
+See [OpenCode v1/v2 Support](/opencode-v1-v2-support/).
+
 See [OpenCode Commands docs](https://opencode.ai/docs/commands/) for full reference.
 
 ## Next Steps

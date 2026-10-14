@@ -95,13 +95,40 @@ npx agents-opencode --status
 - Use `--global` or `--all` to target non-project scope.
 - Removes installer-managed files using install manifest tracking.
 - Project backups: `<project>/.opencode/.backups/<timestamp>--<operation>--<scope>/`
-- Global backups: `~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/`
+- Global backups: `$XDG_CONFIG_HOME/opencode/.backups/…` when `XDG_CONFIG_HOME` is an absolute
+  path, otherwise `~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/`
 - Backup retention: latest 10 sessions and sessions newer than 30 days.
-- Installer only manages `$schema`, `plugin`, and missing `permission` defaults in
-  `opencode.json`; a newly created config contains only those keys.
+- Installer only manages its target's keys in `opencode.json`: `$schema`, the plugin key
+  (`plugin` on v1 / `plugins` on v2), and permission defaults (`permission` on v1 /
+  `permissions` on v2). The two key sets are never co-written.
+- A file install adds no plugin entry; OpenCode auto-loads the bundled plugin from
+  `.opencode/plugins/`.
 - Other config keys (provider, model, instructions, share, compaction, watcher, ...) are never written or modified.
 
 To restore files, use `backup-manifest.json` from a backup session and copy the files back to their original paths.
+
+## OpenCode v1/v2 support
+
+The pack supports OpenCode v1 and v2. The two use **disjoint config keys**, so the
+installer emits per-target output and never mixes key sets:
+
+```bash
+npx agents-opencode --global --target v1    # plugin / permission
+npx agents-opencode --global --target v2    # permissions (plugins only if a plugin entry exists)
+npx agents-opencode --global --target auto  # default; v1 unless a v2 host is detected
+```
+
+- `auto` resolves to **v1 today**; host-version detection is not yet wired.
+- The installer records the target so uninstall reverts the correct keys.
+- A **file install** delivers agents, markdown commands, skills, and config/permissions; the bundled
+  plugin (auto-loaded from `.opencode/plugins/`) adds the runtime hooks/guards. On a file install the
+  plugin's skill registration is a no-op, because the installer already copied the skills.
+- A **plugin-spec install** (adding `"plugin": ["agents-opencode"]` on v1 or
+  `"plugins": ["agents-opencode"]` on v2) delivers **skills and hooks/guards only** — not agents
+  or global config. It is **experimental** (no live OpenCode v2 run yet).
+- Do not combine a file install with the plugin spec.
+
+Full details: **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.
 
 ## Your First Run
 
@@ -125,8 +152,8 @@ To restore files, use `backup-manifest.json` from a backup session and copy the 
 
 ## What gets installed
 
-- `.opencode/` agent configs
-- `opencode.json` project config
+- `.opencode/` agents, markdown commands, skills, and the bundled plugin
+- `opencode.json` project config (target-specific keys)
 
 ## Notes
 

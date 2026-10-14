@@ -39,6 +39,12 @@ Quick jump: [Agents](/agents/) · [Skills Matrix](/skills-matrix/) · [Commands]
 
    OpenCode runtime command: `opencode`
 
+## OpenCode v1/v2
+
+Both OpenCode v1 and v2 are supported. The installer emits per-target config keys
+(`--target v1|v2|auto`; `auto` resolves to v1 today) and never mixes them. See
+[OpenCode v1/v2 Support](/opencode-v1-v2-support/).
+
 ## Claude Code
 
 Also available as a Claude Code plugin:
@@ -78,6 +84,7 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](/skill
 - [Review Gate](/review-gate/)
 - [Decision Grounding](/decision-grounding/)
 - [Compatibility](/compatibility/)
+- [OpenCode v1/v2 Support](/opencode-v1-v2-support/)
 - [Deprecation & Migration Policy](/deprecation-migration/)
 - [State Management](/state-management/)
 

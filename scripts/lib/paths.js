@@ -12,8 +12,17 @@ function getHomeDir() {
   return os.homedir();
 }
 
-function getGlobalConfigDir() {
+function getLegacyGlobalConfigDir() {
   return path.join(getHomeDir(), '.config', 'opencode');
+}
+
+function getGlobalConfigDir() {
+  const xdgConfigHome = process.env.XDG_CONFIG_HOME;
+  // Per the XDG Base Directory spec, an empty or relative value is ignored.
+  if (xdgConfigHome && path.isAbsolute(xdgConfigHome)) {
+    return path.join(xdgConfigHome, 'opencode');
+  }
+  return getLegacyGlobalConfigDir();
 }
 
 function getScopePaths(scope, projectDir) {
@@ -59,6 +68,9 @@ function resolveAgentDirectory(opencodeDir) {
 
 module.exports = {
   AGENT_DIR,
+  MANIFEST_FILE,
+  getGlobalConfigDir,
+  getLegacyGlobalConfigDir,
   getScopePaths,
   toManagedPath,
   resolveAgentDirectory,

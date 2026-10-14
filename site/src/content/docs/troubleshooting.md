@@ -51,18 +51,30 @@ sidebar:
 - Use `npx agents-opencode --uninstall --all` to remove both global and project scopes
 - If global is still installed, OpenCode may continue loading global agents/config
 
+### Global install not detected after setting XDG_CONFIG_HOME
+
+- OpenCode reads its global config from `$XDG_CONFIG_HOME/opencode` when `XDG_CONFIG_HOME` is set
+  to an **absolute** path; empty or relative values fall back to `~/.config/opencode`.
+- If you set `XDG_CONFIG_HOME` after installing, an install may exist at the legacy path but not
+  the active path (split-brain); the installer prints a warning.
+- Re-run the global install to populate the active path, then remove the old files.
+
 ### How do I restore from installer backups?
 
 - Project scope backups are in `<project>/.opencode/.backups/`
-- Global scope backups are in `~/.config/opencode/.backups/`
+- Global scope backups are in the active global config dir (`.backups/`): `$XDG_CONFIG_HOME/opencode/`
+  when `XDG_CONFIG_HOME` is an absolute path, otherwise `~/.config/opencode/`
 - Open the latest session folder and inspect `backup-manifest.json`
 - Copy the backed-up files back to their original paths listed in the manifest
 - Retention keeps the latest 10 sessions and sessions newer than 30 days
 
 ### Existing provider/model config changed unexpectedly
 
-- Installer only manages `$schema`, `plugin`, and missing permission defaults
-  (`external_directory`, `doom_loop`); other keys are never written.
+- Installer only manages its target's keys: `$schema`, the plugin key (`plugin` on v1 /
+  `plugins` on v2), and permission defaults (`permission` on v1 / `permissions` on v2);
+  other keys are never written.
+- On v1 the default permission keys include `external_directory` and `doom_loop`; `doom_loop`
+  is not a v2 permission action and is dropped when emitting a v2 target.
 - Existing `provider`, `model`, `instructions`, `share`, and `compaction` values are preserved.
 - Re-run install with `--project` or `--global` and check logs for `Updated config safely`.
 
