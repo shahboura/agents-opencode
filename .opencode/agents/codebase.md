@@ -36,6 +36,9 @@ permission:
     "code-change-impact": "allow"
     "refactoring": "allow"
     "decision-grounding": "allow"
+    "systematic-debugging": "allow"
+    "test-driven-development": "allow"
+    "verification-before-completion": "allow"
   task:
     "*": "deny"
     "review": "allow"
