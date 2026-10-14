@@ -192,6 +192,10 @@ function testGlobalAndProjectLifecycle(tmpRoot) {
   const env = {
     HOME: homeDir,
     USERPROFILE: homeDir,
+    // Pin XDG so this test is hermetic: CI runners set XDG_CONFIG_HOME, which
+    // would otherwise move the global install off ~/.config/opencode and break
+    // the assertions below. Empty is treated as unset (legacy path).
+    XDG_CONFIG_HOME: '',
   };
   const globalManifest = path.join(homeDir, '.config', 'opencode', '.agents-opencode-manifest.json');
   const projectManifest = path.join(projectDir, '.opencode', '.agents-opencode-manifest.json');
