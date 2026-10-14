@@ -42,7 +42,8 @@ Quick jump: [Agents](/agents/) · [Skills Matrix](/skills-matrix/) · [Commands]
 ## OpenCode v1/v2
 
 Both OpenCode v1 and v2 are supported. The installer emits per-target config keys
-(`--target v1|v2|auto`; `auto` resolves to v1 today) and never mixes them. See
+(`--target v1|v2|auto`; `auto` detects the installed OpenCode version — v2 when the
+major is >= 2, else v1) and never mixes them. See
 [OpenCode v1/v2 Support](/opencode-v1-v2-support/).
 
 ## Claude Code

@@ -54,9 +54,13 @@ function assertLanguagePartition(projectDir, requestedLanguages) {
 }
 
 function runInstaller(args, options = {}) {
-  const result = execFileSync('node', [installScript, ...args], {
+  // Spawn node by absolute path so tests that deliberately restrict the child
+  // PATH (to hide an ambient `opencode`) can still launch the installer.
+  // Default the host-version override so no test depends on an ambient
+  // `opencode` binary; individual tests override or clear it explicitly.
+  const result = execFileSync(process.execPath, [installScript, ...args], {
     cwd: options.cwd || repoRoot,
-    env: { ...process.env, ...(options.env || {}) },
+    env: { ...process.env, AGENTS_OPENCODE_HOST_VERSION: '1.19.0', ...(options.env || {}) },
     encoding: 'utf8',
   });
   return result;
@@ -429,13 +433,94 @@ function testDualTargetConfig(tmpRoot) {
 
 function testTargetAutoDefaultsToV1(tmpRoot) {
   const dir = path.join(tmpRoot, 'target-auto');
+  const homeDir = path.join(tmpRoot, 'target-auto-home');
   createDir(dir);
+  createDir(homeDir);
 
-  runInstaller(['--project', '.', '--target', 'auto'], { cwd: dir });
+  // Pin the detected host so this assertion never depends on an ambient
+  // `opencode` binary (the detection override is the hermetic escape hatch).
+  runInstaller(['--project', '.', '--target', 'auto'], {
+    cwd: dir,
+    env: { HOME: homeDir, USERPROFILE: homeDir, XDG_CONFIG_HOME: '', AGENTS_OPENCODE_HOST_VERSION: '1.19.0' },
+  });
 
   const config = readJson(path.join(dir, 'opencode.json'));
-  assert(config.permission, 'auto target should emit the v1 permission object without a detected v2 host');
-  assert(!('permissions' in config), 'auto target should not emit v2 permissions without a detected v2 host');
+  assert(config.permission && config.permission.doom_loop === 'deny', 'auto target should emit the v1 permission object for a v1 host');
+  assert(!('permissions' in config), 'auto target should not emit v2 permissions for a v1 host');
+}
+
+// Auto detection: an override reporting a v2 host must select the v2 key set.
+function testTargetAutoDetectsV2Host(tmpRoot) {
+  const dir = path.join(tmpRoot, 'target-auto-v2');
+  const homeDir = path.join(tmpRoot, 'target-auto-v2-home');
+  createDir(dir);
+  createDir(homeDir);
+
+  const output = runInstaller(['--project', '.', '--target', 'auto'], {
+    cwd: dir,
+    env: { HOME: homeDir, USERPROFILE: homeDir, XDG_CONFIG_HOME: '', AGENTS_OPENCODE_HOST_VERSION: '2.0.4' },
+  });
+
+  const config = readJson(path.join(dir, 'opencode.json'));
+  assert(Array.isArray(config.permissions), 'auto with a detected v2 host must emit the v2 permissions array');
+  assert(!('permission' in config), 'auto with a detected v2 host must not emit the v1 permission key');
+  for (const key of Object.keys(config)) {
+    assert(['$schema', 'plugins', 'permissions'].includes(key), `v2 auto config must not contain unexpected key '${key}'`);
+  }
+  assert(output.includes('Detected OpenCode major 2'), 'install output should report the detected host major (not the raw version)');
+}
+
+// Auto fallback: with the override unset and no `opencode` on PATH (simulated by
+// an empty PATH), detection fails and must not block the install; it stays v1.
+function testTargetAutoFallsBackWhenHostMissing(tmpRoot) {
+  const dir = path.join(tmpRoot, 'target-auto-fallback');
+  const homeDir = path.join(tmpRoot, 'target-auto-fallback-home');
+  const emptyPath = path.join(tmpRoot, 'target-auto-empty-path');
+  createDir(dir);
+  createDir(homeDir);
+  createDir(emptyPath);
+
+  const output = runInstaller(['--project', '.', '--target', 'auto'], {
+    cwd: dir,
+    env: {
+      HOME: homeDir,
+      USERPROFILE: homeDir,
+      XDG_CONFIG_HOME: '',
+      AGENTS_OPENCODE_HOST_VERSION: '',
+      PATH: emptyPath,
+    },
+  });
+
+  const config = readJson(path.join(dir, 'opencode.json'));
+  assert(config.permission && config.permission.doom_loop === 'deny', 'auto without a detectable host must fall back to v1');
+  assert(!('permissions' in config), 'auto fallback must not emit v2 permissions');
+  assert(output.includes('OpenCode host not detected'), 'install output should report the host-not-detected fallback');
+}
+
+// Invariant: host detection must not run when the target is already known. An
+// explicit --target and a manifest-recorded target must both skip the probe, so
+// neither prints the "Detected OpenCode ..." info line.
+function testTargetDetectionSkippedWhenTargetKnown(tmpRoot) {
+  const explicitDir = path.join(tmpRoot, 'target-explicit-no-detect');
+  const explicitHome = path.join(tmpRoot, 'target-explicit-no-detect-home');
+  createDir(explicitDir);
+  createDir(explicitHome);
+
+  const explicitOutput = runInstaller(['--project', '.', '--target', 'v2'], {
+    cwd: explicitDir,
+    env: { HOME: explicitHome, USERPROFILE: explicitHome, XDG_CONFIG_HOME: '' },
+  });
+  assert(!explicitOutput.includes('Detected OpenCode'), 'an explicit --target must not run host detection');
+
+  const recordedDir = path.join(tmpRoot, 'target-recorded-no-detect');
+  const recordedHome = path.join(tmpRoot, 'target-recorded-no-detect-home');
+  createDir(recordedDir);
+  createDir(recordedHome);
+  const env = { HOME: recordedHome, USERPROFILE: recordedHome, XDG_CONFIG_HOME: '' };
+
+  runInstaller(['--project', '.', '--target', 'v2'], { cwd: recordedDir, env });
+  const recordedOutput = runInstaller(['--project', '.', '--target', 'auto'], { cwd: recordedDir, env });
+  assert(!recordedOutput.includes('Detected OpenCode'), 'a manifest-recorded target install must not run host detection');
 }
 
 function testV2InstallDoesNotCoWriteUserPermission(tmpRoot) {
@@ -936,6 +1021,9 @@ function main() {
     testUninstallRevertsLegacyInstallerPluginEntry(tmpRoot);
     testDualTargetConfig(tmpRoot);
     testTargetAutoDefaultsToV1(tmpRoot);
+    testTargetAutoDetectsV2Host(tmpRoot);
+    testTargetAutoFallsBackWhenHostMissing(tmpRoot);
+    testTargetDetectionSkippedWhenTargetKnown(tmpRoot);
     testV2InstallDoesNotCoWriteUserPermission(tmpRoot);
     testMergePersistsOtherTargetStrip(tmpRoot);
     testV1TargetSkipsPermissionWhenUserOwnsV2Permissions(tmpRoot);

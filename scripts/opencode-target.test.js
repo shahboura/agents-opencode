@@ -30,11 +30,16 @@ function testResolveTarget() {
     [{ requested: 'auto' }, 'v1'],
     [{}, 'v1'],
     [{ requested: 'auto', detectedVersion: undefined }, 'v1'],
+    [{ requested: 'auto', detectedVersion: '1.19.0' }, 'v1'],
     [{ requested: 'auto', detectedVersion: '1.4.2' }, 'v1'],
     [{ requested: 'auto', detectedVersion: 'v1.9.0' }, 'v1'],
     [{ requested: 'auto', detectedVersion: '2.0.0' }, 'v2'],
     [{ requested: 'auto', detectedVersion: '2.0.4' }, 'v2'],
     [{ requested: 'auto', detectedVersion: 'v2.7.1' }, 'v2'],
+    [{ requested: 'auto', detectedVersion: 'opencode 2.0.4' }, 'v2'],
+    [{ requested: 'auto', detectedVersion: 'garbage' }, 'v1'],
+    // Dotted-token preference: a leading bare number must not be read as the major.
+    [{ requested: 'auto', detectedVersion: 'build 2024 1.19.0' }, 'v1'],
     [{ requested: 'v1', detectedVersion: '2.5.0' }, 'v1'],
     [{ requested: 'v2', detectedVersion: '1.0.0' }, 'v2'],
   ];
@@ -53,6 +58,49 @@ function testResolveTarget() {
     threw = true;
   }
   assert(threw, 'resolveTarget must reject an unknown target');
+}
+
+function testParseHostMajor() {
+  const cases = [
+    ['1.19.0', 1],
+    ['2.0.4', 2],
+    ['v2.1', 2],
+    ['opencode 2.0.4', 2],
+    ['V2', 2],
+    ['2', 2],
+    ['10.0', 10],
+    ['3.0.0-beta.1', 3],
+    // A bare number before the real version must not be read as the major: the
+    // dotted token wins, so "2024" in the banner is ignored.
+    ['build 2024 1.19.0', 1],
+    ['garbage', undefined],
+    ['', undefined],
+    ['   ', undefined],
+    [undefined, undefined],
+    [null, undefined],
+    // Non-string input is stringified; a bare "42" parses to major 42.
+    [42, 42],
+  ];
+
+  for (const [input, expected] of cases) {
+    assert(
+      target.parseHostMajor(input) === expected,
+      `parseHostMajor(${JSON.stringify(input)}) should be ${expected}`
+    );
+  }
+}
+
+function testDetectHostVersionOverride() {
+  // A non-empty override must be returned verbatim and must not probe the host,
+  // so this stays hermetic even when an `opencode` binary is present.
+  assert(
+    target.detectHostVersion({ env: { AGENTS_OPENCODE_HOST_VERSION: '2.0.4' } }) === '2.0.4',
+    'detectHostVersion should return the env override verbatim'
+  );
+  assert(
+    target.detectHostVersion({ env: { AGENTS_OPENCODE_HOST_VERSION: 'opencode 2.0.4' } }) === 'opencode 2.0.4',
+    'detectHostVersion should return non-version override text verbatim'
+  );
 }
 
 function testConfigKeysFor() {
@@ -163,6 +211,8 @@ function main() {
     console.log('Running OpenCode target adapter tests...');
     testTargetsList();
     testResolveTarget();
+    testParseHostMajor();
+    testDetectHostVersionOverride();
     testConfigKeysFor();
     testEmitConfigExclusiveKeys();
     testEmitConfigDefaults();

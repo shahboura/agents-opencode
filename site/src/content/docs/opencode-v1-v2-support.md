@@ -19,13 +19,14 @@ installer generates per-target output instead of combining key sets.
 |---|---|
 | `v1` | Emit the v1 key set (`plugin`, `permission`). |
 | `v2` | Emit the v2 key set (`permissions`; `plugins` only if the source config lists a plugin entry). |
-| `auto` (default) | Recorded-target aware; resolves to **v1 today** unless a v2 host is detected. |
+| `auto` (default) | Detects the installed OpenCode version (v2 when the major is >= 2, else v1); falls back to v1 when OpenCode is not detected. An existing install keeps its recorded target. |
 
 - An explicit `v1`/`v2` always wins.
 - Under `auto`, an existing install keeps its recorded target, so an update never
   silently flips a v2 install back to v1.
-- **Host-version detection is not yet wired.** `auto` therefore resolves to `v1`
-  today; request `v2` explicitly to emit v2 keys.
+- Under `auto`, the installer detects the installed OpenCode version via `opencode --version`:
+  a major >= 2 selects `v2`, otherwise `v1`; when OpenCode is not detected it falls back to `v1`.
+  Set `AGENTS_OPENCODE_HOST_VERSION` to override detection (used by tests and CI).
 - The install manifest records `target`, so uninstall reverts the correct
   per-target keys.
 - The two key sets are **never co-written** in one `opencode.json`.
@@ -33,7 +34,7 @@ installer generates per-target output instead of combining key sets.
 ```bash
 npx agents-opencode --global --target v1    # plugin / permission
 npx agents-opencode --global --target v2    # permissions (plugins only if a plugin entry exists)
-npx agents-opencode --global --target auto  # default; v1 unless a v2 host is detected
+npx agents-opencode --global --target auto  # detect the installed OpenCode version (v2 if major >= 2, else v1)
 ```
 
 ## v1 vs v2 key mapping

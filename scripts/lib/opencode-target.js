@@ -21,6 +21,9 @@
  * explicit `--v2-native` rewrite (Phase 4/5).
  */
 
+const { spawnSync } = require('child_process');
+const os = require('os');
+
 const TARGETS = ['v1', 'v2'];
 
 const CONFIG_SCHEMA = 'https://opencode.ai/config.json';
@@ -54,13 +57,81 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-// Accepts "2", "2.0.4", "v2.0.7"; returns the major number or null.
-function parseMajor(version) {
-  if (version === undefined || version === null) return null;
-  const match = String(version).trim().match(/^v?(\d+)/i);
-  if (!match) return null;
+// Tolerant host-version parser. Accepts "1.19.0", "2.0.4", "v2.1", and
+// "opencode 2.0.4"; returns the major number, or undefined for anything without
+// a recognisable version token (garbage, empty, null/undefined).
+//
+// A dotted token (major.minor[.patch], optional leading v) is preferred over a
+// bare integer, so a leading non-version number in a banner (e.g.
+// "build 2024 1.19.0") is not mistaken for the major version. The bare major is
+// only used as a fallback when no dotted token exists.
+function parseHostMajor(version) {
+  if (version === undefined || version === null) return undefined;
+  const text = String(version).trim();
+  const dotted = text.match(/\bv?(\d+)\.\d+(?:\.\d+)*\b/i);
+  const bare = text.match(/\bv?(\d+)\b/i);
+  const match = dotted || bare;
+  if (!match) return undefined;
   const major = Number.parseInt(match[1], 10);
-  return Number.isNaN(major) ? null : major;
+  return Number.isNaN(major) ? undefined : major;
+}
+
+// Test/CI override and user escape hatch: a non-empty value here skips host
+// probing entirely.
+const HOST_VERSION_ENV = 'AGENTS_OPENCODE_HOST_VERSION';
+
+function readEnvOverride(env) {
+  if (!env) return undefined;
+  const value = env[HOST_VERSION_ENV];
+  return typeof value === 'string' && value.trim() !== '' ? value : undefined;
+}
+
+/**
+ * Detect the installed OpenCode host version.
+ *
+ * An explicit AGENTS_OPENCODE_HOST_VERSION override (options.env, then
+ * process.env) wins — this is the hermetic test/CI hook and a user escape hatch.
+ * Otherwise the fixed `opencode --version` command is run. Any failure (missing
+ * binary, non-zero exit, timeout) resolves to undefined; this never throws.
+ *
+ * PATH trust assumption: we execute whatever `opencode` the user's PATH resolves
+ * to (the tool being extended) — acceptable for an installer. We deliberately do
+ * NOT spawn from the current working directory: `cwd` is pinned to the user's
+ * home so on Windows `cmd.exe` cannot resolve a repo-local
+ * `opencode.cmd`/`opencode.bat` shim ahead of PATH (its CWD-before-PATH
+ * precedence), which a hostile repository could otherwise abuse to run code.
+ */
+function detectHostVersion(options) {
+  const override = readEnvOverride(options && options.env) || readEnvOverride(process.env);
+  if (override !== undefined) return override;
+
+  try {
+    const base = {
+      encoding: 'utf8',
+      timeout: 4000,
+      windowsHide: true,
+      // Never spawn from CWD: prevents a repo-local shim from winning PATH
+      // resolution on Windows (see the PATH trust note above).
+      cwd: os.homedir(),
+      // Capture stderr too: `opencode --version` might write the version there,
+      // and detection must not silently fail if stdout is empty.
+      stdio: ['ignore', 'pipe', 'pipe'],
+    };
+    const result = process.platform === 'win32'
+      // On Windows the `opencode` shim is a .cmd/.ps1, so a shell is required. A
+      // single fixed command string (no args array, no interpolation) keeps this
+      // injection-safe and avoids Node's DEP0190 warning.
+      ? spawnSync('opencode --version', { ...base, shell: true })
+      : spawnSync('opencode', ['--version'], base);
+
+    if (result.error || result.status !== 0) return undefined;
+    const stdout = result.stdout === undefined || result.stdout === null ? '' : String(result.stdout);
+    const stderr = result.stderr === undefined || result.stderr === null ? '' : String(result.stderr);
+    const text = (stdout.trim() !== '' ? stdout : stderr).trim();
+    return text !== '' ? text : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 function assertTarget(target) {
@@ -74,8 +145,9 @@ function assertTarget(target) {
  * Resolve the effective install target.
  *
  * `requested` is 'v1' | 'v2' | 'auto' (default 'auto'). An explicit v1/v2 always
- * wins. 'auto' selects v2 only when a v2 host version is known; otherwise it
- * stays on v1 (the safe, backwards-compatible default until detection lands).
+ * wins. 'auto' selects v2 when the detected host major is >= 2; otherwise it
+ * stays on v1 (the safe, backwards-compatible default, including when no host
+ * version is known).
  */
 function resolveTarget({ requested, detectedVersion } = {}) {
   const requestedValue =
@@ -88,8 +160,8 @@ function resolveTarget({ requested, detectedVersion } = {}) {
     return requestedValue;
   }
 
-  const major = parseMajor(detectedVersion);
-  return major !== null && major >= 2 ? 'v2' : 'v1';
+  const major = parseHostMajor(detectedVersion);
+  return typeof major === 'number' && major >= 2 ? 'v2' : 'v1';
 }
 
 function configKeysFor(target) {
@@ -213,6 +285,8 @@ function pluginEntrypoints(target) {
 
 module.exports = {
   TARGETS,
+  parseHostMajor,
+  detectHostVersion,
   resolveTarget,
   configKeysFor,
   emitConfig,
