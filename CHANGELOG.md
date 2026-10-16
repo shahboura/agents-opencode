@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.0.0](https://github.com/shahboura/agents-opencode/compare/v2.6.0...v3.0.0) (2026-10-16)
+
+
+### Features
+
+* **installer:** detect OpenCode host version for --target auto ([8549f1c](https://github.com/shahboura/agents-opencode/commit/8549f1ccca6e85c52f65acc58085790c8b705c6a))
+* **opencode:** add v1/v2 dual support (target adapter, dual plugin, plugin-spec install, XDG fix) ([391cf27](https://github.com/shahboura/agents-opencode/commit/391cf27f7a31da6a36d6bdf5c1838d8815fdcb73))
+* **skills:** port systematic-debugging, TDD, and verification-before-completion ([c398f72](https://github.com/shahboura/agents-opencode/commit/c398f729cfc1f36796bb9fbac935bab4306c4b58))
+
+
+### Bug Fixes
+
+* **installer:** make global-path lifecycle test hermetic under XDG_CONFIG_HOME ([dd84485](https://github.com/shahboura/agents-opencode/commit/dd8448509024e6e4747937aa138d546876a9391a))
+* **opencode:** align v2 plugin with the published v2.0.30 API ([1d6a372](https://github.com/shahboura/agents-opencode/commit/1d6a37271d3893d1ad0fc6ef6169811879dbf43c))
+
+
+### Miscellaneous Chores
+
+* release 3.0.0 ([377e9f6](https://github.com/shahboura/agents-opencode/commit/377e9f6616b3fc56cff6b5729638cf3c1bd193c4))
+
 ## [2.6.0](https://github.com/shahboura/agents-opencode/compare/v2.5.1...v2.6.0) (2026-09-30)
 
 
