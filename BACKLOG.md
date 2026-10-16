@@ -21,6 +21,9 @@ The validator review cycles produced these items. VAL-1 and VAL-3 landed in the
 |---|---|---|---|
 | GATE-1 | medium | Add effort-scaling delegation budgets (scale subagent/tool budget to task complexity) | `.opencode/agents/orchestrator.md`, `.opencode/instructions/orchestrator-reference.instructions.md` |
 | GATE-2 | low | Add a voting/redundancy pass to the multi-lens review gate for high-risk diffs | `.opencode/instructions/orchestrator-reference.instructions.md`, `.opencode/agents/review.md` |
+| GATE-3 | medium | Make the gate receipt informative: record per-lens outcomes (verdict + findings raised / fixed) in `.gate/pass.json`, not just lens names, so a rigorous panel (`2 lenses, 9 findings, 6 fixed`) is distinguishable from a rubber stamp (`2 lenses, 0 findings`). Today both receipts look identical, and the marker is self-attested — this is the cheapest step toward a self-policing gate. | `scripts/gate/record-pass.js`, `scripts/gate/lib.js`, `.githooks/pre-commit`, `site/src/content/docs/review-gate.md`, `CONTRIBUTING.md` |
+| GATE-4 | low | Track the ritual signal: report when markers routinely record 0 findings (or repeated single-lens trivial passes on non-trivial diffs), so degradation into box-ticking is visible before it becomes habit. Pairs with GATE-3. | `scripts/gate/record-pass.js` (+ a small report script), `scripts/doctor.js` |
+| GATE-5 | low | Shift the deterministic Tier 1 checks fully into CI (branch protection), keeping the local gate only for the Tier 2 lens panel — the one part CI cannot run. Removes the "Tier 1 marker" ceremony entirely. | `.github/workflows/validate.yml`, `site/src/content/docs/review-gate.md`, `CONTRIBUTING.md` |
 
 ## Skills
 
