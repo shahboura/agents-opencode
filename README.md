@@ -12,6 +12,11 @@ Turn a single prompt into a full delivery loop — plan → implement → review
 without leaving the terminal you already use. Built for [OpenCode](https://opencode.ai).
 Already on Claude Code? The same 27 skills ship as a [plugin](./adapters/claude-code/).
 
+> **Roadmap:** the next major (3.0) is planned to standardize on OpenCode **v2**. Today the pack
+> fully supports **v1**; v2 installs use the target adapter and are verified to load (plugin and
+> all 10 agents) on v2.0.30, but v2 runtime hook behaviour is not yet exercised end-to-end — see
+> [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
+
 ## Why this pack is different
 
 - **One prompt, four disciplines.** `@orchestrator` scopes the work, then hands off to
@@ -207,8 +212,8 @@ A file install adds no plugin entry: OpenCode auto-loads the bundled plugin from
 To deliver **skills and hooks/guards only** (no agents or global config), add the package as a plugin
 spec in `opencode.json`: `"plugin": ["agents-opencode"]` (v1) or `"plugins": ["agents-opencode"]` (v2);
 a version pin like `agents-opencode@X.Y.Z` also works (use a build that ships plugin-spec support).
-Do not combine a file install with the plugin spec. The plugin-spec runtime path is **experimental**
-(no live v2 run yet; the v2 plugin API is beta).
+Do not combine a file install with the plugin spec. The plugin-spec path is verified to load on
+v2.0.30; its runtime skill delivery is not yet exercised end-to-end.
 See [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 
 ### Claude Code plugin

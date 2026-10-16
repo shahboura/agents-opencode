@@ -62,7 +62,7 @@ static file cannot express both. Generate per target instead of concatenating.
 | Actions | `doom_loop`, `lsp` | not v2 actions |
 | Compaction | `compaction.prune` | `{ auto, keep, buffer }`; `compaction.prune` is accepted by v2 but has **no runtime effect** |
 | Plugin runtime | v1 hook object (named export) | default export `{ id, setup }`; v1 plugins do not run in v2 |
-| Skills | `.opencode/skills/` copied by the installer | project `.opencode/skills/` auto-discovered (v2 core 2.0.4+) |
+| Skills | `.opencode/skills/` copied by the installer | project `.opencode/skills/` auto-discovered natively (confirmed on v2.0.30) |
 
 Phases:
 
@@ -80,12 +80,12 @@ Phases:
      (`npm run validate:opencode-schema:v2`, its own CI job); the old
      `install.js --v2-strict` no-op stub was removed.
    - v1/v2 compatibility docs.
-2. Phase 1 (2.x, compatibility window): **partly shipped** — `--target auto` now
-   detects the installed OpenCode version (`opencode --version`; major >= 2 selects
-   v2, else v1; `AGENTS_OPENCODE_HOST_VERSION` overrides detection) and install
-   end-to-end tests cover both targets. **Remaining:** live v2 validation — no
-   OpenCode v2 run has exercised the plugin-spec path yet (the v2 plugin API is
-   beta), so treat plugin-spec as experimental.
+2. Phase 1 (2.x, compatibility window): **partly shipped** — `--target auto` detects
+   the installed OpenCode version; install e2e tests cover both targets; a disposable
+   sandbox run against **OpenCode v2.0.30** confirmed the plugin loads and all 10 agents
+   are discovered. **Remaining:** exercise v2 runtime hook behaviour with a model
+   (secret-read guard, context injection, event subscription) and the plugin-spec skill
+   delivery end-to-end.
 3. Phase 2 (3.0.0, breaking): stop emitting v1 keys and remove the v1 plugin branch.
 
 Guardrails:
