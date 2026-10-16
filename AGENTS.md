@@ -65,6 +65,16 @@ All agents log milestone entries to this file using this format:
 
 ## Milestones
 
+### 2026-10-16 05:30 - v2 hardening: plugin aligned to the published v2.0.30 API, verified on real v1 + v2 sandboxes
+
+**Agent:** orchestrator
+**Summary:** Hardened the OpenCode v2 path on `feat/skills-and-v2-hardening` (which also carries the Superpowers skills port) and verified it against real hosts.
+- Live-docs + shipped-type verification found the v2 plugin registered the right hooks but wired the wrong event shapes: context injection read a non-existent `event.context` (now `event.system` text parts), logging used a non-existent `ctx.client` (now a console fallback), and `ctx.event` was used as a callback (now `subscribe({signal})` + AbortController); hook registrations are awaited/contained (`Promise<Registration>`).
+- A disposable Docker sandbox against **opencode 2.0.30** found two more: the v2 skill descriptor omitted the required `name` (plugin-spec skill delivery threw `SchemaError`), and v2-emitted config carried keys v2 marks unsupported.
+- The review cycle then caught a data-loss bug — the new config strip deleted *user* values for keys the installer never manages — removed; the v2 guard now emits rate-limited telemetry when a read event has no resolvable path (fail-open made visible).
+- Final verification: disposable Docker sandboxes on **opencode 1.19.2 (regression PASS)** and **2.0.30 (fixes PASS)** — plugin loads, all 10 agents and 27 skills discovered on both, zero plugin errors; docs overclaims corrected and a README roadmap note added.
+- Caveat: the sandbox has no model/API key, so live guard-block, context injection, and `--target auto` detection remain unexercised — the tracked exit gate before declaring v2 fully supported.
+
 ### 2026-10-15 01:00 - `--target auto` host detection + UI/UX backlog entry
 
 **Agent:** orchestrator
