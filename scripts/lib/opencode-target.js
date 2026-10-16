@@ -45,6 +45,17 @@ const ACTION_RENAMES = { bash: 'shell', task: 'subagent', write: 'edit', patch: 
 // v1 permission actions with no v2 core equivalent (dropped on translation).
 const NON_V2_ACTIONS = new Set(['doom_loop', 'lsp']);
 
+// v1-only legacy settings that v2 marks "accepted but unsupported": v2 ignores
+// them and logs `omitted unsupported legacy setting`. Grounded in the v2
+// migration guide ("Accepted but unsupported fields",
+// https://v2.opencode.ai/docs/migrate-v1) and proven at runtime by the v2.0.30
+// sandbox for `subagent_depth` and `compaction.prune`. `logLevel` and `server`
+// are the other two top-level members of the same documented set.
+const V2_IGNORED_TOP_LEVEL_KEYS = ['subagent_depth', 'logLevel', 'server'];
+// Nested `compaction` members with no v2 behavior (v2 uses `keep.tokens` and
+// checkpoint-based compaction). `compaction` itself stays a v2 key.
+const V2_IGNORED_COMPACTION_KEYS = ['prune', 'tail_turns'];
+
 // The shipped plugin file lives in `.opencode/plugins/`; both entrypoints are in
 // this one file (named export for v1, default export for v2).
 const PLUGIN_FILE = 'agents-opencode.ts';
@@ -205,8 +216,41 @@ function v1PermissionToV2Rules(permission) {
 }
 
 /**
+ * Remove the v1-only legacy settings a v2 host ignores with a warning:
+ * top-level `subagent_depth`, `logLevel`, `server`, and the nested
+ * `compaction.prune` / `compaction.tail_turns`. `compaction` is only dropped
+ * when no v2 members remain. Mutates and returns the given config.
+ */
+function stripV2IgnoredKeys(config) {
+  if (!isPlainObject(config)) return config;
+
+  for (const key of V2_IGNORED_TOP_LEVEL_KEYS) {
+    delete config[key];
+  }
+
+  if (isPlainObject(config.compaction)) {
+    for (const key of V2_IGNORED_COMPACTION_KEYS) {
+      delete config.compaction[key];
+    }
+    if (Object.keys(config.compaction).length === 0) {
+      delete config.compaction;
+    }
+  }
+
+  return config;
+}
+
+/**
  * Build the installer-managed portion of a config for a single target. The
  * result contains the target's keys only — never both v1 and v2 key sets.
+ *
+ * The emitted key set is closed (`$schema`, the plugin key, the permission
+ * key), so the v1-only legacy settings can never reach the output on their own:
+ * the `stripV2IgnoredKeys` call below is a defensive invariant, not a
+ * transformation the current emission depends on. It keeps a future emission
+ * change (e.g. copying source keys) from reintroducing the sandbox-proven
+ * `omitted unsupported legacy setting` warnings for `subagent_depth` and
+ * `compaction.prune`. The v1 output is byte-for-byte unchanged.
  */
 function emitConfig(sourceConfig, target) {
   const t = assertTarget(target);
@@ -229,6 +273,10 @@ function emitConfig(sourceConfig, target) {
       const rules = v1PermissionToV2Rules(source.permission);
       if (rules.length > 0) emitted.permissions = rules;
     }
+  }
+
+  if (t === 'v2') {
+    stripV2IgnoredKeys(emitted);
   }
 
   return emitted;
@@ -290,6 +338,9 @@ module.exports = {
   resolveTarget,
   configKeysFor,
   emitConfig,
+  stripV2IgnoredKeys,
+  V2_IGNORED_TOP_LEVEL_KEYS,
+  V2_IGNORED_COMPACTION_KEYS,
   configPatchShape,
   revertKeysFor,
   transformAgentFrontmatter,

@@ -49,13 +49,14 @@ npx agents-opencode --global --target auto  # detect the installed OpenCode vers
 | Compaction | `compaction.prune` | `{ auto, keep, buffer }` |
 | Plugin runtime | v1 hook function (named export) | default export `{ id, server, setup }` |
 
-OpenCode v2 is documented to translate v1-shaped config, agents, and commands in
-memory, so the adapter currently changes only the keys v2 does not translate.
-**This auto-translation is the load-bearing assumption and is not yet verified
-against a live v2 host** — v2's own agent docs recommend the new field shapes, so
-confirm against a live v2 before relying on v2 agents/commands. The pack's plugin
-targets **v2 core 2.0.4+** (it feature-detects the v2 skill-descriptor field,
-preferring `path` and falling back to `location`).
+OpenCode v2 translates v1-shaped config, agents, and commands in memory — the
+migrate-v1 guide states "V2 translates legacy agent frontmatter automatically" — and a
+disposable sandbox run against **v2.0.30** confirmed the pack's 10 agents are discovered
+from v1-shaped frontmatter. The adapter still changes only the keys v2 does not
+translate. The plugin is written against the published **v2.0.30** plugin API and
+verified to load on that host; runtime hook behaviour (secret-read guard, context
+injection, event subscription) has not yet been exercised with a model. The skill
+descriptor uses `path`, v2's only file field.
 
 ## Hybrid install model
 
@@ -83,12 +84,14 @@ Add the package to your OpenCode config:
 ```
 
 The first form is v1, the second v2. A version pin also works
-(`"agents-opencode@2.6.0"`). A plugin-spec install covers **skills and
-hooks/guards only** — not agents or global config.
+(`"agents-opencode@X.Y.Z"`, using a build that ships plugin-spec support). A
+plugin-spec install covers **skills and hooks/guards only** — not agents or global
+config.
 
-**Experimental / unverified.** The plugin-spec runtime path has had no live
-OpenCode v2 run yet, and the v2 plugin API is beta. Prefer a file install for
-production use.
+**Verified loading, unexercised runtime.** A live OpenCode **v2.0.30** run confirmed the
+plugin loads and all 10 agents are discovered. The v2 plugin API is still evolving, and
+runtime hook behaviour and plugin-spec skill delivery have not been exercised with a
+model — prefer a file install for production use.
 
 ## Coexistence guard
 

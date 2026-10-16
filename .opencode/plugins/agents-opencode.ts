@@ -1,7 +1,15 @@
 import type { Plugin } from "@opencode-ai/plugin";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { handleToolExecuteBefore, injectContextOnce, selectPackVersion } from "../lib/guards.mjs";
+import {
+  createReadGuardHandler,
+  handleToolExecuteBefore,
+  injectContextOnce,
+  injectSystemContextOnce,
+  safeRegister,
+  selectPackVersion,
+  subscribeEventStream,
+} from "../lib/guards.mjs";
 import { buildSkillInfo, shouldRegisterPackSkills } from "../lib/pack-skills.mjs";
 
 /**
@@ -33,11 +41,13 @@ type PackInfo = {
   inventory: string;
 };
 
-type PackLogger = {
+type LogLevel = "info" | "warn" | "error";
+
+type StructuredLogHost = {
   app?: {
     log?: (input: {
-      body: { service: string; level: string; message: string };
-    }) => Promise<unknown>;
+      body: { service: string; level: LogLevel; message: string };
+    }) => unknown;
   };
 };
 
@@ -89,20 +99,23 @@ function markerPresent(): boolean {
 }
 
 /**
- * Best-effort read of the `description` field from a `SKILL.md` YAML
- * front-matter block, handling both inline and block (`>-`/`|`) scalars. The
- * description is cosmetic for registration, so a miss degrades to "".
+ * Best-effort read of a scalar field from a `SKILL.md` YAML front-matter
+ * block, handling both inline and block (`>-`/`|`) scalars. Only top-level
+ * keys are matched (nested `metadata:` members are indented and skipped), and
+ * a miss degrades to "" — callers treat both fields as best-effort identity.
  */
-function readSkillDescription(content: string | null): string {
+function readFrontmatterScalar(content: string | null, key: string): string {
   if (typeof content !== "string") return "";
   const front = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!front) return "";
 
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`^${escapedKey}\\s*:`);
   const lines = front[1].split(/\r?\n/);
-  const index = lines.findIndex((line) => /^description\s*:/.test(line));
+  const index = lines.findIndex((line) => pattern.test(line));
   if (index === -1) return "";
 
-  const inline = lines[index].replace(/^description\s*:/, "").trim();
+  const inline = lines[index].replace(pattern, "").trim();
   if (inline && !/^[>|][+-]?$/.test(inline)) {
     return inline.replace(/^["']|["']$/g, "");
   }
@@ -113,6 +126,14 @@ function readSkillDescription(content: string | null): string {
     parts.push(lines[i].trim());
   }
   return parts.join(" ").trim();
+}
+
+function readSkillDescription(content: string | null): string {
+  return readFrontmatterScalar(content, "description");
+}
+
+function readSkillName(content: string | null): string {
+  return readFrontmatterScalar(content, "name");
 }
 
 /**
@@ -167,37 +188,49 @@ const PACK = readPackInfo();
 
 // ---- Shared hook bodies (used by both entrypoints) ----
 
-async function logLoaded(client: PackLogger | undefined): Promise<void> {
-  if (!client?.app?.log) return;
-  await client.app.log({
-    body: {
-      service: SERVICE,
-      level: "info",
-      message: `Agents Opencode v${PACK.version} loaded — ${PACK.inventory} available`,
-    },
-  });
+/**
+ * Best-effort diagnostic logging, defensive on both hosts.
+ *
+ * - v1: the plugin input carries the server client, whose `app.log` records
+ *   structured entries — used when present (unchanged v1 behavior).
+ * - v2: `ctx.app` is only `{ name, version, channel }` (verified against the
+ *   published `@opencode/plugin` types — there is no `ctx.client` and no
+ *   `ctx.app.log`), and v2's docs log from plugins with `console.*`. Falling
+ *   back to the console keeps a warning like "secret-read guard not
+ *   registered" from being silently lost.
+ *
+ * Logging is advisory: this helper must never throw (or reject), whichever
+ * path it takes.
+ */
+async function logMessage(host: unknown, level: LogLevel, message: string): Promise<void> {
+  try {
+    const app = (host as StructuredLogHost | undefined)?.app;
+    if (app && typeof app.log === "function") {
+      await app.log({ body: { service: SERVICE, level, message } });
+      return;
+    }
+  } catch {
+    // Fall through to the console so the message is not lost.
+  }
+
+  try {
+    const sink = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
+    sink(`[${SERVICE}] ${message}`);
+  } catch {
+    // Even a locked-down console must not break the plugin.
+  }
 }
 
-async function logSessionError(client: PackLogger | undefined): Promise<void> {
-  if (!client?.app?.log) return;
-  await client.app.log({
-    body: {
-      service: SERVICE,
-      level: "error",
-      message: "OpenCode session error observed",
-    },
-  });
+async function logLoaded(host: unknown): Promise<void> {
+  await logMessage(host, "info", `Agents Opencode v${PACK.version} loaded — ${PACK.inventory} available`);
 }
 
-async function logWarn(client: PackLogger | undefined, message: string): Promise<void> {
-  if (!client?.app?.log) return;
-  await client.app.log({
-    body: {
-      service: SERVICE,
-      level: "warn",
-      message,
-    },
-  });
+async function logSessionError(host: unknown): Promise<void> {
+  await logMessage(host, "error", "OpenCode session error observed");
+}
+
+async function logWarn(host: unknown, message: string): Promise<void> {
+  await logMessage(host, "warn", message);
 }
 
 function compactionContext(): string[] {
@@ -268,7 +301,7 @@ function injectV1SkillPaths(config: unknown): void {
 }
 
 export const AgentsOpencodePlugin: Plugin = async ({ client }) => {
-  await logLoaded(client as PackLogger);
+  await logLoaded(client);
 
   return {
     /**
@@ -289,7 +322,7 @@ export const AgentsOpencodePlugin: Plugin = async ({ client }) => {
      */
     event: async ({ event }) => {
       if (event.type === "session.error") {
-        await logSessionError(client as PackLogger);
+        await logSessionError(client);
       }
     },
 
@@ -324,9 +357,14 @@ type V2HookRegistrar = {
 };
 
 type V2EventStream = {
-  subscribe?: (handler: (event: any) => void) => unknown;
-  on?: (type: string, handler: (event: any) => void) => unknown;
-  off?: (type: string, handler: (event: any) => void) => void;
+  /**
+   * Documented v2 shape: returns an AsyncIterable of server events. Only
+   * `subscribe` is wired (`subscribeEvents`); an `on`-based emitter is not a
+   * v2 event source here, so host classification stays consistent with the
+   * wiring (an `on`-only stream would otherwise be classified v2 and then
+   * silently receive no events).
+   */
+  subscribe?: (options?: { signal?: AbortSignal }) => unknown;
 };
 
 type V2SkillEditor = {
@@ -339,7 +377,6 @@ type V2SkillRegistrar = {
 };
 
 type V2Context = {
-  client?: PackLogger;
   tool?: V2HookRegistrar;
   session?: V2HookRegistrar;
   shell?: V2HookRegistrar;
@@ -364,17 +401,7 @@ function isV2Context(ctx: unknown): ctx is V2Context {
     return true;
   }
   const stream = candidate.event;
-  return !!stream && (typeof stream.subscribe === "function" || typeof stream.on === "function");
-}
-
-// A throw from a registration must not disable the whole plugin.
-function safeRegister(cleanups: Array<() => void>, register: () => void | (() => void)): void {
-  try {
-    const dispose = register();
-    if (typeof dispose === "function") cleanups.push(dispose);
-  } catch {
-    // Contained: one failed registration must not abort the others.
-  }
+  return !!stream && typeof stream.subscribe === "function";
 }
 
 /** Ids the editor already exposes, normalized from `editor.list()` entries.
@@ -403,31 +430,25 @@ async function listEditorSkillIds(editor: V2SkillEditor): Promise<string[]> {
 }
 
 /**
- * Add one skill, feature-detecting the editor's file field: try `path` (v2 core
- * 2.0.4+) and fall back to `location` (published API reference).
+ * Add one skill through the editor.
  *
- * Both the synchronous throw and an asynchronous rejection are contained: the
- * add is awaited, so a rejected promise triggers the `location` fallback just
- * like a thrown shape error, and a rejected fallback is swallowed. Registration
- * is best-effort and must never throw (or leak an unhandled rejection).
+ * The descriptor matches the shipped `@opencode/schema` `Skill.Info` (verified
+ * against 2.0.30): `{ id, name, description, path, content }`, with `name`
+ * required and no `location` field — so there is no second shape to retry.
+ * The add is awaited inside containment: a synchronous throw and an async
+ * rejection are both swallowed, so registration never disables the plugin or
+ * leaks an unhandled rejection.
  */
-async function addSkillWithFallback(
+async function addPackSkill(
   editor: V2SkillEditor,
-  skill: { id: string; description: string; filePath: string; content: string | null }
+  skill: { id: string; name: string; description: string; filePath: string; content: string | null }
 ): Promise<void> {
   if (typeof editor.add !== "function") return;
 
   try {
-    await editor.add(buildSkillInfo({ ...skill, preferPath: true }));
-    return;
+    await editor.add(buildSkillInfo(skill));
   } catch {
-    // Fall through to the `location` shape.
-  }
-
-  try {
-    await editor.add(buildSkillInfo({ ...skill, preferPath: false }));
-  } catch {
-    // Contained: a rejected shape must not disable the plugin.
+    // Contained: a rejected descriptor must not disable the plugin.
   }
 }
 
@@ -437,8 +458,12 @@ async function addSkillWithFallback(
  * Coexistence guard: when the installer marker exists the pack was
  * file-installed, so its skills are already discovered and `editor.list()`
  * dedupe backs that up — registering nothing avoids duplicates.
+ *
+ * `transform()` resolves to a `Registration` on v2; the caller awaits this
+ * through `safeRegister`, so a rejection is contained and the registration's
+ * `dispose()` becomes a cleanup.
  */
-function registerPackSkills(ctx: V2Context): (() => void) | undefined {
+function registerPackSkills(ctx: V2Context): unknown {
   const transform = ctx.skill?.transform;
   if (typeof transform !== "function") return undefined;
 
@@ -447,7 +472,7 @@ function registerPackSkills(ctx: V2Context): (() => void) | undefined {
 
   const present = markerPresent();
 
-  const result = transform(async (editor: V2SkillEditor) => {
+  return transform(async (editor: V2SkillEditor) => {
     try {
       const idsToAdd = shouldRegisterPackSkills({
         markerPresent: present,
@@ -459,8 +484,9 @@ function registerPackSkills(ctx: V2Context): (() => void) | undefined {
       for (const id of idsToAdd) {
         const skillFile = new URL(`${id}/SKILL.md`, SKILLS_ROOT);
         const content = safeRead(skillFile);
-        await addSkillWithFallback(editor, {
+        await addPackSkill(editor, {
           id,
+          name: readSkillName(content),
           description: readSkillDescription(content),
           filePath: fileURLToPath(skillFile),
           content,
@@ -470,39 +496,23 @@ function registerPackSkills(ctx: V2Context): (() => void) | undefined {
       // One bad skill must not abort the whole transform.
     }
   });
-
-  return typeof result === "function" ? (result as () => void) : undefined;
 }
 
+/**
+ * v2 event delivery: `ctx.event.subscribe({ signal })` returns an
+ * `AsyncIterable` (documented shape), so it must be consumed with a
+ * signal-backed loop, not called with a handler. `subscribeEventStream` owns
+ * that loop (and is unit-tested in scripts/plugin-v2.test.js); a host without
+ * `subscribe` is a quiet no-op. The v2 ctx itself is passed to the logger —
+ * there is no separate `ctx.client`.
+ */
 function subscribeEvents(ctx: V2Context): (() => void) | undefined {
-  const stream = ctx.event;
-  if (!stream) return undefined;
+  if (!ctx.event) return undefined;
 
-  const handler = (event: any): void => {
-    if (event?.type === "session.error") void logSessionError(ctx.client);
-  };
-
-  if (typeof stream.subscribe === "function") {
-    const result = stream.subscribe(handler);
-    if (typeof result === "function") return result as () => void;
-    if (result && typeof (result as { dispose?: () => void }).dispose === "function") {
-      return () => (result as { dispose: () => void }).dispose();
-    }
+  return subscribeEventStream(ctx.event, (event: any) => {
+    if (event?.type === "session.error") return logSessionError(ctx);
     return undefined;
-  }
-
-  if (typeof stream.on === "function") {
-    stream.on("session.error", handler);
-    return () => {
-      try {
-        stream.off?.("session.error", handler);
-      } catch {
-        // ignore disposal failures
-      }
-    };
-  }
-
-  return undefined;
+  });
 }
 
 const AgentsOpencodeV2Plugin = {
@@ -517,52 +527,72 @@ const AgentsOpencodeV2Plugin = {
 
     const cleanups: Array<() => void> = [];
 
-    safeRegister(cleanups, () => {
-      ctx.tool?.hook?.("execute.before", (event: any) => {
-        // Pass the whole event: the helper reads `event.tool` and resolves the
-        // path from the documented v2 event shapes (flat, `input`, `input.args`).
-        guardSensitiveRead(event);
-      });
+    // Registrations are awaited (v2's `hook()`/`transform()` return
+    // `Promise<Registration>`): a rejected registration — e.g. an unknown hook
+    // name — is contained by `safeRegister` instead of surfacing as an
+    // unhandled rejection, and one failure never disables the others.
+
+    // The handler receives the whole event: it reads `event.tool` and resolves
+    // the path from the documented v2 event shapes (flat, `input`,
+    // `input.args`). It blocks like the v1 guard; when a `read` event carries
+    // no resolvable path it logs one visible warning (rate-limited to once per
+    // handler) so a v2 payload-shape mismatch cannot silently disable the
+    // guard — the guard itself stays fail-open by design.
+    const readGuardHandler = createReadGuardHandler(() => {
+      void logWarn(
+        ctx,
+        "secret-read guard could not resolve a file path from a `read` tool event; " +
+          "the read was allowed through unguarded (warning shown once per plugin load — " +
+          "if this repeats, the v2 read payload shape may differ from the documented forms)"
+      );
     });
 
-    if (!hasHook(ctx.tool)) {
-      // The secret-read guard is a security control. If this host does not expose
-      // the tool hook, surface it instead of failing silently.
+    const guardRegistered = await safeRegister(cleanups, () =>
+      ctx.tool?.hook?.("execute.before", readGuardHandler)
+    );
+
+    if (!guardRegistered) {
+      // The secret-read guard is a security control. If this host cannot
+      // register the tool hook, surface it instead of failing silently.
       await logWarn(
-        ctx.client,
-        "secret-read guard not registered: ctx.tool.hook is unavailable on this host"
+        ctx,
+        "secret-read guard not confirmed: ctx.tool.hook is unavailable, the registration " +
+          "was rejected, or the host returned an unrecognized registration result"
       );
     }
 
-    safeRegister(cleanups, () => {
-      ctx.session?.hook?.("compaction", (event: any) => {
-        injectContextOnce(
-          Array.isArray(event?.context) ? event.context : event?.output?.context,
-          compactionContext()
-        );
-      });
-    });
-
-    safeRegister(cleanups, () => {
+    // v2's `context` hook runs for every agent-loop model request (including
+    // tool-driven continuations). Its event exposes `system` as typed text
+    // parts — there is no string `context` array on v2 (that shape belongs to
+    // v1's `experimental.session.compacting` output, kept in the v1 entrypoint
+    // above). Inject the block as one idempotent `{ type: "text", text }` part.
+    const contextText = compactionContext().join("\n\n");
+    await safeRegister(cleanups, () =>
       ctx.session?.hook?.("context", (event: any) => {
-        injectContextOnce(event?.context, compactionContext());
-      });
-    });
+        injectSystemContextOnce(event?.system, contextText);
+      })
+    );
 
-    safeRegister(cleanups, () => {
+    // Deliberately no v2 `compaction` registration: its event offers `messages`
+    // (the transcript being summarized) and `result` (replacing the summarizer,
+    // which is not our intent), but no compaction-specific context field. The
+    // `context` hook above re-injects the block on every post-compaction
+    // agent-loop request, so pack awareness survives truncation anyway.
+
+    await safeRegister(cleanups, () =>
       ctx.shell?.hook?.("create.before", (event: any) => {
         if (event?.env && typeof event.env === "object") {
           event.env["AGENTS_OPENCODE_VERSION"] = PACK.version;
         }
-      });
-    });
+      })
+    );
 
-    safeRegister(cleanups, () => subscribeEvents(ctx));
+    await safeRegister(cleanups, () => subscribeEvents(ctx));
 
     // Deliver the pack's skills when it is plugin-installed only.
-    safeRegister(cleanups, () => registerPackSkills(ctx));
+    await safeRegister(cleanups, () => registerPackSkills(ctx));
 
-    void logLoaded(ctx.client);
+    await logLoaded(ctx);
 
     return () => {
       for (const dispose of cleanups) {

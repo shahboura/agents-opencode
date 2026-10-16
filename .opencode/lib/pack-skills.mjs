@@ -47,33 +47,41 @@ export function shouldRegisterPackSkills(input = {}) {
 /**
  * Build the skill descriptor handed to `editor.add(...)` on OpenCode v2.
  *
- * The editor's file field is a moving target: v2 core (2.0.4+) uses `path`,
- * while the published API reference documents `location`. Rather than
- * hardcoding one, callers feature-detect by passing `preferPath` (attempt
- * `path` first, retry with `location` when the shape is rejected). Exactly one
- * of the two fields is emitted and it always carries `filePath`, so the
- * descriptor is never left with both fields undefined.
+ * Must match the shipped `@opencode/schema` `Skill.Info` (verified against
+ * 2.0.30): `{ id, name, description, path, content }` — `id`, `name`, `path`,
+ * and `content` are required and there is no `location` field. The descriptor
+ * therefore always emits exactly those five keys.
+ *
+ * `name` resolution prefers a non-empty frontmatter name supplied by the
+ * caller, then falls back to the skill id (then a `'skill'` placeholder for
+ * malformed input) so the required key is never missing or empty; the host
+ * rejects a descriptor without it (`SchemaError(Missing key at ["name"])`).
+ *
+ * The schema-required `id` and `path` are normalized alongside it: `id` is
+ * trimmed and falls back to the same `'skill'` placeholder, and `path` is
+ * guaranteed to be a string (it degrades to `''` for malformed input — the v2
+ * caller always passes a real `SKILL.md` path, so no placeholder can stand in
+ * for it). All five emitted values are therefore always strings.
  *
  * @param {object} [input]
  * @param {string} [input.id]          Skill id (derived from the directory name).
+ * @param {string} [input.name]        Frontmatter name, when present.
  * @param {string} [input.description] Skill description (from `SKILL.md`).
  * @param {string} [input.filePath]    Absolute path to the skill's `SKILL.md`.
  * @param {string} [input.content]     Raw `SKILL.md` contents, when supplied.
- * @param {boolean} [input.preferPath] Emit `path` (true, default) or `location`.
  * @returns {object}
  */
 export function buildSkillInfo(input = {}) {
-  const { id, description, filePath, content, preferPath = true } = input ?? {};
-  const info = { id, description: description ?? '' };
-  if (content !== undefined) info.content = content;
+  const { id, name, description, filePath, content } = input ?? {};
 
-  // Always place filePath on the feature-detected field so neither both nor
-  // neither of `path`/`location` is left undefined.
-  if (preferPath) {
-    info.path = filePath;
-  } else {
-    info.location = filePath;
-  }
+  const trimmedId = typeof id === 'string' ? id.trim() : '';
+  const trimmedName = typeof name === 'string' ? name.trim() : '';
 
-  return info;
+  return {
+    id: trimmedId || 'skill',
+    name: trimmedName || trimmedId || 'skill',
+    description: typeof description === 'string' ? description : '',
+    path: typeof filePath === 'string' ? filePath : '',
+    content: typeof content === 'string' ? content : '',
+  };
 }
