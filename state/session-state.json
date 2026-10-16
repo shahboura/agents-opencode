@@ -1,6 +1,6 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
-  "current_phase": "OpenCode v1/v2 dual support shipped (target adapter + dual plugin + plugin-spec install + XDG fix); --target auto host detection landed on branch feat/auto-target-detection; docs site on Astro Starlight/Cloudflare Workers.",
+  "current_phase": "OpenCode v1/v2 dual support hardened: the v2 plugin was aligned with the published v2.0.30 API and verified (plugin load, 10 agents, 27 skills) in disposable Docker sandboxes on opencode 1.19.2 and 2.0.30; branch feat/skills-and-v2-hardening carries the Superpowers skills port plus this hardening; docs site on Astro Starlight/Cloudflare Workers.",
   "plugin_version": "2.6.0",
   "decisions": [
     "Use deny-by-default permissions with explicit allowlists.",
@@ -35,7 +35,10 @@
     "Install model is hybrid: the file installer delivers agents/commands/skills/config; a plugin-spec install (plugins: [\"agents-opencode\"]) delivers skills + hooks/guards only, because a v2 plugin cannot register agents or global config. A coexistence guard skips skill registration when the pack is file-installed.",
     "The global config dir honors XDG_CONFIG_HOME (absolute only) with a legacy-path split-brain warning; verified empirically against opencode 1.19.0 (opencode debug paths resolves config to $XDG_CONFIG_HOME/opencode).",
     "v2 agent/command/config compatibility relies on v2's in-memory translation of v1-shaped files; documented but not yet verified against a live v2 host.",
-    "--target auto detects the host via 'opencode --version' (spawnSync with a pinned cwd to avoid repo-local shim resolution, 4s timeout, stderr fallback); major >= 2 selects v2 else v1; AGENTS_OPENCODE_HOST_VERSION overrides detection for tests/CI."
+    "--target auto detects the host via 'opencode --version' (spawnSync with a pinned cwd to avoid repo-local shim resolution, 4s timeout, stderr fallback); major >= 2 selects v2 else v1; AGENTS_OPENCODE_HOST_VERSION overrides detection for tests/CI.",
+    "OpenCode v2 support is verified against the published contract, not assumed: the plugin was aligned to the v2.0.30 API (the context hook injects event.system text parts; ctx has no client/app.log so a console fallback is used; ctx.event.subscribe({signal}) is the event API; hook() returns Promise<Registration>), and a disposable Docker sandbox confirmed plugin load, 10 agents, and 27 skills on both opencode 1.19.2 and 2.0.30.",
+    "v2 skill descriptors must satisfy Skill.Info exactly (id, name, path, content - 'location' does not exist) and v2-emitted config drops keys v2 marks unsupported; the installer never strips user config for keys it does not manage (a value-equality strip was removed as a data-loss risk).",
+    "The v2 secret-read guard stays fail-open by design but emits rate-limited telemetry when a read event has no resolvable path, so a payload-shape mismatch cannot silently disable it; a live-model v2 run is the exit gate before v2 is declared fully supported."
   ],
   "open_risks": [
     "Scenario-level behavioral eval coverage is still limited.",
@@ -43,8 +46,8 @@
     "Consumer-visible opencode.json defaults are not yet in the changelog.",
     "Multi-lens panel shares one model - correlated blind spots are irreducible until per-lens model choice is available.",
     "evals/harness/run-evals.js still uses a hand-rolled permission parser (VAL-4) that can drift from the shared module.",
-    "OpenCode v2 runtime is unverified end-to-end (no live v2 host/Bun in CI): the v2 plugin hooks and skill registration are grounded from docs, not runtime-tested, and are marked experimental.",
-    "v2 agent/command compatibility depends on v2 translating v1-shaped frontmatter (the pack relies on auto-translation); if v2 removes it, agents could silently lose permission restrictions.",
+    "v2 runtime hook behaviour (the guard actually blocking a live read, context injection, event subscription) and --target auto detection remain unexercised because the sandbox has no model/API key; this is the tracked exit gate before declaring v2 fully supported.",
+    "v2 host wrinkles: the load log goes to stdout, which OpenCode's background service discards; 'opencode debug agents' returns [] on 2.0.30 (use the workspace API instead).",
     "Host detection runs 'opencode --version' via spawnSync; the Windows cmd.exe CWD-vs-PATH behavior is mitigated by a pinned cwd but was not executed on a live Windows opencode.cmd host.",
     "The v2 secret-read guard is best-effort: if a beta v2 host does not expose the tool hook, the plugin warns but the guard is absent.",
     "The pre-commit hook cannot distinguish skip-eligible docs/comment commits from risky ones - it blocks unconditionally, so documentation-only commits need an explicit SKIP_GATE=1 or a marker.",
@@ -54,8 +57,8 @@
   ],
   "blocked_by": [],
   "next_actions": [
-    "Verify the feat/opencode-v2-dual-support branch against a live OpenCode v2 host (no v2/Bun available here) before relying on the v2 plugin-spec path.",
-    "Commit the gated feat/opencode-v2-dual-support branch (Review Gate PASS-WITH-CAVEATS).",
+    "Run a live-model v2 session (real API key) to exercise the secret-read guard block, context injection, and --target auto detection - the exit gate for declaring v2 fully supported.",
+    "Open the PR for feat/skills-and-v2-hardening (commit d850358) and merge after CI.",
     "Push and open PRs for chore/instruction-health-readme and feat/docs-astro-cloudflare; merge the first, then rebase the migration branch.",
     "Launch the docs site: add CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID secrets and disable GitHub Pages (Settings -> Pages -> Source: None).",
     "Verify feat/auto-target-detection on CI (both-target installer e2e + --v2-strict jobs).",
@@ -81,11 +84,16 @@
     "scripts/validate-opencode-schema.js",
     "scripts/lib/opencode-target.js",
     ".opencode/lib/pack-skills.mjs",
+    ".opencode/lib/guards.mjs",
+    ".opencode/skills/systematic-debugging/SKILL.md",
+    ".opencode/skills/test-driven-development/SKILL.md",
+    ".opencode/skills/verification-before-completion/SKILL.md",
+    "THIRD_PARTY_NOTICES.md",
     "README.md",
     "BACKLOG.md",
     "state/session-state.json"
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-10-15T01:00:00Z"
+  "last_updated": "2026-10-16T05:30:00Z"
 }
