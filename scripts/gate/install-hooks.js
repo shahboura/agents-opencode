@@ -2,22 +2,23 @@
 'use strict';
 
 /**
- * Install the versioned Pre-Commit Review Gate hook.
+ * Install the versioned Pre-Commit Review Gate hooks.
  *
- * Makes the hook runnable AND points `core.hooksPath` at `.githooks`. POSIX git
- * only runs a hook when the worktree file carries +x, so we record the
+ * Makes the hooks runnable AND points `core.hooksPath` at `.githooks`. POSIX git
+ * only runs a hook when the worktree file carries +x, so for EACH hook
+ * (pre-commit verifies the marker, post-commit consumes it) we record the
  * executable bit in the git index (`git update-index --chmod=+x`) and, on
- * POSIX, set the on-disk bit with fs.chmodSync and confirm it with X_OK. The
- * mode is repaired and verified BEFORE core.hooksPath is (re)pointed at the
- * hook, so a failure can never leave the gate aimed at an inert file. An
- * existing core.hooksPath (Husky/lefthook/…) is never clobbered without
+ * POSIX, set the on-disk bit with fs.chmodSync and confirm it with X_OK. Every
+ * hook's mode is repaired and verified BEFORE core.hooksPath is (re)pointed, so
+ * a failure can never leave the gate aimed at an inert (or half-installed) hook
+ * set. An existing core.hooksPath (Husky/lefthook/…) is never clobbered without
  * `--force`.
  */
 
 const { execFileSync } = require('child_process');
 const fs = require('fs');
 
-const HOOK = '.githooks/pre-commit';
+const HOOKS = ['.githooks/pre-commit', '.githooks/post-commit'];
 const HOOKS_PATH = '.githooks';
 
 function git(args) {
@@ -33,29 +34,30 @@ function readHooksPath() {
   }
 }
 
-// Record and confirm the hook's executable bit. Returns true only when the hook
+// Record and confirm one hook's executable bit. Returns true only when the hook
 // is confirmed runnable on this platform (win32 has no on-disk exec bit).
-function repairAndVerifyExecutable() {
+function repairAndVerifyExecutable(hook) {
   try {
-    git(['update-index', '--chmod=+x', HOOK]);
+    git(['update-index', '--chmod=+x', hook]);
   } catch (err) {
-    console.error(`❌ Could not mark ${HOOK} executable in the index: ${err.message}`);
+    console.error(`❌ Could not mark ${hook} executable in the index: ${err.message}`);
+    console.error(`   Is ${hook} tracked? A new hook must be added to the index before its mode can be fixed.`);
     return false;
   }
 
   let listing;
   try {
-    listing = git(['ls-files', '-s', HOOK]);
+    listing = git(['ls-files', '-s', hook]);
   } catch (err) {
-    console.error(`❌ Could not verify ${HOOK}: ${err.message}`);
+    console.error(`❌ Could not verify ${hook}: ${err.message}`);
     return false;
   }
 
   const mode = (listing.split(/\s+/)[0] || '(unknown)');
-  console.log(`   ${HOOK} index mode: ${mode}`);
+  console.log(`   ${hook} index mode: ${mode}`);
 
   if (mode !== '100755') {
-    console.error(`❌ Expected index mode 100755 for ${HOOK}, got ${mode}.`);
+    console.error(`❌ Expected index mode 100755 for ${hook}, got ${mode}.`);
     console.error('   On POSIX the hook will not run — check core.fileMode and retry.');
     return false;
   }
@@ -67,12 +69,12 @@ function repairAndVerifyExecutable() {
   }
 
   try {
-    fs.chmodSync(HOOK, 0o755);
-    fs.accessSync(HOOK, fs.constants.X_OK);
+    fs.chmodSync(hook, 0o755);
+    fs.accessSync(hook, fs.constants.X_OK);
     return true;
   } catch (err) {
-    console.warn(`⚠️  Could not confirm the executable bit on ${HOOK}: ${err.message}`);
-    console.warn('   The hook may be inert on POSIX — verify with `test -x .githooks/pre-commit`.');
+    console.warn(`⚠️  Could not confirm the executable bit on ${hook}: ${err.message}`);
+    console.warn(`   The hook may be inert on POSIX — verify with \`test -x ${hook}\`.`);
     return false;
   }
 }
@@ -92,11 +94,13 @@ function main() {
     return 1;
   }
 
-  // C2: repair + verify the mode BEFORE core.hooksPath can point at the hook,
-  // so a failure cannot leave the gate aimed at an inert file.
-  if (!repairAndVerifyExecutable()) {
-    console.error('❌ Refusing to set core.hooksPath: the hook is not confirmed executable.');
-    return 1;
+  // C2: repair + verify every hook's mode BEFORE core.hooksPath can point at
+  // them, so a failure cannot leave the gate aimed at an inert hook set.
+  for (const hook of HOOKS) {
+    if (!repairAndVerifyExecutable(hook)) {
+      console.error(`❌ Refusing to set core.hooksPath: ${hook} is not confirmed executable.`);
+      return 1;
+    }
   }
 
   try {
@@ -108,7 +112,7 @@ function main() {
     return 1;
   }
 
-  console.log('✅ Pre-Commit Review Gate hook installed and executable.');
+  console.log(`✅ Pre-Commit Review Gate hooks installed and executable: ${HOOKS.join(', ')}`);
   return 0;
 }
 

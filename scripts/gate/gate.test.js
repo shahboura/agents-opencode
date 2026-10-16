@@ -2,8 +2,11 @@
 'use strict';
 
 /**
- * Tests for the versioned Pre-Commit Review Gate:
- * pure marker/hash helpers plus an end-to-end hook decision in a temp repo.
+ * Tests for the versioned Pre-Commit Review Gate: pure marker/hash helpers, the
+ * tree-equality empty-commit exemption (including gitlink-only changes), the
+ * explicit --verdict requirement, and end-to-end hook decisions in temp repos —
+ * including real git commits that exercise pre-commit verification and
+ * post-commit marker consumption.
  */
 
 const { spawnSync } = require('child_process');
@@ -32,7 +35,10 @@ function assertThrows(fn, pattern, message) {
 function run(cmd, args, options = {}) {
   return spawnSync(cmd, args, {
     cwd: options.cwd || process.cwd(),
-    env: options.env || process.env,
+    // F4: default to the scrubbed env so direct git spawns (initRepo, seed
+    // commits, ...) cannot inherit hook-exported plumbing like GIT_DIR; an
+    // explicit `options.env` still wins.
+    env: options.env || baseEnv(),
     encoding: 'utf8',
   });
 }
@@ -44,6 +50,20 @@ function runNode(scriptPath, args, cwd, env) {
 function baseEnv() {
   const env = { ...process.env };
   delete env.SKIP_GATE;
+  // Hermeticity (F4): a git-hook context exports plumbing variables that would
+  // silently repoint git at the hook's repository instead of the temp repo
+  // under test. Scrub those so the suite stays self-contained.
+  delete env.GIT_DIR;
+  delete env.GIT_INDEX_FILE;
+  delete env.GIT_WORK_TREE;
+  // N2: the GIT_CONFIG_* scrubs are not plumbing — deleting them does NOT
+  // repoint git, it re-enables git's default config sources. They are removed
+  // only so a hook-context config redirection (e.g. GIT_CONFIG_GLOBAL=/dev/null)
+  // cannot leak into the tests; the intent is isolation from the parent
+  // environment. All three sources are scrubbed together to stay consistent.
+  delete env.GIT_CONFIG_GLOBAL;
+  delete env.GIT_CONFIG_NOSYSTEM;
+  delete env.GIT_CONFIG_SYSTEM;
   return env;
 }
 
@@ -96,6 +116,27 @@ function writeFiles(dir, files) {
     fs.mkdirSync(path.dirname(full), { recursive: true });
     fs.writeFileSync(full, content);
   }
+}
+
+// Copy the real hooks + the scripts they delegate to into a temp repo and point
+// core.hooksPath at them, so `git commit` exercises the full hook path. On
+// POSIX the copies need the executable bit (copyFileSync drops it).
+function installGateHooks(dir) {
+  const repoRoot = path.join(__dirname, '..', '..');
+  fs.mkdirSync(path.join(dir, 'scripts', 'gate'), { recursive: true });
+  for (const script of ['lib.js', 'precommit-check.js']) {
+    fs.copyFileSync(path.join(__dirname, script), path.join(dir, 'scripts', 'gate', script));
+  }
+  fs.mkdirSync(path.join(dir, '.githooks'), { recursive: true });
+  for (const hook of ['pre-commit', 'post-commit']) {
+    const dest = path.join(dir, '.githooks', hook);
+    fs.copyFileSync(path.join(repoRoot, '.githooks', hook), dest);
+    if (process.platform !== 'win32') {
+      fs.chmodSync(dest, 0o755);
+    }
+  }
+  run('git', ['config', 'core.hooksPath', '.githooks'], { cwd: dir });
+  run('git', ['config', 'commit.gpgsign', 'false'], { cwd: dir });
 }
 
 function testStagedHashTracksIndex() {
@@ -151,48 +192,188 @@ function testListStagedFilesParsing() {
   }
 }
 
-// The gate is inert on POSIX unless the hook carries the executable bit. Assert
-// the *index* mode (authoritative regardless of pending staged changes) so a
-// future edit cannot silently drop it and ship a 100644 regression. The only
-// escape is an explicit GATE_BOOTSTRAP=1 opt-in for the bootstrap commit that
-// introduces the hook before `gate:install` can run.
+// S1: a gitlink (submodule pointer) change is content-bearing — it moves the
+// superproject to different submodule content — yet `git diff --cached` can
+// hide it (diff.ignoreSubmodules=all, older git defaults) while `git write-tree`
+// and the commit include it. The empty-commit exemption must be decided on TREE
+// EQUALITY, the name listing must pass `--ignore-submodules=none`, and any
+// staged gitlink must classify non-trivial. The gitlink is simulated directly
+// in the index (`git update-index --add --cacheinfo`) — no real submodule.
+function testGitlinkChangesAreVisibleAndGated() {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gate-gitlink-'));
+  const precommit = path.join(__dirname, 'precommit-check.js');
+  const freeze = path.join(__dirname, 'freeze.js');
+  const recordPass = path.join(__dirname, 'record-pass.js');
+  const gitlinkSha = '1234567890123456789012345678901234567890';
+  try {
+    initRepo(tmp);
+    fs.writeFileSync(path.join(tmp, 'seed.txt'), 'seed\n');
+    run('git', ['add', 'seed.txt'], { cwd: tmp });
+    const seed = run('git', ['-c', 'commit.gpgsign=false', 'commit', '-q', '--no-verify', '-m', 'seed'], { cwd: tmp });
+    assert(seed.status === 0, `seed commit should succeed (stderr: ${seed.stderr})`);
+
+    // Reproduce the blind spot explicitly (instead of trusting a git version's
+    // default), so the test proves the explicit flags override the config.
+    run('git', ['config', 'diff.ignoreSubmodules', 'all'], { cwd: tmp });
+
+    // Simulate a staged submodule pointer change (gitlink, index mode 160000).
+    run('git', ['update-index', '--add', '--cacheinfo', `160000,${gitlinkSha},vendor/sub`], { cwd: tmp });
+
+    // Control: with diff.ignoreSubmodules=all the raw listing hides the change —
+    // exactly the S1 blind spot the exemption must not trust.
+    const raw = run('git', ['diff', '--cached', '--name-only'], { cwd: tmp });
+    assert(
+      raw.status === 0 && raw.stdout.trim() === '',
+      `control: raw listing should be blind to the gitlink (got: ${JSON.stringify(raw.stdout)})`
+    );
+
+    // The gate's listing must see it, and it must classify non-trivial.
+    const files = lib.listStagedFiles(tmp);
+    assert(files.includes('vendor/sub'), `gitlink path must be listed, got: ${JSON.stringify(files)}`);
+    assert(lib.listStagedGitlinks(tmp).includes('vendor/sub'), 'the gitlink must be detected from the raw diff');
+    const classification = lib.classifyStagedDiff(files, { gitlinkPaths: lib.listStagedGitlinks(tmp) });
+    assert(classification.nonTrivial, 'a gitlink-only staged change must classify non-trivial');
+    assert(classification.reasons.some((r) => /gitlink/i.test(r)), 'the classification reason must name the gitlink');
+
+    // Exemption: the staged tree differs from HEAD, so the hook must NOT exempt.
+    let result = runNode(precommit, [], tmp, baseEnv());
+    assert(result.status === 1, 'a gitlink-only staged change must not be exempt from the gate');
+    assert(!/exempt/i.test(result.stdout), 'the hook must not report the empty-commit exemption');
+    assert(/Review Gate/.test(result.stderr), 'the block should explain the Review Gate');
+
+    // Freeze: the gitlink must appear in the frozen diff — the snapshot the
+    // lenses read must render the submodule pointer change.
+    result = runNode(freeze, [], tmp, baseEnv());
+    assert(result.status === 0, `gate:freeze should succeed for a gitlink change (stderr: ${result.stderr})`);
+    const diff = fs.readFileSync(path.join(tmp, '.gate', 'diff.patch'), 'utf8');
+    assert(diff.includes('vendor/sub'), 'the frozen diff must include the gitlink path');
+    assert(/Subproject commit/.test(diff), 'the frozen diff must render the submodule pointer');
+
+    // Panel parity: the gitlink change is non-trivial, so a one-lens pass is
+    // refused and only a two-lens marker is accepted by the hook.
+    result = runNode(recordPass, ['--verdict', 'PASS', '--lenses', 'code'], tmp, baseEnv());
+    assert(result.status === 1, 'gate:pass must refuse a one-lens pass for a gitlink change');
+    assert(/at least 2 lenses/.test(result.stderr), 'the refusal should state the panel requirement');
+    result = runNode(recordPass, ['--verdict', 'PASS', '--lenses', 'code,security'], tmp, baseEnv());
+    assert(result.status === 0, `gate:pass should record a two-lens pass (stderr: ${result.stderr})`);
+    result = runNode(precommit, [], tmp, baseEnv());
+    assert(result.status === 0, `the hook should accept the two-lens marker (stderr: ${result.stderr})`);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+// Empty commits change nothing, so the hook must allow them immediately without
+// a marker (this is the `git commit --allow-empty` release-tooling path). A
+// staged file still requires the gate.
+function testEmptyCommitExemption() {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gate-empty-'));
+  const precommit = path.join(__dirname, 'precommit-check.js');
+  try {
+    initRepo(tmp);
+
+    // Unborn HEAD + empty index: the staged tree equals the empty tree, which
+    // is the unborn-HEAD comparison terminus, so nothing needs review.
+    let result = runNode(precommit, [], tmp, baseEnv());
+    assert(result.status === 0, `An empty commit must be allowed without a marker (stderr: ${result.stderr})`);
+    assert(/empty commit/i.test(result.stdout), 'The allowance should say why no review is needed');
+    assert(!fs.existsSync(path.join(tmp, '.gate', 'pass.json')), 'No marker is created or needed');
+
+    fs.writeFileSync(path.join(tmp, 'a.txt'), 'one\n');
+    run('git', ['add', 'a.txt'], { cwd: tmp });
+    result = runNode(precommit, [], tmp, baseEnv());
+    assert(result.status === 1, 'A staged file still requires a gate pass');
+
+    // The exemption is decided on TREE EQUALITY, not the staged name list: once
+    // HEAD exists, re-staging HEAD's exact content leaves no net change — exempt
+    // even though the index was modified in between.
+    const seed = run('git', ['-c', 'commit.gpgsign=false', 'commit', '-q', '--no-verify', '-m', 'seed'], { cwd: tmp });
+    assert(seed.status === 0, `seed commit should succeed (stderr: ${seed.stderr})`);
+    fs.writeFileSync(path.join(tmp, 'a.txt'), 'two\n');
+    run('git', ['add', 'a.txt'], { cwd: tmp });
+    result = runNode(precommit, [], tmp, baseEnv());
+    assert(result.status === 1, 'A changed staged tree must require a gate pass');
+    fs.writeFileSync(path.join(tmp, 'a.txt'), 'one\n');
+    run('git', ['add', 'a.txt'], { cwd: tmp });
+    result = runNode(precommit, [], tmp, baseEnv());
+    assert(result.status === 0, `A staged tree equal to HEAD^{tree} is exempt (stderr: ${result.stderr})`);
+    assert(/empty commit/i.test(result.stdout), 'The tree-equality exemption should say why no review is needed');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+// The gate is inert on POSIX unless each hook carries the executable bit —
+// post-commit too, or the marker would never be consumed. Assert the *index*
+// mode (authoritative regardless of pending staged changes) so a future edit
+// cannot silently drop it and ship a 100644 regression. The only escape is an
+// explicit GATE_BOOTSTRAP=1 opt-in for the bootstrap commit that introduces a
+// hook before `gate:install` can run.
 function testHookFileIsExecutable() {
-  const result = run('git', ['ls-files', '-s', '.githooks/pre-commit']);
-  assert(result.status === 0, 'git ls-files should succeed in the repo');
-  const mode = (result.stdout.trim().split(/\s+/)[0] || '');
-  if (mode === '100755') {
-    return;
+  for (const hook of ['.githooks/pre-commit', '.githooks/post-commit']) {
+    const result = run('git', ['ls-files', '-s', hook]);
+    assert(result.status === 0, `git ls-files should succeed for ${hook}`);
+    const mode = (result.stdout.trim().split(/\s+/)[0] || '');
+    if (mode === '100755') {
+      continue;
+    }
+    if (process.env.GATE_BOOTSTRAP === '1') {
+      console.warn(`  (warning: ${hook} is tracked as ${mode}; GATE_BOOTSTRAP=1 allows this bootstrap commit)`);
+      continue;
+    }
+    assert(false, `${hook} must be tracked as executable (100755), got '${mode}'. Run \`npm run gate:install\`.`);
   }
-  if (process.env.GATE_BOOTSTRAP === '1') {
-    console.warn(`  (warning: .githooks/pre-commit is tracked as ${mode}; GATE_BOOTSTRAP=1 allows this bootstrap commit)`);
-    return;
-  }
-  assert(false, `Review Gate hook must be tracked as executable (100755), got '${mode}'. Run \`npm run gate:install\`.`);
 }
 
 // S2: existence + the executable bit are not enough. A tracked, executable hook
 // can still be neutered in place — rewritten to `exit 0`, emptied, or its
-// delegation commented out — and the commit would then land with no panel, so
-// assert the committed hook content actually delegates to the gate checker.
+// delegation commented out — and the commit would then land ungated (or the
+// marker linger), so assert the committed hook content itself stays live:
+//   - pre-commit must delegate to the gate checker (verify without consuming);
+//   - post-commit must delete .gate/pass.json (the consumption).
 // Neutering enforcement therefore always requires a visible, reviewable edit to
 // this assertion too. Comments are stripped first: a commented-out delegation
 // must not count as live enforcement, and a live `exit 0` cannot preempt the
-// checker. The missing-file case is covered by fs.existsSync (a hook removed
-// from the tree is silently skipped by git).
-function testHookContentDelegatesToChecker() {
-  const hookPath = path.join(__dirname, '..', '..', '.githooks', 'pre-commit');
-  assert(fs.existsSync(hookPath), '.githooks/pre-commit must exist — git silently skips a missing hook');
-  const activeLines = fs.readFileSync(hookPath, 'utf8')
+// hook. Missing files are covered by fs.existsSync (git silently skips a
+// missing hook).
+function activeHookLines(hookPath) {
+  return fs.readFileSync(hookPath, 'utf8')
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line && !line.startsWith('#'));
+}
+
+function testHookContentDelegatesToChecker() {
+  const hooksDir = path.join(__dirname, '..', '..', '.githooks');
+  const preCommitPath = path.join(hooksDir, 'pre-commit');
+  const postCommitPath = path.join(hooksDir, 'post-commit');
+
+  assert(fs.existsSync(preCommitPath), '.githooks/pre-commit must exist — git silently skips a missing hook');
+  const preCommitActive = activeHookLines(preCommitPath);
   assert(
-    activeLines.some((line) => /\bnode\b/.test(line) && line.includes('precommit-check.js')),
-    `.githooks/pre-commit must delegate to scripts/gate/precommit-check.js; live content: ${JSON.stringify(activeLines)}`
+    preCommitActive.some((line) => /\bnode\b/.test(line) && line.includes('precommit-check.js')),
+    `.githooks/pre-commit must delegate to scripts/gate/precommit-check.js; live content: ${JSON.stringify(preCommitActive)}`
   );
   assert(
-    !activeLines.includes('exit 0'),
+    !preCommitActive.includes('exit 0'),
     '.githooks/pre-commit must not be neutered with an unconditional `exit 0`'
+  );
+
+  assert(fs.existsSync(postCommitPath), '.githooks/post-commit must exist — without it the marker can linger');
+  const postCommitActive = activeHookLines(postCommitPath);
+  // S3/F2/N1: the matched line must actually BE the marker deletion. Matching
+  // `rm ` plus a `.gate/pass.json` substring still accepts
+  // `rm -f "$root/.gate/pass.json".bak` (deletes the wrong path) and
+  // `rm -f /tmp/x # .gate/pass.json` (mention only, inside a comment), so
+  // anchor the quoted marker path as rm's final argument.
+  const deletesMarker = /^rm\s+(?:-\S+\s+)*"\$root\/\.gate\/pass\.json"\s*$/;
+  assert(
+    postCommitActive.some((line) => deletesMarker.test(line)),
+    `.githooks/post-commit must delete "$root/.gate/pass.json" with a live rm line; live content: ${JSON.stringify(postCommitActive)}`
+  );
+  assert(
+    !postCommitActive.includes('exit 0'),
+    '.githooks/post-commit must not be neutered with an unconditional `exit 0`'
   );
 }
 
@@ -233,14 +414,17 @@ function testHookDecisionEndToEnd() {
     assert(marker.verdict === 'PASS', 'Marker should record the verdict');
     assert(JSON.stringify(marker.lenses) === JSON.stringify(['code', 'security']), 'Marker should record lenses');
 
-    // Matching marker -> allow and consume.
+    // Matching marker -> allow, but pre-commit must NOT consume it: consumption
+    // moved to post-commit so an aborted commit keeps the approval.
+    const markerPath = path.join(tmp, '.gate', 'pass.json');
     result = runNode(precommit, [], tmp, baseEnv());
     assert(result.status === 0, 'Matching PASS marker should allow the commit');
-    assert(!fs.existsSync(path.join(tmp, '.gate', 'pass.json')), 'Matching marker should be consumed');
+    assert(fs.existsSync(markerPath), 'Pre-commit must not delete the marker — a failed commit must keep the approval');
 
-    // Consumed marker -> block again.
+    // Simulate the post-commit consumption -> the approval is gone.
+    lib.consumeMarker(markerPath);
     result = runNode(precommit, [], tmp, baseEnv());
-    assert(result.status === 1, 'Consumed marker should not allow a second commit');
+    assert(result.status === 1, 'A consumed marker should not allow a second commit');
 
     // Staged tree changes -> previous (re-frozen) approval no longer matches.
     runNode(freeze, [], tmp, baseEnv());
@@ -253,6 +437,67 @@ function testHookDecisionEndToEnd() {
     // FAIL verdict is refused by gate:pass.
     result = runNode(recordPass, ['--verdict', 'FAIL'], tmp, baseEnv());
     assert(result.status === 1, 'gate:pass should refuse a FAIL verdict');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+// The strongest end-to-end proof that consumption moved: real `git commit`
+// runs the copied hooks. A marker must survive a commit that fails AFTER
+// pre-commit allowed (injected via a failing commit-msg hook), be consumed by
+// post-commit only after a successful commit, and empty commits are allowed
+// with no marker at all.
+function testMarkerLifecycleThroughGit() {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gate-lifecycle-'));
+  try {
+    initRepo(tmp);
+    installGateHooks(tmp);
+
+    fs.writeFileSync(path.join(tmp, 'README.md'), 'seed\n');
+    run('git', ['add', 'README.md'], { cwd: tmp });
+
+    const markerPath = path.join(tmp, '.gate', 'pass.json');
+    const writeMarker = () => {
+      fs.mkdirSync(path.join(tmp, '.gate'), { recursive: true });
+      const marker = {
+        verdict: 'PASS',
+        stagedHash: lib.computeStagedHash(tmp),
+        timestamp: new Date().toISOString(),
+        lenses: [],
+      };
+      fs.writeFileSync(markerPath, `${JSON.stringify(marker, null, 2)}\n`);
+    };
+    writeMarker();
+
+    // Force a failure AFTER pre-commit runs: a commit-msg hook that exits 1.
+    const commitMsg = path.join(tmp, '.githooks', 'commit-msg');
+    fs.writeFileSync(commitMsg, '#!/bin/sh\nexit 1\n');
+    if (process.platform !== 'win32') {
+      fs.chmodSync(commitMsg, 0o755);
+    }
+
+    let result = run('git', ['commit', '-m', 'seed'], { cwd: tmp, env: baseEnv() });
+    assert(result.status !== 0, 'The failing commit-msg hook should abort the commit');
+    assert(fs.existsSync(markerPath), 'An aborted commit must NOT consume the approval marker');
+
+    // Retry with the same marker: pre-commit allows and post-commit consumes.
+    fs.rmSync(commitMsg);
+    result = run('git', ['commit', '-m', 'seed'], { cwd: tmp, env: baseEnv() });
+    assert(result.status === 0, `Commit with a matching marker should succeed (stderr: ${result.stderr})`);
+    assert(!fs.existsSync(markerPath), 'The post-commit hook must consume the marker after a successful commit');
+
+    // The consumed approval cannot cover the next commit.
+    fs.writeFileSync(path.join(tmp, 'b.txt'), 'two\n');
+    run('git', ['add', 'b.txt'], { cwd: tmp });
+    result = run('git', ['commit', '-m', 'b'], { cwd: tmp, env: baseEnv() });
+    assert(result.status !== 0, 'A commit without a marker must be blocked by the real hook');
+    assert(/Review Gate/.test(`${result.stdout}${result.stderr}`), 'The block should explain the Review Gate');
+    run('git', ['reset', '-q'], { cwd: tmp });
+
+    // Empty commit through real git: allowed with no marker, nothing consumed.
+    result = run('git', ['commit', '--allow-empty', '-m', 'empty'], { cwd: tmp, env: baseEnv() });
+    assert(result.status === 0, `An empty commit must be allowed without a marker (stderr: ${result.stderr})`);
+    assert(!fs.existsSync(markerPath), 'An empty commit neither needs nor creates a marker');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -297,6 +542,54 @@ function testRecordPassRequiresMatchingManifest() {
     assert(result.status === 1, 'gate:pass must refuse when the index changed after freeze');
     assert(/staged tree changed/i.test(result.stderr), 'Refusal should explain the stale snapshot');
     assert(!fs.existsSync(path.join(tmp, '.gate', 'pass.json')), 'No marker on a stale snapshot');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+// gate:pass must require an explicit --verdict: omitting it (e.g. the flag
+// swallowed by npm without the `--`) is a usage error, never a silent PASS
+// default. Both `--verdict <v>` and `--verdict=<v>` stay supported, and only
+// PASS / PASS-WITH-CAVEATS are accepted.
+function testRecordPassRequiresExplicitVerdict() {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gate-verdict-'));
+  const freeze = path.join(__dirname, 'freeze.js');
+  const recordPass = path.join(__dirname, 'record-pass.js');
+  const markerPath = path.join(tmp, '.gate', 'pass.json');
+  try {
+    initRepo(tmp);
+    fs.writeFileSync(path.join(tmp, 'a.txt'), 'one\n');
+    run('git', ['add', 'a.txt'], { cwd: tmp });
+
+    // No --verdict at all -> usage error before any gate artifacts are touched.
+    let result = runNode(recordPass, [], tmp, baseEnv());
+    assert(result.status === 1, 'gate:pass without --verdict must fail');
+    assert(/--verdict/.test(result.stderr), 'Refusal must name the required flag');
+    assert(/usage/i.test(result.stderr), 'Refusal must show usage');
+    assert(!fs.existsSync(markerPath), 'No marker on a usage error');
+
+    // `--verdict` with no value -> usage error.
+    result = runNode(recordPass, ['--verdict'], tmp, baseEnv());
+    assert(result.status === 1, '`--verdict` with no value must fail');
+    assert(/--verdict/.test(result.stderr), 'Refusal must still name the flag');
+
+    // `--verdict=` (empty value) -> usage error.
+    result = runNode(recordPass, ['--verdict='], tmp, baseEnv());
+    assert(result.status === 1, '`--verdict=` with an empty value must fail');
+    assert(!fs.existsSync(markerPath), 'No marker on an empty verdict');
+
+    // `--verdict=<v>` works; both pass verdicts are accepted.
+    runNode(freeze, [], tmp, baseEnv());
+    result = runNode(recordPass, ['--verdict=PASS'], tmp, baseEnv());
+    assert(result.status === 0, `--verdict=PASS should record a pass (stderr: ${result.stderr})`);
+    assert(JSON.parse(fs.readFileSync(markerPath, 'utf8')).verdict === 'PASS', 'Marker should record PASS');
+    result = runNode(recordPass, ['--verdict=PASS-WITH-CAVEATS'], tmp, baseEnv());
+    assert(result.status === 0, 'PASS-WITH-CAVEATS should be accepted');
+
+    // A bad value is refused after validation (not a usage error).
+    result = runNode(recordPass, ['--verdict=FAIL'], tmp, baseEnv());
+    assert(result.status === 1, '--verdict=FAIL must be refused');
+    assert(/expected PASS or PASS-WITH-CAVEATS/i.test(result.stderr), 'Refusal should list the allowed verdicts');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -349,6 +642,15 @@ function testClassifierRules() {
   assert(mixed.reasons.some((r) => r.includes('scripts/gate/lib.js')), 'reasons should name the risk path');
   const counted = lib.classifyStagedDiff(['docs/a.md', 'docs/b.md', 'docs/c.md']);
   assert(counted.reasons.some((r) => r.includes('docs/a.md')), 'count reasons should name the staged files');
+
+  // S1: the name list is mode-blind, so callers surface gitlinks separately
+  // (listStagedGitlinks); any reported gitlink forces non-trivial so its
+  // unreviewable submodule content cannot pass as a trivial Tier 1 change.
+  const gitlink = lib.classifyStagedDiff(['vendor/sub'], { gitlinkPaths: ['vendor/sub'] });
+  assert(gitlink.nonTrivial, 'a reported gitlink must classify non-trivial');
+  assert(gitlink.reasons.some((r) => /gitlink/i.test(r) && r.includes('vendor/sub')), 'the reason must name the gitlink path');
+  assert(!lib.classifyStagedDiff(['vendor/sub'], { gitlinkPaths: [] }).nonTrivial, 'an empty gitlink list keeps the base rules');
+  assert(!lib.classifyStagedDiff(['README.md'], {}).nonTrivial, 'an empty options object keeps the base rules');
 }
 
 // Pure marker/lens helpers: legacy markers without a `lenses` array count as 0
@@ -415,10 +717,11 @@ function testRecordPassPanelRequirement() {
         assert(fs.existsSync(markerPath), `${c.name}: allowed pass must write the marker`);
         const marker = JSON.parse(fs.readFileSync(markerPath, 'utf8'));
         assert(marker.lenses.length === c.lenses.length, `${c.name}: marker should record the lenses`);
-        // Parity: the hook must accept exactly what record-pass accepted.
+        // Parity: the hook must accept exactly what record-pass accepted, and
+        // must leave consumption to post-commit.
         result = runNode(precommit, [], tmp, baseEnv());
         assert(result.status === 0, `${c.name}: hook should accept a valid marker`);
-        assert(!fs.existsSync(markerPath), `${c.name}: hook should consume the marker`);
+        assert(fs.existsSync(markerPath), `${c.name}: pre-commit must not consume the marker (post-commit does)`);
       } else {
         assert(result.status === 1, `${c.name}: record-pass should refuse`);
         assert(!fs.existsSync(markerPath), `${c.name}: refused pass must not write the marker`);
@@ -485,11 +788,15 @@ function main() {
   testPureHelpers();
   testStagedHashTracksIndex();
   testListStagedFilesParsing();
+  testGitlinkChangesAreVisibleAndGated();
+  testEmptyCommitExemption();
   testHookFileIsExecutable();
   testHookContentDelegatesToChecker();
   testHookDecisionEndToEnd();
+  testMarkerLifecycleThroughGit();
   testFreezeFailsClosedOutsideRepo();
   testRecordPassRequiresMatchingManifest();
+  testRecordPassRequiresExplicitVerdict();
   testClassifierRules();
   testMarkerLensCountAndPanelRule();
   testRecordPassPanelRequirement();

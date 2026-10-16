@@ -1,0 +1,15 @@
+#!/bin/sh
+# Versioned Post-Commit Review Gate hook: consume the approval marker.
+# Runs only after the commit object exists, so an aborted commit (GPG signing
+# failure, hook crash, editor abort) keeps .gate/pass.json for a retry.
+# The marker binds the staged TREE (not the diff against a base), and ANY
+# successful commit consumes a pending marker — including `--no-verify` and
+# empty commits, which still run this hook. Residual: if this hook is missing
+# or inert, a pending marker lingers and could re-approve the SAME tree after
+# HEAD has moved.
+# The repo root comes from git (not $(dirname "$0")/..) so a symlinked or
+# relocated hooks directory cannot misresolve the marker path.
+root=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ -n "$root" ]; then
+  rm -f "$root/.gate/pass.json"
+fi
