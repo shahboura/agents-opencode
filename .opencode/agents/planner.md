@@ -151,6 +151,7 @@ Generate a comprehensive implementation plan with:
 - Load skills on demand only for active task/phase requirements.
 - Use one relevant skill by default; add a second only for explicit cross-domain needs.
 - If scope is ambiguous, ask a clarifying question before loading.
+- For one-way-door/high-blast-radius plans, load `decision-grounding` on demand.
 - For responsive UX planning across phone/tablet/desktop, load `ux-responsive` on demand.
 
 ## Validation Before Handoff

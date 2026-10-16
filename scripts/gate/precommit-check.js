@@ -7,7 +7,10 @@
  * Allows the commit only when:
  *   - SKIP_GATE=1 (documented bootstrap/escape hatch), OR
  *   - .gate/pass.json exists, has a PASS/PASS-WITH-CAVEATS verdict, and its
- *     stagedHash matches the current index — then the marker is consumed.
+ *     stagedHash matches the current index; non-trivial diffs (recomputed from
+ *     the staged tree via lib.classifyStagedDiff) additionally require at least
+ *     MIN_NON_TRIVIAL_LENSES recorded lenses. A failing marker stays in place;
+ *     a passing marker is consumed.
  * Otherwise prints how to run the gate and exits 1.
  */
 
@@ -32,17 +35,33 @@ function main() {
     return 1;
   }
 
+  let stagedFiles;
+  try {
+    stagedFiles = lib.listStagedFiles(repoRoot);
+  } catch (err) {
+    console.error('❌ Review Gate could not read the staged file list:', err.message);
+    console.error('   Fix the git state (or set SKIP_GATE=1 for bootstrap) and retry.');
+    return 1;
+  }
+
+  const classification = lib.classifyStagedDiff(stagedFiles);
   const markerPath = lib.passMarkerPath(repoRoot);
   const marker = lib.readJson(markerPath);
-  const decision = lib.evaluateMarker(marker, stagedHash);
+  const decision = lib.evaluateMarker(marker, stagedHash, classification);
 
   if (!decision.allowed) {
     console.error('❌ Pre-Commit Review Gate has not passed for this staged change.');
     console.error(`   Reason: ${decision.reason}.`);
+    if (classification.nonTrivial) {
+      console.error('   Non-trivial because:');
+      for (const reason of classification.reasons) {
+        console.error(`     - ${reason}`);
+      }
+    }
     console.error('   Run the gate, then record the pass before committing:');
     console.error('     npm run gate:freeze                      # freeze .gate/diff.patch + manifest');
     console.error('     # Tier 1 (npm run doctor) + Tier 2 lenses review the frozen diff');
-    console.error('     npm run gate:pass -- --verdict PASS      # record .gate/pass.json');
+    console.error('     npm run gate:pass -- --verdict PASS --lenses <lens1,lens2>');
     console.error('   Bootstrap/escape hatch: SKIP_GATE=1 git commit ...');
     return 1;
   }

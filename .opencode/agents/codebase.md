@@ -114,6 +114,8 @@ Log detected profile at start: `Detected active profile: <profile>`
 - Load skills on demand only for active task/phase requirements.
 - Use one relevant skill by default; add a second only for explicit cross-domain needs.
 - If scope is ambiguous, ask a clarifying question before loading.
+- For feature or bugfix work, load `test-driven-development` before writing code; for any bug or test failure, load `systematic-debugging` before proposing a fix.
+- Before any completion/commit/PR claim, load `verification-before-completion`; after a fix, load `code-change-impact`; before writing code in a language, load that language's skill.
 - For CI/CD tasks, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For responsive UI/UX tasks across phone/tablet/desktop, load `ux-responsive` on demand.
 

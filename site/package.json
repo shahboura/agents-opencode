@@ -11,5 +11,8 @@
     "@astrojs/starlight": "^0.42.4",
     "astro": "^7.3.5",
     "wrangler": "^4.149.0"
+  },
+  "overrides": {
+    "postcss-selector-parser": "^7.1.6"
   }
 }

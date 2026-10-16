@@ -125,7 +125,7 @@ Flow for each push:
 ```bash
 npm run gate:freeze                          # .gate/diff.patch + .gate/manifest.json
 # Tier 1 (npm run doctor) + Tier 2 lenses review the frozen diff
-npm run gate:pass -- --verdict PASS          # record .gate/pass.json
+npm run gate:pass -- --verdict PASS --lenses requirements,code,security
 git commit                                   # hook verifies + consumes the marker
 ```
 
@@ -134,6 +134,18 @@ The hook allows a commit only when `.gate/pass.json` carries a `PASS` or
 consumes the marker so one approval cannot be reused. `gate:pass` also requires
 `.gate/manifest.json` and refuses if the index moved after `gate:freeze`, so a
 pass binds only to the snapshot the lenses reviewed.
+
+**The lens requirement is enforced at the tooling layer** (diff classification and
+lens *cardinality*); lens *names* remain self-reported, like the verdict itself. A
+**non-trivial** diff must record **at least 2 distinct lenses**. Non-trivial means any
+staged path under `scripts/`, `.opencode/`, `.github/`, `.githooks/`, `site/`, `evals/`,
+or `adapters/`; the root files `install.js`, `package.json`, `opencode.json`,
+`AGENTS.md`, or `.gitleaks.toml`; a `package-lock.json` at any depth; or **more than 2
+staged entries**. Path matching is case-insensitive, a rename counts both sides, and
+duplicate lens names count once. `gate:pass` refuses to write the marker below that,
+and the hook re-checks the recorded count against the same rule. A **trivial** diff
+(≤2 entries and no risk paths) may record a Tier 1 pass with no lenses. A marker
+written before this rule (no lens list) counts as zero lenses.
 
 `SKIP_GATE=1` is a **per-command** bootstrap/emergency escape hatch - prefix the
 single command (`SKIP_GATE=1 git commit ...`). Do **not** export it in a shell
