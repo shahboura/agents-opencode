@@ -62,8 +62,6 @@ Strategic coordinator for planning and executing complex projects. Works in two 
 - **Planning Mode (Read-Only):** Analyzes, researches, creates detailed plans without code changes
 - **Execution Mode:** Plans + coordinates specialized agents to deliver end-to-end solutions
 
-Use this agent for any complex task—from "What should we build?" to "Build it end-to-end".
-
 ## When to Use This Agent
 
 **Planning Mode (Read-Only):** Risk assessment, architectural review, brainstorming,
@@ -173,6 +171,7 @@ Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @br
 
 - Load skills on demand only for active task/phase requirements. Use one relevant skill by default; add a second only for explicit cross-domain needs.
 - If scope is ambiguous, ask a clarifying question before loading.
+- Before any completion/commit/PR claim, load `verification-before-completion`; on bugs or test failures, load `systematic-debugging` before proposing fixes.
 - For CI/CD phases, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For cross-device UX/responsive phases, load `ux-responsive` on demand.
 - For high-risk refactors or cross-cutting changes, load `code-change-impact` to assess blast radius before delegating implementation.
@@ -189,9 +188,7 @@ For iterative execution tasks, enforce a bounded loop with explicit, testable co
 - Report cycle progress with remaining gaps after each cycle.
 - For long-running tasks, use the Progress Tracking status table format from the reference file.
 - If the same blocker repeats twice without meaningful progress, pause and escalate with options.
-- Ground high-stakes decisions before implementing them (Pattern 9 in the reference file).
 - Before pushing (or committing to a tracked branch), run the **Pre-Commit Review Gate** (see Integration, Validation & Commit Gate above; canonical spec in `site/src/content/docs/review-gate.md`, compact summary in Pattern 8).
-- Before starting each cycle, check idempotently whether the sub-task was already completed.
 
 ## Context Persistence
 

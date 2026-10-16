@@ -152,6 +152,7 @@ For each file:
 - Load skills on demand only for active task/phase requirements.
 - Use one relevant skill by default; add a second only for explicit cross-domain needs.
 - If scope is ambiguous, ask a clarifying question before loading.
+- Before issuing a verdict, load `verification-before-completion`.
 - For CI/CD workflow reviews, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For responsive/accessibility checks across breakpoints and input modes, load `ux-responsive` on demand.
 - For the security lens, load `security-audit` on demand.
