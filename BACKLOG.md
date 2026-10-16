@@ -27,6 +27,7 @@ The validator review cycles produced these items. VAL-1 and VAL-3 landed in the
 | ID | Severity | Item | Files |
 |---|---|---|---|
 | SKILL-1 | low | Ship deterministic `scripts/` for operational skills | `.opencode/skills/docs-validation`, `.opencode/skills/code-change-impact` |
+| SKILL-2 | low | Behavioral eval coverage for the ported discipline skills (`systematic-debugging`, `test-driven-development`, `verification-before-completion`). The eval harness (`evals/harness/run-evals.js`) is **static-contract only** and cannot exercise agent defaults. Options: (a) add static skill contracts (Iron Law markers + `## Provenance` present, `references/*` links resolve) as a drift guard, or (b) add a behavioral drill harness (e.g. adapt the upstream pressure-test prompts). | `evals/harness/run-evals.js`, `evals/fixtures/expected-contracts.json` |
 
 ## Docs hosting migration
 
@@ -61,7 +62,7 @@ static file cannot express both. Generate per target instead of concatenating.
 | Actions | `doom_loop`, `lsp` | not v2 actions |
 | Compaction | `compaction.prune` | `{ auto, keep, buffer }`; `compaction.prune` is accepted by v2 but has **no runtime effect** |
 | Plugin runtime | v1 hook object (named export) | default export `{ id, setup }`; v1 plugins do not run in v2 |
-| Skills | `.opencode/skills/` copied by the installer | project `.opencode/skills/` auto-discovered (v2 core 2.0.4+) |
+| Skills | `.opencode/skills/` copied by the installer | project `.opencode/skills/` auto-discovered natively (confirmed on v2.0.30) |
 
 Phases:
 
@@ -79,12 +80,12 @@ Phases:
      (`npm run validate:opencode-schema:v2`, its own CI job); the old
      `install.js --v2-strict` no-op stub was removed.
    - v1/v2 compatibility docs.
-2. Phase 1 (2.x, compatibility window): **partly shipped** — `--target auto` now
-   detects the installed OpenCode version (`opencode --version`; major >= 2 selects
-   v2, else v1; `AGENTS_OPENCODE_HOST_VERSION` overrides detection) and install
-   end-to-end tests cover both targets. **Remaining:** live v2 validation — no
-   OpenCode v2 run has exercised the plugin-spec path yet (the v2 plugin API is
-   beta), so treat plugin-spec as experimental.
+2. Phase 1 (2.x, compatibility window): **partly shipped** — `--target auto` detects
+   the installed OpenCode version; install e2e tests cover both targets; a disposable
+   sandbox run against **OpenCode v2.0.30** confirmed the plugin loads and all 10 agents
+   are discovered. **Remaining:** exercise v2 runtime hook behaviour with a model
+   (secret-read guard, context injection, event subscription) and the plugin-spec skill
+   delivery end-to-end.
 3. Phase 2 (3.0.0, breaking): stop emitting v1 keys and remove the v1 plugin branch.
 
 Guardrails:
@@ -94,29 +95,27 @@ Guardrails:
 - Keep `AGENTS.md` as the instruction mechanism (v2 ignores the `instructions` config).
 - Support both through 2.x; reserve the major release for dropping v1.
 
-## UI/UX skill integration (deferred)
+## UI/UX skill integration (shipped: external delegation)
 
 Evaluated embedding [`nextlevelbuilder/ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)
-(MIT) for richer UI/UX guidance. Deferred: it is a Python-3 search engine plus a
-large CSV data subtree (`scripts/search.py`, styles/palettes/fonts/UX/icons), and
-its `SKILL.md` uses Claude-Code path conventions (`${CLAUDE_PLUGIN_ROOT}`), so
-embedding adds a runtime dependency, package-size and maintenance cost, and an
-upstream version to track. It also overlaps the existing `ux-responsive` skill.
+(MIT) for richer UI/UX guidance. **Decision: external install + in-skill delegation** — the pack
+does not vendor the skill (a Python-3 search engine plus a ~3 MB CSV/JSON data subtree) and takes
+no runtime dependency on it.
 
-| Option | Pros | Cons |
-|---|---|---|
-| **External install + thin wrapper** (recommended first) | Zero maintenance; upstream versioning; no Python/CSV in the tarball | Not "embedded"; requires `uipro init --ai opencode`; agent must run their CLI |
-| **Hybrid** (embed data/scripts, thin wrapper) | Offline, embedded | We own the Python dependency + data subtree + attribution |
-| **Full vendor into `.opencode/skills/`** | Self-contained, one install | Heaviest: size, license/NOTICE, Python, upstream drift, pruning complexity |
+Shipped approach:
 
-If adopted: add a thin `ui-design` skill/command that detects and delegates to the
-upstream skill (falling back to `ux-responsive`), add it to `ALWAYS_KEEP` in the
-installer pruning, and add a NOTICE/attribution. Do **not** ship two competing UX
-skills — scope `ux-responsive` as the lightweight fallback.
+- `ux-responsive` carries a short delegation section: prefer the externally installed
+  `ui-ux-pro-max` search script when present, fall back to its own rules otherwise, and surface a
+  pinned install command (`npx ui-ux-pro-max-cli@2.15.0 init --ai opencode`).
+- No new skill, no vendored data/scripts, no `package.json` dependency, and no path collision with
+  the user's own `.opencode/skills/ui-ux-pro-max/` install.
+
+Rejected: hybrid (embed data/scripts) and full vendor — both add a Python dependency, tarball
+size, upstream drift, and attribution surface for no benefit over delegation.
 
 | ID | Severity | Item | Files |
 |---|---|---|---|
-| UIUX-1 | low | Decide + implement the UI/UX skill integration model (external wrapper vs hybrid vs vendor) | `.opencode/skills/ux-responsive`, `install.js` (ALWAYS_KEEP), `package.json` (`files`) |
+| UIUX-1 | low | Done: external-install delegation documented in `ux-responsive` (no vendoring) | `.opencode/skills/ux-responsive/SKILL.md` |
 
 ## Provenance
 

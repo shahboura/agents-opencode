@@ -16,10 +16,10 @@ Quick read:
 
 | Agent | Allowed skills |
 |---|---|
-| `codebase` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `legal-advisor`, `code-change-impact`, `refactoring`, `decision-grounding` |
-| `orchestrator` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `blogger`, `brutal-critic`, `code-change-impact`, `refactoring`, `legal-advisor`, `decision-grounding` |
+| `codebase` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `legal-advisor`, `code-change-impact`, `refactoring`, `decision-grounding`, `systematic-debugging`, `test-driven-development`, `verification-before-completion` |
+| `orchestrator` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `blogger`, `brutal-critic`, `code-change-impact`, `refactoring`, `legal-advisor`, `decision-grounding`, `systematic-debugging`, `verification-before-completion` |
 | `planner` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `refactoring`, `adr`, `decision-grounding` |
-| `review` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `docs-validation`, `agent-diagnostics`, `code-change-impact`, `security-audit`, `decision-grounding` |
+| `review` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `docs-validation`, `agent-diagnostics`, `code-change-impact`, `security-audit`, `decision-grounding`, `verification-before-completion` |
 | `researcher` | _(none — read-only evidence gathering; skill-free by design)_ |
 | `docs` | `docs-validation`, `project-bootstrap`, `agent-diagnostics`, `api-documentation`, `adr` |
 | `em-advisor` | `project-bootstrap`, `agent-diagnostics`, `docs-validation`, `legal-advisor`, `blogger` |
@@ -52,6 +52,9 @@ Use this as the canonical trigger reference for when agents should load skills.
 | Ground high-stakes decisions in current best practice (dispatch `@researcher`; deprecations, API/version changes, workaround smell) | `decision-grounding` | `orchestrator`, `codebase`, `planner`, `review` |
 | Security-focused code and config review, vulnerability scanning, threat modeling | `security-audit` | `review` |
 | Safe staged refactoring, structural code improvements without behavior changes | `refactoring` | `codebase`, `planner`, `orchestrator` |
+| Debugging a bug, test failure, or unexpected behavior with root-cause discipline | `systematic-debugging` | `codebase`, `orchestrator` |
+| Test-first feature/bugfix work (RED-GREEN-REFACTOR) | `test-driven-development` | `codebase` |
+| Evidence before completion claims; verify before commit/PR | `verification-before-completion` | `codebase`, `orchestrator`, `review` |
 | API reference documentation generation, endpoint docs, OpenAPI/Swagger | `api-documentation` | `docs` |
 | Architecture Decision Records, technical decision documentation, design rationale | `adr` | `docs`, `planner` |
 

@@ -41,6 +41,8 @@ permission:
     "refactoring": "allow"
     "legal-advisor": "allow"
     "decision-grounding": "allow"
+    "systematic-debugging": "allow"
+    "verification-before-completion": "allow"
   task:
     "*": "deny"
     "codebase": "allow"

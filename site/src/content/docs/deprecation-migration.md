@@ -93,6 +93,7 @@ When introducing Level B/C changes:
 - Canonical agent path: `.opencode/agents/`
 - Legacy `.opencode/agent/` (singular) is retired; only the canonical `.opencode/agents/` (plural) path is recognized
 - Command docs parity is enforced against canonical command frontmatter
-- OpenCode v1 and v2 are both supported through 2.x via the install-target adapter
-  (`--target v1|v2|auto`); the two config key sets are never co-written. See
+- The installer's target adapter emits v1 and v2 config key sets through 2.x
+  (`--target v1|v2|auto`); the two sets are never co-written. v1 is fully supported;
+  v2 is prepared and verified to load on v2.0.30 (runtime hooks not yet exercised). See
   **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.

@@ -708,6 +708,51 @@ function testTargetSwitchStripsRetiredPluginEntries(tmpRoot) {
   assert(!('plugin' in config && 'plugins' in config), 'plugin and plugins must never co-exist');
 }
 
+// F1 (data-loss regression): a v2 install must not remove user-owned v1-only
+// settings. `subagent_depth` / `compaction.prune` are never written by the
+// installer, and the documented happy path (customization.md) tells users to
+// set exactly the pack-recommended values — so value-equality can never prove
+// installer authorship and nothing may be stripped. Before the fix, a v2
+// install silently deleted these values (disabling nested delegation under v1).
+function testV2InstallPreservesUserLegacySettings(tmpRoot) {
+  const legacySeed = () => ({
+    $schema: 'https://opencode.ai/config.json',
+    subagent_depth: 2,
+    compaction: { prune: true, auto: true },
+    share: 'manual',
+    watcher: { ignore: ['custom/**'] },
+  });
+
+  const v2Dir = path.join(tmpRoot, 'v2-preserve-legacy');
+  createDir(v2Dir);
+  writeJson(path.join(v2Dir, 'opencode.json'), legacySeed());
+  runInstaller(['--project', '.', '--target', 'v2'], { cwd: v2Dir });
+
+  const v2Config = readJson(path.join(v2Dir, 'opencode.json'));
+  assert(v2Config.subagent_depth === 2, 'v2 install must leave user subagent_depth untouched');
+  assert(
+    v2Config.compaction && v2Config.compaction.prune === true && v2Config.compaction.auto === true,
+    'v2 install must leave user compaction values untouched'
+  );
+  assert(v2Config.share === 'manual', 'user share value must survive a v2 install');
+  assert(
+    v2Config.watcher && Array.isArray(v2Config.watcher.ignore) && v2Config.watcher.ignore.join(',') === 'custom/**',
+    'user watcher value must survive a v2 install'
+  );
+
+  const v1Dir = path.join(tmpRoot, 'v1-preserve-legacy');
+  createDir(v1Dir);
+  writeJson(path.join(v1Dir, 'opencode.json'), legacySeed());
+  runInstaller(['--project', '.', '--target', 'v1'], { cwd: v1Dir });
+
+  const v1Config = readJson(path.join(v1Dir, 'opencode.json'));
+  assert(v1Config.subagent_depth === 2, 'v1 install must retain subagent_depth (v1 path unchanged)');
+  assert(
+    v1Config.compaction && v1Config.compaction.prune === true,
+    'v1 install must retain compaction.prune (v1 path unchanged)'
+  );
+}
+
 // C8: the split-brain warning must also fire when BOTH global dirs have an
 // install (the most misleading case), not only when exactly one does.
 function testGlobalBothInstallsWarning(tmpRoot) {
@@ -1031,6 +1076,7 @@ function main() {
     testV2MergeSkipsNonArrayPermissions(tmpRoot);
     testUninstallRevertsReorderedV2PermissionRules(tmpRoot);
     testTargetSwitchStripsRetiredPluginEntries(tmpRoot);
+    testV2InstallPreservesUserLegacySettings(tmpRoot);
     testGlobalBothInstallsWarning(tmpRoot);
     testSkillClassificationCoversShippedSkills();
     testLanguagesFilterFullPartition(tmpRoot);

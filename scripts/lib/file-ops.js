@@ -49,7 +49,10 @@ const NON_LANGUAGE_SKILLS = new Set([
   'project-bootstrap',
   'refactoring',
   'security-audit',
+  'systematic-debugging',
+  'test-driven-development',
   'ux-responsive',
+  'verification-before-completion',
 ]);
 
 function isObject(value) {

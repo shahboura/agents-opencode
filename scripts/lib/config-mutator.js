@@ -165,6 +165,13 @@ function mergeInstallerConfig(targetConfigPath, sourceConfig, onBeforeWrite, log
     patch.changed = true;
   }
 
+  // User-owned v1-only legacy settings (`subagent_depth`, `compaction.prune`,
+  // ...) are deliberately preserved on every target. The installer never writes
+  // them, and value-equality with the package's own values cannot prove
+  // installer authorship — our docs tell users to set exactly those values
+  // (site/src/content/docs/customization.md), so stripping them would silently
+  // undo the documented happy path (e.g. disabling nested delegation).
+
   const otherKeys = opencodeTarget.configKeysFor(otherTarget(resolvedTarget));
   const userOwnsOtherPermission = existing[otherKeys.permissionKey] !== undefined;
 

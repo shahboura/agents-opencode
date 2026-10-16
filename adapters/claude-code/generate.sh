@@ -54,6 +54,9 @@ node -e "
   });
 "
 
+# Copy the third-party notices so distributed copies carry the MIT attribution.
+cp "$SCRIPT_DIR/../../THIRD_PARTY_NOTICES.md" "$OUTPUT/THIRD_PARTY_NOTICES.md"
+
 for skill_dir in "$SKILLS_SRC"/*/; do
   name=$(basename "$skill_dir")
   skill_file="$skill_dir/SKILL.md"

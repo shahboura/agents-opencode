@@ -44,6 +44,23 @@ Use this when implementing or reviewing UI that must work across small and large
 # dotnet build && dotnet test
 ```
 
+## Richer design systems (optional delegation)
+
+When a project has the third-party **UI UX Pro Max** skill installed, prefer
+it for style, palette, typography, chart, icon, and stack-specific guidance.
+Ask the user to run its search script rather than executing a project-tree
+script unprompted:
+
+```bash
+python3 .opencode/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system
+# Windows: use `python` when `python3` is not on PATH
+```
+
+It is a separate, opt-in skill (requires Python 3.x) and is **not** part of
+this pack — install a pinned version into the project with
+`npx ui-ux-pro-max-cli@2.15.0 init --ai opencode`. When it is absent, use the
+rules in this skill as the fallback.
+
 ## References
 - https://www.w3.org/WAI/WCAG21/Understanding/reflow.html
 - https://web.dev/responsive-web-design-basics/
