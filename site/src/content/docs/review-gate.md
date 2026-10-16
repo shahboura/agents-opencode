@@ -111,11 +111,11 @@ Planning Mode, or an explicit user opt-out.
 
 ## Enforcement
 
-A versioned Git hook stops commits that have not passed the gate. Enable it once
-per clone:
+A versioned pair of Git hooks stops commits that have not passed the gate. Enable
+them once per clone:
 
 ```bash
-npm run gate:install   # core.hooksPath=.githooks + executable bit on the hook
+npm run gate:install   # core.hooksPath=.githooks + executable bit on both hooks
 ```
 
 Flow for each push:
@@ -124,26 +124,39 @@ Flow for each push:
 npm run gate:freeze                          # .gate/diff.patch + .gate/manifest.json
 # Tier 1 (npm run doctor) + Tier 2 lenses review the frozen diff
 npm run gate:pass -- --verdict PASS --lenses requirements,code,security
-git commit                                   # hook verifies + consumes the marker
+git commit                                   # pre-commit verifies; post-commit consumes
 ```
 
-The hook allows a commit only when `.gate/pass.json` carries a `PASS` or
-`PASS-WITH-CAVEATS` verdict whose `stagedHash` matches the staged tree, then
-consumes the marker so one approval cannot be reused. `gate:pass` also requires
-`.gate/manifest.json` and refuses if the index moved after `gate:freeze`, so a
-pass binds only to the snapshot the lenses reviewed.
+`gate:pass` requires an explicit `--verdict PASS` or `--verdict PASS-WITH-CAVEATS` —
+there is no default. Keep the `--` before the flags: `npm run gate:pass --verdict PASS`
+lets npm swallow `--verdict`, and the command now fails with a usage error instead of
+silently recording PASS.
+
+For a **trivial** diff (≤2 entries, no risk paths, and no gitlinks), `npm run gate:quick` chains
+`gate:freeze` → `npm run doctor` → `gate:pass --verdict=PASS` in one step. It records
+no lenses; a non-trivial diff is refused and pointed at the Tier 2 panel flow.
+
+The hook allows a commit only when `.gate/pass.json` carries a pass verdict whose
+`stagedHash` matches the staged tree. The **post-commit** hook consumes the marker
+once the commit object exists — an aborted commit (GPG signing failure, editor abort,
+hook crash) keeps the approval for a retry, and any successful `git commit` (including
+`--no-verify` and empty commits) uses it up. Empty commits (a staged tree identical
+to `HEAD`) are exempt and need no marker. `gate:pass` also requires
+`.gate/manifest.json` and refuses if the index moved after `gate:freeze`, so a pass
+binds only to the snapshot the lenses reviewed.
 
 **The lens requirement is enforced at the tooling layer** (diff classification and
 lens *cardinality*); lens *names* remain self-reported, like the verdict itself. A
 **non-trivial** diff must record **at least 2 distinct lenses**. Non-trivial means any
 staged path under `scripts/`, `.opencode/`, `.github/`, `.githooks/`, `site/`, `evals/`,
 or `adapters/`; the root files `install.js`, `package.json`, `opencode.json`,
-`AGENTS.md`, or `.gitleaks.toml`; a `package-lock.json` at any depth; or **more than 2
-staged entries**. Path matching is case-insensitive, a rename counts both sides, and
-duplicate lens names count once. `gate:pass` refuses to write the marker below that,
-and the hook re-checks the recorded count against the same rule. A **trivial** diff
-(≤2 entries and no risk paths) may record a Tier 1 pass with no lenses. A marker
-written before this rule (no lens list) counts as zero lenses.
+`AGENTS.md`, or `.gitleaks.toml`; a `package-lock.json` at any depth; a staged submodule
+pointer (gitlink) change, whose referenced content is not reviewable from the
+superproject diff; or **more than 2 staged entries**. Path matching is case-insensitive,
+a rename counts both sides, and duplicate lens names count once. `gate:pass` refuses to
+write the marker below that, and the hook re-checks the recorded count against the same
+rule. A **trivial** diff (≤2 entries, no risk paths, and no gitlinks) may record a Tier 1 pass with no
+lenses. A marker written before this rule (no lens list) counts as zero lenses.
 
 `SKIP_GATE=1` is a **per-command** bootstrap/emergency escape hatch - prefix the
 single command (`SKIP_GATE=1 git commit ...`). Do **not** export it in a shell
@@ -154,9 +167,15 @@ profile or CI job; that would disable the gate for every command.
 The pre-commit hook is a **local workflow guardrail, not a security boundary**:
 
 - `.gate/pass.json` is an unsigned, plain-text marker - it can be forged.
-- `git commit --no-verify` bypasses the hook entirely.
+- `git commit --no-verify` bypasses the pre-commit check entirely.
 - Non-fast-forward `git merge` (the `pre-merge-commit` hook) is outside the
   pre-commit hook's scope.
+- If the versioned `post-commit` hook is missing or inert, or the commit is created
+  by `git merge` (which runs `post-merge`, not `post-commit`), a pending marker can
+  linger; the marker binds the staged **tree** (not a diff against a base), so once
+  `HEAD` has moved it could re-approve the same tree. Normally, any successful
+  `git commit` — including `--no-verify` and empty commits — consumes a pending
+  marker.
 
 It exists for honest-operator discipline, not to stop a motivated bypass. Commits
 made with `--no-verify`, or merges that produce a merge commit, must be gated

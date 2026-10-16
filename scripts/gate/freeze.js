@@ -27,9 +27,11 @@ function tryGit(args, cwd) {
 
 // True when the index differs from HEAD. `git diff --cached --quiet` exits 0
 // for no differences and 1 for differences; anything else is a real error.
+// `--ignore-submodules=none` (S1) keeps gitlink changes visible, matching the
+// main diff below and `lib.listStagedFiles`.
 function hasStagedChanges(cwd) {
   try {
-    execFileSync('git', ['diff', '--cached', '--quiet'], { cwd });
+    execFileSync('git', ['diff', '--cached', '--quiet', '--ignore-submodules=none'], { cwd });
     return false;
   } catch (err) {
     if (err.status === 1) {
@@ -70,10 +72,13 @@ function main() {
   }
 
   // Fail closed: a git error, or an index with changes that yields an empty
-  // diff, must never be written as a valid snapshot (C-3).
+  // diff, must never be written as a valid snapshot (C-3). The step must also
+  // be COMPLETE: `--ignore-submodules=none` is load-bearing (S1), or a user's
+  // `diff.ignoreSubmodules` config would render a gitlink-only change as an
+  // empty diff while the commit still moves the submodule pointer.
   let diff;
   try {
-    diff = git(['diff', '--cached', '--no-color'], repoRoot);
+    diff = git(['diff', '--cached', '--no-color', '--ignore-submodules=none'], repoRoot);
   } catch (err) {
     console.error(`❌ gate:freeze could not read the staged diff: ${err.message}`);
     process.exit(1);
@@ -109,7 +114,7 @@ function main() {
   console.log(`   Base:      ${base || '(none)'}`);
   console.log(`   Head:      ${head || '(none)'}`);
   console.log(`   Staged:    ${stagedHash}`);
-  console.log('   Next: review the diff, then `npm run gate:pass` after a PASS.');
+  console.log('   Next: review the diff, then record `npm run gate:pass -- --verdict PASS` after a PASS');
 }
 
 if (require.main === module) {

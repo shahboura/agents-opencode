@@ -11,7 +11,7 @@ Use [conventional commit](https://www.conventionalcommits.org/) messages (`feat:
 
 - Node.js 24 or newer is required (`engines` in `package.json`).
 - Install dev tooling once with `npm ci`.
-- Enable the pre-commit review gate once per clone with `npm run gate:install`.
+- Enable the review gate hooks (`pre-commit` + `post-commit`) once per clone with `npm run gate:install`.
 
 ## Quality commands
 
@@ -47,8 +47,8 @@ npm run build   # static output in site/dist; `npm run dev` for a local preview
 
 ## Pre-commit review gate
 
-A versioned Git hook stops commits that have not passed the review gate. Install it
-once per clone:
+A versioned pair of Git hooks stops commits that have not passed the review gate.
+Install them once per clone:
 
 ```bash
 npm run gate:install
@@ -60,8 +60,23 @@ The flow for each batch of changes is freeze → review → pass → commit:
 npm run gate:freeze   # freeze the staged diff (.gate/diff.patch + .gate/manifest.json)
 # Tier 1 (`npm run doctor`) and the Tier 2 review lenses run against the frozen diff
 npm run gate:pass -- --verdict PASS --lenses requirements,code
-git commit            # the hook verifies the recorded pass and consumes the marker
+git commit            # pre-commit verifies the pass; post-commit consumes the marker
 ```
+
+`gate:pass` requires an explicit `--verdict PASS` or `--verdict PASS-WITH-CAVEATS`.
+There is no default: if the flag is missing (for example `npm run gate:pass --verdict PASS`
+without the `--`, which lets npm swallow it), the command fails with a usage error
+instead of silently recording a verdict.
+
+For a **trivial** diff (≤2 staged entries, no risk paths, and no gitlinks), the whole path is one
+command:
+
+```bash
+npm run gate:quick   # gate:freeze → npm run doctor → gate:pass --verdict=PASS
+```
+
+`gate:quick` records a Tier 1 pass with no lenses. If the diff is actually
+non-trivial, `record-pass` refuses and points you at the Tier 2 lens flow above.
 
 Rules that are enforced at the tooling layer:
 
@@ -69,9 +84,21 @@ Rules that are enforced at the tooling layer:
   Non-trivial means any staged path under `scripts/`, `.opencode/`, `.github/`,
   `.githooks/`, `site/`, `evals/`, or `adapters/`; the root files `install.js`,
   `package.json`, `opencode.json`, `AGENTS.md`, or `.gitleaks.toml`; any
-  `package-lock.json` at any depth; or more than 2 staged entries.
-- The recorded pass is bound to the frozen snapshot (via its staged hash) and is
-  consumed by the commit, so one approval cannot be reused.
+  `package-lock.json` at any depth; a staged submodule pointer (gitlink) change —
+  only the pointer appears in the superproject diff, so the content it references
+  is not reviewable from it; or more than 2 staged entries.
+- The recorded pass is bound to the frozen snapshot (via its staged hash). The
+  **post-commit** hook consumes the marker once the commit object exists, so an
+  aborted commit (GPG signing failure, editor abort, hook crash) keeps the
+  approval for a retry — any successful `git commit`, including `--no-verify` and
+  empty commits, uses it up.
+- Residual if `post-commit` is missing or inert, or the commit is created by
+  `git merge` (which runs `post-merge`, not `post-commit`): a pending marker
+  lingers and binds the staged **tree** (not a diff against a base), so after
+  `HEAD` has moved it could re-approve the same tree.
+- Empty commits (a staged tree identical to `HEAD`) are exempt: the hook allows
+  them without a marker, which is what `git commit --allow-empty` release tooling
+  relies on.
 
 `SKIP_GATE=1` is a **per-command** bootstrap/emergency escape hatch
 (`SKIP_GATE=1 git commit ...`). Never export it in a shell profile or CI job.

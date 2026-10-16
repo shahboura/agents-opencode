@@ -48,6 +48,7 @@
     "validate:gate": "node scripts/gate/gate.test.js",
     "gate:freeze": "node scripts/gate/freeze.js",
     "gate:pass": "node scripts/gate/record-pass.js",
+    "gate:quick": "node scripts/gate/freeze.js && node scripts/doctor.js && node scripts/gate/record-pass.js --verdict=PASS",
     "gate:check": "node scripts/gate/precommit-check.js",
     "gate:install": "node scripts/gate/install-hooks.js",
     "validate:commands": "node scripts/validate-command-matrices.js",

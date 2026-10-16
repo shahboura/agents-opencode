@@ -9,7 +9,18 @@
  *   - .gate/pass.json     approval marker written by `gate:pass`
  *
  * `precommit-check.js` only allows a commit when a PASS marker exists whose
- * `stagedHash` matches the current index, then consumes the marker.
+ * `stagedHash` matches the current index, and never consumes the marker. A
+ * staged tree identical to the parent tree (`HEAD^{tree}`; the empty tree for
+ * an unborn HEAD) is exempt outright — the commit changes no content. Tree
+ * equality, not the staged name list, is load-bearing (S1): the name list can
+ * hide gitlink (submodule) changes that the commit itself includes. The
+ * versioned post-commit hook deletes the marker once the commit object exists,
+ * so an aborted commit keeps the approval, and any successful `git commit` —
+ * including `--no-verify` and empty commits — consumes a pending marker.
+ * Residual: if post-commit is missing or inert, or the commit is created by
+ * `git merge` (which runs post-merge, not post-commit), a marker lingers; it
+ * binds the staged TREE (not the diff against a base), so it could re-approve
+ * the SAME tree once HEAD has moved.
  *
  * `classifyStagedDiff` is the single source of truth for gate tiering: a
  * non-trivial staged diff requires a Tier 2 panel of at least
@@ -65,16 +76,70 @@ function computeStagedHash(cwd) {
   return execFileSync('git', ['write-tree'], { cwd, encoding: 'utf8' }).trim();
 }
 
+// Well-known SHA-1 hash of the empty tree; last-resort fallback for the
+// unborn-HEAD comparison when git itself cannot resolve the empty tree.
+const EMPTY_TREE_HASH = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
+
+// Tree hash of HEAD — the parent tree a pending commit would extend. Deciding
+// the empty-commit exemption on tree equality (write-tree vs this) is what
+// makes a gitlink-only "empty list" impossible to exempt: `write-tree` includes
+// gitlink entries even when diff-based listing goes blind (S1). For an unborn
+// HEAD there is no commit to compare against, so the terminus is the empty
+// tree — resolved through git itself (`git mktree`) so the hash matches the
+// repository's object format (SHA-1/SHA-256).
+function computeHeadTree(cwd) {
+  try {
+    return execFileSync('git', ['rev-parse', '--verify', 'HEAD^{tree}'], { cwd, encoding: 'utf8' }).trim();
+  } catch {
+    try {
+      return execFileSync('git', ['mktree'], { cwd, encoding: 'utf8', input: '' }).trim();
+    } catch {
+      return EMPTY_TREE_HASH;
+    }
+  }
+}
+
 // Staged file list from the git index (repo-relative paths). NUL-separated so
 // paths with spaces or non-ASCII characters come back verbatim instead of
 // C-quoted, which keeps the classifier input exact. `--no-renames` is
 // load-bearing (G2): with rename detection on, git reports only the rename
 // destination, so `git mv scripts/x.js docs/x.js` would hide the risk path;
 // with it off the rename is a delete + add and BOTH sides are listed. The flag
-// also overrides any `diff.renames` config.
+// also overrides any `diff.renames` config. `--ignore-submodules=none` is
+// load-bearing (S1) for the same reason: a `diff.ignoreSubmodules` config (or
+// a git default of `all`) hides gitlink changes here while the commit still
+// moves the submodule pointer.
 function listStagedFiles(cwd) {
-  const out = execFileSync('git', ['diff', '--cached', '--name-only', '--no-renames', '-z'], { cwd, encoding: 'utf8' });
+  const out = execFileSync('git', ['diff', '--cached', '--name-only', '--no-renames', '--ignore-submodules=none', '-z'], { cwd, encoding: 'utf8' });
   return out.split('\0').filter(Boolean);
+}
+
+// Repo-relative paths of staged changes that involve a gitlink (index mode
+// 160000, i.e. a submodule pointer). Only the pointer appears in the
+// superproject diff — the submodule content it references is not reviewable
+// from it — so the classifier treats any staged gitlink as non-trivial. Parses the raw diff
+// because `--name-only` drops the mode; `--no-renames` keeps every record a
+// meta/path pair (with -z, a rename record would carry two paths), and NUL
+// separation keeps paths with spaces/non-ASCII verbatim.
+function listStagedGitlinks(cwd) {
+  const out = execFileSync(
+    'git',
+    ['diff', '--cached', '--raw', '-z', '--no-renames', '--ignore-submodules=none'],
+    { cwd, encoding: 'utf8' }
+  );
+  const parts = out.split('\0');
+  const gitlinkPaths = [];
+  for (let i = 0; i + 1 < parts.length; i += 2) {
+    const meta = parts[i];
+    if (!meta.startsWith(':')) {
+      continue;
+    }
+    const [oldMode, newMode] = meta.slice(1).split(' ');
+    if (oldMode === '160000' || newMode === '160000') {
+      gitlinkPaths.push(parts[i + 1]);
+    }
+  }
+  return gitlinkPaths;
 }
 
 // Normalize a repo-relative path: forward slashes, no leading './'.
@@ -99,15 +164,22 @@ function formatFileList(files, max = 12) {
 }
 
 // Pure: classify a staged file list as trivial or non-trivial.
-// Non-trivial when it touches more than NON_TRIVIAL_FILE_LIMIT files or any
-// path matched by RISK_PATH_RULES; trivial otherwise (e.g. docs-only changes
-// or at most 2 non-risk files).
-function classifyStagedDiff(files) {
+// Non-trivial when it touches more than NON_TRIVIAL_FILE_LIMIT files, any
+// path matched by RISK_PATH_RULES, or any staged gitlink (submodule pointer)
+// reported by the caller in `options.gitlinkPaths` (normally from
+// listStagedGitlinks): only the pointer appears in the superproject diff, so
+// the content a gitlink references cannot be reviewed from it — a gitlink must
+// never pass as a trivial Tier 1 change. Trivial otherwise (e.g. docs-only
+// changes or at most 2 non-risk files).
+function classifyStagedDiff(files, options) {
   const paths = (Array.isArray(files) ? files : [])
     .filter((file) => typeof file === 'string' && file.trim())
     .map((file) => normalizeRepoPath(file.trim()));
+  const gitlinkPaths = ((options && Array.isArray(options.gitlinkPaths)) ? options.gitlinkPaths : [])
+    .filter((file) => typeof file === 'string' && file.trim())
+    .map((file) => normalizeRepoPath(file.trim()));
   const riskPaths = paths.filter(isRiskPath);
-  const nonTrivial = paths.length > NON_TRIVIAL_FILE_LIMIT || riskPaths.length > 0;
+  const nonTrivial = paths.length > NON_TRIVIAL_FILE_LIMIT || riskPaths.length > 0 || gitlinkPaths.length > 0;
 
   const reasons = [];
   if (paths.length > NON_TRIVIAL_FILE_LIMIT) {
@@ -115,6 +187,9 @@ function classifyStagedDiff(files) {
   }
   if (riskPaths.length > 0) {
     reasons.push(`risk path(s): ${formatFileList(riskPaths)}`);
+  }
+  if (gitlinkPaths.length > 0) {
+    reasons.push(`gitlink (submodule) change(s): ${formatFileList(gitlinkPaths)}`);
   }
 
   return { nonTrivial, fileCount: paths.length, riskPaths, reasons };
@@ -186,6 +261,8 @@ function evaluateMarker(passData, currentStagedHash, classification) {
 }
 
 // Remove the marker so a single approval cannot be reused for a later diff.
+// The versioned post-commit hook performs this deletion shell-side after a
+// successful commit; this helper is the programmatic equivalent used by tests.
 function consumeMarker(markerPath) {
   if (!fs.existsSync(markerPath)) {
     return false;
@@ -200,7 +277,9 @@ module.exports = {
   manifestPath,
   passMarkerPath,
   computeStagedHash,
+  computeHeadTree,
   listStagedFiles,
+  listStagedGitlinks,
   classifyStagedDiff,
   markerLensCount,
   isPassVerdict,
@@ -208,6 +287,7 @@ module.exports = {
   readJson,
   evaluateMarker,
   consumeMarker,
+  EMPTY_TREE_HASH,
   RISK_PATH_RULES,
   NON_TRIVIAL_FILE_LIMIT,
   MIN_NON_TRIVIAL_LENSES,
