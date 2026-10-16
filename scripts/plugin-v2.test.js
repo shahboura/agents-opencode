@@ -14,6 +14,17 @@
  *   `{ tool, input: { args: { filePath } } }`, and flat `{ tool, filePath }`
  * - v1 `tool.execute.before(input, output)`: output `{ args: { filePath } }`
  * Both entrypoints must throw (block), not merely `ask`.
+ *
+ * The same module hosts the other v2 wiring seams so they can be tested
+ * without a live v2 host:
+ * - `injectContextOnce` (v1 string `context` array) and
+ *   `injectSystemContextOnce` (v2 `system` typed parts) — idempotent injection;
+ * - `createReadGuardHandler` — the handler the v2 plugin registers: block
+ *   policy plus once-per-handler telemetry for unresolvable `read` events (the
+ *   fail-open case that must not stay invisible);
+ * - `safeRegister` — awaited registrations whose failures are contained;
+ * - `subscribeEventStream` — `ctx.event.subscribe({ signal })` consumption,
+ *   abort cleanup, and the missing-`subscribe` no-op.
  */
 
 const path = require('path');
@@ -27,8 +38,20 @@ function assert(condition, message) {
 
 async function main() {
   const guardsPath = path.join(process.cwd(), '.opencode', 'lib', 'guards.mjs');
-  const { readGuardError, isBlockedReadPath, injectContextOnce, handleToolExecuteBefore } =
-    await import(pathToFileURL(guardsPath).href);
+  const {
+    readGuardError,
+    isBlockedReadPath,
+    injectContextOnce,
+    injectSystemContextOnce,
+    handleToolExecuteBefore,
+    createReadGuardHandler,
+    safeRegister,
+    subscribeEventStream,
+  } = await import(pathToFileURL(guardsPath).href);
+
+  // Lets contained background work (the event-subscribe loop, dispose
+  // rejection handlers) settle before assertions.
+  const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
   const packSkillsPath = path.join(process.cwd(), '.opencode', 'lib', 'pack-skills.mjs');
   const { shouldRegisterPackSkills, buildSkillInfo } = await import(
@@ -194,6 +217,92 @@ async function main() {
     'payload.input.filePath must win over payload.input.args.filePath'
   );
 
+  // --- createReadGuardHandler: fail-open telemetry (S1) ---
+  // A `read` whose path cannot be resolved from any documented shape proceeds
+  // unguarded (fail-open by design), so the handler must surface that once —
+  // otherwise a v2 payload-shape mismatch silently disables the pack's only
+  // secret-read control.
+  let unresolvedWarnings = 0;
+  const telemetryHandler = createReadGuardHandler(() => {
+    unresolvedWarnings += 1;
+  });
+  assert(typeof telemetryHandler === 'function', 'createReadGuardHandler must return a handler');
+
+  // Repeated unresolvable reads, in every tolerated shape without a path.
+  telemetryHandler({ tool: 'read' });
+  telemetryHandler({ tool: 'read', input: {} });
+  telemetryHandler({ tool: 'read', input: { args: {} } });
+  telemetryHandler('read', {});
+  telemetryHandler('read', { args: {} });
+  telemetryHandler({ tool: 'read', filePath: 42 });
+  telemetryHandler({ tool: 'read', filePath: '   ' });
+  assert(unresolvedWarnings === 1, 'unresolved reads must warn exactly once per handler');
+
+  // Resolvable reads — allowed or blocked — must never warn.
+  let resolvableWarnings = 0;
+  const resolvableHandler = createReadGuardHandler(() => {
+    resolvableWarnings += 1;
+  });
+  resolvableHandler({ tool: 'read', input: { filePath: '/x/README.md' } });
+  resolvableHandler({ tool: 'read', input: { args: { filePath: '/x/src/app.ts' } } });
+  resolvableHandler({ tool: 'read', filePath: '/x/ca.pem' });
+  resolvableHandler('read', { args: { filePath: '/x/README.md' } });
+  assert(resolvableWarnings === 0, 'resolvable reads must never warn');
+
+  let blockedThrew = false;
+  try {
+    resolvableHandler({ tool: 'read', input: { filePath: '/x/.env' } });
+  } catch (err) {
+    blockedThrew = true;
+    assert(
+      typeof err.message === 'string' && err.message.includes('Blocked reading sensitive file'),
+      'blocked reads must still throw the policy error'
+    );
+  }
+  assert(blockedThrew, 'blocked reads must still throw');
+  assert(resolvableWarnings === 0, 'blocked reads must not warn (the path resolved)');
+
+  // Non-read tools and malformed events never warn.
+  let ignoredWarnings = 0;
+  const ignoringHandler = createReadGuardHandler(() => {
+    ignoredWarnings += 1;
+  });
+  for (const event of [
+    { tool: 'bash', input: { filePath: '/x/.env' } },
+    { tool: 'write', input: {} },
+    undefined,
+    null,
+    42,
+  ]) {
+    ignoringHandler(event);
+  }
+  ignoringHandler('bash', undefined);
+  assert(ignoredWarnings === 0, 'non-read tool events must never warn');
+
+  // A throwing telemetry callback is contained and still fires at most once.
+  let containedCalls = 0;
+  const containedHandler = createReadGuardHandler(() => {
+    containedCalls += 1;
+    throw new Error('telemetry failure');
+  });
+  containedHandler({ tool: 'read', input: {} });
+  containedHandler({ tool: 'read', input: {} });
+  assert(
+    containedCalls === 1,
+    'a throwing telemetry callback must not break the handler nor be retried'
+  );
+
+  // A missing telemetry callback must keep the handler a working block guard.
+  const noTelemetryHandler = createReadGuardHandler();
+  noTelemetryHandler({ tool: 'read', input: {} });
+  let noTelemetryThrew = false;
+  try {
+    noTelemetryHandler({ tool: 'read', input: { filePath: '/x/.env' } });
+  } catch {
+    noTelemetryThrew = true;
+  }
+  assert(noTelemetryThrew, 'the handler must still block when no telemetry callback is supplied');
+
   // --- injectContextOnce: idempotent context injection (finding H2) ---
   // v2 runs the `context` hook on every agent-loop turn, so the bootstrap block
   // must be appended at most once per array (sentinel = first line of block[0]).
@@ -222,6 +331,225 @@ async function main() {
   }
   assert(injectContextOnce([], 'not-an-array') === false, 'non-array lines must be a safe no-op');
   assert(injectContextOnce([], []) === false, 'empty lines must be a safe no-op');
+
+  // --- injectSystemContextOnce: v2 `system` typed-parts injection (D1) ---
+  // v2's `context` hook exposes `system` as parts (`{ type: "text", text }`),
+  // not a string array; the block is appended at most once per parts array.
+  const contextText =
+    '## Agents Opencode Context\n\nYou are operating with the agents-opencode agent pack.';
+
+  const systemParts = [];
+  assert(
+    injectSystemContextOnce(systemParts, contextText) === true,
+    'fresh system parts array must report a change'
+  );
+  assert(systemParts.length === 1, 'exactly one part must be pushed');
+  assert(
+    systemParts[0] &&
+      systemParts[0].type === 'text' &&
+      systemParts[0].text === contextText,
+    'part must be { type: "text", text } with the block verbatim'
+  );
+
+  assert(
+    injectSystemContextOnce(systemParts, contextText) === false,
+    'repeat call must be a no-op'
+  );
+  assert(systemParts.length === 1, 'repeat call must not duplicate the part');
+
+  const seededParts = [{ type: 'text', text: 'prefix ## Agents Opencode Context suffix' }];
+  assert(
+    injectSystemContextOnce(seededParts, contextText) === false,
+    'sentinel present in any text part must be a no-op'
+  );
+  assert(seededParts.length === 1, 'pre-seeded parts must be unchanged');
+
+  // A runtime that normalizes the part type still must not get duplicates:
+  // the sentinel check reads `text` regardless of `type`.
+  const normalizedParts = [{ type: 'normalized', text: contextText }];
+  assert(
+    injectSystemContextOnce(normalizedParts, contextText) === false,
+    'sentinel must win even when the part type differs'
+  );
+
+  // Malformed existing entries are skipped, not fatal.
+  const mixedParts = [null, 42, 'string', { text: 7 }, { noText: true }];
+  assert(
+    injectSystemContextOnce(mixedParts, contextText) === true,
+    'malformed entries must not break injection'
+  );
+  assert(mixedParts.length === 6, 'malformed entries must be preserved');
+
+  for (const target of [undefined, null, 'not-an-array', 42, {}, new Set()]) {
+    assert(
+      injectSystemContextOnce(target, contextText) === false,
+      `non-array target must be a safe no-op: ${String(target)}`
+    );
+  }
+  assert(injectSystemContextOnce([], null) === false, 'non-string text must be a safe no-op');
+  assert(injectSystemContextOnce([], '') === false, 'empty text must be a safe no-op');
+  assert(injectSystemContextOnce([], '   ') === false, 'blank text must be a safe no-op');
+
+  // F4: a frozen `system` array must be a safe no-op — a bare `push` would
+  // throw inside the hook handler, outside safeRegister's containment.
+  const frozenParts = Object.freeze([]);
+  assert(
+    injectSystemContextOnce(frozenParts, contextText) === false,
+    'a frozen target array must return false instead of throwing'
+  );
+
+  // --- safeRegister: awaited registrations, contained failures (D5) ---
+  // v2's hook()/transform() return Promise<Registration>; an unawaited
+  // rejection (e.g. an unknown hook name) must not become an unhandled
+  // rejection, and one failed registration must not disable the others.
+  const cleanups = [];
+
+  assert(
+    (await safeRegister(cleanups, () => Promise.reject(new Error('unknown hook name')))) === false,
+    'a rejected registration must be contained and report false'
+  );
+  assert(cleanups.length === 0, 'a rejected registration must not register a cleanup');
+
+  let laterRan = false;
+  assert(
+    (await safeRegister(cleanups, () => {
+      laterRan = true;
+      return undefined;
+    })) === false,
+    'a sync registration without a result reports false'
+  );
+  assert(laterRan, 'later registrations must still run after an earlier failure');
+
+  // A cleanup function result is pushed verbatim.
+  let cleanupRan = false;
+  assert(
+    (await safeRegister(cleanups, () => () => {
+      cleanupRan = true;
+    })) === true,
+    'a cleanup function must count as registered'
+  );
+
+  // A `Registration` object (`hook()` result) becomes a disposal cleanup.
+  let disposed = 0;
+  assert(
+    (await safeRegister(cleanups, () =>
+      Promise.resolve({
+        dispose: () => {
+          disposed += 1;
+        },
+      })
+    )) === true,
+    'a Registration object must count as registered'
+  );
+
+  for (const cleanup of cleanups) cleanup();
+  await flush();
+  assert(cleanupRan, 'a cleanup function must run on drain');
+  assert(disposed === 1, 'Registration.dispose() must run on drain');
+
+  // Sync throws are contained too.
+  assert(
+    (await safeRegister([], () => {
+      throw new Error('sync registration failure');
+    })) === false,
+    'a sync throw must be contained'
+  );
+
+  // Disposal failures (sync throw and async rejection) are swallowed.
+  const disposals = [];
+  await safeRegister(disposals, () =>
+    Promise.resolve({
+      dispose: () => {
+        throw new Error('sync dispose failure');
+      },
+    })
+  );
+  await safeRegister(disposals, () =>
+    Promise.resolve({
+      dispose: () => Promise.reject(new Error('async dispose failure')),
+    })
+  );
+  for (const cleanup of disposals) cleanup();
+  await flush();
+
+  // --- subscribeEventStream: v2 ctx.event.subscribe({ signal }) wiring (D3) ---
+  // A missing `subscribe` (or a non-async-iterable result) is a quiet no-op.
+  for (const stream of [undefined, null, {}, { subscribe: 'nope' }, 42]) {
+    assert(
+      subscribeEventStream(stream, () => {}) === undefined,
+      `stream must be a no-op without subscribe: ${String(stream)}`
+    );
+  }
+  assert(
+    subscribeEventStream({ subscribe: () => ({}) }, () => {}) === undefined,
+    'a non-async-iterable subscribe result must be a no-op'
+  );
+  assert(
+    subscribeEventStream(
+      {
+        subscribe: () => {
+          throw new Error('sync subscribe failure');
+        },
+      },
+      () => {}
+    ) === undefined,
+    'a sync-throwing subscribe must be contained'
+  );
+
+  // The documented shape: subscribe({ signal }) -> AsyncIterable; events are
+  // delivered, the cleanup aborts the subscription, and abort ends the loop
+  // without an unhandled rejection.
+  let signalSeen;
+  let abortObserved = false;
+  const abortableStream = {
+    subscribe(options = {}) {
+      signalSeen = options.signal;
+      return (async function* () {
+        yield { type: 'session.idle' };
+        await new Promise((_resolve, reject) => {
+          const onAbort = () => {
+            abortObserved = true;
+            reject(new Error('stream aborted'));
+          };
+          if (options.signal?.aborted) onAbort();
+          else options.signal?.addEventListener('abort', onAbort, { once: true });
+        });
+      })();
+    },
+  };
+
+  const received = [];
+  const abortCleanup = subscribeEventStream(abortableStream, (event) => {
+    received.push(event.type);
+  });
+  assert(typeof abortCleanup === 'function', 'subscribe path must return a cleanup');
+  assert(signalSeen instanceof AbortSignal, 'subscribe must receive an AbortSignal');
+
+  await flush();
+  assert(received.join(',') === 'session.idle', 'events must be delivered before abort');
+
+  abortCleanup();
+  await flush();
+  assert(abortObserved === true, 'cleanup must abort the subscription');
+
+  // A throwing handler is contained per event and must not end the loop.
+  const handlerEvents = [];
+  const handlerCleanup = subscribeEventStream(
+    { subscribe: () => (async function* () {
+      yield 1;
+      yield 2;
+    })() },
+    (value) => {
+      handlerEvents.push(value);
+      if (value === 1) throw new Error('handler failed');
+    }
+  );
+  await flush();
+  assert(
+    handlerEvents.join(',') === '1,2',
+    'a throwing handler must not end the subscription'
+  );
+  handlerCleanup();
 
   // --- shouldRegisterPackSkills: coexistence detection (marker vs editor.list) ---
   // A file install has the installer marker at the pack root, so its skills are
@@ -276,50 +604,91 @@ async function main() {
     'no skills must return an empty array, not the false sentinel'
   );
 
-  // --- buildSkillInfo: feature-detected file field (`path` vs `location`) ---
-  const withPath = buildSkillInfo({
+  // --- buildSkillInfo: shipped v2 `Skill.Info` descriptor ---
+  // The 2.0.30 host schema requires id/name/path/content (`name` throws
+  // SchemaError(Missing key at ["name"]) when absent) and has no `location`
+  // field, so the descriptor must emit exactly those five keys.
+  const descriptor = buildSkillInfo({
     id: 'adr',
+    name: 'adr',
     description: 'd',
     filePath: '/p/SKILL.md',
     content: 'c',
-    preferPath: true,
   });
   assert(
-    'path' in withPath && !('location' in withPath) && withPath.path === '/p/SKILL.md',
-    'preferPath must emit `path` only'
+    descriptor.id === 'adr' &&
+      descriptor.name === 'adr' &&
+      descriptor.description === 'd' &&
+      descriptor.path === '/p/SKILL.md' &&
+      descriptor.content === 'c',
+    'descriptor must carry id/name/description/path/content'
   );
   assert(
-    withPath.id === 'adr' && withPath.description === 'd' && withPath.content === 'c',
-    'id/description/content must pass through'
+    Object.keys(descriptor).sort().join(',') === 'content,description,id,name,path',
+    'descriptor must emit exactly the five Skill.Info fields'
   );
+  assert(!('location' in descriptor), 'descriptor must not emit the obsolete `location` field');
+  assert(!('preferPath' in descriptor), 'descriptor must not carry the removed preferPath flag');
 
-  const withLocation = buildSkillInfo({
+  // `name` prefers the frontmatter value, falls back to the id, and is always a
+  // non-empty string even for blank input.
+  const namedFromFrontmatter = buildSkillInfo({
     id: 'adr',
-    description: 'd',
+    name: '  Architecture Decisions  ',
     filePath: '/p/SKILL.md',
-    preferPath: false,
   });
   assert(
-    !('path' in withLocation) && 'location' in withLocation && withLocation.location === '/p/SKILL.md',
-    'non-preferred must emit `location` only'
+    namedFromFrontmatter.name === 'Architecture Decisions',
+    'frontmatter name must be preferred and trimmed'
   );
+  const namedFromId = buildSkillInfo({ id: 'adr', name: '   ', filePath: '/p/SKILL.md' });
+  assert(namedFromId.name === 'adr', 'blank frontmatter name must fall back to the id');
+  const namedFromIdAlone = buildSkillInfo({ id: 'adr', filePath: '/p/SKILL.md' });
+  assert(namedFromIdAlone.name === 'adr', 'missing frontmatter name must fall back to the id');
 
-  // Default shape targets v2 core 2.0.4+ (`path`).
-  const defaulted = buildSkillInfo({ id: 'adr', filePath: '/p/SKILL.md' });
-  assert(defaulted.path === '/p/SKILL.md', 'default must prefer `path`');
-
-  for (const info of [withPath, withLocation, defaulted]) {
+  for (const info of [descriptor, namedFromFrontmatter, namedFromId, namedFromIdAlone]) {
     assert(
-      info.path !== undefined || info.location !== undefined,
-      'descriptor must never leave both `path` and `location` undefined'
+      typeof info.name === 'string' && info.name.length > 0,
+      'name must always be a non-empty string'
     );
-    const fields = ['path', 'location'].filter((field) => field in info);
-    assert(fields.length === 1, 'descriptor must carry exactly one file field');
+    assert(info.path === '/p/SKILL.md', 'path must always carry the SKILL.md path');
   }
+
+  // Optional/missing fields normalize to strings so the required schema keys
+  // never receive null/undefined.
+  const normalizedDescriptor = buildSkillInfo({ id: 'adr', filePath: '/p/SKILL.md', content: null });
+  assert(normalizedDescriptor.content === '', 'missing content must normalize to an empty string');
+  assert(normalizedDescriptor.description === '', 'missing description must normalize to an empty string');
+
+  // F5: `id` and `path` normalize like the other required fields — `id` is
+  // trimmed and falls back to the same `'skill'` placeholder as `name`, and
+  // `path` is always a string (callers pass a real `SKILL.md` path; malformed
+  // input degrades to `''` since no placeholder can stand in for a path).
+  const idTrimmed = buildSkillInfo({ id: '  adr  ', filePath: '/p/SKILL.md' });
+  assert(idTrimmed.id === 'adr', 'id must be trimmed');
+
+  const malformedId = buildSkillInfo({ id: '   ', filePath: 42 });
+  assert(malformedId.id === 'skill', 'a blank/non-string id must fall back to the placeholder');
+  assert(malformedId.name === 'skill', 'the name fallback must stay consistent with the id fallback');
+  assert(malformedId.path === '', 'a non-string path must normalize to an empty string');
+
+  const emptyInput = buildSkillInfo({});
+  assert(
+    emptyInput.id === 'skill' && emptyInput.name === 'skill',
+    'a missing id/name must fall back to the placeholder'
+  );
+  assert(
+    Object.values(emptyInput).every((value) => typeof value === 'string'),
+    'every descriptor value must be a string for malformed input'
+  );
 
   console.log('✅ Plugin v2 guard tests passed');
   console.log('✅ Plugin v2 execute.before event-wiring tests passed');
+  console.log('✅ Plugin v2 fail-open telemetry tests passed');
   console.log('✅ Plugin v2 context injection idempotency tests passed');
+  console.log('✅ Plugin v2 system-parts injection idempotency tests passed');
+  console.log('✅ Plugin v2 registration containment tests passed');
+  console.log('✅ Plugin v2 event subscription tests passed');
   console.log('✅ Plugin pack-skill coexistence + descriptor tests passed');
 }
 

@@ -58,6 +58,9 @@ if (packResult.status !== 0) {
       .filter((filePath) => filePath === 'site' || filePath.startsWith('site/'));
     const detail = sitePaths.length > 0 ? ` (leaked: ${sitePaths.join(', ')})` : '';
     assert(sitePaths.length === 0, `Packed file list excludes site/ paths${detail}`);
+
+    const noticePacked = packedFiles.some((file) => file.path === 'THIRD_PARTY_NOTICES.md');
+    assert(noticePacked, 'Packed file list includes THIRD_PARTY_NOTICES.md (MIT attribution ships with adapted skills)');
   } catch (err) {
     assert(false, `Could not parse npm pack --dry-run output: ${err.message}`);
   }

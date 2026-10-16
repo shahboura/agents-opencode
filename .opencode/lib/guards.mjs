@@ -98,6 +98,19 @@ export function readGuardError(tool, payload) {
 }
 
 /**
+ * Split a `tool.execute.before` call into its tool name and payload. Covers
+ * both call forms: the whole v2 event (`{ tool, input }` or a flat
+ * `{ tool, filePath }`) unwraps itself, while the split v1 pair
+ * (`(tool, output)`) is used as-is.
+ */
+function splitToolAndPayload(toolOrEvent, payload) {
+  if (payload === undefined && toolOrEvent !== null && typeof toolOrEvent === 'object') {
+    return { tool: toolOrEvent.tool, payload: toolOrEvent };
+  }
+  return { tool: toolOrEvent, payload };
+}
+
+/**
  * Map a `tool.execute.before` event onto `readGuardError`, returning the block
  * message or null.
  *
@@ -112,10 +125,50 @@ export function readGuardError(tool, payload) {
  *   `readGuardError` from either shape.
  */
 export function handleToolExecuteBefore(toolOrEvent, payload) {
-  if (payload === undefined && toolOrEvent !== null && typeof toolOrEvent === 'object') {
-    return readGuardError(toolOrEvent.tool, toolOrEvent);
-  }
-  return readGuardError(toolOrEvent, payload);
+  const split = splitToolAndPayload(toolOrEvent, payload);
+  return readGuardError(split.tool, split.payload);
+}
+
+/**
+ * Build the `tool.execute.before` handler the v2 plugin registers: the same
+ * block policy as `handleToolExecuteBefore`, plus rate-limited telemetry for
+ * the fail-open case.
+ *
+ * Why telemetry: the guard is fail-open by design (the real v2 `read` payload
+ * shape is unverified), so a `read` whose path cannot be resolved from any
+ * documented shape proceeds unguarded. Without a signal, a payload-shape
+ * mismatch would silently disable the pack's only secret-read control. When
+ * that case is seen, `onUnresolvedRead` is invoked at most once per handler
+ * instance (the plugin creates one handler per setup call), so the mismatch
+ * becomes visible in logs without warning on every read.
+ *
+ * Runtime behaviour is otherwise unchanged: a blocked read still throws, and
+ * telemetry failures are contained — they must never break the guard path.
+ *
+ * @param {() => void} [onUnresolvedRead] Called at most once, with no arguments.
+ * @returns {(toolOrEvent: unknown, payload?: unknown) => void} Hook handler; throws on a blocked read.
+ */
+export function createReadGuardHandler(onUnresolvedRead) {
+  const notify = typeof onUnresolvedRead === 'function' ? onUnresolvedRead : () => {};
+  let warned = false;
+
+  return (toolOrEvent, payload) => {
+    const split = splitToolAndPayload(toolOrEvent, payload);
+
+    if (split.tool === 'read' && resolveReadFilePath(split.payload) === undefined && !warned) {
+      // Set the gate before notifying: a throwing callback must not lead to a
+      // retry (and thus repeated log noise) on the next read.
+      warned = true;
+      try {
+        notify();
+      } catch {
+        // Telemetry must never break the guard path.
+      }
+    }
+
+    const error = readGuardError(split.tool, split.payload);
+    if (error) throw new Error(error);
+  };
 }
 
 /**
@@ -145,6 +198,154 @@ export function injectContextOnce(target, lines) {
 
   for (const line of lines) target.push(line);
   return true;
+}
+
+/**
+ * Append the context block to a v2 `system` parts array at most once.
+ *
+ * OpenCode v2's `context` hook exposes `system` as typed parts and the
+ * documented injection is `event.system.push({ type: 'text', text })`; there is
+ * no string `context` array on v2 (that shape is v1's
+ * `experimental.session.compacting` output). The hook fires on every agent-loop
+ * model call, so idempotency is keyed on the same stable sentinel as
+ * `injectContextOnce`: the first line of the block. A part counts as "already
+ * injected" when its `text` contains the sentinel, regardless of its `type`, so
+ * a runtime that normalizes the part type still cannot duplicate the block.
+ *
+ * @param {unknown} target Candidate `system` parts array to append to.
+ * @param {unknown} text   Full context block (first line carries the sentinel).
+ * @returns {boolean} true only when a new part was pushed; false on any
+ *                    failure, including a frozen/sealed target array.
+ */
+export function injectSystemContextOnce(target, text) {
+  if (!Array.isArray(target)) return false;
+  if (typeof text !== 'string' || text.trim() === '') return false;
+
+  const sentinel = text.split('\n')[0].trim();
+  if (!sentinel) return false;
+
+  const alreadyInjected = target.some(
+    (part) =>
+      part !== null &&
+      typeof part === 'object' &&
+      typeof part.text === 'string' &&
+      part.text.includes(sentinel)
+  );
+  if (alreadyInjected) return false;
+
+  try {
+    target.push({ type: 'text', text });
+  } catch {
+    // A frozen/sealed `system` array must not throw inside the hook handler
+    // (this call site has no `safeRegister` containment around it).
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Run one hook/transform registration with full failure containment.
+ *
+ * OpenCode v2's `hook(...)` and `transform(...)` return `Promise<Registration>`,
+ * so awaiting the result keeps a rejected registration (e.g. an unknown hook
+ * name) from surfacing as an unhandled rejection. Every result shape is folded
+ * into `cleanups`:
+ * - a cleanup function is pushed as-is;
+ * - a `Registration` (`{ dispose() }`) is wrapped into a cleanup that swallows
+ *   disposal failures (sync throws and async rejections alike);
+ * - a throw/rejection is contained and reported as `false`, so a failed
+ *   registration never disables the plugin or its other registrations.
+ *
+ * @param {Array<() => void>} cleanups Cleanup list the caller drains on unload.
+ * @param {() => unknown} register   Performs one registration.
+ * @returns {Promise<boolean>} true when a registration (or cleanup) was obtained.
+ */
+export async function safeRegister(cleanups, register) {
+  try {
+    const result = await register();
+
+    if (typeof result === 'function') {
+      cleanups.push(result);
+      return true;
+    }
+
+    if (result !== null && typeof result === 'object' && typeof result.dispose === 'function') {
+      const registration = result;
+      cleanups.push(() => {
+        try {
+          void Promise.resolve(registration.dispose()).catch(() => {});
+        } catch {
+          // ignore synchronous disposal failures
+        }
+      });
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Wire a v2 event stream to `handler` and return a cleanup that aborts it.
+ *
+ * v2's `ctx.event.subscribe({ signal })` returns an `AsyncIterable` (documented
+ * shape); it must be consumed with a signal-backed loop, not called with a
+ * handler. This helper owns that loop so the wiring can be unit-tested, and:
+ * - returns `undefined` (a quiet no-op) when `subscribe` is absent, throws, or
+ *   produces a non-async-iterable value;
+ * - never rejects: the background loop contains stream errors (normal on
+ *   abort) and per-event handler failures;
+ * - aborts the subscription from the returned cleanup.
+ *
+ * @param {unknown} stream  Candidate `ctx.event` object.
+ * @param {(event: unknown) => unknown} handler Event consumer.
+ * @returns {(() => void) | undefined} cleanup that aborts the subscription.
+ */
+export function subscribeEventStream(stream, handler) {
+  const subscribe = stream?.subscribe;
+  if (typeof subscribe !== 'function') return undefined;
+
+  const controller = typeof AbortController === 'function' ? new AbortController() : undefined;
+  const onEvent = typeof handler === 'function' ? handler : () => {};
+
+  const abort = () => {
+    try {
+      controller?.abort();
+    } catch {
+      // ignore abort failures
+    }
+  };
+
+  let iterable;
+  try {
+    iterable = subscribe.call(stream, controller ? { signal: controller.signal } : {});
+  } catch {
+    abort();
+    return undefined;
+  }
+
+  if (!iterable || typeof iterable[Symbol.asyncIterator] !== 'function') {
+    abort();
+    return undefined;
+  }
+
+  void (async () => {
+    try {
+      for await (const event of iterable) {
+        try {
+          await onEvent(event);
+        } catch {
+          // Per-event containment: one throwing handler must not end the loop.
+        }
+      }
+    } catch {
+      // Stream aborted or failed: nothing left to do in the background.
+    }
+  })();
+
+  return abort;
 }
 
 /**

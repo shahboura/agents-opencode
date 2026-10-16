@@ -162,6 +162,86 @@ function testEmitConfigDefaults() {
   assert(!('permissions' in emitted), 'emitConfig with no permission source should not fabricate permissions');
 }
 
+function testEmitConfigNeverCarriesV2IgnoredKeys() {
+  // Characterization test for the *output contract*, not strip coverage:
+  // `emitConfig` only ever copies its managed keys (`$schema` / plugin /
+  // permission), so a source carrying the documented v1-only legacy settings
+  // can never leak them into either target's output. This passes with the
+  // defensive `stripV2IgnoredKeys` call removed — the strip is not the
+  // mechanism that keeps the output clean, and this test cannot detect its
+  // removal (it "cannot regress-fail" on that change by construction). The
+  // strip function itself is covered directly by `testStripV2IgnoredKeys`;
+  // this test pins the observable invariant a future emission change starts
+  // from (copying source keys without stripping would fail here).
+  const source = {
+    $schema: 'https://opencode.ai/config.json',
+    plugin: ['agents-opencode'],
+    permission: { bash: 'ask' },
+    subagent_depth: 2,
+    logLevel: 'debug',
+    server: { port: 4096 },
+    compaction: { prune: true, tail_turns: 3 },
+  };
+
+  const v2 = target.emitConfig(source, 'v2');
+  for (const key of target.V2_IGNORED_TOP_LEVEL_KEYS) {
+    assert(!(key in v2), `v2 emit must omit the v1-only '${key}'`);
+  }
+  assert(!('compaction' in v2), 'v2 emit must not carry the v1-only compaction settings');
+  assert(Array.isArray(v2.permissions), 'v2 emit must still translate the permission object');
+
+  const v1 = target.emitConfig(source, 'v1');
+  assert(
+    deepEqual(v1, {
+      $schema: 'https://opencode.ai/config.json',
+      plugin: ['agents-opencode'],
+      permission: { bash: 'ask' },
+    }),
+    'v1 emit must stay exactly { $schema, plugin, permission } for the same source'
+  );
+}
+
+function testStripV2IgnoredKeys() {
+  // Nested compaction: ignored members are stripped, supported members stay.
+  const nested = { compaction: { prune: true, tail_turns: 1, auto: true, keep: 2 } };
+  const returned = target.stripV2IgnoredKeys(nested);
+  assert(returned === nested, 'stripV2IgnoredKeys must mutate and return the config');
+  assert(
+    deepEqual(nested.compaction, { auto: true, keep: 2 }),
+    'stripV2IgnoredKeys must keep only the supported compaction members'
+  );
+
+  // A compaction object emptied by stripping is dropped entirely.
+  const emptied = { compaction: { prune: true, tail_turns: 1 } };
+  target.stripV2IgnoredKeys(emptied);
+  assert(!('compaction' in emptied), 'an emptied compaction object must be dropped');
+
+  // Top-level ignored keys are stripped; unrelated keys are untouched.
+  const topLevel = {
+    subagent_depth: 2,
+    logLevel: 'debug',
+    server: { port: 4096 },
+    share: 'disabled',
+    compaction: { auto: true },
+  };
+  target.stripV2IgnoredKeys(topLevel);
+  for (const key of target.V2_IGNORED_TOP_LEVEL_KEYS) {
+    assert(!(key in topLevel), `stripV2IgnoredKeys must remove '${key}'`);
+  }
+  assert(topLevel.share === 'disabled', 'supported top-level keys must be untouched');
+  assert(
+    deepEqual(topLevel.compaction, { auto: true }),
+    'a compaction object with supported members must survive'
+  );
+
+  // A config without the ignored keys is returned unchanged (same object).
+  const clean = { $schema: 'https://opencode.ai/config.json', share: 'disabled' };
+  const snapshot = JSON.stringify(clean);
+  const cleanResult = target.stripV2IgnoredKeys(clean);
+  assert(cleanResult === clean, 'a clean config must be returned as-is');
+  assert(JSON.stringify(clean) === snapshot, 'a clean config must be unchanged');
+}
+
 function testRevertKeysFor() {
   assert(deepEqual(target.revertKeysFor('v1'), ['$schema', 'plugin', 'permission']), 'v1 revert keys');
   assert(deepEqual(target.revertKeysFor('v2'), ['$schema', 'plugins', 'permissions']), 'v2 revert keys');
@@ -216,6 +296,8 @@ function main() {
     testConfigKeysFor();
     testEmitConfigExclusiveKeys();
     testEmitConfigDefaults();
+    testEmitConfigNeverCarriesV2IgnoredKeys();
+    testStripV2IgnoredKeys();
     testRevertKeysFor();
     testConfigPatchShape();
     testPluginEntrypoints();
