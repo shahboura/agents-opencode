@@ -1,7 +1,7 @@
 # Backlog
 
 Deferred work from review cycles and the OpenCode v2 readiness assessment. Update
-this file when items land or new gaps are found. Last updated: 2026-10-15.
+this file when items land or new gaps are found. Last updated: 2026-10-16.
 
 ## Validation hardening
 
@@ -47,6 +47,16 @@ convenience move, not a correctness fix. Landed on `feat/docs-astro-cloudflare`.
   **404 with no redirect**. Mapping those paths to the new Worker origin with
   Cloudflare redirect rules is the optional follow-up (no redirects ship by
   default).
+
+## Docs freshness/UX follow-ups (deferred)
+
+Deferred from the docs freshness/UX review pass (`docs/freshness-ux-pass`) so the
+deferral is explicit and traceable.
+
+| ID | Severity | Item | Files |
+|---|---|---|---|
+| F5 | low | Convert prose to Starlight components (asides, `<Steps>`, `<LinkCard>`) where they improve scanning | `site/src/content/docs/**/*.md` |
+| F10 | low | Site-wide heading capitalization sweep for consistent heading case | `site/src/content/docs/**/*.md` |
 
 ## OpenCode v2 migration plan
 

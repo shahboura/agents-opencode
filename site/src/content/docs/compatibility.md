@@ -1,11 +1,9 @@
 ---
-title: Compatibility
+title: Compatibility Matrix
 description: Runtime and tooling compatibility matrix for install and validation workflows.
 sidebar:
   order: 11
 ---
-
-# Compatibility Matrix
 
 This matrix captures tested runtime/tooling targets for this repository.
 
@@ -13,7 +11,7 @@ This matrix captures tested runtime/tooling targets for this repository.
 
 | Surface | Target | Notes |
 |---|---|---|
-| Node.js (local validation scripts) | 24.x | Matches CI and publish workflows. |
+| Node.js (local validation scripts) | 24.x | Matches CI and publish workflows; declared in `engines` (`>=24`). |
 | Node.js (CI validation) | 24.x | `validate.yml` jobs use Node 24. |
 | npm publish runtime | 24.x | `publish.yml` uses Node 24 with trusted publishing. |
 | Node.js (docs build) | 24.x | Astro Starlight build, deployed by the Cloudflare Workers workflow. |
@@ -25,9 +23,10 @@ The pack fully supports OpenCode v1 and prepares v2 support; the two use
 **disjoint config keys**. The installer emits per-target output
 (`--target v1|v2|auto`; `auto` detects the installed OpenCode version — v2 when the
 major is >= 2, else v1) and never co-writes both key sets. The **v2 runtime path
-is verified to load** on v2.0.30 (plugin + all 10 agents, including v1-shaped
-frontmatter translation); runtime hooks and plugin-spec skill delivery are not yet
-exercised with a model (see [OpenCode v1/v2 support](/opencode-v1-v2-support/)).
+is verified to load** on v2.0.30 (plugin, all 10 agents, and 27 skills discovered,
+including v1-shaped frontmatter translation); runtime hooks and plugin-spec skill
+delivery are not yet exercised with a model (see
+[OpenCode v1/v2 support](/opencode-v1-v2-support/)).
 
 | Concern | v1 | v2 |
 |---|---|---|

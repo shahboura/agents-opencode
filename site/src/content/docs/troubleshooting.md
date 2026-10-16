@@ -5,8 +5,6 @@ sidebar:
   order: 7
 ---
 
-# Troubleshooting
-
 ## Common Issues
 
 ### Agents not showing up

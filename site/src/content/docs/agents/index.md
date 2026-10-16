@@ -4,7 +4,6 @@ description: Overview of the 10 built-in OpenCode agents and their recommended w
 sidebar:
   order: 3
 ---
-# Agents
 
 Lean reference for the built-in agents.
 
@@ -33,7 +32,7 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](/skill
 
 ## Suggested Flow
 
-```
+```txt
 @orchestrator (plan)
 → @codebase (implement)
 → @review (audit)
@@ -67,5 +66,4 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](/skill
 ## Next Steps
 
 - **[Commands & Skills](/commands/)**
-- **[Coding Standards](/customization/)**
 - **[Customization](/customization/)**

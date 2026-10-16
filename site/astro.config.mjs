@@ -13,6 +13,7 @@ export default defineConfig({
       title: 'OpenCode Agents',
       description:
         'Documentation for OpenCode Agents - customized agents, skills, and workflows for OpenCode.ai.',
+      lastUpdated: true,
       social: [
         {
           icon: 'github',

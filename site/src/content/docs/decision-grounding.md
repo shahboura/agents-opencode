@@ -5,8 +5,6 @@ sidebar:
   order: 15
 ---
 
-# Decision Grounding
-
 Decision grounding reduces workarounds and wrong calls by checking a proposed
 approach against **current primary sources before implementation**. It is triggered
 by the **structure** of a decision, never by self-reported confidence — model
@@ -30,7 +28,7 @@ local, or already used elsewhere in the repo).
 
 ## Flow
 
-```
+```txt
 detect a high-stakes decision (T1–T4)
 → @researcher (question + context + planned approach)
 → output contract (verdict, deprecation_status, claims[])

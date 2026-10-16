@@ -1,11 +1,9 @@
 ---
-title: Agent Evals
+title: Agent Eval Harness
 description: Deterministic contract checks for agent and command behavior metadata.
 sidebar:
   order: 9
 ---
-
-# Agent Eval Harness
 
 The Agent Eval Harness adds deterministic contract checks on top of structural validation.
 

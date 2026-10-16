@@ -1,11 +1,9 @@
 ---
-title: Approval Gates
+title: Human Approval Gates
 description: Human approval rubric for medium and high risk repository operations.
 sidebar:
   order: 10
 ---
-
-# Human Approval Gates
 
 Use this rubric before applying repository-changing actions.
 

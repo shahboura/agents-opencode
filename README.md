@@ -12,11 +12,6 @@ Turn a single prompt into a full delivery loop — plan → implement → review
 without leaving the terminal you already use. Built for [OpenCode](https://opencode.ai).
 Already on Claude Code? The same 27 skills ship as a [plugin](./adapters/claude-code/).
 
-> **Roadmap:** the next major (3.0) is planned to standardize on OpenCode **v2**. Today the pack
-> fully supports **v1**; v2 installs use the target adapter and are verified to load (plugin and
-> all 10 agents) on v2.0.30, but v2 runtime hook behaviour is not yet exercised end-to-end — see
-> [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
-
 ## Why this pack is different
 
 - **One prompt, four disciplines.** `@orchestrator` scopes the work, then hands off to
@@ -29,7 +24,7 @@ Already on Claude Code? The same 27 skills ship as a [plugin](./adapters/claude-
 
 ## Quick Start
 
-**Requires:** Node.js (current LTS).
+**Requires:** Node.js (current LTS) and the [OpenCode CLI](https://opencode.ai/docs/cli/).
 
 ```bash
 npx agents-opencode --global      # install into your global OpenCode config
@@ -68,7 +63,7 @@ npx agents-opencode --global --target auto  # detect the installed OpenCode vers
 **Config:** the installer only manages a small, target-specific key set in `opencode.json`: `$schema`,
 the plugin key (`plugin` on v1 / `plugins` on v2), and permission defaults (`permission` on v1 /
 `permissions` on v2). It never writes both key sets, and it never rewrites your provider, model,
-instructions, share, or compaction settings.
+instructions, share, or session compaction settings.
 **Targets:** `--target v1|v2|auto` (default `auto`). See
 [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 
@@ -104,7 +99,7 @@ Ten agents ship in the pack: **seven delegation targets** that the orchestrator 
 | `@em-advisor` | Primary (Tab switch / `@mention`) | 1-on-1 prep, team strategy, roadmap planning |
 
 `@blogger` and `@em-advisor` are **primary agents** — switch to them with Tab or mention them
-directly. They are not Task-invocable subagents, so the orchestrator will not delegate to them.
+directly. They are not subagents (callable via the Task tool), so the orchestrator will not delegate to them.
 
 Canonical source for exact allowlists and skill triggers: [Skills Matrix](https://agnts.elkodr.com/skills-matrix/).
 
@@ -199,9 +194,15 @@ faster session starts. That is the practical payoff of an on-demand skill model.
 npx agents-opencode --global
 ```
 
-Omit `--global` to install into the current project instead.
+Use `--project` (defaults to the current directory) for a project install.
 
-### OpenCode v1/v2 support
+### Install mode
+
+| Mode | What you get | Pick this if… |
+|---|---|---|
+| **File install** (default) | Agents, commands, skills, hooks/guards | You want the full pack — start here |
+| **Plugin spec** (`"plugin"` / `"plugins": ["agents-opencode"]`) | Skills and hooks/guards only — no agents or config | You already manage agents yourself |
+| **Claude Code adapter** | Skills only — no agents or commands | You use Claude Code |
 
 OpenCode v1 and v2 use different config keys, so the installer emits per-target output and never
 mixes the two. Select a target with `--target v1|v2|auto` (default `auto` detects the installed
@@ -209,11 +210,15 @@ OpenCode version — v2 when the major is >= 2, else v1; it falls back to v1 whe
 detected). The installer records the target so uninstall reverts the right keys.
 
 A file install adds no plugin entry: OpenCode auto-loads the bundled plugin from `.opencode/plugins/`.
-To deliver **skills and hooks/guards only** (no agents or global config), add the package as a plugin
-spec in `opencode.json`: `"plugin": ["agents-opencode"]` (v1) or `"plugins": ["agents-opencode"]` (v2);
-a version pin like `agents-opencode@X.Y.Z` also works (use a build that ships plugin-spec support).
-Do not combine a file install with the plugin spec. The plugin-spec path is verified to load on
-v2.0.30; its runtime skill delivery is not yet exercised end-to-end.
+To deliver **skills and hooks/guards only** (no agents or global config), add the package as an
+OpenCode plugin entry in `opencode.json`: `"plugin": ["agents-opencode"]` (v1) or
+`"plugins": ["agents-opencode"]` (v2); a version pin like `agents-opencode@X.Y.Z` also works (use a
+build that ships plugin-spec support). Do not combine a file install with the plugin entry.
+
+A sandbox run on v2.0.30 verified the plugin loads, with all 10 agents and 27 skills discovered;
+v2 runtime hook behaviour is not yet exercised end-to-end. The plugin-spec path is verified to
+load on v2.0.30; its runtime skill delivery is likewise not yet exercised end-to-end.
+
 See [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 
 ### Claude Code plugin
@@ -229,9 +234,9 @@ See [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 /plugin update agents-opencode@shahboura
 ```
 
-This gives Claude Code access to the same 27 on-demand skills, which load only when invoked —
-no context cost until you use them. See [adapters/claude-code/](./adapters/claude-code/) for the
-plugin manifest and generator script.
+This gives Claude Code access to the same 27 on-demand skills — skills only, no agents or slash
+commands — which load only when invoked, with no context cost until you use them.
+See [adapters/claude-code/](./adapters/claude-code/) for the plugin manifest and generator script.
 
 ## Validation
 
@@ -245,7 +250,9 @@ metadata. `npm run eval:agents:json` writes machine-readable output.
 ## Docs
 
 - **[Getting Started](https://agnts.elkodr.com/getting-started/)**
+- **[Commands](https://agnts.elkodr.com/commands/)**
 - **[Approval Gates](https://agnts.elkodr.com/approval-gates/)**
+- **[Review Gate](https://agnts.elkodr.com/review-gate/)**
 - **[Compatibility](https://agnts.elkodr.com/compatibility/)**
 - **[Deprecation & Migration Policy](https://agnts.elkodr.com/deprecation-migration/)**
 - **[State Management](https://agnts.elkodr.com/state-management/)**
@@ -253,6 +260,8 @@ metadata. `npm run eval:agents:json` writes machine-readable output.
 - **[Decision Grounding](https://agnts.elkodr.com/decision-grounding/)**
 - **[OpenCode v1/v2 Support](https://agnts.elkodr.com/opencode-v1-v2-support/)**
 - **[Full Documentation](https://agnts.elkodr.com/)**
+
+> **Roadmap:** 3.0 will standardize on OpenCode v2. Status: [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 
 ## License
 

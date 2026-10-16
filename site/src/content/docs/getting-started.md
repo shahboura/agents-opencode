@@ -5,8 +5,6 @@ sidebar:
   order: 2
 ---
 
-# Getting Started
-
 Get up and running with OpenCode agents in under 5 minutes.
 
 ## Prerequisites
@@ -39,6 +37,26 @@ npx agents-opencode --update --all
 `--languages` keeps only the requested language skills, pruning the others from `.opencode/skills/`.
 Non-language skills always remain, and runtime skills still load on demand via agent skill allowlists.
 
+### Your First Run
+
+1. Open OpenCode:
+
+   ```bash
+   opencode
+   ```
+
+2. Initialize context:
+
+   ```txt title="TUI"
+   /init
+   ```
+
+3. Ask for help:
+
+   ```txt title="TUI"
+   @orchestrator Build a user authentication API with JWT tokens
+   ```
+
 ### Claude Code Plugin
 
 ```bash
@@ -51,6 +69,8 @@ Non-language skills always remain, and runtime skills still load on demand via a
 
 All 27 skills are available immediately. Type `/` in Claude Code to see the full
 skill list. Skills load on demand — no context cost until invoked.
+
+## Install reference
 
 ### Via curl
 
@@ -107,10 +127,11 @@ npx agents-opencode --status
 
 To restore files, use `backup-manifest.json` from a backup session and copy the files back to their original paths.
 
-## OpenCode v1/v2 support
+### OpenCode v1/v2 support
 
 The pack fully supports OpenCode **v1** and prepares **v2** support — verified to load
-(plugin and all 10 agents) on v2.0.30, with v2 runtime hook behaviour not yet exercised.
+(plugin, all 10 agents, and 27 skills discovered) on v2.0.30, with v2 runtime hook behaviour
+not yet exercised.
 The two use **disjoint config keys**, so the installer emits per-target output and never
 mixes key sets:
 
@@ -134,26 +155,6 @@ npx agents-opencode --global --target auto  # detect the installed OpenCode vers
 
 Full details: **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.
 
-## Your First Run
-
-1. Open OpenCode:
-
-   ```bash
-   opencode
-   ```
-
-2. Initialize context:
-
-   ```
-   /init
-   ```
-
-3. Ask for help:
-
-   ```
-   @orchestrator Build a user authentication API with JWT tokens
-   ```
-
 ## What gets installed
 
 - `.opencode/` agents, markdown commands, skills, and the bundled plugin
@@ -171,6 +172,6 @@ Full details: **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.
 ## Next Steps
 
 - **[Agents](/agents/)**
-- **[Coding Standards](/customization/)**
+- **[Customization](/customization/)**
 - **[Commands & Skills](/commands/)**
 - **[Troubleshooting](/troubleshooting/)**

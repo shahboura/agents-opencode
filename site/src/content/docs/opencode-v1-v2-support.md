@@ -2,10 +2,8 @@
 title: OpenCode v1/v2 Support
 description: How the pack supports OpenCode v1 and v2 targets - the target adapter, hybrid install model, plugin-spec option, and coexistence rules.
 sidebar:
-  order: 5
+  order: 11.5
 ---
-
-# OpenCode v1/v2 Support
 
 The pack runs on OpenCode v1 today and is being prepared for OpenCode v2. v1 and
 v2 use **disjoint config keys**, so a single config file cannot express both. The
@@ -89,9 +87,9 @@ plugin-spec install covers **skills and hooks/guards only** — not agents or gl
 config.
 
 **Verified loading, unexercised runtime.** A live OpenCode **v2.0.30** run confirmed the
-plugin loads and all 10 agents are discovered. The v2 plugin API is still evolving, and
-runtime hook behaviour and plugin-spec skill delivery have not been exercised with a
-model — prefer a file install for production use.
+plugin loads, and all 10 agents and 27 skills are discovered. The v2 plugin API is still
+evolving, and runtime hook behaviour and plugin-spec skill delivery have not been exercised
+with a model — prefer a file install for production use.
 
 ## Coexistence guard
 
