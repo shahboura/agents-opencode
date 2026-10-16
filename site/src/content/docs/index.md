@@ -1,12 +1,14 @@
 ---
-title: Home
+title: OpenCode Agents
 description: Lean OpenCode agents pack with 10 specialized agents, core language/domain skills, and slash commands.
 keywords: opencode, ai agents, code generation, development workflow, .NET, Python, TypeScript, Flutter, code review, documentation
 sidebar:
+  label: Home
   order: 1
+head:
+  - tag: title
+    content: OpenCode Agents
 ---
-
-# OpenCode Agents
 
 Lean agent pack for OpenCode workflows.
 
@@ -17,7 +19,8 @@ Lean agent pack for OpenCode workflows.
 - **Safe skill model:** on-demand loading + least-privilege allowlists.
 - **Release-ready defaults:** validation and CI/CD hygiene included.
 
-Quick jump: [Agents](/agents/) · [Skills Matrix](/skills-matrix/) · [Commands](/commands/)
+Quick jump: [Getting Started](/getting-started/) · [Agents](/agents/) ·
+[Skills Matrix](/skills-matrix/) · [Commands](/commands/)
 
 ## Quick Start
 
@@ -31,7 +34,7 @@ Quick jump: [Agents](/agents/) · [Skills Matrix](/skills-matrix/) · [Commands]
 
 2. Run:
 
-   ```
+   ```txt title="TUI"
    opencode
    /init
    @orchestrator Build a user API
@@ -41,20 +44,18 @@ Quick jump: [Agents](/agents/) · [Skills Matrix](/skills-matrix/) · [Commands]
 
 ## OpenCode v1/v2
 
-OpenCode **v1** is fully supported; **v2** is prepared and verified to load (plugin +
-agents on v2.0.30). The installer emits per-target config keys
-(`--target v1|v2|auto`; `auto` detects the installed OpenCode version — v2 when the
-major is >= 2, else v1) and never mixes them. See
+OpenCode **v1** is fully supported; **v2** installs and loads (plugin, all 10 agents,
+and 27 skills verified on v2.0.30) but its runtime hooks are not yet exercised — see
 [OpenCode v1/v2 Support](/opencode-v1-v2-support/).
 
 ## Claude Code
 
 Also available as a Claude Code plugin:
 
-   ```
-   /plugin marketplace add shahboura/agents-opencode-claude
-   /plugin install agents-opencode@shahboura
-   ```
+```txt title="TUI"
+/plugin marketplace add shahboura/agents-opencode-claude
+/plugin install agents-opencode@shahboura
+```
 
 ## Agents
 
@@ -77,7 +78,7 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](/skill
 
 - [Getting Started](/getting-started/)
 - [Agents](/agents/)
-- [Coding Standards](/customization/)
+- [Customization](/customization/)
 - [Commands & Skills](/commands/)
 - [Troubleshooting](/troubleshooting/)
 - [Skills Matrix](/skills-matrix/)
@@ -89,14 +90,3 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](/skill
 - [OpenCode v1/v2 Support](/opencode-v1-v2-support/)
 - [Deprecation & Migration Policy](/deprecation-migration/)
 - [State Management](/state-management/)
-
-## Skill Loading Model
-
-- Skills live under `.opencode/skills/`.
-- Agents load skills on demand via the `skill` tool.
-- Keep to one relevant skill per phase unless cross-domain work requires more.
-
-## Skill Scope Policy
-
-- Keep core-only scope for now.
-- Add new skills only when there is clear demand, a real gap, ownership, and clean licensing.

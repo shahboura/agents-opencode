@@ -1,11 +1,9 @@
 ---
-title: Skills Matrix
+title: Agent Skills Matrix
 description: Agent-to-skill allowlist matrix for OpenCode least-privilege configuration.
 sidebar:
   order: 8
 ---
-
-# Agent Skills Matrix
 
 This table reflects `permission.skill` allowlists in `.opencode/agents/*.md`.
 
@@ -33,10 +31,17 @@ Quick read:
 - Skills load on demand via the `skill` tool.
 - Keep allowlists narrow by role to reduce context/tool noise.
 - Installer `--languages` prunes non-requested language skill directories; non-language skills are always kept.
+- `ux-responsive` optionally delegates to the third-party UI UX Pro Max skill when a project installs
+  it (not bundled) — see [Customization](/customization/#optional-ui-ux-pro-max-delegation).
 
 ## Skill Trigger Guide (Canonical)
 
 Use this as the canonical trigger reference for when agents should load skills.
+
+Note: canonical task→skill **trigger lines** live in the Skill Activation Policy of
+`codebase`, `orchestrator`, `planner`, and `review`; other agents follow the general
+on-demand policy below and may carry additional, narrower conditional load lines
+(e.g. `docs`, `em-advisor`).
 
 | Task intent | Skill to load | Typical agents |
 |---|---|---|
@@ -49,7 +54,7 @@ Use this as the canonical trigger reference for when agents should load skills.
 | Project bootstrap scaffolding | `project-bootstrap` | `docs`, `planner`, `orchestrator`, `em-advisor` |
 | Legal research, compliance, contract review, license auditing, data privacy, IP, export controls | `legal-advisor` | `legal-advisor`, `codebase`, `orchestrator`, `em-advisor` |
 | Code change impact/blast-radius analysis, regression check, safe-to-merge verification | `code-change-impact` | `review`, `codebase`, `orchestrator` |
-| Ground high-stakes decisions in current best practice (dispatch `@researcher`; deprecations, API/version changes, workaround smell) | `decision-grounding` | `orchestrator`, `codebase`, `planner`, `review` |
+| Ground high-stakes decisions in current best practice (dispatch `@researcher`; deprecations, API/version changes, workaround smell) | `decision-grounding` | `orchestrator`, `planner` |
 | Security-focused code and config review, vulnerability scanning, threat modeling | `security-audit` | `review` |
 | Safe staged refactoring, structural code improvements without behavior changes | `refactoring` | `codebase`, `planner`, `orchestrator` |
 | Debugging a bug, test failure, or unexpected behavior with root-cause discipline | `systematic-debugging` | `codebase`, `orchestrator` |

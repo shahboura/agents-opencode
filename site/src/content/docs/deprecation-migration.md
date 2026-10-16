@@ -5,8 +5,6 @@ sidebar:
   order: 12
 ---
 
-# Deprecation & Migration Policy
-
 This policy defines how contract-affecting changes are introduced for:
 
 - Agent prompts/behavior guidance (`.opencode/agents/*.md`)
@@ -95,5 +93,6 @@ When introducing Level B/C changes:
 - Command docs parity is enforced against canonical command frontmatter
 - The installer's target adapter emits v1 and v2 config key sets through 2.x
   (`--target v1|v2|auto`); the two sets are never co-written. v1 is fully supported;
-  v2 is prepared and verified to load on v2.0.30 (runtime hooks not yet exercised). See
+  v2 is prepared and verified to load on v2.0.30 (plugin, all 10 agents, and 27 skills
+  discovered; runtime hooks not yet exercised). See
   **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.

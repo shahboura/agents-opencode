@@ -2,7 +2,7 @@
  * Custom styles for the OpenCode Agents documentation.
  * Ported from the Jekyll (just-the-docs) `docs/_sass/custom.scss`.
  * just-the-docs selectors are mapped to Starlight equivalents, and colors use
- * Starlight CSS custom properties with the original values as fallbacks.
+ * Starlight CSS custom properties.
  */
 
 /* Code blocks */
@@ -20,36 +20,12 @@
 
 .sl-markdown-content th,
 .sl-markdown-content td {
-  padding: 0.5rem;
-  border: 1px solid var(--sl-color-hairline, #444);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--sl-color-gray-5);
   text-align: left;
 }
 
 .sl-markdown-content th {
-  background-color: var(--sl-color-gray-6, #2d333b);
+  background-color: var(--sl-color-gray-6);
   font-weight: 600;
-}
-
-/* Navigation spacing (sidebar + on-this-page lists) */
-.sidebar-content li,
-.right-sidebar li {
-  margin-bottom: 0.25rem;
-}
-
-/* Footer */
-footer {
-  border-top: 1px solid var(--sl-color-hairline, #444);
-  margin-top: 3rem;
-  padding-top: 1rem;
-}
-
-/* Responsive tweaks */
-@media (max-width: 768px) {
-  .sl-markdown-content {
-    font-size: 0.95rem;
-  }
-
-  .sl-markdown-content table {
-    font-size: 0.9rem;
-  }
 }

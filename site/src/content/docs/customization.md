@@ -5,8 +5,6 @@ sidebar:
   order: 6
 ---
 
-# Customization
-
 ## Project Context
 
 Create or update `AGENTS.md` (created on first run or via `/init`) with a short project summary:
@@ -71,6 +69,19 @@ When evaluating potential additions, use this gate:
 2. Clear capability gap vs current core
 3. Named maintenance owner
 4. Clean licensing/provenance (or clean-room rewrite)
+
+### Optional: UI UX Pro Max Delegation
+
+`ux-responsive` optionally delegates to the third-party **UI UX Pro Max** skill when a
+project has it installed, preferring it for style, palette, typography, chart, icon, and
+stack-specific guidance. It is **not bundled** with this pack — install the pinned
+version into the project when you want it (requires Python 3.x):
+
+```bash
+npx ui-ux-pro-max-cli@2.15.0 init --ai opencode
+```
+
+When UI UX Pro Max is absent, the rules in `ux-responsive` are the fallback.
 
 ## Coding Standards
 

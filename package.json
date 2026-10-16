@@ -31,6 +31,9 @@
   "bin": {
     "agents-opencode": "install.js"
   },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "test": "npm run doctor",
     "doctor": "node scripts/doctor.js",

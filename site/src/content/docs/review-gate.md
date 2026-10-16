@@ -5,8 +5,6 @@ sidebar:
   order: 14
 ---
 
-# Review Gate
-
 The Review Gate is the final checkpoint before a commit leaves your machine
 (push / PR / merge) - not merely before the first local commit. It has two tiers: a
 deterministic automated harness (Tier 1) and a risk-gated, multi-lens adversarial

@@ -5,8 +5,6 @@ sidebar:
   order: 13
 ---
 
-# State Management
-
 This repository uses a structured state contract for short-lived working memory,
 plus generated handoff packets for session-to-session continuity.
 

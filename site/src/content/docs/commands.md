@@ -5,8 +5,6 @@ sidebar:
   order: 4
 ---
 
-# Commands & Skills
-
 ## Commands
 
 Type `/command-name` in the OpenCode TUI to run.
@@ -49,7 +47,7 @@ Skills are defined in `.opencode/skills/[skill-name]/SKILL.md`. Agents load them
 via the `skill` tool when the task matches. To invoke a skill manually, ask an
 agent to use it:
 
-```
+```txt title="TUI"
 @codebase Use the project-bootstrap skill to create AGENTS.md
 @codebase Run agent-diagnostics to check my setup
 ```
