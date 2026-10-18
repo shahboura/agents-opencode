@@ -66,6 +66,16 @@ All agents log milestone entries to this file using this format:
 
 ## Milestones
 
+### 2026-10-18 12:53 - Installer cleanup advice hardening (symlink-safe removal)
+
+**Agent:** orchestrator
+**Summary:** Follow-up to the global split-warning fix; gated PASS after a 2-cycle lens panel on `fix/installer-cleanup-advice`.
+- Symlink cleanup now warns "no trailing slash": `rm -rf <link>/` follows the link and deletes the target; docs name `unlink` and `cmd /c rmdir` (no `/s`).
+- Real-directory cleanup no longer says "remove the old files": move aside or uninstall with `--uninstall --global` after clearing `XDG_CONFIG_HOME` (targets legacy, backs up, prunes).
+- Review caught the manifest-only route (does not clear detection / bypasses backups) and the PowerShell `rmdir` alias hazard; both fixed in cycle 2.
+- Lesson: for cleanup advice, require a command-level data-loss repro; "not its target" is not enough when a trailing slash changes behavior.
+- Also ignored local `graphify-out/` in git and markdownlint, and added the graphify usage note to AGENTS.md.
+
 ### 2026-10-18 07:15 - v2 host-coexistence: skill allow-all, narrowed shell allowlist, overlay + validator fixes
 
 **Agent:** orchestrator
@@ -106,61 +116,13 @@ All agents log milestone entries to this file using this format:
 - Fix: installer now honors `XDG_CONFIG_HOME` (verified via `opencode debug paths`) with a legacy-path split-brain warning; new real `--v2-strict` validator + CI job.
 - Caveats: v2 runtime unverified (no live v2/Bun); v2 agent/command compat relies on v2 auto-translation (documented as the load-bearing assumption); `--target auto` still resolves v1 (detection not wired).
 
-### 2026-09-30 08:08 - Docs site migrated to Astro Starlight on Cloudflare Workers
+### Earlier milestones (2025-12 to 2026-09-30)
 
-**Agent:** orchestrator
-**Summary:** Replaced the GitHub Pages (Jekyll) docs site with an Astro Starlight project deployed to Cloudflare Workers Static Assets, on `feat/docs-astro-cloudflare`.
-- New `site/` Starlight project; all 14 docs migrated from `docs/` (front-matter `nav_order`→`sidebar.order`, links rewritten to Starlight routes, styles ported) and the GitHub Pages artifacts deleted (`pages.yml`, `docs/_config.yml`, `docs/Gemfile`, `docs/_sass`, `docs/`).
-- Deploy: `site/wrangler.jsonc` (Static Assets, 404-page) + `.github/workflows/deploy-docs.yml` with `wrangler-action` SHA-pinned, least-privilege `contents: read`, and `environment: production`.
-- DOCS-2: `site/` stays out of the npm package (excluded by the `files` allowlist; asserted in `test-npx-integrity.js`). Added `site/public/_headers` (nosniff, referrer, clickjacking, CSP verified at the Workers runtime).
-- Gate: cycle 1 caught 2 highs (unpinned action holding a live CF token; dangling old-Pages/doc-path refs) - both fixed; cycle 2 clean (no open security/data-loss). GitHub Pages is **not** deprecated - this was a deliberate convenience move.
-- Launch TODOs: set the real Workers URL (README/package.json/astro.config carry the placeholder), add `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID`, and disable Pages in repo settings.
-
-### 2026-09-29 10:59 - Instruction health, README rewrite, enforced review gate, decision grounding
-
-**Agent:** orchestrator
-**Summary:** Landed six commits on `chore/instruction-health-readme`: pruned the dead instruction layer, repointed `--languages` to skills, rewrote the README, made review-before-commit enforceable, then added decision grounding.
-- Instruction layer: fixed unreachable capabilities (`legal-advisor` task allow on `codebase`, `question` tool on `review`/`brutal-critic`), deleted 18 dead instruction files (20 of 22 were never loaded by any agent), repointed the installer `--languages` flag to prune language **skills**, and relocated two code annexes into `skills/*/references/`.
-- Enforcement (the lesson of this session): the gate was prose-only and got violated twice, so it was mechanized in three layers - Pattern 8 staged-diff freeze artifact, a `codebase` "never commit" rule, and a versioned pre-commit hook (`scripts/gate/*`, marker bound to the staged tree) that blocks ungated commits; it enforced itself on its first real commit.
-- README rewritten (reviewed by `@brutal-critic`): outcome-first hook, accurate counts, added the missing `/legal-review`, removed unsupported cost multipliers; confirmed GitHub Pages is **not** deprecated.
-- Decision grounding (Pattern 9): new read-only `@researcher` subagent + `decision-grounding` skill, triggered by decision structure (T1-T4), never self-reported confidence; pack now 10 agents / 24 skills.
-- Validation: `npm run doctor` 21/21 each phase; Tier 2 gated every commit (cycles 1-5 hardening the gate itself; Phase 3 cycle 1 caught 2 highs pre-commit - missing injection boundary + dropped budget invariant); all commits GPG-signed.
-
-### 2026-09-28 21:53 - Validator fail-closed hardening, review-gate docs, backlog
-
-**Agent:** orchestrator
-**Summary:** Hardened the agent-config validators to fail closed on malformed permission structures, added the user-facing Review Gate doc and a backlog (including the OpenCode v2 plan), and shipped via `chore/validator-hardening`.
-- VAL-1: `validate-agents.js` skill/task allowlist parsing migrated to shared, indentation-safe helpers in `scripts/lib/opencode-schema.js`; VAL-3 regression tests added; VAL-2 (Go pin) reverted to `stable` after review (floating-toolchain nit tracked).
-- Fail-closed: inline/empty/duplicate permission blocks, duplicate/inline nested `skill`/`task` children, and trailing comments now error in both validators; `validate-opencode-schema.js --strict` validates nested children.
-- Docs: `docs/review-gate.md` documents Tier 1/Tier 2, lenses, cycles/budget, and the decision panel; `BACKLOG.md` tracks VAL-4, GATE-1/2, SKILL-1, and the OpenCode v2 migration plan.
-- Validation: full review cycle run (Tier 1 + multi-lens panel + two delta passes); `npm run doctor` green.
-
-### 2026-09-28 08:20 - Multi-lens pre-commit review gate + budget hardening
-
-**Agent:** orchestrator
-**Summary:** Upgraded the orchestrator's Pre-Commit Review Gate (Pattern 8) from a single `@review` to a concurrent multi-lens panel, hardened its loop/budget design via a full Tier 1 + Tier 2 + independent-researcher cycle, and shipped via `feat/multi-lens-review-gate`.
-- Pattern 8 Tier 2 now runs concurrent lenses (requirements/code/security/ux-responsive) on a frozen diff with lens selection, triage, a user decision panel (no orchestrator veto for blocking findings), and delta-only re-review; `@review` gained a Review Lenses section (scope, output contract, evidence rule) and activates `security-audit` for the security lens.
-- Design fixes from review + researcher: single binding per-task budget (<=8 dispatches, max 2 cycles, once per commit), Tier 1 fast-fail before Tier 2, lens-reported severity authoritative (no downgrade), sticky security/data-loss tags, and Pattern 5/Pattern 8 mutual exclusivity.
-- Correction: `security-audit` is a valid skill — the session skill list is incomplete (it also omits `adr`/`api-documentation`).
-- Validation: Tier 1 green (context-size, lint:md, validate:agents, changelog-labels); Tier 2 panel + delta re-review clean; budgets trimmed for headroom (orchestrator 194/200, reference 243/250).
-
-### 2026-09-18 11:12 - Agent permission fix, plugin modernization, config uplift
-
-**Agent:** orchestrator
-**Summary:** Fix-up pass on the agent pack: repaired inert permission denies, restored the interactive question tool, modernized the plugin, adopted newer OpenCode config keys, and trimmed dead code. Two-tier review gate applied (Tier 1 doctor + Tier 2 @review ×2).
-- Permissions: moved bash command denies (`rm -rf *`, `git push*--force*`, `git push -f*`) under `bash:` where they actually enforce; added `question: "allow"` to conversational agents (the `"*": "deny"` baseline was also blocking the question tool); removed invalid `write: "allow"` and stale `skill: true`.
-- Validator: `scripts/validate-agents.js` now rejects unrecognized top-level permission keys (with negative fixture + test) so inert command patterns cannot return. The risk-path review gate is now advisory (`--advisory`): it prints computed risk and PR acknowledgment status on every PR but never blocks a merge.
-- Plugin: version/inventory resolved at runtime from the installer's `.opencode-agents-version` marker (project/global/npm layouts) instead of hardcoded; broadened secret-read blocking (`.env*`, `*.env`, `.npmrc`) with a public-cert allowlist so `.pem`/`.key` stay blocked while `ca.pem`/`cert.pem`/`*.crt`/`*.pub` stay readable; added `session.error` logging; corrected the compaction agent list; extracted pure guards to `.opencode/lib/guards.mjs` with table-driven tests (`validate:plugin-guards`, wired into doctor + CI).
-- Config/scope: `opencode.json` gained `subagent_depth: 2`, `compaction.prune`, `watcher.ignore`, and `share: "disabled"`; documented em-advisor/blogger as primary agents requiring manual switch (not Task-invocable). The installer now writes only `$schema`/`plugin`/`permission` into user configs (fresh and global), so these opinionated defaults never leak into a user's global install.
-- Housekeeping: bumped `.opencode` plugin dev dep 1.18.12→^1.18.31; removed dead exports, redundant `ALWAYS_KEEP` entries, an unused npm alias, and a duplicate `.gitignore` line; wired installer + npx-integrity tests into CI; raised the review agent's `steps` to 40; repaired manifestless-uninstall orphan config and installer plugin-entry revert; corrected docs (advisory risk gate, installer config scope, compaction behavior, secret read-blocking, nested delegation, recommended config); `orchestrator`/`em-advisor` trimmed to 199 lines; `npm run doctor` green.
-
-### 2026-08-22 14:46 - Pre-commit review gate, Socket.dev license fix, dev-dep audit
-
-**Agent:** orchestrator
-**Summary:** Shipped the two-tier Pre-Commit Review Gate, resolved the lingering Socket.dev license score (70), and cleaned up high-severity dev advisories. Merged as PR #83 → release 2.4.0.
-- Pre-Commit Review Gate: Tier 1 (automated `npm run doctor` harness) + Tier 2 (adversarial `@review`, risk-gated, max 2 cycles), Pattern 8, interview pattern, and `**Goal:**` checkpoint condition; instruction budget 200→250 lines.
-- License fix: untracked `.opencode/package-lock.json` (was still tracked despite `.gitignore`) — its Apache-2.0 transitive deps (`detect-libc`, `kubernetes-types`) drove the 70 score. Tarball was already clean; recovery expected on next publish.
-- Dev deps: `brace-expansion` 5.0.8→5.0.9 and `js-yaml` 5.2.1→5.2.3 (both high-severity DoS, dev-only).
+- **2026-09-30**: docs site moved to Astro Starlight on Cloudflare Workers; GitHub Pages artifacts removed, `site/` kept out of the npm tarball. **2026-09-28/29**: multi-lens pre-commit gate (doctor + requirements/code/security/ux), fail-closed validators, `@researcher` decision grounding, README/instruction pruning.
+- **2026-09-18**: permission fixes (bash denies, question tool), plugin runtime inventory + secret guards, config uplift (`subagent_depth`, compaction, watcher), installer writes only managed config keys. **2026-08-22**: two-tier review gate, Socket.dev license fix, dev-dep bumps.
+- **2026-07-02**: v2.2.0 uplift (usage showcase, docs pruning, 7 coordination patterns, legal-advisor generalization, code-change-impact, human-in-loop). **2026-05-05**: v2.0.0 uplift (runtime plugin, legal-advisor, progressive disclosure, state-contract memory).
+- **2026-04-25**: state contract + handoff packets, eval trend artifacts, deprecation policy, risk/changelog CI gates, canonical `.opencode/agents/`, bounded loops, `doctor` entrypoint.
+- **2025-12 to 2026-03**: foundation (8 agents, 14 instruction files, lazy AGENTS.md), context optimization (~70% smaller sessions), commands migration, package-based installer, core-only skill policy, docs clarity.
 
 ### Deferred — pattern references (evaluated, not implemented)
 
@@ -169,140 +131,3 @@ All agents log milestone entries to this file using this format:
 - Voting/redundancy to harden Tier 2: https://www.anthropic.com/engineering/building-effective-agents ("Parallelization → Voting")
 - Effort-scaling rules for delegation: https://www.anthropic.com/engineering/multi-agent-research-system (principle #3)
 - Filesystem artifact handoff (bypass coordinator "game of telephone"): https://www.anthropic.com/engineering/multi-agent-research-system (Appendix)
-
-### 2026-07-02 19:55 - v2.2.0 Uplift: Usage showcase, docs pruning, agent modernization, human-in-loop
-
-**Agent:** orchestrator
-**Summary:** Coordinated a 7-phase uplift adding usage metrics to README, consolidating docs, modernizing agent coordination patterns, generalizing legal-advisor, integrating (then migrating) code-change-impact methodology, and adding human-in-loop checkpoint/confidence/fallback patterns.
-- Phase sequence: usage data showcase → docs pruning (merged instructions.md, updated stale refs) → agent modernization (7 coordination patterns, career-content→blogger merge, LLM routing) → legal-advisor generalization → code-change-impact absorbed into @review → human-in-loop improvements (checkpoint command, confidence scoring, fallback routing, idempotency)
-- Key decision: migrated code-change-impact from standalone skill into @review agent instructions (coupling taxonomy + silent-risk catalog) to reduce maintenance surface and align with core-only skill policy
-- Created `/checkpoint` command for structured phase-boundary human decision gates
-
-### 2026-05-05 00:00 - v2.0.0 Uplift: Plugin compatibility, legal-advisor, memory optimization
-
-**Agent:** orchestrator
-**Summary:** Coordinated a major version uplift adding OpenCode runtime plugin compatibility, a new legal-advisor agent, and memory/context optimizations.
-- 9-phase execution spanning obsolete code removal, instruction file progressive disclosure refactoring, OpenCode runtime plugin creation, skills standardization, legal-advisor agent/skill/command addition, existing agent best-practice updates, memory state contract enhancement, and full documentation refresh.
-- Key pattern: split large instruction files (283→57 lines) using progressive disclosure; modularized install.js (1494→1030 lines) into testable lib modules; created runtime plugin with compaction hooks for context survival.
-- Lessons learned: progressive disclosure reduces per-session context budget by ~65% for instruction files; plugin-layer compaction hooks are critical for preserving agent context across session boundaries.
-
-### 2026-04-25 12:51 - State contract and handoff packet workflow
-
-**Agent:** orchestrator
-**Summary:** Coordinated a state-management uplift to introduce structured working memory and deterministic handoff generation, then wired both into CI/doctor quality gates.
-- Added canonical session state contract (`state/session-state.json`) plus validator/test coverage (`validate-session-state.js`, `validate-session-state.test.js`) and local npm entrypoint (`validate:session`).
-- Added handoff generator/test coverage (`generate-handoff.js`, `generate-handoff.test.js`) with default output `handoff/latest.md` and local npm entrypoint (`handoff:generate`).
-- Integrated new CI gate (`validate-session-state`) to validate state, generate handoff output, and upload handoff artifact; propagated status into validation summary fail conditions.
-- Documentation integration pattern used: add dedicated `docs/state-management.md`, then link from docs index/README and extend compatibility matrix before full doctor/lint validation.
-
-### 2026-04-25 12:42 - Governance uplift: eval trend artifacts and migration policy
-
-**Agent:** orchestrator
-**Summary:** Coordinated a governance-focused follow-up to improve evaluation observability and formalize contract-change handling for agent/command evolution.
-- Added eval artifact workflow outputs by generating `evals/reports/latest.json` + `evals/reports/trend-summary.md` and uploading both in CI (`validate-agent-evals`).
-- Introduced baseline-vs-current trend comparator (`scripts/compare-eval-trend.js`) and seeded baseline fixture (`evals/fixtures/eval-trend-baseline.json`) for lightweight drift tracking.
-- Published `docs/deprecation-migration.md` with Level A/B/C change taxonomy, migration playbook, and required PR checklist for breaking/soft-deprecation flows.
-- Documentation alignment pattern used: wire scripts/workflows first, then update docs index + eval/compatibility pages + README links, followed by full doctor/lint validation.
-
-### 2026-04-25 12:32 - Roadmap closure: risk gating, changelog labels, and fixture hardening
-
-**Agent:** orchestrator
-**Summary:** Coordinated final roadmap completion by splitting work into cleanup + enforcement + fixture hardening phases, then validating each phase through doctor/CI-aligned checks.
-- Phase sequence used: decouple docs-link validator policy logic, implement risk-scored PR gate (`validate-risk-path`), enforce changelog capability labels (`validate-changelog`), then expand golden fixtures under `scripts/fixtures/`.
-- Workflow pattern that worked: small scoped commits per initiative (S11, S6, S2) with full validation after each step to keep failures localized and rollback simple.
-- CI governance strengthened by adding two explicit gates (`validate-risk-path`, `validate-changelog`) and wiring both into validation summary fail conditions.
-- Reliability lesson: keep negative test fixtures outside default docs crawl scope (exclude `scripts/fixtures`) so intentional broken-link fixtures do not pollute repository-wide docs validation.
-
-### 2026-04-25 05:45 - Canonical agents migration and permission-first tightening
-
-**Agent:** orchestrator
-**Summary:** Coordinated a migration/tightening pass to standardize on `.opencode/agents/`, remove deprecated agent tool booleans, and harden CI security pinning while preserving migration tolerance.
-- Migrated all agent files from `.opencode/agent/` to `.opencode/agents/` and updated installer/validator paths with legacy fallback signaling.
-- Converted all agent frontmatters to permission-first controls (`"*": "deny"` baselines + scoped allows), removing deprecated `tools` blocks.
-- Tightened orchestrator task delegation from wildcard allow to explicit subagent allowlist.
-- Pinned gitleaks workflow action to latest stable SHA (`v2.3.9`) and refreshed docs/changelog path references.
-- Cleanup pattern that worked: migrate structure first, refactor policy surface second, then run full doctor + agent validation to confirm parity.
-
-### 2026-04-25 05:05 - Bounded loop workflow and doctor-based validation hardening
-
-**Agent:** orchestrator
-**Summary:** Coordinated a reliability-focused execution pass to add bounded loop guidance, tighten validation ergonomics, and keep docs aligned with new workflow commands.
-- Added loop execution protocol and commands (`/execution-loop`, `/stop-loop`) plus agent-level loop/verification guidance.
-- Introduced `scripts/doctor.js` as the unified validation entrypoint and routed `validate:all` through doctor.
-- Hardened validation signal quality by excluding `example/**` from markdown/docs validation paths and fixing Windows npm spawn behavior in doctor.
-- Strengthened CI summary gating by adding secret scanning (`gitleaks`) into workflow dependencies.
-- Coordination pattern that worked: implement protocol + docs together, run end-to-end validation, then isolate untracked fixture content from quality gates.
-
-### 2026-03-13 12:22 - Docs clarity pass for naming, uninstall behavior, and skill-policy wording
-
-**Agent:** orchestrator
-**Summary:** Coordinated a focused docs consistency sweep across README and docs pages to reduce install/uninstall ambiguity while preserving core-skill governance.
-- Clarified command naming consistently (`agents-opencode` installer/package vs `opencode` runtime CLI) in README + getting-started + docs index.
-- Verified uninstall behavior from `install.js` and documented current-directory scope, `.opencode/` + `opencode.json` removal, and timestamped `AGENTS.md` backup.
-- Harmonized policy headers by renaming `Skill Scope Policy (Current/Keep it)` to `Skill Scope Policy` across key docs while keeping core-only criteria unchanged.
-- Coordination pattern that worked: source verification first, then propagate concise wording updates across all relevant docs paths.
-
-### 2026-03-12 09:22 - Package-based installer flow and command routing clarity
-
-**Agent:** orchestrator
-**Summary:** Coordinated a cross-cutting cleanup to make installs deterministic from npm artifacts and improve command-to-agent usability/documentation consistency.
-- Updated installer + package metadata to remove git clone dependency and install from published package contents.
-- Added argument-hint conventions and `$ARGUMENTS` scoping across commands, then synchronized README/docs/skills routing matrix.
-- Strengthened validation with command frontmatter + agent-target checks to catch routing/config drift early.
-- Coordination pattern that worked: implement core behavior, propagate docs/metadata in one sweep, then validate and prepare release-ready commit.
-
-### 2026-03-09 21:54 - Core-only skill policy propagation across docs
-
-**Agent:** orchestrator
-**Summary:** Coordinated a repository-wide documentation consistency pass to keep skill distribution explicitly core-only and avoid optional-pack ambiguity.
-- Propagated core-only policy language across README and key docs pages (index, getting-started, customization, commands, agents, instructions, troubleshooting, skills matrix).
-- Applied a conservative governance gate for future skill additions (demand, gap, ownership, licensing/provenance).
-- Validated integration with `npm run validate:all` to ensure links, markdown linting, agent validation, and context checks remained green.
-- Workflow pattern that worked: plan policy once, propagate to all user-facing docs, then run full validation before closing.
-
-### 2026-03-09 00:00 - Skill activation hardening and validation updates
-
-- Added explicit "Skill Activation Policy" sections across all 8 agents with on-demand guardrails
-- Added validator warning for agents missing `## Skill Activation Policy` when `skill: true` is enabled
-- Updated docs to clarify lazy/on-demand skill loading and OpenCode-specific invocation model
-- Kept `validate.yml` as a split validation matrix and reused `npm run validate:all` in publish gating
-
-### 2026-03-04 - Audit-driven fixes: factual errors, stale refs, CI hardening
-
-- Fixed 3 factual errors in skills: Rust Go-isms (`fmt::Errorf`, goroutine), Java-Spring .NET annotation (`@ProducesResponseType`)
-- Fixed stale tool references in blogger instructions (`websearch`/`codesearch` → `webfetch`/`grep`)
-- Removed redundant `black .` from Python skill and instruction (superseded by `ruff format`)
-- Updated GitHub Actions: `checkout` v4.2.2→v6.0.2, `setup-node` v4.1.0→v6.3.0, added `persist-credentials: false`
-- Fixed AGENTS.md prune threshold comment (50KB → 100KB to match `check-context-size.js`)
-- Renamed default branch from `master` to `main` (aligns with workflow triggers)
-
-### 2026-03-04 - OpenCode platform-specific agent optimization (8 phases)
-
-- Enhanced `opencode.json` with global permissions (`external_directory`, `doom_loop` deny) and instruction glob loading
-- Added `skill` tool to all 8 agents (closing critical gap — 3 skills existed but no agent could load them)
-- Added `todowrite`/`todoread` to 5 workflow agents (codebase, orchestrator, planner, em-advisor, blogger)
-- Added `steps` limits to all agents (10–75 based on role), `hidden: true` to brutal-critic
-- Added `task` permission controls with agent-specific glob restrictions (e.g., blogger → brutal-critic only)
-- Hardened bash permissions: denied `rm -rf *` and `git push --force*` on all bash-enabled agents
-- Extended context persistence (AGENTS.md pattern) to orchestrator and codebase agents
-- Added `subtask: true` to all 12 commands; created 3 new commands (`/blog-post`, `/content-review`, `/plan-project`)
-- Updated orchestrator Agent Selection Guide to include blogger and brutal-critic
-- Added `webfetch` to review agent; fixed blogger references from websearch/codesearch to webfetch/grep
-
-### 2026-03-04 - Comprehensive repository optimization (6 phases)
-
-- Enhanced em-advisor agent with file operations, PDF analysis, and context persistence
-- Hardened CI/CD: SHA-pinned actions, timeouts, concurrency, push trigger, shell injection fix
-- Fixed factual inaccuracies (package.json "15+" → "14", instructions.md missing rows, validate-agents.js warning)
-- Standardized all 8 agent configs: alphabetical tool order, correct permissions, removed non-existent tools
-- Improved scripts: --check flag for CI, showUsage exit code, filterLanguages edge case, backup logic, regex anchoring
-- Documentation: sequential nav_order, dark-theme SCSS, SEO descriptions, expanded troubleshooting, skill usage docs
-
-### 2026-02-21 - Context optimization, commands migration, and installer modernization
-
-- Reduced per-session context by ~70%; migrated 9 prompts to commands; modernized installer
-
-### 2025-12 to 2026-02 - Foundation
-
-- Initial repository setup; migration from Copilot; created 8 agents, 14 instruction files
-- Lazy AGENTS.md policy; docs site trimming; global config standardization
