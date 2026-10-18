@@ -10,7 +10,7 @@ Lean reference for the built-in agents.
 ## Why these agents
 
 - **Clear separation of roles** so you can pick the right depth quickly.
-- **Safer behavior by default** through scoped skill allowlists.
+- **Safer behavior by default** through deny-by-default tool permissions and host-compatible skill access.
 - **Faster handoffs** across planning, implementation, review, and docs.
 
 ## Agent Overview
@@ -28,7 +28,7 @@ Lean reference for the built-in agents.
 | `@brutal-critic` | Final content quality gate |
 | `@legal-advisor` | Legal research, jurisdiction-aware compliance, contract review, license auditing, data privacy, IP, export controls |
 
-Canonical source for exact allowlists and skill triggers: [Skills Matrix](/skills-matrix/).
+Canonical source for skill triggers and the host-skill policy: [Skills Matrix](/skills-matrix/).
 
 ## Suggested Flow
 
@@ -48,9 +48,10 @@ Canonical source for exact allowlists and skill triggers: [Skills Matrix](/skill
 
 ## Skill Permission Model
 
-- Agents use `permission.skill` rules to restrict which skills can load.
-- Recommended baseline is `"*": "deny"` with explicit per-skill allows.
-- This enforces least privilege and keeps agent behavior domain-scoped.
+- Pack agents allow all skills (`"*": "allow"`) so host and plugin skills keep working.
+- To restrict skills, edit the installed agent file or add a v2 `integration.use` policy;
+  global permission rules lose to agent rules (agent rules are appended last).
+- Treat project skills in untrusted clones as untrusted content.
 
 ## Task Permission Model
 

@@ -71,4 +71,4 @@ confidence.
 ## Related
 
 - [Review Gate](/review-gate/) — the pre-commit gate that runs before a push.
-- [Skills Matrix](/skills-matrix/) — agent-to-skill allowlists and triggers.
+- [Skills Matrix](/skills-matrix/) — skill access policy and triggers.

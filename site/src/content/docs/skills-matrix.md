@@ -1,18 +1,21 @@
 ---
 title: Agent Skills Matrix
-description: Agent-to-skill allowlist matrix for OpenCode least-privilege configuration.
+description: Skill access policy and recommended agent-to-skill triggers.
 sidebar:
   order: 8
 ---
 
-This table reflects `permission.skill` allowlists in `.opencode/agents/*.md`.
+The pack allows **all skills** by default (`skill: {"*": "allow"}`), so host and
+plugin skills keep working. This table lists the skills each agent should prefer,
+not a restriction list.
 
 Quick read:
-- Most agents follow `"*": "deny"` + explicit allowlist.
-- Language-heavy agents get language/domain skills.
-- Docs/content/EM agents stay intentionally narrow.
+- Pack agents use `"*": "allow"`; hosts may restrict via a v2 `integration.use` policy
+  or by editing the installed agent file.
+- Language-heavy agents prefer language/domain skills.
+- Docs/content/EM agents stay intentionally narrow in practice.
 
-| Agent | Allowed skills |
+| Agent | Recommended skills |
 |---|---|
 | `codebase` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `legal-advisor`, `code-change-impact`, `refactoring`, `decision-grounding`, `systematic-debugging`, `test-driven-development`, `verification-before-completion` |
 | `orchestrator` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `blogger`, `brutal-critic`, `code-change-impact`, `refactoring`, `legal-advisor`, `decision-grounding`, `systematic-debugging`, `verification-before-completion` |
@@ -27,12 +30,14 @@ Quick read:
 
 ## Notes
 
-- Baseline rule for all agents with skill access: `"*": "deny"`.
-- Skills load on demand via the `skill` tool.
-- Keep allowlists narrow by role to reduce context/tool noise.
+- Baseline rule for all pack agents with skill access: `"*": "allow"` (host-friendly).
+- To restrict, edit the installed agent file or add a v2 `integration.use` policy;
+  global permission rules lose to agent rules.
+- Skills load on demand via the `skill` tool; prefer one relevant skill per task.
 - Installer `--languages` prunes non-requested language skill directories; non-language skills are always kept.
 - `ux-responsive` optionally delegates to the third-party UI UX Pro Max skill when a project installs
   it (not bundled) — see [Customization](/customization/#optional-ui-ux-pro-max-delegation).
+- `graphify-usage` is preferred for large or unfamiliar repos when the host provides it.
 
 ## Skill Trigger Guide (Canonical)
 
@@ -47,6 +52,8 @@ on-demand policy below and may carry additional, narrower conditional load lines
 |---|---|---|
 | Language/framework implementation or review | Matching stack skill (`dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ruby-rails`, `rust`, `sql-migrations`) | `codebase`, `review`, `planner`, `orchestrator` |
 | Responsive UX across phone/tablet/desktop | `ux-responsive` | `codebase`, `review`, `planner`, `orchestrator` |
+| UI/UX design, styling, palettes, typography (host skill) | `ui-ux-pro-max` (if present; one focused query, never paste dataset rows) | `codebase`, `orchestrator` |
+| Large/unfamiliar repo exploration, cross-file questions (host skill) | `graphify-usage` (if present) | `codebase` |
 | Content drafting (blogs, podcasts, YouTube, resumes, LinkedIn, bios) | `blogger` | `blogger`, `orchestrator`, `em-advisor` |
 | Content critique and scoring | `brutal-critic` | `brutal-critic`, `blogger`, `orchestrator` |
 | Docs quality checks (lint/link/structure) | `docs-validation` | `docs`, `review`, `planner`, `orchestrator`, `em-advisor` |

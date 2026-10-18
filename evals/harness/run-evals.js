@@ -135,7 +135,7 @@ function parseMapEntries(block, indent = 2) {
       continue;
     }
 
-    const match = line.match(new RegExp(`^\\s{${indent},}([^:]+):\\s*(.+)\\s*$`));
+    const match = line.match(new RegExp(`^\\s{${indent}}(?!\\s)([^:]+):\\s*(.+)\\s*$`));
     if (!match) {
       continue;
     }
@@ -320,16 +320,21 @@ function runPermissionInvariantRule(issues, agents, knownSkills, taskTargets) {
     const skillBlock = extractNestedBlock(permissionBlock, 'skill');
     if (skillBlock) {
       const skillMap = parseMapEntries(skillBlock, 4);
-      if (skillMap.get('*') !== 'deny') {
-        addIssue(issues, RULES.PERMISSION_INVARIANTS, agent.relativePath, 'permission.skill must include "*": "deny"');
+      const skillWildcard = skillMap.get('*');
+      if (skillWildcard !== 'deny' && skillWildcard !== 'allow') {
+        addIssue(issues, RULES.PERMISSION_INVARIANTS, agent.relativePath, 'permission.skill must include "*": "deny" or "*": "allow"');
       }
 
-      for (const [skillName, decision] of skillMap.entries()) {
-        if (skillName === '*' || decision !== 'allow' || skillName.includes('*')) {
-          continue;
-        }
-        if (!knownSkills.has(skillName)) {
-          addIssue(issues, RULES.PERMISSION_INVARIANTS, agent.relativePath, `Unknown allowed skill: ${skillName}`);
+      // Explicit allow names are only validated under a deny baseline; allow-all
+      // is host-friendly and intentionally has no pack-known name set.
+      if (skillWildcard === 'deny') {
+        for (const [skillName, decision] of skillMap.entries()) {
+          if (skillName === '*' || decision !== 'allow' || skillName.includes('*')) {
+            continue;
+          }
+          if (!knownSkills.has(skillName)) {
+            addIssue(issues, RULES.PERMISSION_INVARIANTS, agent.relativePath, `Unknown allowed skill: ${skillName}`);
+          }
         }
       }
     }

@@ -14,9 +14,7 @@ permission:
   todowrite: "allow"
   question: "allow"
   skill:
-    "*": "deny"
-    "blogger": "allow"
-    "brutal-critic": "allow"
+    "*": "allow"
   task:
     "*": "deny"
     "brutal-critic": "allow"

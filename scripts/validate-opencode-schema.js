@@ -4,7 +4,9 @@
 /**
  * OpenCode Schema Validator
  * Validates .opencode agents, skills, commands, and opencode.json against the
- * documented OpenCode schema (v1).
+ * documented OpenCode v1 schema and the v2 target contract. v1-shaped agent and
+ * config fields remain supported on v2 (auto-translated in memory); the v2
+ * checks only fail on genuinely v1-only action names.
  *
  * Flags:
  * - `--v2`         also print a v2-readiness report (informational; never changes exit code)
@@ -22,7 +24,7 @@ const fs = require('fs');
 const path = require('path');
 
 const {
-  KNOWN_PERMISSION_KEYS, COMMAND_KEYS, SKILL_KEYS, CONFIG_KEYS, AGENT_MODES,
+  KNOWN_PERMISSION_KEYS, V1_ONLY_V2_ACTIONS, COMMAND_KEYS, SKILL_KEYS, CONFIG_KEYS, AGENT_MODES,
   SKILL_NAME_RE, SKILL_DESCRIPTION_MAX, SKILL_NAME_MAX,
   frontmatterOf, topLevelKeys, field, descriptionOf, listDirs,
   analyzePermission, permissionKeys, permissionChildBlock, parseMapEntries,
@@ -125,10 +127,10 @@ function validateAgents() {
     validatePermission(frontmatter, label);
 
     if (/^(?!\s*#)["']?temperature["']?\s*:/m.test(frontmatter)) {
-      v2Gaps.push(`${label}: top-level 'temperature' is v1-only (v2 uses request body / model variants)`);
+      v2Gaps.push(`${label}: top-level 'temperature' is v1-shaped; v2 auto-translates it to request.body (supported)`);
     }
     if (/^(?!\s*#)["']?permission["']?\s*:/m.test(frontmatter)) {
-      v2Gaps.push(`${label}: 'permission' object is v1-only (v2 uses a 'permissions' array with shell/subagent actions)`);
+      v2Gaps.push(`${label}: 'permission' object is v1-shaped; v2 auto-translates it to a permissions array (supported)`);
     }
   }
 
@@ -249,7 +251,7 @@ function validateConfig() {
       for (const key of Object.keys(perm)) {
         if (!KNOWN_PERMISSION_KEYS.has(key)) errors.push(`${label}: unrecognized permission key '${key}'`);
       }
-      v2Gaps.push(`${label}: 'permission' object is v1-only — v2 uses a 'permissions' array`);
+      v2Gaps.push(`${label}: 'permission' object is v1-shaped — v2 auto-translates it; native 'permissions' is optional`);
       if (perm.doom_loop || perm.lsp) {
         v2Gaps.push(`${label}: 'doom_loop'/'lsp' are not v2 permission actions`);
       }
@@ -257,10 +259,10 @@ function validateConfig() {
   }
   if (config.plugin) v2Gaps.push(`${label}: 'plugin' (singular) is v1-only — v2 uses 'plugins'`);
   if (config.compaction && config.compaction.prune !== undefined) {
-    v2Gaps.push(`${label}: 'compaction.prune' is v1-only — v2 uses {auto, keep, buffer}`);
+    v2Gaps.push(`${label}: 'compaction.prune' has no v2 effect — v2 uses {auto, keep, buffer}`);
   }
   if (config.subagent_depth !== undefined) {
-    v2Gaps.push(`${label}: 'subagent_depth' is v1-documented only — verify before relying on it in v2`);
+    v2Gaps.push(`${label}: top-level 'subagent_depth' is ignored in v2 — use experimental.subagent_depth`);
   }
 }
 
@@ -274,15 +276,20 @@ function validateConfig() {
 const V2_CONFIG_ALLOWLIST = new Set(['$schema', 'plugins', 'permissions']);
 // v1-only config keys that must never appear in a v2 config.
 const V1_ONLY_CONFIG_KEYS = ['permission', 'plugin'];
-// Actions v2 does not accept: bash/task are renamed (shell/subagent); the rest
-// have no v2 core equivalent and are dropped by the adapter.
-const FORBIDDEN_V2_ACTIONS = new Set(['bash', 'task', 'doom_loop', 'lsp']);
-// Valid v2 permission actions: the v1 permission keys with the adapter's renames
-// applied (bash->shell, task->subagent, write/patch->edit), minus dropped actions.
-const V2_PERMISSION_ACTIONS = new Set([
-  'read', 'edit', 'glob', 'grep', 'list', 'shell', 'subagent',
-  'external_directory', 'todowrite', 'question', 'webfetch', 'websearch', 'skill',
+// v1-only actions: bash/task/write/patch are renamed; doom_loop/lsp have no v2
+// core equivalent. Unknown action names are allowed because v2 action names are
+// strings and plugins may define their own (for example ponytail's `browser`).
+// Documented v2 core actions. Unknown names are advisory for in-place configs
+// (plugin actions are legitimate) but an error in the installer adapter output,
+// which only ever emits translated v1 actions. `list` and `todowrite` are v1
+// keys the adapter passes through verbatim; v2 tolerates unknown action strings,
+// so they are accepted here rather than dropped.
+const KNOWN_V2_ACTIONS = new Set([
+  '*', 'read', 'edit', 'glob', 'grep', 'shell', 'subagent', 'skill', 'question',
+  'webfetch', 'websearch', 'external_directory', 'execute', 'list', 'todowrite',
 ]);
+// MCP tool actions are `<server>_<tool>` (unsupported characters become `_`).
+const MCP_ACTION_RE = /^[a-z0-9]+(_[a-z0-9_]+)+$/i;
 
 // Agent/command frontmatter tokens that v2 does NOT translate. v2 auto-translates
 // agent 'permission'/'temperature' and command 'subtask' in memory (the approved
@@ -337,44 +344,99 @@ function validateV2Conformance(config) {
     problems.push("'plugin' and 'plugins' must never co-exist");
   }
 
-  if (config.permissions !== undefined) {
-    if (!Array.isArray(config.permissions)) {
-      problems.push("'permissions' must be an array of { action, resource, effect } rules");
-    } else {
-      config.permissions.forEach((rule, index) => {
-        const at = `permission rule ${index}`;
-        if (!isPlainObject(rule)) {
-          problems.push(`${at} must be an object with { action, resource, effect }`);
-          return;
-        }
-        for (const key of ['action', 'resource', 'effect']) {
-          if (typeof rule[key] !== 'string' || rule[key].length === 0) {
-            problems.push(`${at} must have a non-empty string '${key}'`);
-          }
-        }
-        const extra = Object.keys(rule).filter((key) => !['action', 'resource', 'effect'].includes(key));
-        if (extra.length > 0) {
-          problems.push(`${at} has unexpected key(s): ${extra.join(', ')}`);
-        }
-        if (typeof rule.action === 'string') {
-          if (FORBIDDEN_V2_ACTIONS.has(rule.action)) {
-            problems.push(`${at}: '${rule.action}' is not a v2 action (v2 renames bash->shell, task->subagent)`);
-          } else if (!V2_PERMISSION_ACTIONS.has(rule.action)) {
-            problems.push(`${at}: unrecognized v2 action '${rule.action}'`);
-          }
-        }
-      });
+  // Permission arrays may live at the top level or under agents.<id>. Both are
+  // checked; a nested v1-only action is the same configuration bug.
+  for (const { label, rules } of permissionRuleSets(config)) {
+    if (!Array.isArray(rules)) {
+      problems.push(
+        label === 'permissions'
+          ? "'permissions' must be an array of { action, resource, effect } rules"
+          : `${label} must be an array of { action, resource, effect } rules`
+      );
+      continue;
     }
+    rules.forEach((rule, index) => {
+      const at = `${label === 'permissions' ? 'permission' : label} rule ${index}`;
+      if (!isPlainObject(rule)) {
+        problems.push(`${at} must be an object with { action, resource, effect }`);
+        return;
+      }
+      for (const key of ['action', 'resource', 'effect']) {
+        if (typeof rule[key] !== 'string' || rule[key].length === 0) {
+          problems.push(`${at} must have a non-empty string '${key}'`);
+        }
+      }
+      const extra = Object.keys(rule).filter((key) => !['action', 'resource', 'effect'].includes(key));
+      if (extra.length > 0) {
+        problems.push(`${at} has unexpected key(s): ${extra.join(', ')}`);
+      }
+      if (typeof rule.action === 'string' && V1_ONLY_V2_ACTIONS.has(rule.action)) {
+        const replacement = V1_ONLY_V2_ACTIONS.get(rule.action);
+        problems.push(
+          `${at}: '${rule.action}' is not a v2 action` +
+            (replacement ? ` (v2 uses '${replacement}')` : ' (no v2 core equivalent)')
+        );
+      }
+    });
   }
 
   return problems;
 }
 
+// Returns the permission arrays declared in a v2 config: the top-level
+// `permissions` and any `agents.<id>.permissions` (label + rules, or a
+// non-array value so callers can report the shape problem).
+function permissionRuleSets(config) {
+  const sets = [];
+  if (config.permissions !== undefined) {
+    sets.push({ label: 'permissions', rules: config.permissions });
+  }
+  if (isPlainObject(config.agents)) {
+    for (const [id, agent] of Object.entries(config.agents)) {
+      if (isPlainObject(agent) && agent.permissions !== undefined) {
+        sets.push({ label: `agents.${id}.permissions`, rules: agent.permissions });
+      }
+    }
+  }
+  return sets;
+}
+
 // Full v2 conformance for the installer's adapter output: the shared rules
 // (a)/(b)/(d) plus the strict installer-managed top-level allowlist — rule (c),
-// strict form. Only emitConfig(source, 'v2') is ever validated this way.
+// strict form. Only emitConfig(source, 'v2') is ever validated this way, so an
+// unknown action here is an adapter bug, not a plugin action.
 function validateV2AdapterOutput(config) {
-  return [...validateV2Conformance(config), ...validateV2AdapterTopLevelKeys(config)];
+  const problems = [...validateV2Conformance(config), ...validateV2AdapterTopLevelKeys(config)];
+  if (Array.isArray(config.permissions)) {
+    config.permissions.forEach((rule, index) => {
+      if (isPlainObject(rule) && typeof rule.action === 'string' && !KNOWN_V2_ACTIONS.has(rule.action)) {
+        problems.push(`permission rule ${index}: adapter emitted unknown action '${rule.action}'`);
+      }
+    });
+  }
+  return problems;
+}
+
+// Advisory: unknown actions in a hand-authored v2 config may be plugin-defined
+// (legitimate) or typos (inert rule). Never fails; surfaced as warnings. Checks
+// the top-level and agents.<id> permission arrays.
+function collectV2ActionWarnings(config) {
+  const warnings = [];
+  for (const { label, rules } of permissionRuleSets(config)) {
+    if (!Array.isArray(rules)) continue;
+    rules.forEach((rule, index) => {
+      if (
+        isPlainObject(rule) &&
+        typeof rule.action === 'string' &&
+        !KNOWN_V2_ACTIONS.has(rule.action) &&
+        !MCP_ACTION_RE.test(rule.action)
+      ) {
+        const at = `${label === 'permissions' ? 'permission' : label} rule ${index}`;
+        warnings.push(`${at}: unrecognized v2 action '${rule.action}' (valid for plugin-defined actions; verify it is not a typo)`);
+      }
+    });
+  }
+  return warnings;
 }
 
 // Scans agent/command frontmatter for v2-untranslatable tokens (errors) and
@@ -415,6 +477,7 @@ function scanV2Artifacts() {
 function validateV2Strict() {
   log(colors.cyan, 'Validating OpenCode v2-strict conformance...\n');
   const errors = [];
+  const warnings = [];
 
   const artifacts = scanV2Artifacts();
   errors.push(...artifacts.errors);
@@ -439,14 +502,26 @@ function validateV2Strict() {
       // If the file itself already carries v2 keys, validate those in place too:
       // a hand-authored v2 config must be conformant even though the installer
       // did not write it. Extra legitimate v2 keys (share, model, ...) are fine.
-      if ('permissions' in source || 'plugins' in source) {
+      const hasV2Keys =
+        'permissions' in source ||
+        'plugins' in source ||
+        (isPlainObject(source.agents) &&
+          Object.values(source.agents).some((agent) => isPlainObject(agent) && 'permissions' in agent));
+      if (hasV2Keys) {
         errors.push(...validateV2Conformance(source));
+        warnings.push(...collectV2ActionWarnings(source));
       }
     }
   }
 
   if (artifacts.autoTranslated > 0) {
     log(colors.yellow, `ℹ️  ${artifacts.autoTranslated} agent/command file(s) rely on v2 in-memory auto-translation (agent 'permission'/'temperature', command 'subtask'); approved design, not an error.`);
+    console.log('');
+  }
+
+  if (warnings.length > 0) {
+    log(colors.yellow, `⚠️  v2-strict advisory warning(s) (${warnings.length}):`);
+    for (const warning of warnings) log(colors.yellow, `  • ${warning}`);
     console.log('');
   }
 

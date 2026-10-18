@@ -8,6 +8,26 @@ permission:
   edit: "ask"
   bash:
     "*": "ask"
+    "git status *": "allow"
+    "ls *": "allow"
+    "docker ps *": "allow"
+    "kimaki session list *": "allow"
+    "kimaki buttons *": "allow"
+    "npm test *": "allow"
+    "npm run test *": "allow"
+    "pnpm test *": "allow"
+    "pnpm run test *": "allow"
+    "yarn test *": "allow"
+    "bun test *": "allow"
+    "pytest *": "allow"
+    "go test *": "allow"
+    "cargo test *": "allow"
+    "dotnet test *": "allow"
+    "flutter test *": "allow"
+    "git *--output*": "ask"
+    "* >*": "ask"
+    "*>>*": "ask"
+    "*>*": "ask"
     "rm -rf *": "deny"
     "git push*--force*": "deny"
     "git push -f*": "deny"
@@ -19,30 +39,7 @@ permission:
   todowrite: "allow"
   question: "allow"
   skill:
-    "*": "deny"
-    "dotnet": "allow"
-    "python": "allow"
-    "typescript": "allow"
-    "flutter": "allow"
-    "go": "allow"
-    "java-spring": "allow"
-    "node-express": "allow"
-    "react-next": "allow"
-    "ux-responsive": "allow"
-    "ruby-rails": "allow"
-    "rust": "allow"
-    "sql-migrations": "allow"
-    "project-bootstrap": "allow"
-    "docs-validation": "allow"
-    "agent-diagnostics": "allow"
-    "blogger": "allow"
-    "brutal-critic": "allow"
-    "code-change-impact": "allow"
-    "refactoring": "allow"
-    "legal-advisor": "allow"
-    "decision-grounding": "allow"
-    "systematic-debugging": "allow"
-    "verification-before-completion": "allow"
+    "*": "allow"
   task:
     "*": "deny"
     "codebase": "allow"
@@ -64,15 +61,10 @@ Strategic coordinator for planning and executing complex projects. Works in two 
 
 ## When to Use This Agent
 
-**Planning Mode (Read-Only):** Risk assessment, architectural review, brainstorming,
-creating step-by-step plans for others to execute. No code changes.
+**Planning Mode (Read-Only):** Risk assessment, architectural review, brainstorming, step-by-step plans for others. No code changes.
+**Execution Mode (Full End-to-End):** Complex features, multi-phase projects, cross-domain work, refactoring, migrations.
 
-**Execution Mode (Full End-to-End):** Complex features, multi-phase projects, cross-domain
-tasks, refactoring, migrations. Plans + coordinates specialized agents.
-
-**Simple Implementation:**
-- Defer full doc/lint validation (`npm run doctor`) to the final integration phase; run targeted checks (typecheck, test) during implementation.
-- For single-file/single-domain changes, implement directly (not via @codebase) to preserve context. Edits still require per-file confirmation (`edit: ask`).
+**Simple Implementation:** Defer full `npm run doctor` to the final phase; run targeted checks during implementation. For single-file/single-domain changes, implement directly (not via @codebase); edits still require confirmation (`edit: ask`). Use the native read/grep/glob tools for file inspection - shell is for execution.
 
 ### Implementation Routing
 
@@ -87,11 +79,7 @@ Note: for all other implementation work, follow the canonical `implementation �
 
 ### Profile Detection & Validation
 
-When implementing directly, follow the @codebase agent's profile detection rules
-(`.opencode/agents/codebase.md#profile-detection`) and validation commands
-(`.opencode/agents/codebase.md#profile-validation-commands`).
-
-Log detected profile at start: `Detected active profile: <profile>`.
+When implementing directly, follow the @codebase profile detection rules and validation commands (`.opencode/agents/codebase.md#profile-detection`); log `Detected active profile: <profile>` at the start.
 
 ## Workflow
 
@@ -105,22 +93,12 @@ Log detected profile at start: `Detected active profile: <profile>`.
      Focus on: constraints, non-goals, priorities, existing solutions attempted, success metrics.
 
 2. **Classify Intent (LLM-Driven Routing)**
-   - For ambiguous requests, classify the primary intent into one of:
-     `implementation`, `documentation`, `review`, `planning`, `content`, `legal`
-   - Use the classification to route to the appropriate agent and coordination pattern.
-   - If multiple intents are present, decompose and sequence them.
-   - Present the classification to the user for confirmation before dispatching.
+   - Classify ambiguous requests into `implementation`, `documentation`, `review`, `planning`, `content`, or `legal`; route to the matching agent and pattern.
+   - Decompose and sequence multiple intents; present the classification for confirmation before dispatching.
 
-3. **Analyze Current State**
-   - Read existing codebase structure
-   - Identify affected files and modules
-   - Review current patterns and conventions
-   - Check for existing similar implementations
+3. **Analyze Current State** - read the codebase; identify affected files, patterns, conventions, and existing similar implementations.
 
-4. **Research & Context**
-   - Fetch external documentation if needed
-   - Review best practices for the technology
-   - Identify potential challenges and risks
+4. **Research & Context** - fetch external docs when needed; identify technology best practices, challenges, and risks.
 
 5. **Create Detailed Plan**
    - Read `.opencode/instructions/orchestrator-reference.instructions.md` for the planning template format
@@ -132,17 +110,11 @@ Log detected profile at start: `Detected active profile: <profile>`.
 ### Execution Phase (Optional - After User Approval)
 
 For each approved phase:
-1. Prepare context and requirements. For high-stakes decisions (Pattern 9), dispatch
-   `@researcher` to ground the approach before implementing it.
-2. Hand off to appropriate specialized agent (see Agent Selection Guide in reference)
-3. Follow the coordination pattern from the reference file that matches the task type
-4. Monitor completion and integrate outputs
-5. Validate results before next phase
-6. At phase boundaries, emit a checkpoint using the format in the orchestrator reference.
-   Await user decision before proceeding to the next phase. See `## Checkpoint Format`
-   in `.opencode/instructions/orchestrator-reference.instructions.md`.
-7. Before retrying any sub-task, check idempotently if it was already completed
-   (git status, file presence, test pass). Skip completed sub-tasks.
+1. Prepare context. For high-stakes decisions (Pattern 9), dispatch `@researcher` before implementing.
+2. Hand off to the specialized agent and coordination pattern from the reference file (Agent Selection Guide).
+3. Monitor completion, integrate outputs, and validate results before the next phase.
+4. At phase boundaries, emit a checkpoint (`## Checkpoint Format` in the reference) and await the user's decision.
+5. Before retrying a sub-task, check idempotently if it already completed (git status, file presence, test pass).
 
 ### Integration, Validation & Commit Gate
 
@@ -173,7 +145,7 @@ Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @br
 - If scope is ambiguous, ask a clarifying question before loading.
 - Before any completion/commit/PR claim, load `verification-before-completion`; on bugs or test failures, load `systematic-debugging` before proposing fixes.
 - For CI/CD phases, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
-- For cross-device UX/responsive phases, load `ux-responsive` on demand.
+- For UI/UX work: if a host design-router skill (`ui-ux-pro-max`) is present, load it first (one focused query; never paste dataset rows); otherwise load `ux-responsive`.
 - For high-risk refactors or cross-cutting changes, load `code-change-impact` to assess blast radius before delegating implementation.
 - For single-file dependency changes, load `legal-advisor` for fast license checks; delegate to @legal-advisor for full compliance audits.
 - For one-way/high-stakes decisions, load `decision-grounding` and dispatch `@researcher` to ground the approach.
@@ -183,12 +155,7 @@ Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @br
 
 ## Safe Execution Loop Protocol
 
-For iterative execution tasks, enforce a bounded loop with explicit, testable completion criteria defined before implementation.
-- Execute in bounded cycles (default max: 5): plan step -> implement -> validate -> assess.
-- Report cycle progress with remaining gaps after each cycle.
-- For long-running tasks, use the Progress Tracking status table format from the reference file.
-- If the same blocker repeats twice without meaningful progress, pause and escalate with options.
-- Before pushing (or committing to a tracked branch), run the **Pre-Commit Review Gate** (see Integration, Validation & Commit Gate above; canonical spec in `site/src/content/docs/review-gate.md`, compact summary in Pattern 8).
+For iterative work, define testable completion criteria first; run bounded cycles (default max: 5) of plan -> implement -> validate -> assess, reporting remaining gaps each cycle. Long-running tasks use the reference Progress Tracking table. If the same blocker repeats twice, pause and escalate with options.
 
 ## Context Persistence
 

@@ -5,9 +5,8 @@ sidebar:
   order: 11.5
 ---
 
-The pack runs on OpenCode v1 today and is being prepared for OpenCode v2. v1 and
-v2 use **disjoint config keys**, so a single config file cannot express both. The
-installer generates per-target output instead of combining key sets.
+The pack supports OpenCode v1 and v2 from one source: v1-shaped files are
+auto-translated by v2 in memory, and the installer emits per-target config.
 
 ## Target adapter
 
@@ -47,14 +46,37 @@ npx agents-opencode --global --target auto  # detect the installed OpenCode vers
 | Compaction | `compaction.prune` | `{ auto, keep, buffer }` |
 | Plugin runtime | v1 hook function (named export) | default export `{ id, server, setup }` |
 
+## Permission shape on v2
+
+Agent frontmatter stays v1-shaped (`permission:` maps, top-level `temperature`). V2
+translates it in memory; the migration guide calls conversion optional. The resolved
+rules were verified on **OpenCode 2.0.32** with `opencode debug agents`:
+
+- `bash` → `shell`, `task` → `subagent`, `write`/`patch` → `edit`
+- string decisions become `{ action, resource: "*", effect }`
+- nested command patterns keep their order (last match wins; verified on 2.0.32 — the
+  resolved array keeps source order)
+- global config rules precede agent rules, and agent rules are appended last; a global
+  permission rule cannot override a pack agent's own rule
+- `skill` is a real v2 action; pack agents use `"*": "allow"` so host skills stay usable.
+  Skills are instructions, not tools, so treat project-local skills in untrusted clones as
+  untrusted content (or hard-deny with a v2 `integration.use` policy)
+- `doom_loop` is not a v2 action; the installer drops it for v2 and keeps it for v1
+- unknown/plugin-defined actions (for example `browser`) pass conformance because V2
+  action names are strings and plugins may define more
+
+Native `permissions` arrays are optional. Converting the agent files would break v1
+hosts, which ignore the unknown key and fall back to default-allow, so the pack keeps
+the v1-shaped source and translates per target.
+
 OpenCode v2 translates v1-shaped config, agents, and commands in memory — the
 migrate-v1 guide states "V2 translates legacy agent frontmatter automatically" — and a
 disposable sandbox run against **v2.0.30** confirmed the pack's 10 agents are discovered
-from v1-shaped frontmatter. The adapter still changes only the keys v2 does not
-translate. The plugin is written against the published **v2.0.30** plugin API and
-verified to load on that host; runtime hook behaviour (secret-read guard, context
-injection, event subscription) has not yet been exercised with a model. The skill
-descriptor uses `path`, v2's only file field.
+from v1-shaped frontmatter, while **2.0.32** confirmed the resolved permission rules.
+The adapter still changes only the keys v2 does not translate. The plugin is written
+against the published **v2.0.30** plugin API and verified to load on that host; runtime
+hook behaviour (secret-read guard, context injection, event subscription) has not yet
+been exercised with a model. The skill descriptor uses `path`, v2's only file field.
 
 ## Hybrid install model
 
@@ -87,9 +109,10 @@ plugin-spec install covers **skills and hooks/guards only** — not agents or gl
 config.
 
 **Verified loading, unexercised runtime.** A live OpenCode **v2.0.30** run confirmed the
-plugin loads, and all 10 agents and 27 skills are discovered. The v2 plugin API is still
-evolving, and runtime hook behaviour and plugin-spec skill delivery have not been exercised
-with a model — prefer a file install for production use.
+plugin loads, and all 10 agents and 27 skills are discovered; **2.0.32** confirmed the
+translated agent permission rules. The v2 plugin API is still evolving, and runtime hook
+behaviour and plugin-spec skill delivery have not been exercised with a model — prefer a
+file install for production use.
 
 ## Coexistence guard
 
@@ -117,7 +140,16 @@ These v2 details matter when you target v2:
 
 - **`request.body.temperature`** is preserved by v2 but **not yet sent** to the
   model — it is currently inert.
-- **`compaction.prune`** is accepted by v2 but has **no runtime effect**.
+- **`doom_loop`** is not a v2 permission action. The pack keeps it in v1 target
+  config and drops it from v2 target output; a v1-shaped file loaded directly by
+  v2 resolves it as an inert action.
+- **`external_directory`** is allowed by default in v2 (v1 asks). The pack sets
+  it to `ask` so interactive clients prompt before cross-directory access;
+  `--auto` auto-approves asks, so use `deny` + explicit allows there.
+- **`compaction.prune`** has no v2 effect; the pack's source config uses
+  `compaction.keep.tokens` instead.
+- **Top-level `subagent_depth`** is ignored in v2; use
+  `experimental.subagent_depth` (the pack's source config now does).
 - **`subtask`** on commands is a **deprecated alias** in v2; use `subagent`. v2
   docs conflict on whether the alias still delegates.
 - Project `.opencode/skills/` is auto-discovered in v2.
@@ -131,5 +163,6 @@ npm run validate:opencode-schema:v2
 ```
 
 `--v2-strict` validates the v2 target output (no v1-only keys, no co-written key
-sets, v2 action allowlist) and scans agents and commands for untranslatable
-tokens. CI runs it as its own job (`validate-opencode-schema-v2`).
+sets, v1-only action names rejected, plugin-defined actions accepted) and scans agents
+and commands for untranslatable tokens. CI runs it as its own job
+(`validate-opencode-schema-v2`).

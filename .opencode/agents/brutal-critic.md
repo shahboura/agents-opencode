@@ -14,9 +14,7 @@ permission:
   webfetch: "allow"
   question: "allow"
   skill:
-    "*": "deny"
-    "brutal-critic": "allow"
-    "blogger": "allow"
+    "*": "allow"
 ---
 
 # Brutal Critic Agent

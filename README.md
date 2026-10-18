@@ -17,8 +17,8 @@ Already on Claude Code? The same 27 skills ship as a [plugin](./adapters/claude-
 - **One prompt, four disciplines.** `@orchestrator` scopes the work, then hands off to
   `@codebase` for implementation, `@review` for quality, and `@docs` for documentation — in one session.
 - **Skills that don't tax context.** All 27 skills load only when invoked, so an idle skill costs nothing.
-- **Least privilege by default.** Every agent starts at `"*": "deny"` and grants narrow allows for
-  the tools and skills it actually needs.
+- **Least-privilege tools, host-compatible skills.** Tools start at `"*": "deny"` with narrow
+  allows; skills are allowed by default so host and plugin skills keep working.
 - **Verified, not vibes.** Agent contracts, command matrices, docs links, and plugin guards are
   checked in CI on every change.
 
@@ -101,7 +101,7 @@ Ten agents ship in the pack: **seven delegation targets** that the orchestrator 
 `@blogger` and `@em-advisor` are **primary agents** — switch to them with Tab or mention them
 directly. They are not subagents (callable via the Task tool), so the orchestrator will not delegate to them.
 
-Canonical source for exact allowlists and skill triggers: [Skills Matrix](https://agnts.elkodr.com/skills-matrix/).
+Canonical source for skill triggers and the host-skill policy: [Skills Matrix](https://agnts.elkodr.com/skills-matrix/).
 
 ## Commands
 
@@ -126,6 +126,10 @@ Type `/command-name` in the TUI to run:
 | `/1-on-1-prep` | Meeting preparation |
 | `/legal-review` | License, compliance, and data-privacy review |
 
+**Command surface:** the pack registers 53 catalog entries (10 agents + 16 commands + 27 skills).
+Kimaki/Discord caps the combined surface (agents + commands + skills + host skills) at 100 slash
+commands; if you hit the cap, trim low-value commands first.
+
 ## Skills
 
 27 skills live under `.opencode/skills/`, each defined in a `SKILL.md`:
@@ -143,29 +147,25 @@ stays in `.opencode/instructions/`.
 
 Scope is core-only: additions pass demand, clear-gap, ownership, and licensing/provenance checks.
 
-<details><summary>Permission configuration (least-privilege patterns)</summary>
+<details><summary>Permission configuration (host-friendly defaults)</summary>
 
-Skill permissions (prevent unrelated skill loads):
+**Skills are allowed by default.** Agents can load any skill the host exposes (pack, plugin, or
+project) so host and plugin skills keep working. To restrict skills, edit `permission.skill` in
+the installed agent file, or add a v2 hard-deny policy
+(`{ "action": "integration.use", "resource": "skill:<id>", "effect": "deny" }`). A global
+`permission.skill` rule does **not** restrict pack agents: agent rules are appended last and win.
+Treat project skills in untrusted clones as untrusted content.
 
-```yaml
-permission:
-  skill:
-    "*": "deny"
-    "python": "allow"
-    "sql-migrations": "allow"
-```
+**Shell allowlist (codebase / orchestrator / em-advisor only).** These three auto-approve
+content-free diagnostics (`git status`, `ls`, `docker ps`, `kimaki session list` — Kimaki is the
+Discord front end, inert when absent), `kimaki buttons`, and common test runners
+(`npm`/`pnpm`/`yarn`/`bun` test, `pytest`, `go test`, `cargo test`, `dotnet test`, `flutter test`).
+Content readers (`git diff/log/show`, `docker logs`, `kimaki session read`) and every other
+command still ask; redirection and `git --output` force an ask; `rm -rf` and force-pushes stay
+denied. Test runners execute repo code — a deliberate trust decision. The other seven agents deny
+shell entirely; built-in agents (`build`) are unaffected by pack agent rules.
 
-Task permissions (control which subagents each agent can invoke):
-
-```yaml
-permission:
-  task:
-    "*": "deny"
-    "explore": "allow"
-    "review": "allow"
-```
-
-Start with `"*": "deny"`, then add explicit allows. Rules match in order — last match wins.
+**Subagent invocation (`task`) remains deny-by-default** with explicit per-agent allowlists.
 
 </details>
 
@@ -215,9 +215,11 @@ OpenCode plugin entry in `opencode.json`: `"plugin": ["agents-opencode"]` (v1) o
 `"plugins": ["agents-opencode"]` (v2); a version pin like `agents-opencode@X.Y.Z` also works (use a
 build that ships plugin-spec support). Do not combine a file install with the plugin entry.
 
-A sandbox run on v2.0.30 verified the plugin loads, with all 10 agents and 27 skills discovered;
-v2 runtime hook behaviour is not yet exercised end-to-end. The plugin-spec path is verified to
-load on v2.0.30; its runtime skill delivery is likewise not yet exercised end-to-end.
+A sandbox run on v2.0.30 verified the plugin loads, with all 10 agents and 27 skills discovered.
+On OpenCode 2.0.32 the resolved rules (`opencode debug agents`) confirm v1-shaped agent
+frontmatter translates to the v2 `permissions` array (`bash`→`shell`, `task`→`subagent`,
+`skill`→`skill`). v2 runtime hook behaviour is not yet exercised end-to-end. The plugin-spec path
+is verified to load on v2.0.30; its runtime skill delivery is likewise not yet exercised end-to-end.
 
 See [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 
@@ -261,7 +263,7 @@ metadata. `npm run eval:agents:json` writes machine-readable output.
 - **[OpenCode v1/v2 Support](https://agnts.elkodr.com/opencode-v1-v2-support/)**
 - **[Full Documentation](https://agnts.elkodr.com/)**
 
-> **Roadmap:** 3.0 will standardize on OpenCode v2. Status: [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
+> **Roadmap:** a future major will standardize on OpenCode v2. Status: [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 
 ## License
 

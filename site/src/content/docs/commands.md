@@ -39,7 +39,7 @@ Skills are reusable behaviors loaded on demand. Common utility skills include:
 - `agent-diagnostics` - Validate agent setup and instruction coverage
 - `docs-validation` - Outline docs lint and link checks
 
-For the canonical current skill inventory and agent allowlists, see [Skills Matrix](/skills-matrix/).
+For the canonical current skill inventory and trigger policy, see [Skills Matrix](/skills-matrix/).
 
 ### Using Skills
 
@@ -85,7 +85,8 @@ Skills cannot be called directly from the TUI — they are invoked through agent
 
 ### Skill Permission Hardening
 
-OpenCode supports skill-level permissions. Use these in agent frontmatter:
+Pack agents allow all skills by default (`"*": "allow"`) so host skills keep working. To restrict
+skills for your own agents, use skill-level permissions in agent frontmatter:
 
 ```yaml
 permission:
@@ -97,9 +98,10 @@ permission:
 
 Pattern notes:
 
-- `"*": "deny"` first, then explicit allows.
+- The pack default is `"*": "allow"`; use `"*": "deny"` + explicit allows when you need least privilege.
 - Use wildcard patterns for groups (for example, `"internal-*": "allow"`).
-- Prefer narrow allowlists per agent role for least privilege.
+- Restrict pack agents by editing their installed agent file or with a v2 `integration.use` policy;
+  global rules lose to agent rules.
 
 ### Task Permission Hardening
 
@@ -116,7 +118,7 @@ permission:
 Pattern notes:
 
 - Keep `"*": "deny"` first, then explicit allows.
-- Keep allowlists role-specific.
+- Keep subagent allowlists role-specific.
 - Rules are evaluated in order; last matching rule wins.
 
 ## Custom Commands

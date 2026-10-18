@@ -13,7 +13,14 @@ The validator review cycles produced these items. VAL-1 and VAL-3 landed in the
 | VAL-1 | low | Done: `validate-agents.js` skill/task allowlist parsing migrated to shared, indentation-safe helpers | `scripts/validate-agents.js`, `scripts/lib/opencode-schema.js` |
 | VAL-2 | low | Reverted: CI keeps `setup-go` on `stable` (floating toolchain accepted); pin only if reproducible builds are required | `.github/workflows/validate.yml` |
 | VAL-3 | low | Done: regression tests for quoted vs indented frontmatter keys | `scripts/validate-opencode-schema.test.js` |
-| VAL-4 | info | Migrate remaining hand-rolled frontmatter/permission parsers to the shared module | `evals/harness/run-evals.js`, `scripts/validate-command-matrices.js` |
+| VAL-4 | info | Migrate remaining hand-rolled frontmatter/permission parsers to the shared module. Follow-up: `extractNestedBlock` still requires exactly 2-space indentation (silent skip for 4-space agents); fold into this migration | `evals/harness/run-evals.js`, `scripts/validate-command-matrices.js` |
+| VAL-5 | info | Optional typo hint: warn when a skill allow entry is within a small edit distance of a pack skill (restores fail-closed value for `pythonn`-style typos); also align the evals harness (errors on unknown allow names under a deny baseline) with the agent validator's warning stance | `scripts/validate-agents.js`, `evals/harness/run-evals.js` |
+
+## Host-coexistence follow-ups
+
+| ID | Severity | Item | Files |
+|---|---|---|---|
+| HOST-1 | low | Upgrade cleanup: recognize prior installer-shaped `external_directory: "deny"` values so the stale key is cleaned on upgrade or target switch | `install.js`, `scripts/lib/config-mutator.js` |
 
 ## Review-gate patterns
 
@@ -99,14 +106,21 @@ Phases:
    are discovered. **Remaining:** exercise v2 runtime hook behaviour with a model
    (secret-read guard, context injection, event subscription) and the plugin-spec skill
    delivery end-to-end.
-3. Phase 2 (3.0.0, breaking): stop emitting v1 keys and remove the v1 plugin branch.
+3. Phase 2 (future major, breaking): stop emitting v1 keys and remove the v1 plugin branch.
+4. Host coexistence (shipped): pack agents allow all skills (`"*": "allow"`) so host
+   skills stay usable; shell allowlists cover read-only diagnostics and test runners;
+   `external_directory` is `ask`; the source config uses `experimental.subagent_depth`
+   and `compaction.keep.tokens`; v2 conformance rejects only v1-only action names and
+   accepts plugin-defined actions. **Deferred:** native `--v2-native` agent rewriting —
+   converting the shared agent files to `permissions` arrays would break v1 hosts unless
+   the installer transforms per target.
 
 Guardrails:
 
 - Never dual-write `permission` and `permissions` in one file; generate per target.
 - Preserve secret-read protection in the ported plugin hook (v2 only `ask`s on `*.env`).
 - Keep `AGENTS.md` as the instruction mechanism (v2 ignores the `instructions` config).
-- Support both through 2.x; reserve the major release for dropping v1.
+- Support both until a future breaking major; reserve the major release for dropping v1.
 
 ## UI/UX skill integration (shipped: external delegation)
 
