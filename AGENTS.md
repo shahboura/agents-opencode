@@ -65,6 +65,16 @@ All agents log milestone entries to this file using this format:
 
 ## Milestones
 
+### 2026-10-18 07:15 - v2 host-coexistence: skill allow-all, narrowed shell allowlist, overlay + validator fixes
+
+**Agent:** orchestrator
+**Summary:** Shipped OpenCode v2 host coexistence on `feat/v2-host-coexistence` (commit 15c47d8), gated PASS-WITH-CAVEATS after a 2-cycle multi-lens review (4 lenses + 3-lens delta) and container e2e.
+- Skill policy: pack agents allow all skills so host/plugin skills (`ui-ux-pro-max`, `graphify-usage`, ponytail) stay usable; docs teach the mechanisms that actually bind (agent-file edits, v2 `integration.use` policies) because global permission rules lose to agent rules (appended last).
+- Shell: content-free diagnostics + test runners auto-approve; content readers (`git diff/log/show`, `docker logs`, `kimaki session read`), redirection, and `git --output` ask; `rm -rf`/force-push denies moved LAST so last-match-wins keeps them (the security delta caught the first guard placement demoting denies to ask).
+- Config/validators: `external_directory` ask, `experimental.subagent_depth`, `compaction.keep.tokens`; v1-only actions rejected, plugin/tolerated actions accepted, nested `agents.<id>.permissions` checked, adapter-order + agent-allowlist-order tests added.
+- Evidence: doctor 24/24; clean OpenCode 2.0.32 resolved-rule checks (isolated service); container e2e v2.0.32 43/43 and v1.19.2 regression; found the 2-3-call `debug agents` warm-up quirk.
+- Lesson: v1→v2 permission-map order is load-bearing - wildcard first, allows, guards, denies last. Never append ask guards after denies (last match wins).
+
 ### 2026-10-16 05:30 - v2 hardening: plugin aligned to the published v2.0.30 API, verified on real v1 + v2 sandboxes
 
 **Agent:** orchestrator

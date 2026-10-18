@@ -1,8 +1,13 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
-  "current_phase": "OpenCode v1/v2 dual support hardened: the v2 plugin was aligned with the published v2.0.30 API and verified (plugin load, 10 agents, 27 skills) in disposable Docker sandboxes on opencode 1.19.2 and 2.0.30; branch feat/skills-and-v2-hardening carries the Superpowers skills port plus this hardening; docs site on Astro Starlight/Cloudflare Workers.",
+  "current_phase": "v2 host-coexistence shipped on feat/v2-host-coexistence (commit 15c47d8): host-friendly skill allow-all, narrowed shell allowlist with deny-safe ordering, overlay fixes (external_directory ask, experimental.subagent_depth, compaction.keep.tokens), hardened v2 validators, corrected docs. Verified: doctor 24/24, clean 2.0.32 resolved-rule runs, container e2e v2.0.32 43/43 + v1.19.2 regression.",
   "plugin_version": "2.6.0",
   "decisions": [
+    "Pack agents allow all skills (`*`: allow) because a pack cannot enumerate host/plugin skills; the working restriction mechanisms are editing the installed agent file or a v2 `integration.use` policy - global permission rules lose to agent rules, which are appended last (last match wins).",
+    "Shell allowlist is limited to content-free diagnostics and test runners; content readers (git diff/log/show, docker logs, kimaki session read) and redirections/`git --output` ask; denies (rm -rf, force-push) are placed LAST so last-match-wins cannot demote them to ask.",
+    "Agent frontmatter stays v1-shaped; V2 auto-translates it (conversion optional). Converting the shared agent files to native `permissions` arrays would break v1 hosts (unknown key -> default allow), so native conversion stays deferred behind an installer transform.",
+    "V2 conformance rejects only v1-only actions (bash/task/write/patch/doom_loop/lsp); plugin-defined actions (browser/execute) and tolerated v1 keys (list/todowrite) are accepted; unknown actions warn in-place but error in adapter output; nested agents.<id>.permissions are validated.",
+    "Container e2e found OpenCode v2 `debug agents` needs 2-3 warm-up calls (empty, then builtins, then full) - host behavior, not a pack bug; use isolated service ports for clean resolution checks.",
     "Use deny-by-default permissions with explicit allowlists.",
     "Nest command patterns under the relevant permission (e.g. bash:) - top-level command keys are inert.",
     "Keep em-advisor/blogger as primary agents (manual switch/@mention) rather than Task-delegatable subagents.",
@@ -41,6 +46,10 @@
     "The v2 secret-read guard stays fail-open by design but emits rate-limited telemetry when a read event has no resolvable path, so a payload-shape mismatch cannot silently disable it; a live-model v2 run is the exit gate before v2 is declared fully supported."
   ],
   "open_risks": [
+    "v2 `--auto` auto-approves asks, so `external_directory: ask` and the redirect/`--output` guards are soft in auto mode (documented); enforce with deny + explicit allows there.",
+    "Test-runner auto-approve executes repo code by design; path-arg forms (pytest /tmp/x.py, npm test --prefix) match the allow patterns.",
+    "`kimaki buttons *` auto-approve can be abused for button spam / social engineering (low, accepted per user request).",
+    "v2 `debug agents` needs 2-3 warm-up calls on a fresh service; a cold read returns [] or builtins-only.",
     "Scenario-level behavioral eval coverage is still limited.",
     "Agent/instruction line budgets remain tight (orchestrator 197/200, reference 215/250); adding to either requires trimming.",
     "Consumer-visible opencode.json defaults are not yet in the changelog.",
@@ -57,6 +66,7 @@
   ],
   "blocked_by": [],
   "next_actions": [
+    "Open the PR for feat/v2-host-coexistence (commit 15c47d8) and merge after CI; release-please minor-bumps and sha2lato picks the new version up on container start.",
     "Run a live-model v2 session (real API key) to exercise the secret-read guard block, context injection, and --target auto detection - the exit gate for declaring v2 fully supported.",
     "Open the PR for feat/skills-and-v2-hardening (commit d850358) and merge after CI.",
     "Push and open PRs for chore/instruction-health-readme and feat/docs-astro-cloudflare; merge the first, then rebase the migration branch.",
@@ -66,6 +76,16 @@
     "Expand eval fixtures toward capability/regression suites (pass@k) per Anthropic guidance."
   ],
   "artifacts": [
+    ".opencode/agents/orchestrator.md",
+    ".opencode/agents/codebase.md",
+    ".opencode/agents/em-advisor.md",
+    "scripts/validate-opencode-schema.js",
+    "scripts/validate-agents.js",
+    "scripts/lib/opencode-schema.js",
+    "scripts/opencode-target.test.js",
+    "evals/harness/run-evals.js",
+    "site/src/content/docs/opencode-v1-v2-support.md",
+    "site/src/content/docs/skills-matrix.md",
     ".opencode/agents/researcher.md",
     ".opencode/skills/decision-grounding/SKILL.md",
     ".opencode/instructions/orchestrator-reference.instructions.md",
@@ -95,5 +115,5 @@
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-10-16T05:30:00Z"
+  "last_updated": "2026-10-18T07:15:00Z"
 }
