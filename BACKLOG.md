@@ -21,6 +21,7 @@ The validator review cycles produced these items. VAL-1 and VAL-3 landed in the
 | ID | Severity | Item | Files |
 |---|---|---|---|
 | HOST-1 | low | Upgrade cleanup: recognize prior installer-shaped `external_directory: "deny"` values so the stale key is cleaned on upgrade or target switch | `install.js`, `scripts/lib/config-mutator.js` |
+| HOST-2 | low | Extend the installer `--languages` flag to also prune non-selected test-runner allow lines from the three shell-allowlist agents (install-time frontmatter transform), so the permission bundle is proportional to the selected languages; unused runners are inert until then | `install.js`, `scripts/lib/file-ops.js`, `.opencode/agents/{codebase,orchestrator,em-advisor}.md` |
 
 ## Review-gate patterns
 
