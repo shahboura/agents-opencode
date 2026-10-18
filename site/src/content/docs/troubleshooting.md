@@ -54,9 +54,19 @@ sidebar:
 - OpenCode reads its global config from `$XDG_CONFIG_HOME/opencode` when `XDG_CONFIG_HOME` is set
   to an **absolute** path; empty or relative values fall back to `~/.config/opencode`.
 - If you set `XDG_CONFIG_HOME` after installing, an install may exist at the legacy path but not
-  the active path (split-brain); the installer prints a warning.
-- Re-run the global install to populate the active path, then remove the old files.
-  If the legacy path is a symlink, remove the link itself, not its target.
+  the active path (split-brain); the installer prints a warning. See
+  [Global config path and XDG](/opencode-v1-v2-support/#global-config-path-and-xdg) for how the
+  installer resolves both paths.
+- Re-run the global install to populate the active path.
+- Then remove the stale install:
+  - If the legacy path is a symlink, remove the link itself with no trailing slash:
+    `unlink <path>` on macOS/Linux, `cmd /c rmdir "<path>"` (no `/s`) on Windows. Do not use
+    `rm -rf <path>/`, `rmdir /s`, or PowerShell `Remove-Item -Recurse` on the link — they
+    can follow the link and delete its target.
+  - Otherwise, move the directory aside, or uninstall it with
+    `npx agents-opencode --uninstall --global` after clearing `XDG_CONFIG_HOME` for that
+    command (it then targets `~/.config/opencode`, backs up managed files to
+    `~/.config/opencode/.backups/`, and prunes the managed directories).
 
 ### How do I restore from installer backups?
 

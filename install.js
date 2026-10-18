@@ -526,15 +526,16 @@ function legacyCleanupClause(legacyDir) {
     } catch {
         // Not a readable path: fall back to the regular advice.
     }
-    const fileAdvice = 'remove the old files manually once you no longer need them.';
     if (!isLink) {
-        return fileAdvice;
+        return `move the stale directory aside, or uninstall it with '--uninstall --global' after clearing XDG_CONFIG_HOME.`;
     }
+    // A trailing slash makes `rm` follow the link and delete the target.
+    const linkAdvice = `remove the symlink itself (no trailing slash)`;
     try {
-        return `remove the symlink itself (${legacyDir}), not its target ${fs.realpathSync(legacyDir)}.`;
+        return `${linkAdvice}, not its target ${fs.realpathSync(legacyDir)}.`;
     } catch {
         // The link itself is the only safe thing to remove.
-        return `remove the symlink itself (${legacyDir}).`;
+        return `${linkAdvice}.`;
     }
 }
 
@@ -550,7 +551,7 @@ function warnOnGlobalConfigSplit() {
 
     // A symlinked legacy dir (e.g. ~/.config/opencode -> $XDG_CONFIG_HOME/opencode)
     // is the same physical install; warning would advise deleting the active one.
-    if (legacyInstalled && resolvedInstalled && isSameRealPath(legacyDir, resolvedDir)) {
+    if (legacyInstalled && isSameRealPath(legacyDir, resolvedDir)) {
         return;
     }
 

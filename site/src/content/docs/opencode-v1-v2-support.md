@@ -135,7 +135,9 @@ prints a split-brain warning. Re-run the global install to populate the active p
 The reverse (active install, empty legacy path) is the expected XDG layout and is
 silent. A legacy path that symlinks to the active directory is treated as the same
 install, so it is silent too; a legacy symlink to a directory that holds its own
-install still warns and tells you to remove the link, not its target.
+install still warns and tells you to remove the link, not its target. See
+[Troubleshooting](/troubleshooting/#global-install-not-detected-after-setting-xdg_config_home)
+for the safe cleanup commands.
 
 ## v2 behavior notes
 
