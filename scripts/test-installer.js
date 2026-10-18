@@ -777,6 +777,93 @@ function testGlobalBothInstallsWarning(tmpRoot) {
   assert(output.includes('BOTH the active path'), 'Both-installs warning must call out that installs exist at both paths');
 }
 
+// A legacy path that symlinks to the active XDG dir is the same physical install:
+// warning there would tell the user to delete the active install through the link.
+function testGlobalSymlinkedLegacyIsNotASplit(tmpRoot) {
+  const homeDir = path.join(tmpRoot, 'link-home');
+  const xdgDir = path.join(tmpRoot, 'link-xdg');
+  const projectDir = path.join(tmpRoot, 'link-project');
+  const legacyDir = path.join(homeDir, '.config', 'opencode');
+  const resolvedDir = path.join(xdgDir, 'opencode');
+  createDir(projectDir);
+  createDir(path.join(homeDir, '.config'));
+  createDir(resolvedDir);
+  fs.writeFileSync(path.join(resolvedDir, '.agents-opencode-manifest.json'), '{"package":"agents-opencode"}\n');
+
+  try {
+    fs.symlinkSync(resolvedDir, legacyDir, process.platform === 'win32' ? 'junction' : 'dir');
+  } catch {
+    console.log('  (skipped symlink assertion: cannot create symlink/junction on this platform)');
+    return;
+  }
+
+  const env = { HOME: homeDir, USERPROFILE: homeDir, XDG_CONFIG_HOME: xdgDir };
+  const output = runInstaller(['--status'], { cwd: projectDir, env });
+
+  assert(output.includes(': installed'), 'The active install must still be detected (positive control)');
+  assert(!output.includes('BOTH the active path'), 'A symlinked legacy dir must not be reported as a second install');
+  assert(!output.includes('[WARNING]'), 'A symlinked legacy dir must not produce a warning');
+}
+
+// A legacy symlink to a DIFFERENT directory is a genuine split, but cleanup
+// advice must remove the link, never the target's contents.
+function testGlobalSymlinkedLegacyElsewhereWarnsSafely(tmpRoot) {
+  const homeDir = path.join(tmpRoot, 'link-elsewhere-home');
+  const xdgDir = path.join(tmpRoot, 'link-elsewhere-xdg');
+  const projectDir = path.join(tmpRoot, 'link-elsewhere-project');
+  const legacyDir = path.join(homeDir, '.config', 'opencode');
+  const legacyTarget = path.join(tmpRoot, 'dotfiles-opencode');
+  const resolvedDir = path.join(xdgDir, 'opencode');
+  createDir(projectDir);
+  createDir(path.join(homeDir, '.config'));
+  createDir(resolvedDir);
+  createDir(legacyTarget);
+  fs.writeFileSync(path.join(resolvedDir, '.agents-opencode-manifest.json'), '{"package":"agents-opencode"}\n');
+  fs.writeFileSync(path.join(legacyTarget, '.agents-opencode-manifest.json'), '{"package":"agents-opencode"}\n');
+
+  try {
+    fs.symlinkSync(legacyTarget, legacyDir, process.platform === 'win32' ? 'junction' : 'dir');
+  } catch {
+    console.log('  (skipped symlink assertion: cannot create symlink/junction on this platform)');
+    return;
+  }
+
+  const env = { HOME: homeDir, USERPROFILE: homeDir, XDG_CONFIG_HOME: xdgDir };
+  let output = runInstaller(['--status'], { cwd: projectDir, env });
+
+  assert(output.includes('BOTH the active path'), 'A distinct legacy target must still report the split');
+  assert(output.includes('remove the symlink itself'), 'Cleanup advice must remove the link, not follow it');
+  assert(output.includes(fs.realpathSync(legacyTarget)), 'Advice must name the symlink target');
+  assert(!output.includes('remove the old files'), 'Cleanup advice must not tell the user to delete files through the link');
+
+  // Legacy-only variant: the same advice must not follow the symlink.
+  fs.rmSync(resolvedDir, { recursive: true, force: true });
+  output = runInstaller(['--status'], { cwd: projectDir, env });
+  assert(output.includes('A previous global install was found at the legacy path'), 'Legacy-only split must still warn');
+  assert(output.includes('remove the symlink itself'), 'Legacy-only advice must remove the link, not follow it');
+  assert(fs.existsSync(path.join(legacyTarget, '.agents-opencode-manifest.json')), 'Warning must not remove anything itself');
+}
+
+// The XDG-only layout is the expected state: an active install and no legacy dir.
+function testCleanXdgInstallHasNoWarning(tmpRoot) {
+  const homeDir = path.join(tmpRoot, 'clean-xdg-home');
+  const xdgDir = path.join(tmpRoot, 'clean-xdg-config');
+  const projectDir = path.join(tmpRoot, 'clean-xdg-project');
+  createDir(homeDir);
+  createDir(xdgDir);
+  createDir(projectDir);
+
+  const env = { HOME: homeDir, USERPROFILE: homeDir, XDG_CONFIG_HOME: xdgDir };
+  runInstaller(['--global'], { cwd: projectDir, env });
+  // The second run sees the active install and previously warned about the
+  // expected layout; the resolved-only case must now be silent.
+  const output = runInstaller(['--global'], { cwd: projectDir, env });
+
+  assert(!fs.existsSync(path.join(homeDir, '.config', 'opencode')), 'A clean XDG install must leave the legacy path absent');
+  assert(!output.includes('[WARNING]'), 'The expected XDG-only layout must not warn');
+  assert(!output.includes('this is expected'), 'Expected-layout wording must not be emitted');
+}
+
 // --- Unit coverage for the fail-closed prune path (S-1/C8/C9/C10/S-2) ---
 
 function createSkillsTree(rootDir, dirs) {
@@ -1078,6 +1165,9 @@ function main() {
     testTargetSwitchStripsRetiredPluginEntries(tmpRoot);
     testV2InstallPreservesUserLegacySettings(tmpRoot);
     testGlobalBothInstallsWarning(tmpRoot);
+    testGlobalSymlinkedLegacyIsNotASplit(tmpRoot);
+    testGlobalSymlinkedLegacyElsewhereWarnsSafely(tmpRoot);
+    testCleanXdgInstallHasNoWarning(tmpRoot);
     testSkillClassificationCoversShippedSkills();
     testLanguagesFilterFullPartition(tmpRoot);
     testLanguagesFilterCicdAlias(tmpRoot);

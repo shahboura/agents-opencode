@@ -508,6 +508,36 @@ function globalInstallExists(dirPath) {
     return !!pathsMod.resolveAgentDirectory(dirPath);
 }
 
+function isSameRealPath(a, b) {
+    try {
+        return fs.realpathSync(a) === fs.realpathSync(b);
+    } catch {
+        // A missing (or otherwise unreadable) path cannot be proven the same.
+        return false;
+    }
+}
+
+// Advising "remove those files" through a directory symlink deletes its target,
+// so name the link instead whenever the legacy path is one.
+function legacyCleanupClause(legacyDir) {
+    let isLink = false;
+    try {
+        isLink = fs.lstatSync(legacyDir).isSymbolicLink();
+    } catch {
+        // Not a readable path: fall back to the regular advice.
+    }
+    const fileAdvice = 'remove the old files manually once you no longer need them.';
+    if (!isLink) {
+        return fileAdvice;
+    }
+    try {
+        return `remove the symlink itself (${legacyDir}), not its target ${fs.realpathSync(legacyDir)}.`;
+    } catch {
+        // The link itself is the only safe thing to remove.
+        return `remove the symlink itself (${legacyDir}).`;
+    }
+}
+
 function warnOnGlobalConfigSplit() {
     const resolvedDir = pathsMod.getGlobalConfigDir();
     const legacyDir = pathsMod.getLegacyGlobalConfigDir();
@@ -518,19 +548,22 @@ function warnOnGlobalConfigSplit() {
     const legacyInstalled = globalInstallExists(legacyDir);
     const resolvedInstalled = globalInstallExists(resolvedDir);
 
+    // A symlinked legacy dir (e.g. ~/.config/opencode -> $XDG_CONFIG_HOME/opencode)
+    // is the same physical install; warning would advise deleting the active one.
+    if (legacyInstalled && resolvedInstalled && isSameRealPath(legacyDir, resolvedDir)) {
+        return;
+    }
+
     if (legacyInstalled && !resolvedInstalled) {
         warning(`A previous global install was found at the legacy path: ${legacyDir}`);
         warning(`OpenCode reads its global config from: ${resolvedDir} (XDG_CONFIG_HOME is set).`);
-        warning(`OpenCode will NOT see the install at ${legacyDir}. Re-run the global install to populate ${resolvedDir}; remove the old files manually once you no longer need them.`);
-    } else if (resolvedInstalled && !legacyInstalled) {
-        warning(`The global install is at the active path: ${resolvedDir}`);
-        warning(`The legacy default path is empty: ${legacyDir} (XDG_CONFIG_HOME is set).`);
-        warning('OpenCode reads the active path, so this is expected; tools that assume the legacy default will not find the install there.');
+        warning(`OpenCode will NOT see the install at ${legacyDir}. Re-run the global install to populate ${resolvedDir}; ${legacyCleanupClause(legacyDir)}`);
     } else if (legacyInstalled && resolvedInstalled) {
         warning(`Global installs were found at BOTH the active path and the legacy path.`);
         warning(`Active: ${resolvedDir} (XDG_CONFIG_HOME is set) - OpenCode reads this one.`);
-        warning(`Legacy: ${legacyDir} - stale and will not be seen by OpenCode; remove those files to avoid confusion.`);
+        warning(`Legacy: ${legacyDir} - stale and will not be seen by OpenCode; ${legacyCleanupClause(legacyDir)}`);
     }
+    // resolved-only is the expected XDG layout: stay silent.
 }
 
 function installScope(options) {
