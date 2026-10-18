@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/shahboura/agents-opencode/compare/v3.0.0...v3.1.0) (2026-10-18)
+
+
+### Features
+
+* **agents:** host-compatible v2 permissions, skill policy, and shell allowlist ([423c27b](https://github.com/shahboura/agents-opencode/commit/423c27bb285dc3b03077f1da085ffcb61a1741b2))
+
 ## [3.0.0](https://github.com/shahboura/agents-opencode/compare/v2.6.0...v3.0.0) (2026-10-16)
 
 
