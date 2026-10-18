@@ -94,14 +94,15 @@ sidebar:
 - Verify skill files exist in `.opencode/skills/[skill-name]/SKILL.md`
 - Confirm the requested skill matches the active task domain (skills load on demand)
 - If stack/domain is unclear, clarify the target language before asking for skill usage
-- Note: this repository currently ships **core-only skills**; if you request a non-core skill, it will not be available.
+- Note: this repository ships **core-only skills**; if a skill is neither in the pack nor
+  provided by the host, it will not be available.
 
 ### Skill permission denied
 
-- Check `permission.skill` in the agent file
-- Ensure `"*": "deny"` is followed by explicit allow rules for required skills
+- Check `permission.skill` in the agent file (agent rules win over global rules)
+- Pack agents default to `"*": "allow"`; a v2 `integration.use` policy can still hard-deny the skill
+- Ensure a deny baseline is followed by an explicit allow for the required skill
 - Verify skill name matches directory and frontmatter `name`
-- Confirm the agent has `permission.skill` allow rules and that the requested skill is permitted
 
 ### Context file too large
 

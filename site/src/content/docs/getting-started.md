@@ -35,7 +35,7 @@ npx agents-opencode --update --all
 ```
 
 `--languages` keeps only the requested language skills, pruning the others from `.opencode/skills/`.
-Non-language skills always remain, and runtime skills still load on demand via agent skill allowlists.
+Non-language skills always remain, and skills load on demand; pack agents allow host skills by default.
 
 ### Your First Run
 
@@ -129,7 +129,7 @@ To restore files, use `backup-manifest.json` from a backup session and copy the 
 
 ### OpenCode v1/v2 support
 
-The pack fully supports OpenCode **v1** and prepares **v2** support — verified to load
+The pack supports OpenCode **v1** and **v2** from one source — verified to load
 (plugin, all 10 agents, and 27 skills discovered) on v2.0.30, with v2 runtime hook behaviour
 not yet exercised.
 The two use **disjoint config keys**, so the installer emits per-target output and never

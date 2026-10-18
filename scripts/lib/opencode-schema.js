@@ -21,6 +21,19 @@ const KNOWN_PERMISSION_KEYS = new Set([
   'todowrite', 'question', 'webfetch', 'websearch', 'lsp', 'doom_loop', 'skill',
 ]);
 
+// v1-only actions that are renamed or dropped in v2. A map value is the v2
+// replacement; null means no v2 core equivalent. Unknown actions are allowed in
+// v2 conformance because v2 action names are strings and plugins may define
+// their own actions (for example ponytail's `browser`).
+const V1_ONLY_V2_ACTIONS = new Map([
+  ['bash', 'shell'],
+  ['task', 'subagent'],
+  ['write', 'edit'],
+  ['patch', 'edit'],
+  ['doom_loop', null],
+  ['lsp', null],
+]);
+
 // Documented v1 command frontmatter fields. `argument-hint` is intentionally
 // excluded: it is not an OpenCode field and has been removed from this repo.
 const COMMAND_KEYS = new Set(['description', 'agent', 'model', 'subtask']);
@@ -198,6 +211,7 @@ function parseMapEntries(block) {
 
 module.exports = {
   KNOWN_PERMISSION_KEYS,
+  V1_ONLY_V2_ACTIONS,
   COMMAND_KEYS,
   SKILL_KEYS,
   CONFIG_KEYS,

@@ -19,13 +19,14 @@ This matrix captures tested runtime/tooling targets for this repository.
 
 ## OpenCode v1 and v2 Targets
 
-The pack fully supports OpenCode v1 and prepares v2 support; the two use
+The pack supports OpenCode v1 and v2 from one source; the two use
 **disjoint config keys**. The installer emits per-target output
 (`--target v1|v2|auto`; `auto` detects the installed OpenCode version — v2 when the
-major is >= 2, else v1) and never co-writes both key sets. The **v2 runtime path
-is verified to load** on v2.0.30 (plugin, all 10 agents, and 27 skills discovered,
-including v1-shaped frontmatter translation); runtime hooks and plugin-spec skill
-delivery are not yet exercised with a model (see
+major is >= 2, else v1) and never co-writes both key sets. The **v2 path is
+verified to load** on v2.0.30 (plugin, all 10 agents, and 27 skills discovered,
+including v1-shaped frontmatter translation), and on **v2.0.32** the resolved
+permission rules were confirmed with `opencode debug agents`; runtime hooks and
+plugin-spec skill delivery are not yet exercised with a model (see
 [OpenCode v1/v2 support](/opencode-v1-v2-support/)).
 
 | Concern | v1 | v2 |

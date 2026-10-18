@@ -16,7 +16,7 @@ Lean agent pack for OpenCode workflows.
 
 - **Fast setup:** install and run in minutes.
 - **Clear workflow:** orchestrate → implement → review → document.
-- **Safe skill model:** on-demand loading + least-privilege allowlists.
+- **Safe skill model:** on-demand loading + host-compatible skill access.
 - **Release-ready defaults:** validation and CI/CD hygiene included.
 
 Quick jump: [Getting Started](/getting-started/) · [Agents](/agents/) ·
@@ -72,7 +72,7 @@ Also available as a Claude Code plugin:
 | `@brutal-critic` | Final content quality gate |
 | `@legal-advisor` | Legal research, jurisdiction-aware compliance, contract review, license auditing, data privacy, IP, export controls |
 
-Canonical source for exact allowlists and skill triggers: [Skills Matrix](/skills-matrix/).
+Canonical source for skill triggers and the host-skill policy: [Skills Matrix](/skills-matrix/).
 
 ## Docs
 

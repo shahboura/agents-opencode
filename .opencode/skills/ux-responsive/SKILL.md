@@ -48,8 +48,9 @@ Use this when implementing or reviewing UI that must work across small and large
 
 When a project has the third-party **UI UX Pro Max** skill installed, prefer
 it for style, palette, typography, chart, icon, and stack-specific guidance.
-Ask the user to run its search script rather than executing a project-tree
-script unprompted:
+Run at most one focused search query per task and never paste dataset rows or
+reference tables into context. Ask the user before executing any other
+project-tree script:
 
 ```bash
 python3 .opencode/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system

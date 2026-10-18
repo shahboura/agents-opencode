@@ -9,6 +9,12 @@ const { execFileSync } = require('child_process');
 const repoRoot = process.cwd();
 const scriptPath = path.join(repoRoot, 'scripts', 'validate-agents.js');
 const fixturesRoot = path.join(repoRoot, 'scripts', 'fixtures', 'validate-agents');
+const {
+  frontmatterOf,
+  analyzePermission,
+  permissionChildBlock,
+  parseMapEntries,
+} = require('./lib/opencode-schema');
 
 function assert(condition, message) {
   if (!condition) {
@@ -61,13 +67,22 @@ function testValidFixturePasses(tmpRoot) {
   assert(result.status === 0, 'Expected valid fixture to pass agent validation');
 }
 
-function testUnknownSkillFails(tmpRoot) {
+function testAllowAllSkillPasses(tmpRoot) {
+  const fixture = path.join(tmpRoot, 'allow-all-skill');
+  copyDirectory(path.join(fixturesRoot, 'allow-all-skill'), fixture);
+
+  const result = runValidator(fixture);
+  assert(result.status === 0, `Expected allow-all skill policy to pass. Output: ${result.output}`);
+}
+
+function testUnknownSkillWarns(tmpRoot) {
   const fixture = path.join(tmpRoot, 'unknown-skill');
   copyDirectory(path.join(fixturesRoot, 'unknown-skill'), fixture);
 
   const result = runValidator(fixture);
-  assert(result.status !== 0, 'Expected unknown skill allow entry to fail validation');
-  assert(result.output.includes('does not match any .opencode/skills'), 'Expected unknown skill error in output');
+  assert(result.status === 0, `Expected unknown skill allow entry to warn, not fail. Output: ${result.output}`);
+  assert(result.output.includes('may be a host skill'), 'Expected host-skill warning in output');
+  assert(result.output.includes('not-a-real-skill'), 'Expected the warning to name the offending entry');
 }
 
 function testInvalidPermissionKeyFails(tmpRoot) {
@@ -99,16 +114,39 @@ function testIndentedPermissionPasses(tmpRoot) {
   assert(result.status === 0, `Expected non-2-space indentation to be parsed. Output: ${result.output}`);
 }
 
+// The pack shell allowlist order is load-bearing under last-match-wins:
+// wildcard first, then allows, then ask guards, then denies (denies win).
+function testPackShellAllowlistOrdering() {
+  for (const name of ['codebase', 'orchestrator', 'em-advisor']) {
+    const file = path.join(repoRoot, '.opencode', 'agents', `${name}.md`);
+    const frontmatter = frontmatterOf(fs.readFileSync(file, 'utf8'));
+    const permission = analyzePermission(frontmatter);
+    const bash = permissionChildBlock(permission.block, 'bash');
+    const entries = [...parseMapEntries(bash.block).entries()];
+
+    assert(entries.length > 0 && entries[0][0] === '*', `${name}: bash wildcard must be the first entry`);
+    const lastAllow = entries.map(([, effect]) => effect === 'allow').lastIndexOf(true);
+    const firstGuard = entries.findIndex(([key, effect]) => effect === 'ask' && key !== '*');
+    const firstDeny = entries.findIndex(([, effect]) => effect === 'deny');
+
+    assert(lastAllow !== -1 && firstGuard !== -1 && firstDeny !== -1, `${name}: expected allow, ask guard, and deny entries`);
+    assert(lastAllow < firstGuard, `${name}: ask guards must come after the allows`);
+    assert(firstGuard < firstDeny, `${name}: denies must come after the guards (last match wins)`);
+  }
+}
+
 function main() {
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agents-opencode-validate-agents-'));
 
   try {
     console.log('Running agent validator tests...');
     testValidFixturePasses(tmpRoot);
+    testAllowAllSkillPasses(tmpRoot);
     testInlineSkillChildFails(tmpRoot);
     testIndentedPermissionPasses(tmpRoot);
-    testUnknownSkillFails(tmpRoot);
+    testUnknownSkillWarns(tmpRoot);
     testInvalidPermissionKeyFails(tmpRoot);
+    testPackShellAllowlistOrdering();
     console.log('✅ Agent validator tests passed');
   } catch (err) {
     console.error('❌ Agent validator tests failed');

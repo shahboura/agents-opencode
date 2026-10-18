@@ -13,8 +13,7 @@ permission:
   webfetch: "allow"
   question: "allow"
   skill:
-    "*": "deny"
-    "legal-advisor": "allow"
+    "*": "allow"
   task:
     "*": "deny"
     "explore": "allow"

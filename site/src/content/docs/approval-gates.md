@@ -26,7 +26,7 @@ Use this rubric before applying repository-changing actions.
 Require explicit approval when changes touch:
 
 1. **CI/workflow edits** (`.github/workflows/**`)
-2. **Permissions/policy changes** (agent permissions, skill/task allowlists, auth/policy baselines)
+2. **Permissions/policy changes** (agent permissions, skill/task permissions, auth/policy baselines)
 3. **Destructive file operations** (bulk deletes/moves, force-overwrites, history rewrites)
 4. **Release/publish actions** (tagging, publishing, deployment)
 5. **Secrets/security-sensitive files** (`.env*`, key/cert/token/credential files)

@@ -291,26 +291,31 @@ function main() {
         errors.push(`${file.name}: permission.skill must be a non-empty mapping (fail-closed)`);
       }
 
-      // Require deny-by-default rule
-      if (permissionMap.get('*') !== 'deny') {
-        errors.push(`${file.name}: permission.skill must include "*": "deny" (deny-by-default)`);
+      // Two valid policies: deny-by-default + explicit allows, or allow-all so
+      // host and pack skills stay usable. The pack defaults to allow-all because
+      // hosts add skills the pack cannot enumerate.
+      const wildcardDecision = permissionMap.get('*');
+      if (wildcardDecision !== 'deny' && wildcardDecision !== 'allow') {
+        errors.push(`${file.name}: permission.skill must include "*": "deny" or "*": "allow"`);
       }
 
-      const allowedSkills = [...permissionMap.entries()]
-        .filter(([skillName, decision]) => skillName !== '*' && decision === 'allow')
-        .map(([skillName]) => skillName);
+      if (wildcardDecision === 'deny') {
+        const allowedSkills = [...permissionMap.entries()]
+          .filter(([skillName, decision]) => skillName !== '*' && decision === 'allow')
+          .map(([skillName]) => skillName);
 
-      if (allowedSkills.length === 0) {
-        warnings.push(`${file.name}: permission.skill has no explicit allow entries`);
-      }
+        if (allowedSkills.length === 0) {
+          warnings.push(`${file.name}: permission.skill has no explicit allow entries`);
+        }
 
-      // Validate explicit allow names against discovered project skills
-      if (knownSkills.size > 0) {
-        for (const allowedSkill of allowedSkills) {
-          // Wildcards are valid patterns; skip strict existence check
-          if (allowedSkill.includes('*')) continue;
-          if (!knownSkills.has(allowedSkill)) {
-            errors.push(`${file.name}: permission.skill allow entry '${allowedSkill}' does not match any .opencode/skills/<name>/SKILL.md`);
+        // Unknown names may be host skills, so warn instead of failing.
+        if (knownSkills.size > 0) {
+          for (const allowedSkill of allowedSkills) {
+            // Wildcards are valid patterns; skip strict existence check
+            if (allowedSkill.includes('*')) continue;
+            if (!knownSkills.has(allowedSkill)) {
+              warnings.push(`${file.name}: permission.skill allow entry '${allowedSkill}' does not match any .opencode/skills/<name>/SKILL.md (may be a host skill)`);
+            }
           }
         }
       }

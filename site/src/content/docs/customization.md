@@ -47,17 +47,10 @@ Recommended policy:
 
 ### Skill Permissions per Agent
 
-Harden each agent with `permission.skill` allowlists:
-
-```yaml
-permission:
-  skill:
-    "*": "deny"
-    "blogger": "allow"
-    "brutal-critic": "allow"
-```
-
-This prevents unrelated skills from being loaded and keeps behavior predictable.
+Pack agents allow all skills by default (`"*": "allow"`) so host and plugin skills keep working.
+To restrict skills, edit `permission.skill` in the installed agent file, or add a v2 hard-deny
+policy (`integration.use` on `skill:<id>`). A global `permission.skill` deny does not restrict
+pack agents — agent rules are appended last and win.
 
 ### Scope Policy (Core-only)
 
@@ -123,28 +116,28 @@ guidance, see `.opencode/instructions/orchestrator-reference.instructions.md`.
 ### Nested Delegation
 
 Some agents can delegate further (for example `codebase` → `@review`/`@docs` or
-`planner` → `@explore`). This requires `subagent_depth` of at least `2` in your
-`opencode.json`; the default of `1` lets only top-level agents spawn subagents. The
-installer does not set this for you, so add `"subagent_depth": 2` if you want nested
-delegation. The orchestrator's own coordination patterns work at the default depth
-because it calls each specialist directly.
+`planner` → `@explore`). This requires a subagent depth of at least `2`: use
+`experimental.subagent_depth` on v2 (top-level `subagent_depth` is ignored there) and
+`subagent_depth` on v1. The installer does not set this for you. The orchestrator's own
+coordination patterns work at the default depth because it calls each specialist directly.
 
 ### Recommended Project Config
 
 The installer writes only its target's keys (`$schema`, the plugin key, and
-permission defaults). To get the pack's full behavior, add these keys to `opencode.json`:
+permission defaults). To get the pack's full behavior, add these keys to `opencode.json`
+(pick the per-target forms):
 
 ```json
 {
-  "subagent_depth": 2,
-  "compaction": { "prune": true },
+  "experimental": { "subagent_depth": 2 },
+  "compaction": { "keep": { "tokens": 8000 } },
   "share": "disabled"
 }
 ```
 
-- `subagent_depth: 2` enables nested delegation (see above).
-- `compaction.prune` drops stale tool output in **v1**. OpenCode v2 accepts the key but it has
-  **no runtime effect** there.
+- `experimental.subagent_depth: 2` enables nested delegation on **v2** (use top-level
+  `subagent_depth` on v1).
+- `compaction.keep.tokens` retains recent context on **v2** (use `compaction.prune` on v1).
 - `share: "disabled"` prevents accidental session sharing.
 
 ### OpenCode v1/v2 config keys

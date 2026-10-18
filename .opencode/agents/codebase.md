@@ -8,6 +8,26 @@ permission:
   edit: "allow"
   bash:
     "*": "ask"
+    "git status *": "allow"
+    "ls *": "allow"
+    "docker ps *": "allow"
+    "kimaki session list *": "allow"
+    "kimaki buttons *": "allow"
+    "npm test *": "allow"
+    "npm run test *": "allow"
+    "pnpm test *": "allow"
+    "pnpm run test *": "allow"
+    "yarn test *": "allow"
+    "bun test *": "allow"
+    "pytest *": "allow"
+    "go test *": "allow"
+    "cargo test *": "allow"
+    "dotnet test *": "allow"
+    "flutter test *": "allow"
+    "git *--output*": "ask"
+    "* >*": "ask"
+    "*>>*": "ask"
+    "*>*": "ask"
     "rm -rf *": "deny"
     "git push*--force*": "deny"
     "git push -f*": "deny"
@@ -19,26 +39,7 @@ permission:
   todowrite: "allow"
   question: "allow"
   skill:
-    "*": "deny"
-    "dotnet": "allow"
-    "python": "allow"
-    "typescript": "allow"
-    "flutter": "allow"
-    "go": "allow"
-    "java-spring": "allow"
-    "node-express": "allow"
-    "react-next": "allow"
-    "ux-responsive": "allow"
-    "ruby-rails": "allow"
-    "rust": "allow"
-    "sql-migrations": "allow"
-    "legal-advisor": "allow"
-    "code-change-impact": "allow"
-    "refactoring": "allow"
-    "decision-grounding": "allow"
-    "systematic-debugging": "allow"
-    "test-driven-development": "allow"
-    "verification-before-completion": "allow"
+    "*": "allow"
   task:
     "*": "deny"
     "review": "allow"
@@ -117,7 +118,11 @@ Log detected profile at start: `Detected active profile: <profile>`
 - For feature or bugfix work, load `test-driven-development` before writing code; for any bug or test failure, load `systematic-debugging` before proposing a fix.
 - Before any completion/commit/PR claim, load `verification-before-completion`; after a fix, load `code-change-impact`; before writing code in a language, load that language's skill.
 - For CI/CD tasks, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
-- For responsive UI/UX tasks across phone/tablet/desktop, load `ux-responsive` on demand.
+- For UI/UX work: if a host design-router skill (`ui-ux-pro-max`) is present, load it first (one focused query; never paste dataset rows); otherwise load `ux-responsive` for cross-device responsive checks.
+- In a large or unfamiliar repo, if `graphify-usage` is present, use it (build/query the local knowledge graph) before broad greps.
+
+## Tool Use
+- Prefer the native read/grep/glob tools to shell `cat`/`rg`/`grep` for inspection; shell is for execution.
 
 ## Code Standards
 - Write modular, functional code following language conventions

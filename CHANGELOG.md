@@ -72,6 +72,11 @@
 
 ### Features
 
+* [capability:agents] **Host-friendly skill policy** — pack agents now allow all skills (`skill: { "*": "allow" }`) instead of pack-only allowlists, so host and plugin skills (`ui-ux-pro-max`, `graphify-usage`, ponytail) stay usable. Added "if present" UI/UX and large-repo hooks to `codebase`/`orchestrator`, a native-tools-first note, and docs on the mechanisms that actually restrict pack agents (agent-file edits, v2 `integration.use` policies).
+* [capability:agents] **Starter shell allowlist** — `codebase`, `orchestrator`, and `em-advisor` auto-approve content-free diagnostics (`git status`, `ls`, `docker ps`, `kimaki session list`), `kimaki buttons` (Discord option buttons), and common test runners; content readers (`git diff/log/show`, `docker logs`, `kimaki session read`), redirection, and `git --output` still ask; `rm -rf` and force-pushes stay denied.
+* [capability:security] **v2 overlay fixes** — `external_directory` is `ask` (was `deny`, which blocked cross-directory flows), top-level `subagent_depth` replaced by `experimental.subagent_depth`, and `compaction.prune` replaced by `compaction.keep.tokens` (pack-repo defaults; the installer emits only `$schema`/plugin/permission, so these are not written into user configs).
+* [capability:validation] **v2 host-compatible validators** — v2 conformance now rejects only v1-only action names (`bash`/`task`/`write`/`patch`/`doom_loop`/`lsp`) and accepts plugin-defined actions (`browser`, `execute`); skill allowlists may be allow-all, and unknown allow entries warn as host skills instead of failing.
+
 * [capability:docs] **Docs site migration** — Moved the documentation site from Jekyll (`docs/`, GitHub Pages) to **Astro Starlight** under `site/`, deployed to **Cloudflare Workers Static Assets** via `.github/workflows/deploy-docs.yml` and `site/wrangler.jsonc` (replacing `.github/workflows/pages.yml`). Repointed the README badge/docs links and internal references to the new content paths/site URLs, excluded the site's deps/build from markdown and link validation, kept it out of the published npm package, and updated the compatibility matrix.
 * [capability:workflow] **Decision Grounding Gate** — New read-only `@researcher` subagent plus a `decision-grounding` skill and orchestrator Pattern 9: ground high-stakes (T1–T4) decisions in current primary sources before implementation. Triggered by decision structure (one-way door, blast radius, workaround smell, volatility) rather than self-reported confidence; fail-closed parent acceptance; bounded budget (≤3 decisions/task, ≤6 fetches). Widens the pack to 10 agents and 24 skills.
 * [capability:workflow] **Multi-Lens Pre-Commit Review Gate** — Two-tier gate in the orchestrator workflow: Tier 1 (automated `npm run doctor` harness with baseline comparison) plus Tier 2, upgraded from a single `@review` to a concurrent multi-lens panel (requirements / code / security / ux-responsive). Adds diff-freeze snapshotting, lens selection, a review triage flow, and a user decision panel for declined critical/security/data-loss/requirement findings (orchestrator has no veto). Defines the review cycle, adds a per-task global budget, and scopes re-review to the delta (2-cycle cap). `@review` gains Review Lenses: lens scope, an output contract, and the evidence rule. Gate outcomes: PASS / PASS-WITH-CAVEATS / FAIL with escalation.
@@ -87,6 +92,7 @@
 
 ### Bug Fixes
 
+* [capability:docs] Corrected v1/v2 docs to state that v1-shaped agent frontmatter is supported on v2 (auto-translated and verified on OpenCode 2.0.32), not "prepared".
 * [capability:validation] improve validation reliability by excluding `example/**` from markdown/docs checks and fixing Windows npm spawn behavior in doctor
 * [capability:agents] migrate agent layout to canonical `.opencode/agents/` and align installer/validation/docs to the plural standard
 * [capability:security] add CI secret scanning to validation summary gating

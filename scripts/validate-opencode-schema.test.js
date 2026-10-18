@@ -510,6 +510,65 @@ function testV2StrictFailsRenamedAction() {
   assert(result.output.includes("'bash' is not a v2 action"), 'Expected v1-action message');
 }
 
+function testV2StrictFailsOtherV1OnlyActions() {
+  for (const action of ['task', 'write', 'patch', 'doom_loop', 'lsp']) {
+    const result = withFixture((root) => {
+      writeFile(root, 'opencode.json', JSON.stringify({
+        $schema: 'https://opencode.ai/config.json',
+        permissions: [{ action, resource: '*', effect: 'deny' }],
+      }, null, 2));
+    }, ['--v2-strict']);
+    assert(result.status !== 0, `Expected the v1-only action '${action}' to fail`);
+    assert(result.output.includes(`'${action}' is not a v2 action`), `Expected a v1-only action message for '${action}'`);
+  }
+}
+
+function testV2StrictAllowsPluginAndExecuteActions() {
+  const result = withFixture((root) => {
+    writeFile(root, 'opencode.json', JSON.stringify({
+      $schema: 'https://opencode.ai/config.json',
+      permissions: [
+        { action: 'browser', resource: '*', effect: 'deny' },
+        { action: 'execute', resource: '*', effect: 'allow' },
+        { action: 'todowrite', resource: '*', effect: 'allow' },
+      ],
+    }, null, 2));
+  }, ['--v2-strict']);
+  assert(result.status === 0, `Expected plugin-defined, execute, and legacy-but-plugin actions to pass. Output: ${result.output}`);
+}
+
+function testV2StrictWarnsUnknownAction() {
+  const result = withFixture((root) => {
+    writeFile(root, 'opencode.json', JSON.stringify({
+      $schema: 'https://opencode.ai/config.json',
+      permissions: [{ action: 'shel', resource: '*', effect: 'allow' }],
+    }, null, 2));
+  }, ['--v2-strict']);
+  assert(result.status === 0, 'An unknown action should warn, not fail');
+  assert(result.output.includes("unrecognized v2 action 'shel'"), 'Expected an advisory unknown-action warning');
+}
+
+function testV2StrictAcceptsToleratedV1Actions() {
+  const result = withFixture((root) => {
+    writeFile(root, 'opencode.json', JSON.stringify({
+      $schema: 'https://opencode.ai/config.json',
+      permission: { todowrite: 'allow', list: 'allow' },
+    }, null, 2));
+  }, ['--v2-strict']);
+  assert(result.status === 0, `Expected adapter output with tolerated v1 actions to pass. Output: ${result.output}`);
+}
+
+function testV2StrictFailsNestedV1OnlyAction() {
+  const result = withFixture((root) => {
+    writeFile(root, 'opencode.json', JSON.stringify({
+      $schema: 'https://opencode.ai/config.json',
+      agents: { reviewer: { permissions: [{ action: 'bash', resource: '*', effect: 'deny' }] } },
+    }, null, 2));
+  }, ['--v2-strict']);
+  assert(result.status !== 0, 'Expected a v1-only action under agents.<id>.permissions to fail');
+  assert(result.output.includes("agents.reviewer.permissions rule 0"), 'Expected the nested rule location in the message');
+}
+
 function testV2StrictFailsMalformedRuleShape() {
   const result = withFixture((root) => {
     writeFile(root, 'opencode.json', JSON.stringify({
@@ -571,6 +630,11 @@ function main() {
     testV2StrictAllowsInPlaceExtraV2Keys();
     testV2StrictFailsInstallerLeakedV1Key();
     testV2StrictFailsRenamedAction();
+    testV2StrictFailsOtherV1OnlyActions();
+    testV2StrictAllowsPluginAndExecuteActions();
+    testV2StrictWarnsUnknownAction();
+    testV2StrictAcceptsToleratedV1Actions();
+    testV2StrictFailsNestedV1OnlyAction();
     testV2StrictFailsMalformedRuleShape();
     testV2StrictFailsUntranslatedAgentToken();
     console.log('✅ OpenCode schema validator tests passed');

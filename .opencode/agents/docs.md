@@ -13,12 +13,7 @@ permission:
   bash: "deny"
   question: "allow"
   skill:
-    "*": "deny"
-    "docs-validation": "allow"
-    "project-bootstrap": "allow"
-    "agent-diagnostics": "allow"
-    "adr": "allow"
-    "api-documentation": "allow"
+    "*": "allow"
   task:
     "*": "deny"
     "explore": "allow"

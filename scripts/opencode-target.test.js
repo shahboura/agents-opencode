@@ -156,6 +156,21 @@ function testEmitConfigExclusiveKeys() {
   }
 }
 
+function testEmitConfigPreservesRuleOrder() {
+  // v1 permission maps translate to a v2 ordered array; last match wins, so the
+  // wildcard must precede the specific allow. Guards against a future translator
+  // reordering that would silently demote every allowlisted command to a prompt.
+  const v2 = target.emitConfig({
+    $schema: 'https://opencode.ai/config.json',
+    permission: { bash: { '*': 'ask', 'git status *': 'allow' } },
+  }, 'v2');
+  const resources = v2.permissions.map((rule) => rule.resource);
+  const wildcard = resources.indexOf('*');
+  const allow = resources.indexOf('git status *');
+  assert(wildcard !== -1 && allow !== -1, 'expected wildcard and specific allow rules');
+  assert(wildcard < allow, 'the wildcard rule must precede the specific allow (last match wins)');
+}
+
 function testEmitConfigDefaults() {
   const emitted = target.emitConfig({}, 'v2');
   assert(emitted.$schema === 'https://opencode.ai/config.json', 'emitConfig should default the schema');
@@ -295,6 +310,7 @@ function main() {
     testDetectHostVersionOverride();
     testConfigKeysFor();
     testEmitConfigExclusiveKeys();
+    testEmitConfigPreservesRuleOrder();
     testEmitConfigDefaults();
     testEmitConfigNeverCarriesV2IgnoredKeys();
     testStripV2IgnoredKeys();
