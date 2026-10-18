@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.2](https://github.com/shahboura/agents-opencode/compare/v3.1.1...v3.1.2) (2026-10-18)
+
+
+### Bug Fixes
+
+* **installer:** harden stale-install cleanup advice ([77597fb](https://github.com/shahboura/agents-opencode/commit/77597fba4b6b84c4e76e5307765cb9928b91feb1))
+
 ## [3.1.1](https://github.com/shahboura/agents-opencode/compare/v3.1.0...v3.1.1) (2026-10-18)
 
 
