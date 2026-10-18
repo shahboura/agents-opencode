@@ -289,7 +289,7 @@ const KNOWN_V2_ACTIONS = new Set([
   'webfetch', 'websearch', 'external_directory', 'execute', 'list', 'todowrite',
 ]);
 // MCP tool actions are `<server>_<tool>` (unsupported characters become `_`).
-const MCP_ACTION_RE = /^[a-z0-9]+(_[a-z0-9_]+)+$/i;
+const MCP_ACTION_RE = /^[a-z0-9]+(?:_[a-z0-9]+)+$/i;
 
 // Agent/command frontmatter tokens that v2 does NOT translate. v2 auto-translates
 // agent 'permission'/'temperature' and command 'subtask' in memory (the approved
