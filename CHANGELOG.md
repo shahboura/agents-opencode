@@ -99,6 +99,7 @@
 
 ### Bug Fixes
 
+* [capability:installer] **Global split-warning accuracy** — the installer no longer reports "installs at BOTH paths" when the legacy `~/.config/opencode` is a symlink to the active `$XDG_CONFIG_HOME/opencode` directory (same real path; following the old advice would delete the active install). The expected XDG-only layout (active install, empty legacy path) is now silent instead of warning on every run. Genuine splits still warn, and a legacy path that is a symlink now gets "remove the link, not its target" advice so cleanup cannot follow it.
 * [capability:docs] Corrected v1/v2 docs to state that v1-shaped agent frontmatter is supported on v2 (auto-translated and verified on OpenCode 2.0.32), not "prepared".
 * [capability:validation] improve validation reliability by excluding `example/**` from markdown/docs checks and fixing Windows npm spawn behavior in doctor
 * [capability:agents] migrate agent layout to canonical `.opencode/agents/` and align installer/validation/docs to the plural standard

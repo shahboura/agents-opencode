@@ -56,6 +56,7 @@ sidebar:
 - If you set `XDG_CONFIG_HOME` after installing, an install may exist at the legacy path but not
   the active path (split-brain); the installer prints a warning.
 - Re-run the global install to populate the active path, then remove the old files.
+  If the legacy path is a symlink, remove the link itself, not its target.
 
 ### How do I restore from installer backups?
 

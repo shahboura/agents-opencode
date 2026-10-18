@@ -130,9 +130,12 @@ The global config directory honors `XDG_CONFIG_HOME`:
 - An empty or **relative** value is ignored (per the XDG spec), falling back to
   `~/.config/opencode`.
 
-If an install exists at the legacy path but not the resolved path (or vice versa),
-the installer prints a split-brain warning. Re-run the global install to populate
-the active path.
+If an install exists at the legacy path but not the resolved path, the installer
+prints a split-brain warning. Re-run the global install to populate the active path.
+The reverse (active install, empty legacy path) is the expected XDG layout and is
+silent. A legacy path that symlinks to the active directory is treated as the same
+install, so it is silent too; a legacy symlink to a directory that holds its own
+install still warns and tells you to remove the link, not its target.
 
 ## v2 behavior notes
 
