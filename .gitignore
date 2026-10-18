@@ -61,3 +61,6 @@ handoff/*
 
 # Pre-Commit Review Gate artifacts
 .gate/
+
+# Local knowledge graph (rebuild with graphify)
+graphify-out/

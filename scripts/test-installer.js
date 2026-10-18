@@ -775,6 +775,9 @@ function testGlobalBothInstallsWarning(tmpRoot) {
 
   assert(output.includes(resolvedDir) && output.includes(legacyDir), 'Both-installs warning must name both paths');
   assert(output.includes('BOTH the active path'), 'Both-installs warning must call out that installs exist at both paths');
+  assert(output.includes('move the stale directory aside'), 'Real-directory cleanup advice must not tell the user to delete the directory');
+  assert(output.includes("'--uninstall --global'"), 'Real-directory cleanup advice must point at the supported uninstall path');
+  assert(!output.includes('remove the old files'), 'Real-directory cleanup advice must not revive the delete instruction');
 }
 
 // A legacy path that symlinks to the active XDG dir is the same physical install:
@@ -833,6 +836,7 @@ function testGlobalSymlinkedLegacyElsewhereWarnsSafely(tmpRoot) {
 
   assert(output.includes('BOTH the active path'), 'A distinct legacy target must still report the split');
   assert(output.includes('remove the symlink itself'), 'Cleanup advice must remove the link, not follow it');
+  assert(output.includes('no trailing slash'), 'Symlink advice must warn that a trailing slash follows the link');
   assert(output.includes(fs.realpathSync(legacyTarget)), 'Advice must name the symlink target');
   assert(!output.includes('remove the old files'), 'Cleanup advice must not tell the user to delete files through the link');
 
@@ -841,6 +845,7 @@ function testGlobalSymlinkedLegacyElsewhereWarnsSafely(tmpRoot) {
   output = runInstaller(['--status'], { cwd: projectDir, env });
   assert(output.includes('A previous global install was found at the legacy path'), 'Legacy-only split must still warn');
   assert(output.includes('remove the symlink itself'), 'Legacy-only advice must remove the link, not follow it');
+  assert(output.includes('no trailing slash'), 'Legacy-only advice must warn that a trailing slash follows the link');
   assert(fs.existsSync(path.join(legacyTarget, '.agents-opencode-manifest.json')), 'Warning must not remove anything itself');
 }
 
@@ -1123,6 +1128,9 @@ function testLegacyGlobalInstallWarning(tmpRoot) {
 
   assert(output.includes(legacyDir), 'Warning should name the legacy install location');
   assert(output.includes('will NOT see'), 'Warning should state OpenCode will not see the legacy install');
+  assert(output.includes('move the stale directory aside'), 'Real-directory cleanup advice must not tell the user to delete the directory');
+  assert(output.includes("'--uninstall --global'"), 'Legacy-only cleanup advice must point at the supported uninstall path');
+  assert(!output.includes('remove the old files'), 'Real-directory cleanup advice must not revive the delete instruction');
   assert(
     fs.existsSync(path.join(xdgDir, 'opencode', '.agents-opencode-manifest.json')),
     'Split-brain warning must not stop the install from reaching the active path'

@@ -19,6 +19,7 @@ This repository contains customized agents for OpenCode.ai, aligned with Anthrop
 - **Validation workflow:** See `.opencode/skills/docs-validation/SKILL.md`.
 - **Skill policy governance:** Cross-agent skill verification criteria (CI-enforced) are in `scripts/validate-agents.js`.
 - **Backlog:** Deferred review items and the OpenCode v2 migration plan are tracked in `BACKLOG.md`.
+- **Knowledge graph:** when `graphify-out/graph.json` exists, run `graphify query "<question>"` / `path` / `explain` before broad grepping. After code edits run `graphify update .` (free); after doc edits run `graphify extract . --backend deepseek` then `graphify cluster-only .`. Latest project updates are the newest `## Milestones` entry in this file — check it before starting, and if the graph is absent, skip it silently.
 
 ## Quality Requirements
 
