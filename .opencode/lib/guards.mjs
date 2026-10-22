@@ -1,5 +1,13 @@
 // Pure guard helpers for the agents-opencode plugin.
 // Kept dependency-free so they can be unit-tested outside the OpenCode runtime.
+//
+// `isBlockedReadPath` is the secret-content policy shared by the `read` and
+// `grep` guards: `grep` returns matching lines, so guarding `read` alone would
+// leave secrets readable through search.
+//
+// shortcut: grep is guarded only when its path is a secret basename; pathless,
+// directory, and include-filtered greps are not inspected. Upgrade if the grep
+// tool exposes a complete file set.
 
 const PUBLIC_CREDENTIAL_SUFFIXES = ['.pub', '.crt', '.cer', '.cert'];
 
@@ -34,22 +42,27 @@ const BLOCKED_READ_SUFFIXES = [
 const ENV_TEMPLATE_SUFFIXES = ['.example', '.sample', '.template', '.dist', '.defaults'];
 
 /**
- * Decide whether reading a path should be blocked.
+ * Decide whether a path holds secret content that `read` or `grep` must not touch.
  *
  * Policy: deny by default for secret-ish files, but allow explicit public
  * certificate/key forms and checked-in env templates. `.pem`/`.key` stay
  * blocked (dual-use private-key conventions) with a public-cert allowlist;
  * the rare false positive (e.g. Apple Keynote `.key` files) is accepted and
- * remains bypassable by design.
+ * remains bypassable by design. direnv files (`.envrc`, `.envrc.*`) are blocked
+ * like `.env`: direnv exports their values into the shell.
  */
 export function isBlockedReadPath(filePath) {
   const basename = String(filePath ?? '').split(/[/\\]/).pop()?.toLowerCase() || '';
   if (!basename) return false;
 
-  const isEnvFile =
-    basename === '.env' || basename.startsWith('.env.') || basename.endsWith('.env');
+  const isEnvSecret =
+    basename === '.env' ||
+    basename.startsWith('.env.') ||
+    basename.endsWith('.env') ||
+    basename === '.envrc' ||
+    basename.startsWith('.envrc.');
   const isEnvTemplate = ENV_TEMPLATE_SUFFIXES.some((suffix) => basename.endsWith(suffix));
-  if (isEnvFile && !isEnvTemplate) return true;
+  if (isEnvSecret && !isEnvTemplate) return true;
 
   if (PUBLIC_CREDENTIAL_SUFFIXES.some((suffix) => basename.endsWith(suffix))) return false;
   if (PUBLIC_PEM_BASENAMES.has(basename)) return false;
@@ -58,41 +71,55 @@ export function isBlockedReadPath(filePath) {
 }
 
 /**
- * Resolve a `filePath` from a hook payload, tolerating every documented shape.
- * The plugin hands the whole v2 event (or the v1 `output`) to the guard, so the
- * path can sit in any of these locations; the first non-nullish value wins:
- * - `payload.args.filePath`       v1 `tool.execute.before` output
- * - `payload.filePath`            flat v2 event `{ tool, filePath }`
- * - `payload.input.filePath`      v2 event `{ tool, input: { filePath } }`
- * - `payload.input.args.filePath` v2 event `{ tool, input: { args: { filePath } } }`
+ * Resolve a path argument from a hook payload, tolerating every documented
+ * shape. The plugin hands the whole v2 event (or the v1 `output`) to the guard,
+ * so the path can sit in any of these locations; the first non-nullish value
+ * wins:
+ * - `payload.args[key]`       v1 `tool.execute.before` output
+ * - `payload[key]`            flat v2 event `{ tool, filePath }`
+ * - `payload.input[key]`      v2 event `{ tool, input: { filePath } }`
+ * - `payload.input.args[key]` v2 event `{ tool, input: { args: { filePath } } }`
+ *
+ * `key` is `filePath` for `read` and `path` for `grep`.
  */
-function resolveReadFilePath(payload) {
+function resolveToolPath(payload, key) {
   const candidates = [
-    payload?.args?.filePath,
-    payload?.filePath,
-    payload?.input?.filePath,
-    payload?.input?.args?.filePath,
+    payload?.args?.[key],
+    payload?.[key],
+    payload?.input?.[key],
+    payload?.input?.args?.[key],
   ];
   // Skip empty/whitespace strings so a blank earlier candidate cannot shadow a
-  // real path in a later one (fail-closed on reads).
+  // real path in a later one (fail-closed on guarded paths).
   return candidates.find((value) => typeof value === 'string' && value.trim() !== '');
 }
 
+// Argument that carries the guarded path, per tool. Every other tool is
+// unguarded (`bash` included): this is a best-effort secret-content guard, not
+// a sandbox — a shell can reach any file regardless.
+const GUARDED_PATH_KEYS = new Map([
+  ['read', 'filePath'],
+  ['grep', 'path'],
+]);
+
 /**
- * Return the block message when reading `payload` with `tool` must be denied,
- * or null when the read is allowed.
+ * Return the block message when `tool` would surface secret content from
+ * `payload`, or null when the call is allowed.
  *
  * This is the policy core: a thin wrapper over `isBlockedReadPath` that
- * normalizes both hook payload shapes through `resolveReadFilePath`. It never
- * relaxes the policy, and callers must throw on a non-null result (block, not
- * `ask`). `handleToolExecuteBefore` is the event-aware entrypoint the plugin
- * calls; this function stays path/policy-focused so it can be tested directly.
+ * normalizes both hook payload shapes through `resolveToolPath` for the two
+ * content-reading tools. `grep` is guarded alongside `read` because it returns
+ * matching lines and every agent has unrestricted `grep`. It never relaxes the
+ * policy, and callers must throw on a non-null result (block, not `ask`).
+ * `handleToolExecuteBefore` is the event-aware entrypoint the plugin calls;
+ * this function stays path/policy-focused so it can be tested directly.
  */
 export function readGuardError(tool, payload) {
-  if (tool !== 'read') return null;
-  const filePath = resolveReadFilePath(payload);
+  const pathKey = GUARDED_PATH_KEYS.get(tool);
+  if (!pathKey) return null;
+  const filePath = resolveToolPath(payload, pathKey);
   if (typeof filePath === 'string' && isBlockedReadPath(filePath)) {
-    return `[agents-opencode] Blocked reading sensitive file: ${filePath}. Do not read credential or secret files.`;
+    return `[agents-opencode] Blocked reading sensitive file: ${filePath}. Do not read or search credential or secret files.`;
   }
   return null;
 }
@@ -115,8 +142,9 @@ function splitToolAndPayload(toolOrEvent, payload) {
  * message or null.
  *
  * This is the pure seam the plugin calls, so tests can prove the *wiring*
- * (event shape -> policy) instead of only the policy core. Two call forms cover
- * both entrypoints:
+ * (event shape -> policy) instead of only the policy core. The same seam covers
+ * `read` and the `grep` secret-content guard; every other tool (`bash`
+ * included) passes through unguarded. Two call forms cover both entrypoints:
  * - whole event: `handleToolExecuteBefore(event)` for v2, where `event` is
  *   `{ tool, input }` (or a flat `{ tool, filePath }`); `tool` is read from
  *   `event.tool`.
@@ -131,22 +159,25 @@ export function handleToolExecuteBefore(toolOrEvent, payload) {
 
 /**
  * Build the `tool.execute.before` handler the v2 plugin registers: the same
- * block policy as `handleToolExecuteBefore`, plus rate-limited telemetry for
- * the fail-open case.
+ * block policy as `handleToolExecuteBefore` (secret-content guard, `read` and
+ * `grep`), plus rate-limited telemetry for the fail-open case.
  *
  * Why telemetry: the guard is fail-open by design (the real v2 `read` payload
  * shape is unverified), so a `read` whose path cannot be resolved from any
  * documented shape proceeds unguarded. Without a signal, a payload-shape
- * mismatch would silently disable the pack's only secret-read control. When
+ * mismatch would silently disable the pack's only secret-content control. When
  * that case is seen, `onUnresolvedRead` is invoked at most once per handler
  * instance (the plugin creates one handler per setup call), so the mismatch
- * becomes visible in logs without warning on every read.
+ * becomes visible in logs without warning on every read. `grep` gets no
+ * telemetry: its `path` is optional by design (a pathless grep searches the
+ * working directory), so "unresolved" is normal there.
  *
- * Runtime behaviour is otherwise unchanged: a blocked read still throws, and
- * telemetry failures are contained — they must never break the guard path.
+ * Runtime behaviour is otherwise unchanged: a blocked `read`/`grep` still
+ * throws, and telemetry failures are contained — they must never break the
+ * guard path.
  *
  * @param {() => void} [onUnresolvedRead] Called at most once, with no arguments.
- * @returns {(toolOrEvent: unknown, payload?: unknown) => void} Hook handler; throws on a blocked read.
+ * @returns {(toolOrEvent: unknown, payload?: unknown) => void} Hook handler; throws on a blocked call.
  */
 export function createReadGuardHandler(onUnresolvedRead) {
   const notify = typeof onUnresolvedRead === 'function' ? onUnresolvedRead : () => {};
@@ -155,7 +186,11 @@ export function createReadGuardHandler(onUnresolvedRead) {
   return (toolOrEvent, payload) => {
     const split = splitToolAndPayload(toolOrEvent, payload);
 
-    if (split.tool === 'read' && resolveReadFilePath(split.payload) === undefined && !warned) {
+    if (
+      split.tool === 'read' &&
+      resolveToolPath(split.payload, 'filePath') === undefined &&
+      !warned
+    ) {
       // Set the gate before notifying: a throwing callback must not lead to a
       // retry (and thus repeated log noise) on the next read.
       warned = true;

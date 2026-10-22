@@ -2,7 +2,7 @@
 description: Strategic coordinator for planning and orchestrating complex multi-phase workflows with execution options
 mode: primary
 temperature: 0.2
-steps: 75
+steps: 100
 permission:
   "*": "deny"
   edit: "ask"
@@ -34,7 +34,17 @@ permission:
     "git push * -f*": "deny"
   glob: "allow"
   grep: "allow"
-  read: "allow"
+  read:
+    "*": "allow"
+    "*.env": "deny"
+    "*.env.*": "deny"
+    "*.envrc": "deny"
+    "*.envrc.*": "deny"
+    "*.env.example": "allow"
+    "*.env.sample": "allow"
+    "*.env.template": "allow"
+    "*.env.dist": "allow"
+    "*.env.defaults": "allow"
   webfetch: "allow"
   todowrite: "allow"
   question: "allow"
@@ -133,6 +143,17 @@ For each approved phase:
 
 4. Produce final summary with links to deliverables
 
+## Completion Evidence
+
+Before claiming work is done, state each item — or an explicit reason it does not apply:
+
+- **Tests run:** exact commands and their result, never "should pass".
+- **Lenses run:** which Tier 2 lenses ran and their verdicts.
+- **Skills loaded:** the skills you actually loaded (`[]` if none).
+- **Graph updated:** refresh the knowledge graph if `graphify-usage` is in use.
+- **Bundle / Playwright:** build and browser-check output for UI changes.
+- **TDD evidence:** the failing test that preceded the fix, or why TDD did not apply.
+
 ## Planning & Templates
 
 When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains: Planning Template, Agent Selection Guide, Coordination Patterns (9 patterns including Pre-Commit Review Gate and Decision Grounding Gate), Checkpoint Format, Fallback Routing, and Progress Tracking.
@@ -145,7 +166,7 @@ Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @br
 - If scope is ambiguous, ask a clarifying question before loading.
 - Before any completion/commit/PR claim, load `verification-before-completion`; on bugs or test failures, load `systematic-debugging` before proposing fixes.
 - For CI/CD phases, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
-- For UI/UX work: if a host design-router skill (`ui-ux-pro-max`) is present, load it first (one focused query; never paste dataset rows); otherwise load `ux-responsive`.
+- For UI/UX work, load `ui-ux-pro-max` first (one focused query; never paste dataset rows) and state that you loaded it; if it is unavailable, fall back to `ux-responsive`.
 - For high-risk refactors or cross-cutting changes, load `code-change-impact` to assess blast radius before delegating implementation.
 - For single-file dependency changes, load `legal-advisor` for fast license checks; delegate to @legal-advisor for full compliance audits.
 - For one-way/high-stakes decisions, load `decision-grounding` and dispatch `@researcher` to ground the approach.

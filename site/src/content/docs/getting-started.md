@@ -114,6 +114,8 @@ npx agents-opencode --status
 - Default uninstall applies to the **current project scope**.
 - Use `--global` or `--all` to target non-project scope.
 - Removes installer-managed files using install manifest tracking.
+- Uninstalling is the revert: no pack environment variable disables installed agents
+  (`AGENT_PACK` is a box-side setting, not a pack feature).
 - Project backups: `<project>/.opencode/.backups/<timestamp>--<operation>--<scope>/`
 - Global backups: `$XDG_CONFIG_HOME/opencode/.backups/…` when `XDG_CONFIG_HOME` is an absolute
   path, otherwise `~/.config/opencode/.backups/<timestamp>--<operation>--<scope>/`

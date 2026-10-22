@@ -52,7 +52,9 @@ if (packResult.status !== 0) {
 } else {
   try {
     const packJson = JSON.parse(packResult.stdout);
-    const packedFiles = (Array.isArray(packJson) && packJson[0] && packJson[0].files) || [];
+    // npm 11 returns an object keyed by package name; older versions return an array.
+    const packEntry = Array.isArray(packJson) ? packJson[0] : Object.values(packJson)[0];
+    const packedFiles = (packEntry && packEntry.files) || [];
     const sitePaths = packedFiles
       .map((file) => file.path)
       .filter((filePath) => filePath === 'site' || filePath.startsWith('site/'));

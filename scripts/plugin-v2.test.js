@@ -2,9 +2,9 @@
 'use strict';
 
 /**
- * Proves the secret-read guard blocks the *same* paths on the v2 hook path as
- * on v1, and that the *wiring* (event shape -> policy) is correct — not just the
- * policy core.
+ * Proves the secret-content guard (`read`/`grep`) blocks the *same* paths on the
+ * v2 hook path as on v1, and that the *wiring* (event shape -> policy) is
+ * correct — not just the policy core.
  *
  * The policy core lives in .opencode/lib/guards.mjs (`readGuardError`, a thin
  * wrapper over `isBlockedReadPath`). The plugin never calls it directly; it
@@ -14,6 +14,11 @@
  *   `{ tool, input: { args: { filePath } } }`, and flat `{ tool, filePath }`
  * - v1 `tool.execute.before(input, output)`: output `{ args: { filePath } }`
  * Both entrypoints must throw (block), not merely `ask`.
+ *
+ * `grep` is covered by the same guard (it returns matching lines): its search
+ * path is resolved from `args.path`, `path`, `input.path`, or
+ * `input.args.path`, and a blocked target is denied on the same entrypoints.
+ * Every other tool — `bash` included — stays unguarded.
  *
  * The same module hosts the other v2 wiring seams so they can be tested
  * without a live v2 host:
@@ -62,6 +67,9 @@ async function main() {
     '/x/.env',
     '/x/.env.local',
     '/x/production.env',
+    '/x/.envrc',
+    '/x/.envrc.local',
+    '/x/.envrc.private',
     '/x/id_rsa',
     '/x/id_ed25519',
     '/x/id_ecdsa',
@@ -88,6 +96,7 @@ async function main() {
     '/x/.env.template',
     '/x/.env.dist',
     '/x/.env.defaults',
+    '/x/.envrc.example',
     '/x/production.env.example',
     '/x/ca.pem',
     '/x/cert.pem',
@@ -125,12 +134,104 @@ async function main() {
     assert(readGuardError('read', { filePath }) === null, `v2 hook must allow: ${filePath}`);
   }
 
-  // Non-read tools and malformed payloads are never blocked on either path.
-  assert(readGuardError('bash', { filePath: '/x/.env' }) === null, 'v1/v2: non-read tool must not be blocked');
+  // Unguarded tools (bash, write, ...) and malformed payloads are never blocked
+  // on either path: this is a best-effort content guard, not a sandbox.
+  assert(readGuardError('bash', { filePath: '/x/.env' }) === null, 'v1/v2: bash must not be blocked');
+  assert(readGuardError('bash', { path: '/x/.envrc' }) === null, 'v1/v2: bash with a grep-like path must not be blocked');
+  assert(readGuardError('write', { filePath: '/x/.env' }) === null, 'v1/v2: write must not be blocked');
   assert(readGuardError('read', {}) === null, 'v2: missing filePath must be allowed');
   assert(readGuardError('read', { args: {} }) === null, 'v1: missing filePath must be allowed');
   assert(readGuardError('read', { filePath: 42 }) === null, 'v2: non-string filePath must be allowed');
   assert(readGuardError(undefined, { filePath: '/x/.env' }) === null, 'v2: undefined tool must be allowed');
+
+  // --- grep: the secret-content guard also covers search paths ---
+  // `grep` returns matching lines and every agent has unrestricted access, so a
+  // `grep` pointed at a secret file would leak it just like `read` would. The
+  // search path resolves from the same four tolerated locations, with `path`
+  // instead of `filePath`; all other tools stay unguarded.
+  const grepShapes = {
+    'v1 { args: { path } }': (searchPath) => ({ args: { path: searchPath } }),
+    'v2 flat { path }': (searchPath) => ({ path: searchPath }),
+    'v2 { input: { path } }': (searchPath) => ({ input: { path: searchPath } }),
+    'v2 { input: { args: { path } } }': (searchPath) => ({ input: { args: { path: searchPath } } }),
+  };
+
+  for (const searchPath of ['/x/.env', '/x/.envrc', '/x/.envrc.local', '/x/credentials.json']) {
+    const expected = readGuardError('read', { filePath: searchPath });
+    assert(expected, `grep target must be a blocked path: ${searchPath}`);
+
+    for (const [shape, make] of Object.entries(grepShapes)) {
+      const payload = make(searchPath);
+      const direct = readGuardError('grep', payload);
+      assert(direct === expected, `grep ${shape} must block via policy core: ${searchPath}`);
+
+      const event = { tool: 'grep', ...payload };
+      assert(
+        handleToolExecuteBefore(event) === expected,
+        `grep ${shape} must block via whole event: ${searchPath}`
+      );
+      assert(
+        handleToolExecuteBefore('grep', payload) === expected,
+        `grep ${shape} must block via (tool, payload): ${searchPath}`
+      );
+
+      let threw = false;
+      try {
+        createReadGuardHandler()(event);
+      } catch (err) {
+        threw = true;
+        assert(
+          typeof err.message === 'string' && err.message.includes('Blocked reading sensitive file'),
+          `grep ${shape} block must throw the policy error: ${searchPath}`
+        );
+        assert(
+          err.message.includes(searchPath),
+          `grep ${shape} block must name the offending path: ${searchPath}`
+        );
+      }
+      assert(threw, `grep ${shape} must throw, not ask: ${searchPath}`);
+    }
+  }
+
+  // Checked-in env templates stay searchable in every shape.
+  for (const searchPath of ['/x/.env.example', '/x/.envrc.example']) {
+    for (const [shape, make] of Object.entries(grepShapes)) {
+      const payload = make(searchPath);
+      assert(
+        readGuardError('grep', payload) === null,
+        `grep ${shape} must allow a template: ${searchPath}`
+      );
+      assert(
+        handleToolExecuteBefore({ tool: 'grep', ...payload }) === null,
+        `grep ${shape} must allow a template via whole event: ${searchPath}`
+      );
+    }
+  }
+
+  // A pathless grep searches the working directory: still allowed (fail-open by
+  // design; the guard is best-effort, not a sandbox).
+  assert(readGuardError('grep', {}) === null, 'grep: missing path must be allowed');
+  assert(readGuardError('grep', { args: { path: '' } }) === null, 'grep: blank path must be allowed');
+  assert(
+    handleToolExecuteBefore({ tool: 'grep', input: { pattern: 'SECRET' } }) === null,
+    'grep: pattern-only event must be allowed'
+  );
+
+  // First-defined-wins precedence across the tolerated grep locations.
+  assert(
+    handleToolExecuteBefore('grep', { args: { path: '/x/.env' }, path: '/x/README.md' }) !== null,
+    'grep: payload.args.path must win over payload.path'
+  );
+  assert(
+    handleToolExecuteBefore('grep', { path: '/x/.env', input: { path: '/x/README.md' } }) !== null,
+    'grep: payload.path must win over payload.input.path'
+  );
+  assert(
+    handleToolExecuteBefore('grep', {
+      input: { path: '/x/.env', args: { path: '/x/README.md' } },
+    }) !== null,
+    'grep: payload.input.path must win over payload.input.args.path'
+  );
 
   // --- handleToolExecuteBefore: proves the EVENT WIRING, not just the policy ---
   // The plugin maps each runtime event onto the guard through this helper. If the
@@ -221,7 +322,7 @@ async function main() {
   // A `read` whose path cannot be resolved from any documented shape proceeds
   // unguarded (fail-open by design), so the handler must surface that once —
   // otherwise a v2 payload-shape mismatch silently disables the pack's only
-  // secret-read control.
+  // secret-content control.
   let unresolvedWarnings = 0;
   const telemetryHandler = createReadGuardHandler(() => {
     unresolvedWarnings += 1;
@@ -262,14 +363,18 @@ async function main() {
   assert(blockedThrew, 'blocked reads must still throw');
   assert(resolvableWarnings === 0, 'blocked reads must not warn (the path resolved)');
 
-  // Non-read tools and malformed events never warn.
+  // Unguarded tools and malformed events never warn. A pathless `grep` is
+  // normal (it searches the working directory), so it must not warn either.
   let ignoredWarnings = 0;
   const ignoringHandler = createReadGuardHandler(() => {
     ignoredWarnings += 1;
   });
   for (const event of [
     { tool: 'bash', input: { filePath: '/x/.env' } },
+    { tool: 'bash', path: '/x/.envrc' },
     { tool: 'write', input: {} },
+    { tool: 'grep', input: { pattern: 'SECRET' } },
+    { tool: 'grep', path: '' },
     undefined,
     null,
     42,
@@ -277,7 +382,8 @@ async function main() {
     ignoringHandler(event);
   }
   ignoringHandler('bash', undefined);
-  assert(ignoredWarnings === 0, 'non-read tool events must never warn');
+  ignoringHandler('grep', {});
+  assert(ignoredWarnings === 0, 'unguarded tool events must never warn');
 
   // A throwing telemetry callback is contained and still fires at most once.
   let containedCalls = 0;
@@ -684,6 +790,7 @@ async function main() {
 
   console.log('✅ Plugin v2 guard tests passed');
   console.log('✅ Plugin v2 execute.before event-wiring tests passed');
+  console.log('✅ Plugin v2 grep secret-content guard tests passed');
   console.log('✅ Plugin v2 fail-open telemetry tests passed');
   console.log('✅ Plugin v2 context injection idempotency tests passed');
   console.log('✅ Plugin v2 system-parts injection idempotency tests passed');

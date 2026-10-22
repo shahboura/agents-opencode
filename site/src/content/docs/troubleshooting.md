@@ -89,13 +89,17 @@ sidebar:
 
 ### Agent refuses to read a file that looks like a secret
 
-- The runtime plugin blocks reads of secret-style files: `.env`, `.env.*`, `*.env`,
-  `id_rsa`, `id_ed25519`, `id_ecdsa`, `credentials.json`, `credentials.yaml`,
-  `credentials.yml`, `secrets.yaml`, `secrets.yml`, `secrets.json`, `.npmrc`,
-  `.netrc`, `.p12`, `.pfx`, `.jks`, `.keystore`, `.pem`, and `.key`.
+- The runtime plugin blocks reads and grep searches of secret-style files: `.env`, `.env.*`,
+  `*.env`, `.envrc`, `.envrc.*`, `id_rsa`, `id_ed25519`, `id_ecdsa`, `credentials.json`,
+  `credentials.yaml`, `credentials.yml`, `secrets.yaml`, `secrets.yml`, `secrets.json`,
+  `.npmrc`, `.netrc`, `.p12`, `.pfx`, `.jks`, `.keystore`, `.pem`, and `.key`.
 - Checked-in templates (`.env.example`, `.env.sample`, `.env.template`, `.env.dist`,
   `.env.defaults`) and public certs (`*.pub`, `*.crt`, `*.cer`, `*.cert`, `ca.pem`,
   `cert.pem`, `certificate.pem`, `chain.pem`, `fullchain.pem`) remain readable.
+- `grep` is blocked only when its `path` names a secret file; directory or pathless searches
+  are not filtered (the guard is best-effort).
+- A saved `read` approval ("Allow always") is project-scoped; whether it overrides a configured
+  `deny` is untested here (PERM-2). The plugin guard is the runtime backstop.
 - To inspect a blocked file, open it outside the agent session.
 
 ### Skills not loading
@@ -126,6 +130,21 @@ sidebar:
 - Check the `permission` section in the agent's `.md` file
 - `"deny"` blocks the action entirely; `"ask"` prompts for confirmation
 - Edit the agent file to change permission levels
+- `agents.<id>.permissions` in `opencode.json` cannot override a pack agent - the markdown rule
+  is applied last. See [Customization](/customization/#permission-overrides).
+
+### Working in a git worktree
+
+- Pass the worktree as the command's `workdir` instead of prefixing with `cd`; a `cd ... && ...`
+  line does not match the allowlist.
+- Allow the worktree root in `external_directory` (environment/box config, plus an agent-level
+  rule if the pack agent denies it - see [OpenCode v1/v2 Support](/opencode-v1-v2-support/)).
+- If large tool output must be re-read, allow the tool-output directory as well.
+- `rm -rf` is denied. Use the sanctioned cleanup instead: a project clean script (`pnpm clean`)
+  or `mv` the directory aside.
+- Saved approvals ("Allow always") are project-scoped and are the intended relief for repeated
+  prompts; a saved rule does not override a configured `deny` per OpenCode's docs (not yet
+  tested here - PERM-2).
 
 ### Socket.dev shows a license warning
 

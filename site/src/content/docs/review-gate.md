@@ -27,9 +27,18 @@ Risk-gated: **required** for agent, skill, instruction, CI, security, or feature
 changes, or any refactor spanning 3+ files. Optional otherwise (docs, comments,
 and mechanical bumps always skip).
 
-The diff is frozen, then one fresh `@review` subagent runs per lens, concurrently.
-Each lens receives only the frozen diff, the plan, and its lens brief - never the
-implementation reasoning.
+The diff is frozen to a patch file. The canonical freeze is `npm run gate:freeze`, which writes
+the staged snapshot to `.gate/diff.patch` plus `.gate/manifest.json`. To freeze by hand:
+
+```bash
+git add -N . && git diff HEAD > .gate/review.patch   # staged + unstaged, new files included
+```
+
+Every lens brief names the patch path it must read; lenses read that file directly, since they
+are not assumed to have shell access. If the named file is missing or empty, `@review` falls
+back to `.gate/diff.patch`, then `.gate/review.patch`, and reads no other source. Then one
+fresh `@review` subagent runs per lens, concurrently. Each lens receives only the frozen diff,
+the plan, and its lens brief - never the implementation reasoning.
 
 ### Lenses
 
@@ -74,6 +83,11 @@ Rationale table - declined non-critical findings:
 - Maximum **2 cycles** per gate (initial panel plus at most one delta re-review).
 - Binding task budget: **8 reviewer dispatches** per task (a full panel = 4; delta
   re-reviews dispatch only the affected lenses). It **supersedes per-loop caps**.
+- A lens that exhausts its step budget returns **PARTIAL**, and a lens with no readable patch
+  returns **INSUFFICIENT_DIFF**. Neither is a verdict: re-freeze the patch if it is missing, then
+  re-dispatch the affected lens (it counts against the dispatch budget). Never accept either as PASS.
+- Background lens runs must be collected and triaged before the next user turn - never leave
+  a review in flight across a handoff.
 - Gate cycles are a sub-loop inside the outer execution loop and do not multiply the
   5-cycle or Pattern 5 budgets.
 - The gate runs **once per push** (or per tracked-branch commit), not once per implementation chunk.

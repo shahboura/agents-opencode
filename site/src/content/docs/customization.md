@@ -28,6 +28,26 @@ Edit `.opencode/agents/[agent].md` to adjust behavior (model, permissions).
 Note: only the canonical `.opencode/agents/` (plural) path is recognized;
 the legacy `.opencode/agent/` (singular) path was removed.
 
+### Permission overrides
+
+The agent markdown file wins. `agents.<id>.permissions` in `opencode.json` cannot override a
+pack agent: rules resolve base → global → project → config agent rules → agent markdown, and
+the last match wins, so the markdown rule applies. Edit the agent file to change a decision.
+
+The practical lever without editing files is **Allow always**, which saves a project-scoped
+rule (an observed saved `edit *` overrode `edit: "ask"`). Two limits:
+
+- A saved rule does not override a configured `deny` per OpenCode's permission docs; that
+  interaction is not yet tested here (PERM-2), so do not rely on the markdown `.env` deny alone.
+- A saved `read *` can broaden reads to other secret-style files (`.npmrc`, `*.key`, `*.pem`,
+  credentials); if saved rules turn out to override markdown denies, it also covers `.env`
+  (PERM-2). The runtime plugin's secret-content guard is the backstop, but it is best-effort,
+  not a security boundary: it inspects `read` and `grep` paths only (never shell), and fails
+  open when it cannot resolve a path.
+
+For cross-directory access (worktrees, shared checkouts), see
+[OpenCode v1/v2 Support](/opencode-v1-v2-support/).
+
 ## Custom Commands
 
 Add command files to `.opencode/commands/` with frontmatter (`description`, `agent`).

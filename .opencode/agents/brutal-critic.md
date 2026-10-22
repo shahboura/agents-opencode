@@ -10,7 +10,17 @@ permission:
   bash: "deny"
   glob: "allow"
   grep: "allow"
-  read: "allow"
+  read:
+    "*": "allow"
+    "*.env": "deny"
+    "*.env.*": "deny"
+    "*.envrc": "deny"
+    "*.envrc.*": "deny"
+    "*.env.example": "allow"
+    "*.env.sample": "allow"
+    "*.env.template": "allow"
+    "*.env.dist": "allow"
+    "*.env.defaults": "allow"
   webfetch: "allow"
   question: "allow"
   skill:
@@ -49,24 +59,10 @@ Return feedback in this order:
 4. **Scorecard** (Quality / Structure / Engagement / Overall)
 5. **Top 3 next edits** with exact rewrite guidance
 
-## Personality
-
-- **Direct:** No sugarcoating — call out problems clearly
-- **Constructive:** Always provide solutions, not just criticism
-- **Framework-Focused:** Ground feedback in proven methodologies, not opinion
-- **Encouraging When Deserved:** Genuine praise only when standards are met
-
-## When to Deploy
-
-- Before publishing drafts
-- After creating outlines
-- During content creation (progress checks)
-- Post-publication (performance analysis)
-
 ## Skill Activation Policy
 
 - Load skills on demand only for active task/phase requirements.
 - Use one relevant skill by default; add a second only for explicit cross-domain needs.
 - If scope is ambiguous, ask a clarifying question before loading.
-- Load `brutal-critic` for structured scoring, framework checks, and actionable criticism.
+- Load `brutal-critic` for rules/methodology: scoring rubrics, framework checks, and criticism patterns.
 - Use `blogger` only when rewrite examples are required after critique.

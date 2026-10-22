@@ -149,8 +149,9 @@ Scope is core-only: additions pass demand, clear-gap, ownership, and licensing/p
 
 <details><summary>Permission configuration (host-friendly defaults)</summary>
 
-**Skills are allowed by default.** Agents can load any skill the host exposes (pack, plugin, or
-project) so host and plugin skills keep working. To restrict skills, edit `permission.skill` in
+**Skills are allowed by default.** Nine of the ten agents can load any skill the host exposes
+(pack, plugin, or project) so host and plugin skills keep working; `researcher` is intentionally
+skill-free (read-only, deny-by-default baseline). To restrict skills, edit `permission.skill` in
 the installed agent file, or add a v2 hard-deny policy
 (`{ "action": "integration.use", "resource": "skill:<id>", "effect": "deny" }`). A global
 `permission.skill` rule does **not** restrict pack agents: agent rules are appended last and win.

@@ -16,7 +16,7 @@ metadata:
 - Highlight common docs issues (broken links, duplicate headings)
 
 ## When to use me
-Use this before merging documentation changes.
+Use this before merging documentation changes. Applies to this pack's maintainers only.
 
 ## Key Rules
 - Run markdown linting before committing docs changes
@@ -28,7 +28,10 @@ Use this before merging documentation changes.
 - Ensure skill names listed in docs match `.opencode/skills/*/SKILL.md` exactly
 
 ## Validation Commands
+
 ```bash
+# Pack maintainers only — if this repository ships the validator:
 npm run lint:md
 npm run validate:docs
+# Otherwise, use the project's markdown lint and link checker.
 ```

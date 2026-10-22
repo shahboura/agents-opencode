@@ -16,7 +16,8 @@ metadata:
 - Flag outdated references in docs (legacy paths)
 
 ## When to use me
-Use this when agents are not loading, instructions seem ignored, or setup is inconsistent.
+Use this when agents are not loading, instructions seem ignored, or setup is
+inconsistent. Applies to this pack's maintainers only.
 
 ## Key Rules
 - Verify agent files exist in `.opencode/agents/` for each expected agent
@@ -28,6 +29,9 @@ Use this when agents are not loading, instructions seem ignored, or setup is inc
 - Flag references to non-existent/non-core skills unless explicitly marked as future roadmap
 
 ## Validation Commands
+
 ```bash
+# Pack maintainers only — if this repository ships the validator:
 node scripts/validate-agents.js
+# Otherwise, use the project's own agent/config checks.
 ```

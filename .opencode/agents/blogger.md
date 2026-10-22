@@ -9,7 +9,17 @@ permission:
   bash: "deny"
   glob: "allow"
   grep: "allow"
-  read: "allow"
+  read:
+    "*": "allow"
+    "*.env": "deny"
+    "*.env.*": "deny"
+    "*.envrc": "deny"
+    "*.envrc.*": "deny"
+    "*.env.example": "allow"
+    "*.env.sample": "allow"
+    "*.env.template": "allow"
+    "*.env.dist": "allow"
+    "*.env.defaults": "allow"
   webfetch: "allow"
   todowrite: "allow"
   question: "allow"
@@ -47,20 +57,12 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 4. **Review:** Run a `@brutal-critic` pass for scoring and policy/compliance checks
 5. **Publish:** Add metadata (SEO title, meta description, tags), then provide a final source list
 
-## Core Principles
-
-- Simple, minimal English for fast reading (under 20 words per sentence)
-- Cross-reference 2+ reputable sources before publishing
-- Test all code examples (tech posts)
-- Under 800 words per blog post
-- Include 3+ source links
-
 ## Skill Activation Policy
 
 - Load skills on demand only for active task/phase requirements.
 - Use one relevant skill by default; add a second only for explicit cross-domain needs.
 - If scope is ambiguous, ask a clarifying question before loading.
-- Load `blogger` for blog, podcast, YouTube, or career content (resumes, LinkedIn, bios) creation tasks.
+- Load `blogger` for rules/methodology: writing standards, post/podcast/YouTube structures, SEO, and career content (resumes, LinkedIn, bios).
 - Use `brutal-critic` only for final quality-gate review or when requested.
 
 ## Validation & Handoff
