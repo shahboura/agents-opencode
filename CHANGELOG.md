@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.3](https://github.com/shahboura/agents-opencode/compare/v3.1.2...v3.1.3) (2026-10-22)
+
+
+### Bug Fixes
+
+* **agents:** harden secret reads and review gate permissions ([7014e3d](https://github.com/shahboura/agents-opencode/commit/7014e3d98bd6192062e76ef4347a3a836808ad6e))
+
 ## [3.1.2](https://github.com/shahboura/agents-opencode/compare/v3.1.1...v3.1.2) (2026-10-18)
 
 
