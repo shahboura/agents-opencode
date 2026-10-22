@@ -62,6 +62,11 @@ const checks = [
     args: ['scripts/validate-agents.test.js'],
   },
   {
+    name: 'Run agent permission tests',
+    command: process.execPath,
+    args: ['scripts/agent-permissions.test.js'],
+  },
+  {
     name: 'Run OpenCode schema validator tests',
     command: process.execPath,
     args: ['scripts/validate-opencode-schema.test.js'],

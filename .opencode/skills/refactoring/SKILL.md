@@ -21,7 +21,7 @@ metadata:
   primitive obsession, and switch/if-else chains
 - Produce a phased refactoring plan that preserves existing behavior
 - Recommend applicable patterns for each problem area
-- Define rollout steps, risk mitigations, and measurable success criteria
+- Define risk mitigations and measurable success criteria
 
 ## When to use me
 
@@ -117,15 +117,6 @@ Before building the plan, scan the target area for:
 | **Replace Conditional with Polymorphism** | Switch/if-else chains on type codes drive behavior selection |
 | **Simplify Conditional** | Nested if-else or complex boolean expressions reduce readability |
 
-### Rollout Plan
-
-1. **Feature branch** — `git checkout -b refactor/<area>`, make changes, push
-2. **Code review** — request review from 2+ team members, address all feedback
-3. **Staged rollout** — deploy to staging, run smoke tests, monitor for issues
-4. **Production with safety** — deploy behind a feature flag if possible,
-   gradually increase traffic, monitor metrics
-5. **Cleanup** — remove old code paths, update documentation, share learnings
-
 ### Risk Assessment Format
 
 | Risk | Impact | Mitigation |
@@ -145,7 +136,7 @@ After refactoring:
 - [ ] No unremediated code duplication
 - [ ] Performance improved or maintained (measured)
 - [ ] Documentation updated
-- [ ] Team reviewed and approved
+- [ ] No behavior change — the suite passed before and after
 
 ## Validation Commands
 
@@ -154,7 +145,7 @@ After refactoring:
 # [ ] All five refactoring principles are observed in the plan
 # [ ] Code smells catalogued with severity and fix recommendation
 # [ ] Each phase has concrete, verifiable tasks (not "improve code")
-# [ ] Rollout steps include staging gate before production
+# [ ] Risks and mitigations are listed
 # [ ] Success criteria are measurable (not "code is better")
 # [ ] The plan preserves existing behavior — no feature changes included
 ```

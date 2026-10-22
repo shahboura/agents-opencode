@@ -18,9 +18,9 @@ metadata:
 ## What I do
 
 - Guide creation of lightweight, version-controlled Architecture Decision Records
-- Provide a structured template covering context, options, rationale, consequences
-- Enforce naming conventions and review checklist for consistency
-- Help teams document *why* decisions were made — not just *what* was decided
+- Provide a short template covering context, decision, options, consequences
+- Keep naming and storage consistent
+- Document *why* decisions were made — not just *what* was decided
 
 ## When to use me
 
@@ -35,19 +35,13 @@ Activate this skill when:
 
 ### ADR Template Structure
 
-Every ADR includes these sections in order:
+Every ADR uses these five sections:
 
-1. **Header block** — ADR number, title, status (Proposed / Accepted / Deprecated /
-   Superseded by ADR-XXX), date, deciders, and optional technical story link
-2. **Context** — the situation and forces at play: background, driving forces, and constraints (technical, business, time)
-3. **Decision** — a clear, concise statement: "We will [chosen approach]"
-4. **Rationale** — why this is the best choice given the context: pros, accepted cons, and why alternatives were rejected
-5. **Considered Options** — for each option: description, pros, cons, and verdict (Selected / Rejected / Could work but)
-6. **Implementation** — changes required, migration path (if replacing existing), testing strategy, and rollback plan
-7. **Consequences** — positive outcomes, negative trade-offs, and a risk table (Risk / Probability / Impact / Mitigation)
-8. **Follow-up Actions** — action items with owners, documentation updates, review scheduling
-9. **References** — links to docs, research, similar decisions, code examples
-10. **Footer** — review date and links to related ADRs
+1. **Context** — the situation and forces at play: background and constraints
+2. **Decision** — a clear, concise statement: "We will [chosen approach]"
+3. **Options** — the alternatives considered, each with pros, cons, and verdict (Selected / Rejected / Could work but)
+4. **Consequences** — positive outcomes, accepted negative trade-offs, and risks with mitigations
+5. **Status** — Proposed / Accepted / Deprecated / Superseded by ADR-XXX, with date and deciders
 
 ### Naming Convention
 
@@ -71,23 +65,19 @@ Create an ADR for decisions that are:
 
 Skip ADRs for routine choices, trivial refactors, or decisions already captured in design docs or RFCs.
 
-## Validation Commands
-
-Review each ADR against this checklist before marking it as Accepted:
-
-- [ ] Clear problem statement — reader understands the context without prior knowledge
-- [ ] Multiple options considered — at least two alternatives evaluated beyond the chosen one
-- [ ] Trade-offs explicitly stated — pros and cons listed for each option with verdicts
-- [ ] Implementation plan defined — concrete steps, not vague intentions
-- [ ] Consequences documented — both positive outcomes and accepted negative trade-offs
-- [ ] Risks identified with mitigations — risk table populated, not left empty
-- [ ] References to supporting materials — links to docs, research, or prototypes
-- [ ] Follow-up actions assigned — owners named, timeboxes set
-- [ ] Status matches reality — Proposed for drafts, Accepted only after team approval
-- [ ] Naming follows convention — zero-padded number, kebab-case slug under `docs/adr/`
-
 ---
 
 ADR files live alongside code in version control — the record is only useful if it stays in
 sync with the decisions it describes. Review Accepted ADRs when revisiting the architecture
 they govern; supersede (don't delete) when a decision is replaced.
+
+## Acceptance Checklist
+
+An ADR is ready only when all three hold:
+
+- [ ] **At least two options were considered** — a single-option ADR records a
+  foregone conclusion, not a decision.
+- [ ] **Trade-offs are stated** — each rejected option says what it lost on, and
+  the Consequences section names the accepted costs.
+- [ ] **Status matches reality** — Proposed / Accepted / Superseded reflects what
+  is actually true today, with date and deciders.

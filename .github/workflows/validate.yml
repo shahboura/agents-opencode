@@ -252,6 +252,12 @@ jobs:
       - name: Run plugin guard tests
         run: node scripts/plugin-guards.test.js
 
+      - name: Run plugin v2 guard parity tests
+        run: node scripts/plugin-v2.test.js
+
+      - name: Run agent permission tests
+        run: node scripts/agent-permissions.test.js
+
       - name: Run pre-commit gate tests
         run: node scripts/gate/gate.test.js
 

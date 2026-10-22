@@ -35,9 +35,10 @@ Use this when working on Go projects using Go modules.
 - Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
+
 ```bash
 go mod tidy
 go vet ./...
-golangci-lint run || true
+golangci-lint run
 go test ./...
 ```

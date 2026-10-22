@@ -16,7 +16,8 @@ metadata:
 - Guide breakpoint strategy, interaction-mode adaptation, and validation steps
 
 ## When to use me
-Use this when implementing or reviewing UI that must work across small and large screens, touch and pointer inputs, or multiple orientations.
+Use this when implementing or reviewing UI that must work across small and
+large screens, touch and pointer inputs, or multiple orientations.
 
 ## Key Rules
 - Mobile-first layout strategy: start with constrained viewport, then scale up
@@ -36,6 +37,7 @@ Use this when implementing or reviewing UI that must work across small and large
 - Use a verify-fix-verify loop: run checks, fix issues, rerun until green
 
 ## Validation Commands
+
 ```bash
 # Run the active stack's lint/test/build checks.
 # Examples:
@@ -49,13 +51,8 @@ Use this when implementing or reviewing UI that must work across small and large
 When a project has the third-party **UI UX Pro Max** skill installed, prefer
 it for style, palette, typography, chart, icon, and stack-specific guidance.
 Run at most one focused search query per task and never paste dataset rows or
-reference tables into context. Ask the user before executing any other
-project-tree script:
-
-```bash
-python3 .opencode/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system
-# Windows: use `python` when `python3` is not on PATH
-```
+reference tables into context. Invoke the `ui-ux-pro-max` skill by name; its
+install path is host-specific.
 
 It is a separate, opt-in skill (requires Python 3.x) and is **not** part of
 this pack — install a pinned version into the project with

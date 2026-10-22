@@ -35,6 +35,7 @@ Use this when writing database migrations, schema changes, or data transformatio
 - Use a verify-fix-verify loop: run the validation commands below, fix any failures, and rerun until all checks pass
 
 ## Validation Commands
+
 ```bash
-sqlfluff lint || true
+sqlfluff lint
 ```

@@ -25,8 +25,9 @@ metadata:
 
 **Always:** new features, bug fixes, refactoring, behavior changes.
 
-**Exceptions (ask the user):** throwaway prototypes, generated code,
-configuration files.
+**Exceptions (ask the user):** generated code, configuration files, throwaway
+prototypes. Visual/UI work is not exempt by default — ask the user, and a
+Playwright or screenshot regression check may substitute for a unit test.
 
 Thinking "skip TDD just this once"? Stop — that is rationalization.
 
@@ -45,9 +46,13 @@ ask the user before removing anything.
 ## The cycle
 
 1. **RED** — write one minimal test showing what should happen.
-2. **Verify RED** — run it and watch it fail for the expected reason (feature missing, not a typo). A test that passes immediately is testing existing behavior; fix the test.
+2. **Verify RED** — run it and watch it fail for the expected reason (feature
+   missing, not a typo). A test that passes immediately is testing existing
+   behavior; fix the test.
 3. **GREEN** — write the simplest code that passes. No extra features, no refactoring beyond the test.
-4. **Verify GREEN** — run it; the new test passes and the project's suite stays green. Run the project's own test command, not just your file, and report any failure by name.
+4. **Verify GREEN** — run it; the new test passes and the project's suite stays
+   green. Run the project's own test command, not just your file, and report any
+   failure by name.
 5. **REFACTOR** — remove duplication, improve names, extract helpers; stay green; add no behavior.
 6. **Repeat** — next failing test for the next feature.
 
@@ -152,8 +157,9 @@ behavior (never the mock), and keep test-only code in test utilities.
 ## Debugging integration
 
 Found a bug? Write a failing test that reproduces it first, then follow the
-cycle — the test proves the fix and prevents regression. See
-`systematic-debugging` for the investigation discipline. Structural cleanups
+cycle — the test proves the fix and prevents regression. Security findings need
+a regression test too: reproduce the flaw as a failing test before fixing it.
+See `systematic-debugging` for the investigation discipline. Structural cleanups
 belong to the `refactoring` skill — do them in the REFACTOR step with the
 tests green.
 

@@ -1,7 +1,7 @@
 # Backlog
 
 Deferred work from review cycles and the OpenCode v2 readiness assessment. Update
-this file when items land or new gaps are found. Last updated: 2026-10-16.
+this file when items land or new gaps are found. Last updated: 2026-10-22.
 
 ## Validation hardening
 
@@ -22,6 +22,17 @@ The validator review cycles produced these items. VAL-1 and VAL-3 landed in the
 |---|---|---|---|
 | HOST-1 | low | Upgrade cleanup: recognize prior installer-shaped `external_directory: "deny"` values so the stale key is cleaned on upgrade or target switch | `install.js`, `scripts/lib/config-mutator.js` |
 | HOST-2 | low | Extend the installer `--languages` flag to also prune non-selected test-runner allow lines from the three shell-allowlist agents (install-time frontmatter transform), so the permission bundle is proportional to the selected languages; unused runners are inert until then | `install.js`, `scripts/lib/file-ops.js`, `.opencode/agents/{codebase,orchestrator,em-advisor}.md` |
+
+## Permission model follow-ups
+
+Deferred from the permission/skill documentation pass (2026-10).
+
+| ID | Severity | Item | Files |
+|---|---|---|---|
+| PERM-1 | medium | Live-host v2 resolved-rule test in CI: run `opencode debug agents` against a pinned v2 host and assert the pack's resolved rules (`bash`→`shell`, `task`→`subagent`, `edit`), catching translation drift that static validators cannot see | `.github/workflows/validate.yml`, `scripts/` |
+| PERM-2 | low | Saved-approval overlay test: confirm a project-scoped **Allow always** rule (for example `edit *`) overrides `edit: "ask"` but never a configured `deny`, so the documented behavior stays regression-guarded | `scripts/`, `site/src/content/docs/customization.md` |
+| PERM-3 | low | Headless profile (deferred): a minimal agent/allowlist set for non-interactive runs, where `ask` is unusable and saved approvals do not exist | `.opencode/agents/`, `install.js` |
+| PERM-4 | low | Prune agent/skill duplication: rules restated in both agent instructions and skills inflate context and drift; keep one canonical home per rule | `.opencode/agents/`, `.opencode/skills/` |
 
 ## Review-gate patterns
 

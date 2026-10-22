@@ -2,7 +2,7 @@
 description: Multi-language development agent with profile auto-detection for implementing features across .NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, and Rust projects
 mode: all
 temperature: 0.1
-steps: 50
+steps: 60
 permission:
   "*": "deny"
   edit: "allow"
@@ -34,7 +34,17 @@ permission:
     "git push * -f*": "deny"
   glob: "allow"
   grep: "allow"
-  read: "allow"
+  read:
+    "*": "allow"
+    "*.env": "deny"
+    "*.env.*": "deny"
+    "*.envrc": "deny"
+    "*.envrc.*": "deny"
+    "*.env.example": "allow"
+    "*.env.sample": "allow"
+    "*.env.template": "allow"
+    "*.env.dist": "allow"
+    "*.env.defaults": "allow"
   webfetch: "allow"
   todowrite: "allow"
   question: "allow"

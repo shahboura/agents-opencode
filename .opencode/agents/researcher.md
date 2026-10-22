@@ -5,7 +5,17 @@ temperature: 0.1
 steps: 20
 permission:
   "*": "deny"
-  read: "allow"
+  read:
+    "*": "allow"
+    "*.env": "deny"
+    "*.env.*": "deny"
+    "*.envrc": "deny"
+    "*.envrc.*": "deny"
+    "*.env.example": "allow"
+    "*.env.sample": "allow"
+    "*.env.template": "allow"
+    "*.env.dist": "allow"
+    "*.env.defaults": "allow"
   grep: "allow"
   glob: "allow"
   webfetch: "allow"

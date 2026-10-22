@@ -56,8 +56,11 @@ rules were verified on **OpenCode 2.0.32** with `opencode debug agents`:
 - string decisions become `{ action, resource: "*", effect }`
 - nested command patterns keep their order (last match wins; verified on 2.0.32 — the
   resolved array keeps source order)
-- global config rules precede agent rules, and agent rules are appended last; a global
-  permission rule cannot override a pack agent's own rule
+- rules resolve base → global → project → config agent rules (`agents.<id>.permissions`) →
+  agent markdown; last match wins, so the pack agent's markdown rule applies. Neither a global
+  rule nor a config agent rule can override it. **Allow always** saves a project rule; whether
+  it overrides a configured `deny` is untested here (PERM-2)
+  ([Customization](/customization/#permission-overrides))
 - `skill` is a real v2 action; pack agents use `"*": "allow"` so host skills stay usable.
   Skills are instructions, not tools, so treat project-local skills in untrusted clones as
   untrusted content (or hard-deny with a v2 `integration.use` policy)
@@ -65,9 +68,11 @@ rules were verified on **OpenCode 2.0.32** with `opencode debug agents`:
 - unknown/plugin-defined actions (for example `browser`) pass conformance because V2
   action names are strings and plugins may define more
 
-Native `permissions` arrays are optional. Converting the agent files would break v1
-hosts, which ignore the unknown key and fall back to default-allow, so the pack keeps
-the v1-shaped source and translates per target.
+The key names follow the host version: **v1.19.2 uses `bash`**, **v2 uses `shell`** (the live
+OpenCode docs page documents v2). The pack's v1-shaped frontmatter is intentional. Native
+`permissions` arrays are optional; converting the agent files would break v1 hosts, which ignore
+the unknown key and fall back to default-allow, so the pack keeps the v1-shaped source and
+translates per target.
 
 OpenCode v2 translates v1-shaped config, agents, and commands in memory — the
 migrate-v1 guide states "V2 translates legacy agent frontmatter automatically" — and a
@@ -148,9 +153,12 @@ These v2 details matter when you target v2:
 - **`doom_loop`** is not a v2 permission action. The pack keeps it in v1 target
   config and drops it from v2 target output; a v1-shaped file loaded directly by
   v2 resolves it as an inert action.
-- **`external_directory`** is allowed by default in v2 (v1 asks). The pack sets
-  it to `ask` so interactive clients prompt before cross-directory access;
-  `--auto` auto-approves asks, so use `deny` + explicit allows there.
+- **`external_directory`** is allowed by default in v2 (v1 asks). The pack config sets it to
+  `ask`, but pack agents still hard-deny cross-directory access: the agent markdown's
+  `"*": "deny"` is applied last and no agent-level `external_directory` allow exists, so the
+  global `ask` is expected to never prompt (PERM-1 tracks the live-host assertion). To allow
+  one directory, add an `external_directory` rule after `"*": "deny"` in the agent file — a
+  config agent rule is inert. `--auto` auto-approves asks, so keep deny + explicit allows there.
 - **`compaction.prune`** has no v2 effect; the pack's source config uses
   `compaction.keep.tokens` instead.
 - **Top-level `subagent_depth`** is ignored in v2; use

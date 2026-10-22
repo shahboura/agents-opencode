@@ -114,6 +114,131 @@ function testIndentedPermissionPasses(tmpRoot) {
   assert(result.status === 0, `Expected non-2-space indentation to be parsed. Output: ${result.output}`);
 }
 
+// Fail-closed: a read grant without .env denies must be an error, not a warning.
+// Built inline so the negative case cannot drift from the check it covers.
+function testReadWithoutEnvDenyFails(tmpRoot) {
+  const fixture = path.join(tmpRoot, 'read-without-env-deny');
+  const agentDir = path.join(fixture, '.opencode', 'agents');
+  fs.mkdirSync(agentDir, { recursive: true });
+  fs.writeFileSync(path.join(agentDir, 'leaky.md'), [
+    '---',
+    'description: Agent with an unguarded read grant',
+    'mode: subagent',
+    'permission:',
+    '  "*": "deny"',
+    '  read: "allow"',
+    '---',
+    '',
+    '## Role',
+    'Reads files.',
+    '',
+  ].join('\n'));
+
+  const result = runValidator(fixture);
+  assert(result.status !== 0, `Expected read access without .env denies to fail validation. Output: ${result.output}`);
+  assert(
+    result.output.includes('read access without ".env": "deny"'),
+    `Expected fail-closed .env message. Output: ${result.output}`
+  );
+}
+
+// `.envrc` (direnv) also holds exported credentials, so a broad read map must
+// deny it too; denying only the `.env` family is not enough.
+function testReadWithoutEnvrcDenyFails(tmpRoot) {
+  const fixture = writeAgentFixture(tmpRoot, 'read-without-envrc-deny', [
+    'permission:',
+    '  "*": "deny"',
+    '  read:',
+    '    "*": "allow"',
+    '    "*.env": "deny"',
+    '    "*.env.*": "deny"',
+    '    "*.env.example": "allow"',
+  ]);
+
+  const result = runValidator(fixture);
+  assert(result.status !== 0, `Expected read access without .envrc denies to fail validation. Output: ${result.output}`);
+  assert(
+    result.output.includes('".envrc": "deny"'),
+    `Expected fail-closed .envrc message. Output: ${result.output}`
+  );
+}
+
+// Writes a minimal agent fixture inline so negative cases cannot drift from the
+// check they cover (only the validator is exercised, not the pack files).
+function writeAgentFixture(tmpRoot, name, permissionLines) {
+  const fixture = path.join(tmpRoot, name);
+  const agentDir = path.join(fixture, '.opencode', 'agents');
+  fs.mkdirSync(agentDir, { recursive: true });
+  fs.writeFileSync(path.join(agentDir, 'agent.md'), [
+    '---',
+    'description: Agent permission fixture',
+    'mode: subagent',
+    ...permissionLines,
+    '---',
+    '',
+    '## Role',
+    'Reads files.',
+    '',
+  ].join('\n'));
+  return fixture;
+}
+
+function testScopedReadGrantPasses(tmpRoot) {
+  const fixture = writeAgentFixture(tmpRoot, 'scoped-read', [
+    'permission:',
+    '  "*": "deny"',
+    '  read:',
+    '    "docs/**": "allow"',
+  ]);
+
+  const result = runValidator(fixture);
+  assert(result.status === 0, `Expected a path-scoped read grant to pass. Output: ${result.output}`);
+}
+
+function testDuplicateReadBlockFails(tmpRoot) {
+  const fixture = writeAgentFixture(tmpRoot, 'duplicate-read', [
+    'permission:',
+    '  "*": "deny"',
+    '  read:',
+    '    "*": "allow"',
+    '    "*.env": "deny"',
+    '    "*.env.*": "deny"',
+    '  read:',
+    '    "*": "allow"',
+    '    "*.env": "deny"',
+    '    "*.env.*": "deny"',
+  ]);
+
+  const result = runValidator(fixture);
+  assert(result.status !== 0, `Expected duplicate permission.read blocks to fail. Output: ${result.output}`);
+  assert(
+    result.output.includes("duplicate 'permission.read' block"),
+    `Expected duplicate read-block error. Output: ${result.output}`
+  );
+}
+
+// Last match wins: an `.env` allow after the denies re-exposes secrets.
+function testReadDenyBeforeAllowFails(tmpRoot) {
+  const fixture = writeAgentFixture(tmpRoot, 'read-deny-before-allow', [
+    'permission:',
+    '  "*": "deny"',
+    '  read:',
+    '    "*": "allow"',
+    '    "*.env": "deny"',
+    '    "**/.env": "allow"',
+    '    "*.env.*": "deny"',
+    '    "*.envrc": "deny"',
+    '    "*.envrc.*": "deny"',
+  ]);
+
+  const result = runValidator(fixture);
+  assert(result.status !== 0, `Expected a later .env allow to fail validation. Output: ${result.output}`);
+  assert(
+    result.output.includes('last matching ".env" entry must be "deny"'),
+    `Expected order error naming the re-exposed family. Output: ${result.output}`
+  );
+}
+
 // The pack shell allowlist order is load-bearing under last-match-wins:
 // wildcard first, then allows, then ask guards, then denies (denies win).
 function testPackShellAllowlistOrdering() {
@@ -146,6 +271,11 @@ function main() {
     testIndentedPermissionPasses(tmpRoot);
     testUnknownSkillWarns(tmpRoot);
     testInvalidPermissionKeyFails(tmpRoot);
+    testReadWithoutEnvDenyFails(tmpRoot);
+    testReadWithoutEnvrcDenyFails(tmpRoot);
+    testScopedReadGrantPasses(tmpRoot);
+    testDuplicateReadBlockFails(tmpRoot);
+    testReadDenyBeforeAllowFails(tmpRoot);
     testPackShellAllowlistOrdering();
     console.log('✅ Agent validator tests passed');
   } catch (err) {

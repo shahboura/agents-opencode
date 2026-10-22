@@ -54,6 +54,71 @@ function validatePermissionKeys(record, errors) {
   }
 }
 
+// Broad `read` grants must carry explicit secret-file denies (fail-closed):
+// granting everything or allowing inline exposes credentials. A path-scoped
+// allow (`docs/**`) exposes nothing extra, so it needs no denies.
+const READ_SECRET_DENIES = ['.env', '.env.*', '.envrc', '.envrc.*'];
+const BROAD_READ_GRANTS = ['*', '**'];
+
+function readPermissionOf(frontmatter) {
+  const analysis = analyzePermission(frontmatter);
+  if (!analysis.present || analysis.inline) return null;
+  const child = permissionChildBlock(analysis.block, 'read');
+  if (!child) return null;
+  if (!child.inline) return { entries: parseMapEntries(child.block), duplicate: child.duplicate };
+
+  const line = analysis.block.match(/^[ \t]+["']?read["']?\s*:\s*([^\s#]+)/m);
+  return { decision: line ? line[1].replace(/^["']|["']$/g, '') : '', duplicate: child.duplicate };
+}
+
+// Entries whose pattern names a secret family by suffix: `.env`, `*.env`,
+// `**/.env` all end with `.env`; `.env.example` does not (it is its own rule).
+function secretFamilyEntries(entries, name) {
+  if (!entries) return [];
+  const suffix = new RegExp(`${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+  return [...entries.entries()].filter(([pattern]) => suffix.test(pattern));
+}
+
+function validateReadSecretDenies(frontmatter, name, errors) {
+  const read = readPermissionOf(frontmatter);
+  if (!read) return;
+
+  if (read.duplicate) {
+    errors.push(`${name}: duplicate 'permission.read' block (fail-closed)`);
+    return;
+  }
+
+  const grants = read.entries
+    ? BROAD_READ_GRANTS.some((pattern) => read.entries.get(pattern) === 'allow')
+    : read.decision === 'allow';
+  if (!grants) return;
+
+  const missing = READ_SECRET_DENIES.filter(
+    (pattern) => !secretFamilyEntries(read.entries, pattern).some(([, effect]) => effect === 'deny')
+  );
+  if (missing.length > 0) {
+    errors.push(
+      `${name}: read access without ${missing.map((pattern) => `"${pattern}": "deny"`).join(' and ')} ` +
+      '(fail-closed: `.env` and `.envrc` files hold secrets). Use a nested mapping: ' +
+      'read: { "*": "allow", "*.env": "deny", "*.env.*": "deny", "*.envrc": "deny", ' +
+      '"*.env.example": "allow" }.'
+    );
+    return;
+  }
+
+  // Last match wins: a later allow in the same family re-exposes the secrets.
+  const reexposed = READ_SECRET_DENIES.filter((pattern) => {
+    const family = secretFamilyEntries(read.entries, pattern);
+    return family.length > 0 && family[family.length - 1][1] !== 'deny';
+  });
+  if (reexposed.length > 0) {
+    errors.push(
+      `${name}: the last matching ${reexposed.map((pattern) => `"${pattern}"`).join(' and ')} ` +
+      'entry must be "deny" (last match wins; a later allow re-exposes secrets).'
+    );
+  }
+}
+
 function resolveAgentDirectory(repoRoot) {
   const agentDir = path.join(repoRoot, '.opencode', 'agents');
   if (fs.existsSync(agentDir)) {
@@ -255,6 +320,9 @@ function main() {
     // Reject inert top-level permission keys (e.g. command patterns that should
     // be nested under bash: instead of sitting at the permission root).
     validatePermissionKeys(record, errors);
+
+    // Fail closed: a read grant must deny secret files.
+    validateReadSecretDenies(frontmatter, file.name, errors);
 
     // Check for a meaningful introductory heading in body
     // Accept: Role, Description, Responsibilities, Core Responsibilities,

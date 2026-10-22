@@ -66,6 +66,16 @@ All agents log milestone entries to this file using this format:
 
 ## Milestones
 
+### 2026-10-22 05:46 - Permission-fatigue diagnosis validation + agent/skill hardening
+
+**Agent:** orchestrator
+**Summary:** Independently validated the headless "prompt approval fatigue" diagnosis against two real sessions, corrected the premise, and shipped the evidence-backed fixes.
+- Validation correction: the static 99% allowlist statistic is not the ask rate. Actual asks were 77 (75 Allow always, 2 reject), and 168 saved project rules already covered edit/shell. `agents.<id>.permissions` cannot override pack markdown; saved approvals can override an `ask`, while the saved-rule/`deny` interaction remains untested (PERM-2).
+- Security: all 10 agents now deny `.env`/`.env.*`/`.envrc` reads after their read grant, with template allows; the runtime guard covers `read` and `grep` paths; env-prefixed test-runner allows were evaluated and intentionally left as `ask` (leading `*` allows were too broad); the review gate freezes `.gate/diff.patch` via `gate:freeze` (manual: `git add -N . && git diff HEAD > .gate/review.patch`), lenses read the brief path, PARTIAL/`INSUFFICIENT_DIFF` lenses are re-dispatched, and review/codebase/orchestrator step budgets were raised.
+- Pruning/portability: trimmed duplicated blogger/brutal-critic/legal-advisor prose, lightweight `adr`, removed human-team rollout from `refactoring`, fixed `go`/`sqlfluff` non-blocking validators, host-specific `ui-ux-pro-max` path, and maintainer notes.
+- Tests: new `scripts/agent-permissions.test.js` + fail-closed `read`/`.env` validator check; fixed the npm 11 `pack --json` shape in `test-npx-integrity.js`; `npm run doctor` 25/25.
+- Lesson: validate permission claims against saved rules and the resolved host rule array; a static allowlist ratio is not a prompt count. Config agent rules are inert against pack markdown; the working lever is Allow always plus a `deny` floor.
+
 ### 2026-10-18 12:53 - Installer cleanup advice hardening (symlink-safe removal)
 
 **Agent:** orchestrator

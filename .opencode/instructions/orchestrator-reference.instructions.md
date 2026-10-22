@@ -124,6 +124,12 @@ orchestrator → chunk → implement (per Implementation Routing)
             → apply accepted fixes → scoped re-review of delta only ⊛ max 2 cycles
             → ✅ PASS → commit | ⚠️ caveats → commit with notes | ❌ FAIL → escalate
 ```
+Freeze before dispatch: `npm run gate:freeze` writes `.gate/diff.patch` (+
+`.gate/manifest.json`); a manual freeze is `git add -N . && git diff HEAD > .gate/review.patch`
+(staged + unstaged, new files included). Each lens brief names the patch path; `@review` reads
+the brief path, then `.gate/diff.patch`, then `.gate/review.patch`. A lens that returns
+**PARTIAL** (step budget) or **INSUFFICIENT_DIFF** (no readable patch) is re-dispatched, never
+accepted as PASS.
 Use as the final gate before a commit leaves your machine (push / PR / merge) — run once
 per push, or once per tracked-branch commit. Budget: ≤8 reviewer dispatches per task
 (a full panel = 4; delta re-reviews dispatch only affected lenses), max 2 cycles per push;
