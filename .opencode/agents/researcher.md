@@ -64,7 +64,8 @@ Return exactly this JSON object and nothing else (one `verdict` value from the l
   "deprecation_status": "current",
   "recommendation": "...",
   "claims": [
-    { "claim": "...", "source_url": "https://...", "source_tier": "docs", "quote": "..." }
+    { "claim": "...", "source_url": "https://...", "source_tier": "docs", "quote": "...",
+      "fetched_at": "2026-10-25", "source_version": "v2.1.4", "stale_risk": "low" }
   ],
   "confidence_note": "..."
 }
@@ -79,6 +80,12 @@ Verdict values:
 ## Evidence rules
 
 - Primary sources only; every claim carries a `source_url` plus a short verbatim `quote`.
+- Record `fetched_at` (ISO date), `source_version` (commit/tag/version, or `"unversioned"`),
+  and `stale_risk` (`low`/`medium`/`high`) on every claim.
+- Prefer version-pinned URLs. A snapshot is evidence as of `fetched_at`, not proof of
+  current behavior: revalidate a mutable source before relying on it for a T1/T2 decision.
+  If a volatile source (`latest`, `main`, changelog) cannot be revalidated, return
+  `INSUFFICIENT_EVIDENCE` instead of guessing.
 - Rank tiers: official docs > changelog/release notes > maintainer statement > reputable blog.
 - Never invent a URL, version, or quote. No source → no claim.
 - If credible sources conflict, say so in `confidence_note` and do not force a verdict.

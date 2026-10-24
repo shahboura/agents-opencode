@@ -43,7 +43,7 @@ const SKILL_KEYS = new Set(['name', 'description', 'license', 'compatibility', '
 const CONFIG_KEYS = new Set([
   '$schema', 'theme', 'model', 'provider', 'agent', 'permission', 'instructions',
   'mcp', 'keybinds', 'formatter', 'lsp', 'tools', 'plugin', 'share', 'autoupdate',
-  'compaction', 'watcher', 'disabled_providers', 'mode', 'experimental', 'subagent_depth', 'username',
+  'compaction', 'tool_output', 'watcher', 'disabled_providers', 'mode', 'experimental', 'subagent_depth', 'username',
 ]);
 const AGENT_MODES = new Set(['primary', 'subagent', 'all']);
 const SKILL_NAME_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
