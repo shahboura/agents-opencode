@@ -182,4 +182,4 @@ For iterative work, define testable completion criteria first; run bounded cycle
 
 **At session start:** Read `AGENTS.md`, `state/session-state.json`, and `handoff/latest.md`.
 **At task completion:** refresh state, generate the handoff packet, and log a concise timestamped
-entry (3-5 bullets) to `AGENTS.md` (adopt its format); present for approval before ending.
+entry (3-5 bullets) to `MILESTONES.md` (adopt its format); present for approval before ending.

@@ -18,13 +18,12 @@ Write a complete blog post based on the provided topic or outline.
 
 ## Requirements
 
-- Under 800 words
-- Simple English (under 20 words per sentence)
-- Active voice throughout
+- 600-900 words by default; length follows the idea
+- Short sentences, active voice, one idea per paragraph
 - Include 3+ source links
 - Working code examples for tech posts
-- SEO-optimized title (under 60 characters)
-- Clear takeaways and call-to-action
+- SEO title: state the benefit, under 60 characters by default
+- Clear takeaways; add a call to action only when asked
 
 ## Topic
 

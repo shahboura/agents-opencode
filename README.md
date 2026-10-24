@@ -93,7 +93,7 @@ Ten agents ship in the pack: **seven delegation targets** that the orchestrator 
 | `@review` | Delegation target | Bugs, security holes, and perf issues before they ship |
 | `@researcher` | Delegation target | Grounding high-stakes decisions in current best practice |
 | `@docs` | Delegation target | READMEs, API docs, ADRs, wiki pages |
-| `@brutal-critic` | Delegation target | Ruthless content QA scored against proven frameworks |
+| `@brutal-critic` | Delegation target | Ruthless content QA scored against a rubric, with line-cited fixes |
 | `@legal-advisor` | Delegation target | License auditing, compliance checks, IP review, export controls |
 | `@blogger` | Primary (Tab switch / `@mention`) | Blog posts, YouTube scripts, podcast outlines, resumes, LinkedIn profiles |
 | `@em-advisor` | Primary (Tab switch / `@mention`) | 1-on-1 prep, team strategy, roadmap planning |
