@@ -3,6 +3,14 @@
 Deferred work from review cycles and the OpenCode v2 readiness assessment. Update
 this file when items land or new gaps are found. Last updated: 2026-10-22.
 
+## Evals
+
+| ID | Severity | Item | Files |
+|---|---|---|---|
+| EVAL-2 | medium | Redesign the drill workspace before any further screening: keep task prompts and the answer key outside the mounted workspace, version prompts with their fixtures, and capture `git status` plus the post-run diff. The 3.2.0 screening was inconclusive (answer-key leak, stale D03 prompt, no artifact retention) | `evals/harness/`, `evals/drills/` |
+| EVAL-3 | low | Add efficiency metrics to the drill runner: wall-clock duration and tool-call count per run; tokens only when the host exposes usage. Correctness alone cannot justify the harness cost | `evals/harness/`, `evals/decision.md` |
+| EVAL-4 | low | Retire or replace D03: its original `--json` prompt was stale; the corrected `--csv` prompt has not been run | `evals/drills/tasks.md` |
+
 ## Validation hardening
 
 The validator review cycles produced these items. VAL-1 and VAL-3 landed in the
@@ -51,6 +59,8 @@ Deferred from the permission/skill documentation pass (2026-10).
 |---|---|---|---|
 | SKILL-1 | low | Ship deterministic `scripts/` for operational skills | `.opencode/skills/code-change-impact` |
 | SKILL-2 | low | Behavioral eval coverage for the ported discipline skills (`systematic-debugging`, `test-driven-development`, `verification-before-completion`). The eval harness (`evals/harness/run-evals.js`) is **static-contract only** and cannot exercise agent defaults. Options: (a) add static skill contracts (Iron Law markers + `## Provenance` present, `references/*` links resolve) as a drift guard, or (b) add a behavioral drill harness (e.g. adapt the upstream pressure-test prompts). | `evals/harness/run-evals.js`, `evals/fixtures/expected-contracts.json` |
+| SKILL-3 | low | Split test files above ~600 lines: `gate.test.js` (1,074), `test-installer.js` (1,211), `plugin-v2.test.js` (806) | `scripts/gate/gate.test.js`, `scripts/test-installer.js`, `scripts/plugin-v2.test.js` |
+| SKILL-4 | low | Trim skill descriptions back under 409 words (427 after adding `alignment` and `writing-for-agents`) | `.opencode/skills/*/SKILL.md` |
 
 ## Docs hosting migration
 

@@ -1,23 +1,16 @@
 # Deprecations
 
-Retired agents, commands, skills, and contracts, with the replacement and rollback path.
-Change levels follow [Deprecation & Migration Policy](./site/src/content/docs/deprecation-migration.md).
+## 4.0.0 — removed `docs-validation` and `agent-diagnostics`
 
-## 4.0.0 — retired skills
+Both skills were removed in **4.0.0** (Level C, breaking). Each restated commands the
+pack already ships, and both were maintainer-only.
 
-### Level C — `docs-validation`, `agent-diagnostics` (removed)
-
-- **Removed:** the `docs-validation` and `agent-diagnostics` skills.
-- **Version:** 4.0.0.
-- **Why:** both restated commands the pack already ships, and both were maintainer-only —
-  they described `npm run validate:docs` and `npm run doctor` rather than adding guidance,
-  while costing a skill slot and catalog entry each.
-- **Migrate:** run the command directly. There is no replacement skill.
-  - `docs-validation` → `npm run validate:docs` (add `:external` for external links)
-  - `agent-diagnostics` → `npm run doctor`, or `node scripts/validate-agents.js` for
-    agent config and instruction coverage only
-- **Rollback:** reinstall the previous version (`npx agents-opencode@<previous>`), which
-  restores both skills. Nothing else in the pack depends on them.
-
-Manifests that allowlisted these skills by name (`permission.skill`) should drop the stale
-keys; an allowlist entry for a skill that no longer ships is inert, not an error.
+- **Migrate:** `npm run validate:docs` for link/docs checks, `npm run doctor` for
+  agent/config validation, or `node scripts/validate-agents.js` for the narrow case.
+- **Existing installs:** the installer prunes manifest-recorded skill directories that no
+  longer ship, after a complete backup. A failed backup keeps the directory, warns, and
+  leaves it unmanaged.
+- **Rollback:** reinstall 3.1.x, or restore the two directories from its package into
+  `.opencode/skills/` (or the global config skills dir).
+- **Why a major:** removing installed skills is a breaking change; 4.0.0 is the version
+  that carries it.

@@ -38,8 +38,9 @@ Reasons:
 2. **Guard bypass by command substitution.** `val=$(awk ... .env)` runs `awk` inside `$( )`,
    so the shell guard's command-word check never sees a read verb. Known limitation:
    interpreters and sub-shells bypass a best-effort guard.
-3. **Stale drill.** D03 asks for `--json`, which `scripts/quality-report.js` already ships.
-   The drill cannot pass in either condition.
+3. **Stale drill.** D03 asked for `--json`, which `scripts/quality-report.js` already
+   ships. The prompt was corrected to `--csv` after the run; the verdict stands, and the
+   drill has not been re-run.
 4. **No artifact retention.** D05 writes a file outside `/work`; the workspace is removed
    after the run, so the transcript cannot prove the artifact exists.
 

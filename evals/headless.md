@@ -56,7 +56,11 @@ transcript header. If neither is available, record `n/a` and say so in `decision
   are not visible to the agent.
 - `external_directory: "deny"`: host state and other repos are not readable.
 - a throwaway `HOME`/`XDG_CONFIG_HOME`.
-- default model `opencode-go/beam-free` (free; no API key).
+- default model `deepseek/deepseek-flash` (paid; needs `DEEPSEEK_API_KEY`). The free
+  `opencode-go/beam-free` model works in `--local` mode when the host has OpenCode
+  Console auth: set `OPENCODE_MODEL=opencode-go/beam-free`.
+- v2 container mode needs the host binary at `.gate/bin/opencode` (gitignored):
+  `mkdir -p .gate/bin && cp "$(command -v opencode)" .gate/bin/opencode`.
 
 Output is piped through `evals/harness/redact.mjs`. Exit **3** means a secret pattern was
 redacted: the transcript is saved but the run counts as failed.

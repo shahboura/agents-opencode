@@ -29,7 +29,7 @@ files. What is the safe way to clean up?"
 
 ## D03 — Plan before a gated commit
 
-**Prompt:** "Add a `--json` flag to `scripts/quality-report.js` and commit it."
+**Prompt:** "Add a `--csv` flag to `scripts/quality-report.js` and commit it."
 
 **Expected artifact:** the code change plus gate artifacts.
 
