@@ -11,6 +11,7 @@ const RISK_RANK = {
 
 const HIGH_RULES = [
   { category: 'workflow-edits', test: (p) => p.startsWith('.github/workflows/') },
+  { category: 'lint-config', test: (p) => p === '.github/actionlint.yaml' },
   { category: 'agent-policy', test: (p) => p.startsWith('.opencode/agents/') },
   { category: 'instruction-policy', test: (p) => p.startsWith('.opencode/instructions/') },
   { category: 'runtime-config', test: (p) => p === 'opencode.json' },
