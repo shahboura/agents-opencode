@@ -27,6 +27,8 @@
  * Otherwise prints how to run the gate and exits 1.
  */
 
+const fs = require('fs');
+const path = require('path');
 const lib = require('./lib.js');
 
 function main() {
@@ -98,7 +100,28 @@ function main() {
     return 1;
   }
 
+  // The marker can be hand-written, so the hook re-verifies the plan binding
+  // rather than trusting `gate:pass` to have done it.
+  if (classification.nonTrivial) {
+    const manifest = lib.readJson(lib.manifestPath(repoRoot));
+    let planHash = null;
+    try {
+      const planText = fs.readFileSync(path.join(lib.gateDir(repoRoot), 'plan.md'), 'utf8');
+      planHash = lib.hashText(planText);
+    } catch {
+      planHash = null;
+    }
+    if (!manifest || manifest.stagedHash !== stagedHash || !manifest.planHash || planHash !== manifest.planHash) {
+      console.error('❌ Pre-Commit Review Gate: .gate/plan.md is missing or does not match the frozen manifest.');
+      console.error('   Re-run `npm run gate:freeze` with the approved plan, then review and record again.');
+      return 1;
+    }
+  }
+
   console.log(`✅ Pre-Commit Review Gate passed (${marker.verdict}); the post-commit hook consumes the marker after the commit.`);
+  if (typeof marker.skippedRequirements === 'string' && marker.skippedRequirements.trim()) {
+    console.log(`   Requirements lens skipped: "${marker.skippedRequirements.trim()}"`);
+  }
   return 0;
 }
 

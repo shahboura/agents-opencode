@@ -53,7 +53,7 @@ Release 3.1.4. Adds a new blocking precondition; A changes what the gate verifie
 - `criterion-B1`: `gate:freeze` requires `.gate/plan.md` and hashes it into `manifest.json`.
 - `criterion-B2`: `.gate/plan.md` carries runnable checks (command + expected output), not prose criteria.
 - `criterion-B3`: lens allowlist is `requirements|code|security|ux-responsive|ponytail`;
-  unknown names are rejected after one warning release.
+  unknown names are rejected (hard reject; no prior release shipped custom names).
 - `criterion-B4`: a skipped requirements lens is recorded with a reason, not silently omitted.
 - `criterion-B5`: effort-scaling delegation budgets are documented (BACKLOG GATE-1).
 
@@ -105,6 +105,17 @@ Release 4.0.0. Breaking.
 - `criterion-G2`: retired skills are announced with a deprecation note and migration path.
 - `criterion-G3`: inventory counts are reconciled everywhere.
 
+### H - Script and gate pruning (deferred until C-G land)
+
+Not started. Runs only after the functional workstreams are in, so it prunes real
+usage rather than guesses. Baseline: 38 scripts, 11,670 lines.
+
+- `criterion-H1`: every script is reachable from `package.json`, a workflow, an agent,
+  or a documented command; unreferenced ones are deleted or wired.
+- `criterion-H2`: duplicated helpers across `scripts/gate`, `scripts/lib`, and the validators have one home.
+- `criterion-H3`: test files are split by subject when a single file exceeds ~600 lines.
+- `criterion-H4`: the result is recorded as a line-count and file-count delta in `MILESTONES.md`.
+
 ## Review rules
 
 - Every workstream: freeze the diff, run the lenses for its risk surface (code always;
@@ -147,6 +158,8 @@ A and C are independent and may run in parallel. F measures A-E and gates G.
 
 | Workstream | Status |
 |---|---|
-| Trim + writing skills | in progress on `chore/trim-and-writing-skills` |
-| A | implemented, uncommitted, pending final review |
-| B-G | not started |
+| Trim + writing skills | committed (`b207c25`) |
+| A | committed (`cbfa387`) |
+| B | implemented, uncommitted, reviewed 3x |
+| C-G | not started |
+| H (pruning) | deferred until C-G land |

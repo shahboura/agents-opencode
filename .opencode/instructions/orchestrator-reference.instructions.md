@@ -134,6 +134,11 @@ Use as the final gate before a commit leaves your machine (push / PR / merge) �
 per push, or once per tracked-branch commit. Budget: ≤8 reviewer dispatches per task
 (a full panel = 4; delta re-reviews dispatch only affected lenses), max 2 cycles per push;
 it **supersedes per-loop caps** and does not multiply the 5-cycle or Pattern 5 budgets.
+Scale the panel to the diff, not to habit: docs/comment-only → Tier 1 alone; one or two risk
+files → 2 lenses; security surface or 3+ files under a risk path (definition:
+`review-gate.md` → risk path) → 3–4 lenses and one re-review cycle. The
+same rule sizes implementation dispatch: one implementer for a single-file edit, at most three
+lanes for disjoint multi-file work.
 **Canonical spec — tier rules, lens selection, triage and decision-panel templates, freeze
 mechanism, skip criteria, and edge cases: `site/src/content/docs/review-gate.md`.**
 

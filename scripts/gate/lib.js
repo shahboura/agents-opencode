@@ -29,10 +29,17 @@
  */
 
 const { execFileSync } = require('child_process');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
 const PASS_VERDICTS = new Set(['PASS', 'PASS-WITH-CAVEATS']);
+// A skip reason must say something a reviewer can act on.
+const MIN_SKIP_REASON_LENGTH = 12;
+
+function hashText(text) {
+  return crypto.createHash('sha256').update(text).digest('hex');
+}
 
 // Staged-diff risk surface: a change under any of these prefixes, to one of
 // these root files, or to a lockfile at any depth is non-trivial no matter how
@@ -44,7 +51,7 @@ const RISK_PATH_RULES = Object.freeze({
   // Comparison is against the case-folded path, so root-file entries must stay
   // lower-case. AGENTS.md is session-injected context (same family as
   // .opencode/): a one-file edit must still require the panel (S3).
-  rootFiles: ['install.js', 'package.json', 'opencode.json', '.gitleaks.toml', 'agents.md'],
+  rootFiles: ['install.js', 'package.json', 'opencode.json', '.gitleaks.toml', 'agents.md', '.gitmodules', '.npmrc'],
   // Lockfiles at any depth: the root one plus nested copies.
   lockfileNames: ['package-lock.json'],
 });
@@ -222,6 +229,64 @@ function lensNameOf(lens) {
   return typeof raw === 'string' ? raw.trim() : '';
 }
 
+// The lenses the pack actually ships. Arbitrary names would let a caller mint a
+// "panel" out of two strings that no reviewer ever ran.
+const ALLOWED_LENSES = ['requirements', 'code', 'security', 'ux-responsive', 'ponytail'];
+
+function isAllowedLensName(name) {
+  return ALLOWED_LENSES.includes(String(name || '').trim().toLowerCase());
+}
+
+// A gate plan must carry executable checks, not prose acceptance criteria:
+// a `## Checks` section with one `- run:` per `- expect:`.
+function validatePlan(text) {
+  if (typeof text !== 'string' || !text.trim()) {
+    return { ok: false, reason: 'plan is empty' };
+  }
+  let inChecks = false;
+  let inFence = false;
+  let runs = 0;
+  let expects = 0;
+  for (const line of text.split('\n')) {
+    const trimmed = line.trim();
+    if (/^```/.test(trimmed)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) {
+      continue;
+    }
+    if (/^##\s+Checks\s*$/i.test(trimmed)) {
+      inChecks = true;
+      continue;
+    }
+    if (/^##\s+/.test(trimmed)) {
+      inChecks = false;
+      continue;
+    }
+    if (!inChecks) {
+      continue;
+    }
+    const run = trimmed.match(/^-\s*run:\s*(\S.*)$/);
+    if (run) {
+      // A placeholder command is not an executable check.
+      if (/^(true|:|exit(\s+0)?|echo|#.*)$/i.test(run[1].trim())) {
+        return { ok: false, reason: `"- run:" is a placeholder: ${run[1].trim()}` };
+      }
+      runs += 1;
+    } else if (/^-\s*expect:\s*\S/.test(trimmed)) {
+      expects += 1;
+    }
+  }
+  if (runs === 0) {
+    return { ok: false, reason: 'no "- run:" line under "## Checks"' };
+  }
+  if (runs !== expects) {
+    return { ok: false, reason: `${runs} "- run:" line(s) but ${expects} "- expect:" line(s)` };
+  }
+  return { ok: true };
+}
+
 function markerLensCount(passData) {
   if (!passData || !Array.isArray(passData.lenses)) {
     return 0;
@@ -233,7 +298,7 @@ function markerLensCount(passData) {
       continue;
     }
     const name = lensNameOf(lens);
-    if (name) {
+    if (name && isAllowedLensName(name)) {
       distinct.add(name.toLowerCase());
     }
   }
@@ -361,6 +426,19 @@ function evaluateMarker(passData, currentStagedHash, classification) {
         reason: `non-trivial diff requires a Tier 2 panel of at least ${MIN_NON_TRIVIAL_LENSES} lenses; the marker records ${lensCount} distinct lens(es)`,
       };
     }
+    const names = new Set(
+      (Array.isArray(passData.lenses) ? passData.lenses : [])
+        .map((lens) => lensNameOf(lens).toLowerCase())
+        .filter((name) => name && isAllowedLensName(name))
+    );
+    const skipped =
+      typeof passData.skippedRequirements === 'string' ? passData.skippedRequirements.trim() : '';
+    if (!names.has('requirements') && skipped.length < MIN_SKIP_REASON_LENGTH) {
+      return {
+        allowed: false,
+        reason: 'non-trivial diff requires the requirements lens or a recorded --skip-requirements reason',
+      };
+    }
   }
   return { allowed: true, reason: 'gate pass marker matches the staged tree' };
 }
@@ -388,6 +466,9 @@ module.exports = {
   classifyStagedDiff,
   markerLensCount,
   isSafeLensName,
+  isAllowedLensName,
+  ALLOWED_LENSES,
+  validatePlan,
   readLensEvidence,
   collectLensEvidence,
   isPassVerdict,
@@ -399,4 +480,6 @@ module.exports = {
   RISK_PATH_RULES,
   NON_TRIVIAL_FILE_LIMIT,
   MIN_NON_TRIVIAL_LENSES,
+  MIN_SKIP_REASON_LENGTH,
+  hashText,
 };

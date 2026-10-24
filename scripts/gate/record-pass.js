@@ -24,15 +24,17 @@
  */
 
 const fs = require('fs');
+const path = require('path');
 const lib = require('./lib.js');
 
 const USAGE = [
   'Usage: npm run gate:pass -- --verdict PASS|PASS-WITH-CAVEATS [--lenses <lens1,lens2,...>]',
+  '       [--skip-requirements "<reason>"]',
   'Keep the `--` before the flags: without it npm swallows --verdict.',
 ];
 
 function parseArgs(argv) {
-  const options = { verdict: null, lenses: [] };
+  const options = { verdict: null, lenses: [], skipRequirements: null };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--verdict') {
@@ -42,10 +44,21 @@ function parseArgs(argv) {
     } else if (arg.startsWith('--verdict=')) {
       options.verdict = arg.slice('--verdict='.length) || null;
     } else if (arg === '--lenses') {
-      options.lenses = String(argv[i + 1] || '').split(',').map((s) => s.trim()).filter(Boolean);
-      i += 1;
+      const value = argv[i + 1];
+      if (value && !value.startsWith('--')) {
+        options.lenses = value.split(',').map((s) => s.trim()).filter(Boolean);
+        i += 1;
+      }
     } else if (arg.startsWith('--lenses=')) {
       options.lenses = arg.slice('--lenses='.length).split(',').map((s) => s.trim()).filter(Boolean);
+    } else if (arg === '--skip-requirements') {
+      const value = argv[i + 1];
+      if (value && !value.startsWith('--')) {
+        options.skipRequirements = value.trim() || null;
+        i += 1;
+      }
+    } else if (arg.startsWith('--skip-requirements=')) {
+      options.skipRequirements = arg.slice('--skip-requirements='.length).trim() || null;
     }
   }
   return options;
@@ -123,8 +136,46 @@ function main() {
   }
 
   const classification = lib.classifyStagedDiff(stagedFiles, { gitlinkPaths });
+
+  const unknownLenses = options.lenses.filter((name) => !lib.isAllowedLensName(name));
+  if (unknownLenses.length > 0) {
+    console.error(`❌ gate:pass refusing: unknown lens name(s): ${unknownLenses.join(', ')}`);
+    console.error(`   Allowed lenses: ${lib.ALLOWED_LENSES.join(', ')}`);
+    return 1;
+  }
+
+  // The plan is bound at freeze time; recompute it here so editing or deleting
+  // .gate/plan.md after the freeze invalidates the pass.
+  if (classification.nonTrivial) {
+    const planPath = path.join(lib.gateDir(repoRoot), 'plan.md');
+    let planText = null;
+    try {
+      planText = fs.readFileSync(planPath, 'utf8');
+    } catch {
+      planText = null;
+    }
+    const planHash = planText === null
+      ? null
+      : lib.hashText(planText);
+    if (!planHash || !manifest.planHash || planHash !== manifest.planHash) {
+      console.error('❌ gate:pass refusing: .gate/plan.md changed or disappeared after the freeze.');
+      console.error('   Re-run `npm run gate:freeze` so the snapshot and the plan match.');
+      return 1;
+    }
+  }
+
+  if (options.skipRequirements !== null && options.skipRequirements.length < lib.MIN_SKIP_REASON_LENGTH) {
+    console.error(`❌ gate:pass refusing: --skip-requirements needs a reason of at least ${lib.MIN_SKIP_REASON_LENGTH} characters.`);
+    return 1;
+  }
+
   const decision = lib.evaluateMarker(
-    { verdict: options.verdict, stagedHash, lenses: evidence.entries },
+    {
+      verdict: options.verdict,
+      stagedHash,
+      lenses: evidence.entries,
+      skippedRequirements: options.skipRequirements || undefined,
+    },
     stagedHash,
     classification
   );
@@ -156,6 +207,7 @@ function main() {
       stagedHash,
       timestamp: new Date().toISOString(),
       lenses: evidence.entries,
+      skippedRequirements: options.skipRequirements || undefined,
     }, null, 2)}\n`
   );
 
@@ -165,6 +217,9 @@ function main() {
   console.log(`✅ Gate pass recorded: ${options.verdict} (staged ${stagedHash})`);
   console.log(`   Tier:   ${tier} — ${classification.fileCount} staged file(s)`);
   console.log(`   Marker: ${lib.passMarkerPath(repoRoot)}`);
+  if (options.skipRequirements) {
+    console.log(`   Skipped: requirements lens — "${options.skipRequirements}"`);
+  }
   console.log('   Commit now — the post-commit hook consumes the marker once the commit exists.');
   return 0;
 }
