@@ -15,7 +15,7 @@ concurrency:
 jobs:
   validate-external-links:
     name: Validate External Documentation Links (non-blocking)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     continue-on-error: true
 
@@ -28,7 +28,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Validate external documentation links
         run: node scripts/validate-docs.js --external --allowlist

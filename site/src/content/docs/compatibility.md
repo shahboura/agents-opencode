@@ -11,10 +11,11 @@ This matrix captures tested runtime/tooling targets for this repository.
 
 | Surface | Target | Notes |
 |---|---|---|
-| Node.js (local validation scripts) | 24.x | Matches CI and publish workflows; declared in `engines` (`>=24`). |
-| Node.js (CI validation) | 24.x | `validate.yml` jobs use Node 24. |
-| npm publish runtime | 24.x | `publish.yml` uses Node 24 with trusted publishing. |
-| Node.js (docs build) | 24.x | Astro Starlight build, deployed by the Cloudflare Workers workflow. |
+| Node.js (local validation scripts) | 26.x | Matches CI and publish workflows; declared in `engines` (`>=24`). |
+| Node.js (CI validation) | 26.x | `validate.yml` jobs use Node 26 on `ubuntu-26.04`. |
+| npm publish runtime | 26.x | `publish.yml` uses Node 26 with trusted publishing. |
+| Node.js (docs build) | 26.x | Astro Starlight build; Astro 7 requires Node `>=22.23.4`. Deployed by the Cloudflare Workers workflow. |
+| CI runner image | Ubuntu 26.04 | Every job pins `runs-on: ubuntu-26.04`; no `-latest` label, so a runner migration cannot change the image silently. |
 | OS support for installer | Windows / Linux / macOS | Uses Node + filesystem APIs only. |
 
 ## OpenCode v1 and v2 Targets
