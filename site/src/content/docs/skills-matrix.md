@@ -18,11 +18,11 @@ Quick read:
 | Agent | Recommended skills |
 |---|---|
 | `codebase` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `legal-advisor`, `code-change-impact`, `refactoring`, `decision-grounding`, `systematic-debugging`, `test-driven-development`, `verification-before-completion` |
-| `orchestrator` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `blogger`, `brutal-critic`, `code-change-impact`, `refactoring`, `legal-advisor`, `decision-grounding`, `systematic-debugging`, `verification-before-completion` |
-| `planner` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `refactoring`, `adr`, `decision-grounding` |
+| `orchestrator` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `blogger`, `brutal-critic`, `writing-for-agents`, `code-change-impact`, `refactoring`, `legal-advisor`, `alignment`, `decision-grounding`, `systematic-debugging`, `verification-before-completion` |
+| `planner` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `refactoring`, `alignment`, `writing-for-agents`, `adr`, `decision-grounding` |
 | `review` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `docs-validation`, `agent-diagnostics`, `code-change-impact`, `security-audit`, `decision-grounding` |
 | `researcher` | _(none — read-only evidence gathering; skill-free by design)_ |
-| `docs` | `docs-validation`, `project-bootstrap`, `agent-diagnostics`, `api-documentation`, `adr` |
+| `docs` | `docs-validation`, `project-bootstrap`, `agent-diagnostics`, `api-documentation`, `adr`, `writing-for-agents` |
 | `em-advisor` | `project-bootstrap`, `agent-diagnostics`, `docs-validation`, `legal-advisor`, `blogger` |
 | `blogger` | `blogger`, `brutal-critic` |
 | `brutal-critic` | `brutal-critic`, `blogger` |
@@ -62,6 +62,8 @@ on-demand policy below and may carry additional, narrower conditional load lines
 | Legal research, compliance, contract review, license auditing, data privacy, IP, export controls | `legal-advisor` | `legal-advisor`, `codebase`, `orchestrator`, `em-advisor` |
 | Code change impact/blast-radius analysis, regression check, safe-to-merge verification | `code-change-impact` | `review`, `codebase`, `orchestrator` |
 | Ground high-stakes decisions in current best practice (dispatch `@researcher`; deprecations, API/version changes, workaround smell) | `decision-grounding` | `orchestrator`, `planner` |
+| Ambiguous, high-stakes, or acceptance-criteria-free request needing decisions settled before planning | `alignment` | `orchestrator`, `planner` |
+| Writing or editing a skill, agent file, instruction file, `AGENTS.md`, or other agent-facing doc | `writing-for-agents` | `orchestrator`, `planner`, `docs` |
 | Security-focused code and config review, vulnerability scanning, threat modeling | `security-audit` | `review` |
 | Safe staged refactoring, structural code improvements without behavior changes | `refactoring` | `codebase`, `planner`, `orchestrator` |
 | Debugging a bug, test failure, or unexpected behavior with root-cause discipline | `systematic-debugging` | `codebase`, `orchestrator` |

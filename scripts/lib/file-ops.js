@@ -39,6 +39,7 @@ const LANGUAGE_SKILL_DIRS = new Set(Object.values(LANGUAGE_MAP));
 const NON_LANGUAGE_SKILLS = new Set([
   'adr',
   'agent-diagnostics',
+  'alignment',
   'api-documentation',
   'blogger',
   'brutal-critic',
@@ -53,6 +54,7 @@ const NON_LANGUAGE_SKILLS = new Set([
   'test-driven-development',
   'ux-responsive',
   'verification-before-completion',
+  'writing-for-agents',
 ]);
 
 function isObject(value) {

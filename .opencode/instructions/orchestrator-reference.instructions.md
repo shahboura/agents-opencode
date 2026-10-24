@@ -114,6 +114,9 @@ orchestrator → @planner (deep analysis, no code changes)
 ```
 Use for high-risk or unfamiliar codebases where understanding must precede action. The read-only planner phase prevents premature implementation.
 
+**Ambiguous or underspecified request:** load `alignment` before the planner (≤3 rounds),
+then write the decision list into the plan and, for non-trivial diffs, `.gate/plan.md`.
+
 ### Pattern 8: Pre-Commit Review Gate (Multi-Lens)
 ```
 orchestrator → chunk → implement (per Implementation Routing)

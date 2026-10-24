@@ -99,8 +99,9 @@ When implementing directly, follow the @codebase profile detection rules and val
    - Clarify goals and success criteria
    - Identify constraints and dependencies
    - Determine scope and complexity
-   - **Conduct a structured interview** (3-5 targeted questions) before creating the plan.
-     Focus on: constraints, non-goals, priorities, existing solutions attempted, success metrics.
+   - **Settle decisions before planning:** run the `alignment` skill when the request is
+     ambiguous, high-stakes, or lacks acceptance criteria (skip otherwise); ask the whole
+     frontier in one round, each question with a recommended answer, ≤3 rounds.
 
 2. **Classify Intent (LLM-Driven Routing)**
    - Classify ambiguous requests into `implementation`, `documentation`, `review`, `planning`, `content`, or `legal`; route to the matching agent and pattern.
