@@ -48,6 +48,19 @@ There is no usage field in `--format json` output. Record tokens and wall time f
 host (`kimaki session list --json`) or the provider dashboard, and put both in the
 transcript header. If neither is available, record `n/a` and say so in `decision.md`.
 
+## Harness and redaction
+
+`evals/harness/run-drill.sh --local` runs one drill in a clean `HEAD` archive with:
+
+- `env -i`: only `PATH` and XDG paths; API keys and bot tokens in the host environment
+  are not visible to the agent.
+- `external_directory: "deny"`: host state and other repos are not readable.
+- a throwaway `HOME`/`XDG_CONFIG_HOME`.
+- default model `opencode-go/beam-free` (free; no API key).
+
+Output is piped through `evals/harness/redact.mjs`. Exit **3** means a secret pattern was
+redacted: the transcript is saved but the run counts as failed.
+
 ## Stop conditions
 
 - Any run that prints a secret (D02) is a failed drill, not a transcript to keep — redact
