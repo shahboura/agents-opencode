@@ -74,8 +74,23 @@ const FREEZE_SCRIPT = path.join(__dirname, 'freeze.js');
 function freezeRepo(tmp) {
   const gate = path.join(tmp, '.gate');
   fs.mkdirSync(gate, { recursive: true });
-  fs.writeFileSync(path.join(gate, 'plan.md'), '# Plan\n\n## Checks\n- run: npm test\n- expect: exit 0\n');
+  fs.writeFileSync(
+    path.join(gate, 'plan.md'),
+    '# Plan\n\n## Acceptance\n\n- the change does what the plan says\n\n## Checks\n- run: npm test\n- expect: exit 0\n'
+  );
   return runNode(FREEZE_SCRIPT, [], tmp, baseEnv());
+}
+
+// A Tier 2 panel needs hash-bound evidence per lens; write it the way a real
+// review does, through gate:lens, so the tests exercise the same path.
+function recordLenses(tmp, names) {
+  const lensEvidence = path.join(__dirname, 'lens-evidence.js');
+  for (const name of names) {
+    const result = runNode(lensEvidence, ['--name', name, '--verdict', 'PASS', '--findings', '0'], tmp, baseEnv());
+    if (result.status !== 0) {
+      throw new Error(`gate:lens failed for ${name}: ${result.stderr}`);
+    }
+  }
 }
 
 function testPureHelpers() {
@@ -262,9 +277,11 @@ function testGitlinkChangesAreVisibleAndGated() {
 
     // Panel parity: the gitlink change is non-trivial, so a one-lens pass is
     // refused and only a two-lens marker is accepted by the hook.
+    recordLenses(tmp, ['code']);
     result = runNode(recordPass, ['--verdict', 'PASS', '--lenses', 'code', '--skip-requirements', 'test fixture only'], tmp, baseEnv());
     assert(result.status === 1, 'gate:pass must refuse a one-lens pass for a gitlink change');
-    assert(/at least 2 lenses/.test(result.stderr), 'the refusal should state the panel requirement');
+    assert(/at least 2 lenses/.test(result.stderr), `the refusal should state the panel requirement (stderr: ${result.stderr})`);
+    recordLenses(tmp, ['code', 'security']);
     result = runNode(recordPass, ['--verdict', 'PASS', '--lenses', 'code,security', '--skip-requirements', 'gitlink fixture'], tmp, baseEnv());
     assert(result.status === 0, `gate:pass should record a two-lens pass (stderr: ${result.stderr})`);
     result = runNode(precommit, [], tmp, baseEnv());
@@ -696,22 +713,39 @@ function testMarkerLensCountAndPanelRule() {
   assert(!lib.validatePlan('# Plan\n\nNothing to check.\n').ok, 'a prose-only plan fails');
   assert(!lib.validatePlan('# Plan\n\n## Checks\n```\n- run: npm test\n- expect: exit 0\n```\n').ok, 'checks inside a fence do not count');
   assert(!lib.validatePlan('# Plan\n\n## Checks\n- run: true\n- expect: exit 0\n').ok, 'placeholder commands are rejected');
+
+  const checks = '\n\n## Checks\n- run: npm test\n- expect: exit 0\n';
+  assert(lib.validatePlan(`# P\n\n## Acceptance\n\n- one criterion${checks}`).acceptance === 1, 'criteria before Checks are counted');
+  assert(lib.validatePlan(`# P${checks}\n## Acceptance\n\n- one criterion\n`).acceptance === 1, 'criteria after Checks are counted');
+  assert(lib.validatePlan(`# P\n\n## Acceptance\n\n\`\`\`\n- quoted\n\`\`\`${checks}`).acceptance === 0, 'criteria inside a fence do not count');
+  assert(lib.validatePlan(`# P\n\n## Acceptance\n\n### Risks\n\n- not a criterion${checks}`).acceptance === 0, 'a subheading ends the criteria section');
+  assert(lib.validatePlan(`# P\n\n## Acceptance\n\n    - indented example${checks}`).acceptance === 0, 'an indented block is not criteria');
+  assert(lib.validatePlan(`# P\n\n## Requirements\n\n- input only${checks}`).acceptance === 0, 'a Requirements section is not acceptance');
+  assert(lib.validatePlan(`# P\n\n## Acceptance\n\n- run: npm test${checks}`).acceptance === 0, 'a run: bullet is not a criterion');
+  assert(lib.validatePlan(`# P\n\n## Acceptance\n\n- [ ] observable criterion${checks}`).acceptance === 1, 'checkbox criteria count');
+  assert(lib.isAllowedLensName('architecture'), 'architecture is an allowed lens');
   assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: ['code', 'security'], skippedRequirements: 'short' }, hash, lib.classifyStagedDiff(['scripts/gate/lib.js'])).allowed, 'a too-short skip reason must not allow');
 
   const nonTrivial = lib.classifyStagedDiff(['scripts/gate/lib.js']);
   const trivial = lib.classifyStagedDiff(['README.md']);
   assert(nonTrivial.nonTrivial && !trivial.nonTrivial, 'classification fixtures must match their rule');
+  const bound = (name) => ({ name, verdict: 'PASS', findings: 0, stagedHash: hash });
+  const otherSnapshot = (name) => ({ name, verdict: 'PASS', findings: 0, stagedHash: 'deadbeef' });
 
   assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash }, hash, nonTrivial).allowed, 'non-trivial + legacy 0-lens marker must block');
   assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: ['code'] }, hash, nonTrivial).allowed, 'non-trivial + 1 lens must block');
   assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: ['code', 'code'] }, hash, nonTrivial).allowed, 'non-trivial + duplicate lenses must block');
   assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: ['code', 'security'] }, hash, nonTrivial).allowed, 'non-trivial without requirements must block');
-  assert(lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: ['requirements', 'code'] }, hash, nonTrivial).allowed, 'non-trivial + requirements + 2 lenses must allow');
-  assert(lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: ['code', 'security'], skippedRequirements: 'no behaviour change' }, hash, nonTrivial).allowed, 'a recorded skip reason must allow');
-  assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: ['code', 'security'], skippedRequirements: '   ' }, hash, nonTrivial).allowed, 'a blank skip reason must not allow');
+  assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: ['requirements', 'code'] }, hash, nonTrivial).allowed, 'unbound lens names must not count as a panel');
+  assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: [otherSnapshot('requirements'), otherSnapshot('code')] }, hash, nonTrivial).allowed, 'evidence bound to another snapshot must not count');
+  assert(lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: [bound('requirements'), bound('code')] }, hash, nonTrivial).allowed, 'non-trivial + requirements + 2 bound lenses must allow');
+  assert(lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: [bound('code'), bound('security')], skippedRequirements: 'no behaviour change' }, hash, nonTrivial).allowed, 'a recorded skip reason must allow');
+  assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: [bound('code'), bound('security')], skippedRequirements: '   ' }, hash, nonTrivial).allowed, 'a blank skip reason must not allow');
   assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: [{ name: 'code' }] }, hash, nonTrivial).allowed, 'non-trivial + 1 structured lens must block');
-  assert(lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: [{ name: 'requirements' }, { name: 'security' }] }, hash, nonTrivial).allowed, 'non-trivial + 2 structured lenses including requirements must allow');
+  assert(lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: [bound('requirements'), bound('security')] }, hash, nonTrivial).allowed, 'non-trivial + 2 bound structured lenses including requirements must allow');
   assert(lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash }, hash, trivial).allowed, 'trivial + 0 lenses must allow');
+  assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: [bound('requirements'), { name: 'code', verdict: 'FAIL' }], skippedRequirements: 'no behaviour change' }, hash, nonTrivial).allowed, 'a FAIL lens must block even without a hash');
+  assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: [bound('requirements'), { name: 'code', verdict: 'FAIL' }] }, hash, trivial).allowed, 'a FAIL lens must block a trivial marker too');
   assertThrows(() => lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash }, hash), /classification/i, 'omitting the classification must throw instead of skipping the lens rule');
   assert(lib.evaluateMarker({ verdict: 'PASS-WITH-CAVEATS', stagedHash: hash, lenses: ['code'] }, hash, nonTrivial).allowed === false, 'panel rule applies to PASS-WITH-CAVEATS too');
 }
@@ -744,6 +778,9 @@ function testRecordPassPanelRequirement() {
       assert(result.status === 0, `${c.name}: freeze should succeed`);
 
       const lensArgs = c.lenses.length > 0 ? ['--lenses', c.lenses.join(',')] : [];
+      if (c.allowed) {
+        recordLenses(tmp, c.lenses);
+      }
       result = runNode(recordPass, ['--verdict', 'PASS', ...lensArgs], tmp, baseEnv());
       const markerPath = path.join(tmp, '.gate', 'pass.json');
 
@@ -787,7 +824,8 @@ function testHookVerifiesRecordedLenses() {
   const cases = [
     { name: 'non-trivial + legacy marker (no lenses) blocks', files: { 'scripts/tool.js': 'x\n' }, lenses: undefined, allowed: false },
     { name: 'non-trivial + 1-lens marker blocks', files: { 'scripts/tool.js': 'x\n' }, lenses: ['code'], allowed: false },
-    { name: 'non-trivial + 2-lens marker allows', files: { 'scripts/tool.js': 'x\n' }, lenses: ['requirements', 'code'], allowed: true },
+    { name: 'non-trivial + 2 bound-lens marker allows', files: { 'scripts/tool.js': 'x\n' }, lenses: ['requirements', 'code'], bound: true, allowed: true },
+    { name: 'non-trivial + 2 unbound lens names blocks', files: { 'scripts/tool.js': 'x\n' }, lenses: ['requirements', 'code'], allowed: false },
     { name: 'non-trivial + hand-written bogus lens blocks', files: { 'scripts/tool.js': 'x\n' }, lenses: ['code', 'bogus'], allowed: false },
     { name: 'trivial + legacy marker (no lenses) allows', files: { 'README.md': 'x\n' }, lenses: undefined, allowed: true },
   ];
@@ -803,7 +841,9 @@ function testHookVerifiesRecordedLenses() {
 
       const marker = { verdict: 'PASS', stagedHash: manifest.stagedHash, timestamp: new Date().toISOString() };
       if (c.lenses) {
-        marker.lenses = c.lenses;
+        marker.lenses = c.bound
+          ? c.lenses.map((name) => ({ name, verdict: 'PASS', findings: 0, stagedHash: manifest.stagedHash }))
+          : c.lenses;
       }
       fs.mkdirSync(path.join(tmp, '.gate'), { recursive: true });
       fs.writeFileSync(path.join(tmp, '.gate', 'pass.json'), `${JSON.stringify(marker, null, 2)}\n`);
@@ -813,7 +853,7 @@ function testHookVerifiesRecordedLenses() {
         assert(result.status === 0, `${c.name}: hook should allow (stderr: ${result.stderr})`);
       } else {
         assert(result.status === 1, `${c.name}: hook should block`);
-        assert(/lenses/i.test(result.stderr), `${c.name}: block should mention the lens requirement`);
+        assert(/lens/i.test(result.stderr), `${c.name}: block should mention the lens requirement`);
       }
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true });
@@ -822,9 +862,9 @@ function testHookVerifiesRecordedLenses() {
 }
 
 // A2: lens evidence is hash-bound, not self-reported. readLensEvidence parses
-// the header the lens CLI writes; collectLensEvidence tolerates a missing file
-// (legacy flow) but reports any file whose stagedHash does not match the frozen
-// snapshot, and gate:pass refuses to record such a lens.
+// the header the lens CLI writes; collectLensEvidence reports a missing file and
+// any file whose stagedHash does not match the frozen snapshot, and gate:pass
+// refuses both on a non-trivial panel.
 function testLensEvidenceHelpers() {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gate-lensev-'));
   try {
@@ -854,6 +894,7 @@ function testLensEvidenceHelpers() {
     assert(collected.entries.length === 2, 'one entry per lens');
     assert(collected.entries[0].findings === 2 && collected.entries[0].verdict === 'PASS', 'an evidenced lens keeps its verdict and findings');
     assert(collected.entries[1].name === 'security' && !collected.entries[1].stagedHash, 'a lens without a file is recorded by name only');
+    assert(JSON.stringify(collected.missing) === JSON.stringify(['security']), 'a lens with no evidence file is reported as missing');
 
     collected = lib.collectLensEvidence(gate, ['code'], 'other');
     assert(JSON.stringify(collected.mismatched) === JSON.stringify(['code']), 'a stale stagedHash is reported as mismatched');
@@ -922,6 +963,9 @@ function testRecordPassBindsLensEvidence() {
     result = runNode(lensEvidence, ['--name', '../evil', '--verdict', 'PASS', '--findings', '0'], tmp, baseEnv());
     assert(result.status === 1, 'gate:lens must refuse a name that is not a plain file stem');
     assert(!fs.readdirSync(gate).some((file) => file.includes('evil')), 'an invalid lens name must not write any evidence file');
+
+    result = runNode(lensEvidence, ['--name', 'bogus', '--verdict', 'PASS', '--findings', '0'], tmp, baseEnv());
+    assert(result.status === 1 && /allowlist/i.test(result.stderr), 'gate:lens must refuse a name outside the allowlist');
 
     result = runNode(lensEvidence, ['--name', 'code', '--verdict', 'PASS', '--findings', '1.5'], tmp, baseEnv());
     assert(result.status === 1, 'gate:lens must refuse non-integer findings');
@@ -996,6 +1040,14 @@ function testPlanPolicy() {
     let result = runNode(FREEZE_SCRIPT, [], tmp, baseEnv());
     assert(result.status === 0, `a trivial diff must freeze without a plan (stderr: ${result.stderr})`);
 
+    // The acceptance requirement is non-trivial only: a checks-only plan is fine
+    // for a trivial diff.
+    fs.mkdirSync(gate, { recursive: true });
+    fs.writeFileSync(path.join(gate, 'plan.md'), '# Plan\n\n## Checks\n- run: node -e "process.exit(0)"\n- expect: exit 0\n');
+    result = runNode(FREEZE_SCRIPT, [], tmp, baseEnv());
+    assert(result.status === 0, `a trivial diff must freeze with a checks-only plan (stderr: ${result.stderr})`);
+    fs.rmSync(path.join(gate, 'plan.md'));
+
     fs.mkdirSync(path.join(tmp, 'scripts'), { recursive: true });
     fs.writeFileSync(path.join(tmp, 'scripts', 'tool.js'), 'module.exports = 1;\n');
     run('git', ['add', 'scripts/tool.js'], { cwd: tmp });
@@ -1010,7 +1062,17 @@ function testPlanPolicy() {
 
     fs.writeFileSync(path.join(gate, 'plan.md'), '# Plan\n\n## Checks\n- run: node -e "process.exit(0)"\n- expect: exit 0\n');
     result = runNode(FREEZE_SCRIPT, [], tmp, baseEnv());
-    assert(result.status === 0, `freeze should accept a runnable plan (stderr: ${result.stderr})`);
+    assert(
+      result.status === 1 && /acceptance/i.test(result.stderr),
+      'freeze must refuse a plan that states no acceptance criteria'
+    );
+
+    fs.writeFileSync(
+      path.join(gate, 'plan.md'),
+      '# Plan\n\n## Acceptance\n\n- the tool exits 0\n\n## Checks\n- run: node -e "process.exit(0)"\n- expect: exit 0\n'
+    );
+    result = runNode(FREEZE_SCRIPT, [], tmp, baseEnv());
+    assert(result.status === 0, `freeze should accept a plan with criteria and checks (stderr: ${result.stderr})`);
     const manifest = JSON.parse(fs.readFileSync(path.join(gate, 'manifest.json'), 'utf8'));
     assert(/^[a-f0-9]{64}$/.test(manifest.planHash || ''), 'the manifest must hash the plan');
     const planText = fs.readFileSync(path.join(gate, 'plan.md'), 'utf8');
@@ -1031,9 +1093,20 @@ function testPlanPolicy() {
     assert(result.status === 1 && /12 characters/i.test(result.stderr), 'gate:pass must refuse a too-short skip reason');
 
     result = runNode(recordPass, ['--verdict', 'PASS', '--lenses', 'code,security', '--skip-requirements', 'no behaviour change'], tmp, baseEnv());
+    assert(
+      result.status === 1 && /no evidence for: code, security/i.test(result.stderr),
+      'gate:pass must refuse a lens with no evidence file and name it'
+    );
+
+    recordLenses(tmp, ['code', 'security']);
+    result = runNode(recordPass, ['--verdict', 'PASS', '--lenses', 'code,security', '--skip-requirements', 'no behaviour change'], tmp, baseEnv());
     assert(result.status === 0, `gate:pass should accept a recorded skip (stderr: ${result.stderr})`);
     const marker = JSON.parse(fs.readFileSync(path.join(gate, 'pass.json'), 'utf8'));
     assert(marker.skippedRequirements === 'no behaviour change', 'the marker must record the skip reason');
+
+    recordLenses(tmp, ['architecture', 'code']);
+    result = runNode(recordPass, ['--verdict', 'PASS', '--lenses', 'architecture,code', '--skip-requirements', 'no behaviour change'], tmp, baseEnv());
+    assert(result.status === 0, `gate:pass should accept the architecture lens (stderr: ${result.stderr})`);
 
     // A stale manifest must not satisfy the hook's plan binding.
     const precommit = path.join(__dirname, 'precommit-check.js');

@@ -82,6 +82,13 @@ function main() {
     return 1;
   }
 
+  // Refuse unknown lenses here rather than after the panel has run.
+  if (!lib.isAllowedLensName(options.name)) {
+    console.error(`❌ gate:lens refuses lens name '${options.name}' — not in the allowlist.`);
+    console.error(`   Allowed lenses: ${lib.ALLOWED_LENSES.join(', ')}`);
+    return 1;
+  }
+
   if (!LENS_VERDICTS.includes(options.verdict)) {
     console.error(`❌ gate:lens refuses verdict '${options.verdict}' — expected PASS or FAIL.`);
     return 1;

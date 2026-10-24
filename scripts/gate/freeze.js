@@ -130,9 +130,17 @@ function main() {
       if (classification.nonTrivial) {
         console.error(`❌ gate:freeze refusing: .gate/plan.md is not executable (${plan.reason}).`);
         console.error('   Add a "## Checks" section with "- run:" and "- expect:" pairs.');
+        if (plan.acceptance === 0) {
+          console.error('   It also states no acceptance criteria: add a "## Acceptance" section with "- " criteria.');
+        }
         process.exit(1);
       }
       console.warn(`⚠️  .gate/plan.md is not executable (${plan.reason}); trivial diff, continuing.`);
+    } else if (classification.nonTrivial && plan.acceptance === 0) {
+      console.error('❌ gate:freeze refusing: .gate/plan.md states no acceptance criteria.');
+      console.error('   Add a "## Acceptance" section with observable "- " criteria: what "done" looks like.');
+      console.error('   The requirements lens judges the diff against them; without them it has no spec.');
+      process.exit(1);
     } else {
       planHash = lib.hashText(planText);
     }

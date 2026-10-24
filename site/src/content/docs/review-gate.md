@@ -29,17 +29,22 @@ and mechanical bumps always skip).
 
 The diff is frozen to a patch file. The canonical freeze is `npm run gate:freeze`, which writes
 the staged snapshot to `.gate/diff.patch` plus `.gate/manifest.json`. A non-trivial diff also
-requires `.gate/plan.md`, written when the plan is approved. The plan must carry executable
-checks, and `gate:freeze` hashes it into the manifest:
+requires `.gate/plan.md`, written when the plan is approved. The plan must carry acceptance
+criteria and executable checks, and `gate:freeze` hashes it into the manifest:
 
 ```markdown
+## Acceptance
+- the endpoint returns 200 for a valid token
+- an audit row is written for every attempt
+
 ## Checks
 - run: npm test
 - expect: exit 0
 ```
 
-Freeze refuses a non-trivial diff with no plan, or a plan with no matching `- run:` / `- expect:`
-pairs. To freeze by hand:
+Freeze refuses a non-trivial diff with no plan, a plan with no `## Acceptance` criteria, or a
+plan with no matching `- run:` / `- expect:` pairs. `## Acceptance criteria` is accepted as the
+same heading. To freeze by hand:
 
 ```bash
 git add -N . && git diff HEAD > .gate/review.patch   # staged + unstaged, new files included
@@ -54,15 +59,18 @@ the plan, and its lens brief - never the implementation reasoning.
 Each lens records hash-bound evidence before the gate can pass:
 
 ```bash
-npm run gate:lens -- --name code --verdict PASS --findings 3
+npm run gate:lens -- --name code --verdict PASS --findings 3   # repeat per lens
 npm run gate:pass -- --verdict PASS --lenses requirements,code,security
 ```
 
 `gate:lens` copies `stagedHash` from `.gate/manifest.json`. `gate:pass` refuses stale,
-malformed, or mislabelled evidence, and any lens that recorded `FAIL`. A missing evidence
-file is tolerated and recorded by name only; requiring one is a separate change.
+malformed, or mislabelled evidence, any lens that recorded `FAIL`, and a non-trivial
+panel that names a lens with no evidence file — a lens name alone is not a review. The
+pre-commit hook re-applies the same rule through `evaluateMarker`, so a hand-written
+marker must also carry a `stagedHash` per lens.
 
-`--lenses` accepts only `requirements`, `code`, `security`, `ux-responsive`, and `ponytail`.
+`--lenses` accepts only `requirements`, `code`, `security`, `ux-responsive`,
+`architecture`, and `ponytail`.
 A non-trivial diff must include `requirements`, or record why it does not apply:
 
 ```bash
@@ -74,14 +82,17 @@ npm run gate:pass -- --verdict PASS --lenses code,security \
 
 | Lens | Runs when | Focus |
 |---|---|---|
-| requirements | features / behavior changes | acceptance criteria met; nothing out of scope |
-| code | whenever Tier 2 triggers | logic errors, correctness, maintainability, tests, performance |
+| requirements | features / behavior changes | the plan's `## Acceptance` criteria met; nothing out of scope |
+| code | whenever Tier 2 triggers | logic errors, correctness, maintainability, tests, performance (complexity, N+1, allocations, caching, index use, pooling, async patterns) |
 | security | security surface touched | vulnerabilities, secrets, PII, authn/authz, dependency and license risk (load `security-audit`) |
 | ux-responsive | UI / markup changes | accessibility, responsive logic, input modes, loading/empty/error states (load `ux-responsive`) |
+| architecture | a new module, layer, dependency, or abstraction | reuse of an existing capability, boundary and layer fit, responsibility and state placement (Feature Envy, Shotgun Surgery, Divergent Change, Middle Man) |
+| ponytail | the diff adds files, options, or abstractions | Speculative Generality and the deletion test — what the change should delete, inline, or not build |
 
-Precondition for the requirements lens: the plan must state concrete acceptance
-criteria. If it does not, flag this and skip that lens rather than review against a
-soft spec.
+Precondition for the requirements lens: the plan states concrete acceptance criteria
+(`## Acceptance`). `gate:freeze` refuses a non-trivial diff whose plan has none, so the
+lens always has a spec to judge against. A plan with no criteria is not softened — it is
+not freezable.
 
 ### Triage and decision panel
 
@@ -93,6 +104,18 @@ soft spec.
    requirement-miss at any severity) go to a **user decision panel** - the
    orchestrator has no veto over them, and dedupe must never drop a security/data-loss tag.
 4. Declined non-critical findings go to a rationale table for the user.
+
+**A finding that would remove something the plan requires must cite it.** The
+`architecture` and `ponytail` lenses judge the change against "should this exist at all",
+which can collide with an approved criterion. Such a finding carries
+`Conflicts-with: criterion-X` (or `Conflicts-with: none`) in its evidence line:
+
+- `Conflicts-with: criterion-X` — the conflict blocks the commit and becomes a user
+  decision; the lens cannot veto an approved requirement on its own.
+- `Conflicts-with: none` — the finding stands on ordinary severity rules.
+- No `Conflicts-with:` line at all — recorded as a suggestion, never blocking.
+
+The requirement wins by default; the plan is the spec both were written from.
 
 Decision panel - declined blocking findings (commit blocked):
 

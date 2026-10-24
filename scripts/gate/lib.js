@@ -231,22 +231,25 @@ function lensNameOf(lens) {
 
 // The lenses the pack actually ships. Arbitrary names would let a caller mint a
 // "panel" out of two strings that no reviewer ever ran.
-const ALLOWED_LENSES = ['requirements', 'code', 'security', 'ux-responsive', 'ponytail'];
+const ALLOWED_LENSES = ['requirements', 'code', 'security', 'ux-responsive', 'architecture', 'ponytail'];
 
 function isAllowedLensName(name) {
   return ALLOWED_LENSES.includes(String(name || '').trim().toLowerCase());
 }
 
-// A gate plan must carry executable checks, not prose acceptance criteria:
-// a `## Checks` section with one `- run:` per `- expect:`.
+// A gate plan must carry executable checks ("## Checks": one "- run:" per
+// "- expect:") and, for non-trivial diffs, at least one observable acceptance
+// criterion ("## Acceptance"). The criterion count is returned so the caller
+// decides whether the diff is non-trivial enough to require it.
 function validatePlan(text) {
   if (typeof text !== 'string' || !text.trim()) {
-    return { ok: false, reason: 'plan is empty' };
+    return { ok: false, reason: 'plan is empty', acceptance: 0 };
   }
-  let inChecks = false;
+  let section = null;
   let inFence = false;
   let runs = 0;
   let expects = 0;
+  let acceptance = 0;
   for (const line of text.split('\n')) {
     const trimmed = line.trim();
     if (/^```/.test(trimmed)) {
@@ -256,35 +259,47 @@ function validatePlan(text) {
     if (inFence) {
       continue;
     }
-    if (/^##\s+Checks\s*$/i.test(trimmed)) {
-      inChecks = true;
+    if (/^\s{4,}\S/.test(line)) {
+      // An indented block is a quoted example, not plan content.
       continue;
     }
-    if (/^##\s+/.test(trimmed)) {
-      inChecks = false;
-      continue;
-    }
-    if (!inChecks) {
-      continue;
-    }
-    const run = trimmed.match(/^-\s*run:\s*(\S.*)$/);
-    if (run) {
-      // A placeholder command is not an executable check.
-      if (/^(true|:|exit(\s+0)?|echo|#.*)$/i.test(run[1].trim())) {
-        return { ok: false, reason: `"- run:" is a placeholder: ${run[1].trim()}` };
+    const heading = trimmed.match(/^(#{2,6})\s+(.+)$/);
+    if (heading) {
+      const level = heading[1].length;
+      const name = heading[2].trim();
+      if (level === 2 && /^checks$/i.test(name)) {
+        section = 'checks';
+      } else if (level === 2 && /^acceptance( criteria)?$/i.test(name)) {
+        section = 'acceptance';
+      } else {
+        section = null;
       }
-      runs += 1;
-    } else if (/^-\s*expect:\s*\S/.test(trimmed)) {
-      expects += 1;
+      continue;
+    }
+    if (section === 'checks') {
+      const run = trimmed.match(/^-\s*run:\s*(\S.*)$/);
+      if (run) {
+        // A placeholder command is not an executable check.
+        if (/^(true|:|exit(\s+0)?|echo|#.*)$/i.test(run[1].trim())) {
+          return { ok: false, reason: `"- run:" is a placeholder: ${run[1].trim()}`, acceptance };
+        }
+        runs += 1;
+      } else if (/^-\s*expect:\s*\S/.test(trimmed)) {
+        expects += 1;
+      }
+    } else if (section === 'acceptance') {
+      if (line === trimmed && /^-\s+(\[[ xX]\]\s*)?\S/.test(trimmed) && !/^-\s*(run|expect):/i.test(trimmed)) {
+        acceptance += 1;
+      }
     }
   }
   if (runs === 0) {
-    return { ok: false, reason: 'no "- run:" line under "## Checks"' };
+    return { ok: false, reason: 'no "- run:" line under "## Checks"', acceptance };
   }
   if (runs !== expects) {
-    return { ok: false, reason: `${runs} "- run:" line(s) but ${expects} "- expect:" line(s)` };
+    return { ok: false, reason: `${runs} "- run:" line(s) but ${expects} "- expect:" line(s)`, acceptance };
   }
-  return { ok: true };
+  return { ok: true, acceptance };
 }
 
 function markerLensCount(passData) {
@@ -358,13 +373,14 @@ function readLensEvidence(filePath) {
 }
 
 // Collect evidence files for the lens names passed to `gate:pass`. Every lens
-// with a file must bind to the frozen snapshot; a missing file is recorded by
-// name only and tolerated in workstream A (workstream B makes it a
-// precondition). Names are restricted to a safe charset so a CLI value like
+// with a file must bind to the frozen snapshot; a missing file is tolerated for
+// a trivial diff and refused for a non-trivial panel, where a name is not a
+// review. Names are restricted to a safe charset so a CLI value like
 // `../x` cannot read outside `.gate/`.
 function collectLensEvidence(gateDirPath, lensNames, expectedHash) {
   const entries = [];
   const mismatched = [];
+  const missing = [];
   const seen = new Set();
   for (const rawName of lensNames) {
     const name = lensNameOf(rawName);
@@ -377,6 +393,7 @@ function collectLensEvidence(gateDirPath, lensNames, expectedHash) {
       : null;
     if (!evidencePath || !fs.existsSync(evidencePath)) {
       entries.push({ name });
+      missing.push(name);
       continue;
     }
     const evidence = readLensEvidence(evidencePath);
@@ -396,7 +413,7 @@ function collectLensEvidence(gateDirPath, lensNames, expectedHash) {
       mismatched.push(name);
     }
   }
-  return { entries, mismatched };
+  return { entries, mismatched, missing };
 }
 
 // Decide whether a marker approves the current staged tree. Pure: no I/O.
@@ -418,6 +435,14 @@ function evaluateMarker(passData, currentStagedHash, classification) {
   if (!passData.stagedHash || passData.stagedHash !== currentStagedHash) {
     return { allowed: false, reason: 'staged tree changed since the gate passed' };
   }
+  // `gate:pass` refuses a FAIL lens; the hook must not accept a marker that
+  // records one, or a hand-written marker could satisfy the panel with it.
+  const failedLens = (Array.isArray(passData.lenses) ? passData.lenses : []).some(
+    (lens) => String((lens && lens.verdict) || '').toUpperCase() === 'FAIL'
+  );
+  if (failedLens) {
+    return { allowed: false, reason: 'pass marker records a lens that returned FAIL' };
+  }
   if (classification.nonTrivial) {
     const lensCount = markerLensCount(passData);
     if (lensCount < MIN_NON_TRIVIAL_LENSES) {
@@ -428,6 +453,7 @@ function evaluateMarker(passData, currentStagedHash, classification) {
     }
     const names = new Set(
       (Array.isArray(passData.lenses) ? passData.lenses : [])
+        .filter((lens) => String((lens && lens.verdict) || '').toUpperCase() !== 'FAIL')
         .map((lens) => lensNameOf(lens).toLowerCase())
         .filter((name) => name && isAllowedLensName(name))
     );
@@ -437,6 +463,21 @@ function evaluateMarker(passData, currentStagedHash, classification) {
       return {
         allowed: false,
         reason: 'non-trivial diff requires the requirements lens or a recorded --skip-requirements reason',
+      };
+    }
+    // A lens name is not a review: every counted lens must carry the hash-bound
+    // evidence `gate:lens` writes, so a hand-written marker cannot claim a panel.
+    const unbound = (Array.isArray(passData.lenses) ? passData.lenses : []).filter((lens) => {
+      if (!lens || typeof lens !== 'object') {
+        return true;
+      }
+      return lens.stagedHash !== currentStagedHash;
+    });
+    if (unbound.length > 0) {
+      const unboundNames = unbound.map((lens) => lensNameOf(lens) || 'unnamed').join(', ');
+      return {
+        allowed: false,
+        reason: `non-trivial diff requires hash-bound evidence per lens; no evidence for: ${unboundNames}`,
       };
     }
   }

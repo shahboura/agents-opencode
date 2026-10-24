@@ -48,18 +48,22 @@ The orchestrator's Pre-Commit Review Gate may dispatch you with a **lens brief**
 
 | Lens | Focus | Out of scope |
 |---|---|---|
-| requirements | acceptance criteria met; behavior matches the plan; nothing out of scope | style, security, perf |
-| code | logic errors, correctness, maintainability, test coverage, performance (complexity, N+1, allocations) | requirement fit, security |
+| requirements | acceptance criteria met (the plan's `## Acceptance` section); behavior matches the plan; nothing out of scope | style, security, perf |
+| code | logic errors, correctness, maintainability, test coverage, performance (complexity, N+1, allocations, caching, index use, resource pooling, async patterns) | requirement fit, security |
 | security | vulnerabilities, secrets, PII, authn/authz, dependency & license risk (load `security-audit` skill) | style, perf nits |
 | ux-responsive | accessibility, responsive logic, input modes, loading/empty/error states | backend logic |
+| architecture | reuse of an existing capability, boundary/layer fit, responsibility and state placement | style, security, perf nits |
+| ponytail | files, options, and abstractions the diff adds without a caller; Speculative Generality and the deletion test — what to delete or inline instead | style, security, perf nits |
 
 **Lens references:**
-- `code` lens: name smells from `.opencode/skills/refactoring/references/code-smells.md`
-  (delete or inline before extracting).
-- `ux-responsive` lens: review against
-  `.opencode/skills/ux-responsive/references/design-review.md`; if the project has no
-  `DESIGN.md`, cite the in-repo pattern reused or ask at most 3 forced-choice questions —
-  never invent a look.
+- `code`: name smells from `.opencode/skills/refactoring/references/code-smells.md`
+  (delete or inline before extracting); judge correctness and cost inside the diff.
+- `architecture`: judge across files — does an equivalent already exist, does this sit at
+  the right boundary, is state in the right place. Same smell list; may read one context
+  file per finding, cited; load `code-change-impact` for blast radius.
+- `ux-responsive`: review against
+  `.opencode/skills/ux-responsive/references/design-review.md`; with no `DESIGN.md`, cite
+  the in-repo pattern reused or ask ≤3 forced-choice questions — never invent a look.
 
 **Evidence rule:** every finding cites `file:line`. A "no findings" verdict is valid only with a one-line reason (e.g., "config-only diff; no code paths affected") — never a bare approval. If the lens brief is missing or ambiguous, state the lens you assumed before reviewing.
 
@@ -70,6 +74,10 @@ The orchestrator's Pre-Commit Review Gate may dispatch you with a **lens brief**
 | C1 | critical | security | file:line | [issue] | [fix] |
 
 Severity is exactly `critical | high | medium | low`; `critical` = blocking (security, data loss, requirement miss). If the lens is clean, return one line: "no findings — [reason]".
+
+On `architecture` and `ponytail`, add a `Conflicts-with` column: `criterion-X` when the
+finding would remove something `.gate/plan.md` requires, else `none`. A cited conflict
+blocks; uncited is a suggestion. Neither lens can veto an approved requirement.
 
 **Skills loaded trailer:** end every report (lens or default) with `skills loaded: [<skill>, ...]` — the skills you actually loaded, `[]` if none.
 
@@ -108,13 +116,8 @@ Severity is exactly `critical | high | medium | low`; `critical` = blocking (sec
 - Code organization
 
 ### Performance
-- N+1 query problems
-- Inefficient loops
-- Unnecessary allocations
-- Caching opportunities
-- Database index usage
-- Async/await usage
-- Resource pooling
+- N+1 queries, inefficient loops, unnecessary allocations
+- Missing caching, database indexes, async patterns, or resource pooling
 
 ### Best Practices
 - Language-specific idioms

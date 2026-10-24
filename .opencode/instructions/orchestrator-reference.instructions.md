@@ -28,9 +28,13 @@ Use this format when creating a multi-phase plan:
 - [ ] [Validation step 1]
 - [ ] [Validation step 2]
 
-### Success Criteria
+## Acceptance
 - [Criterion 1]
 - [Criterion 2]
+
+## Checks
+- run: [command that proves the change]
+- expect: exit 0
 ```
 
 ## Agent Selection Guide

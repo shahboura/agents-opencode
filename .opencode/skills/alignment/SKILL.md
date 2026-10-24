@@ -108,9 +108,10 @@ mechanical:
 
 - Write it into the plan. When the Pre-Commit Review Gate applies (non-trivial
   diff), also write `.gate/plan.md` so reviewers judge the diff against the same
-  intent the implementer worked from. Append a `## Checks` section with matched
-  `- run:` / `- expect:` lines; `gate:freeze` refuses a plan without them
-  (`CONTRIBUTING.md`).
+  intent the implementer worked from. It needs both sections: `## Acceptance` with
+  `- ` observable criteria (the requirements lens judges against them) and
+  `## Checks` with matched `- run:` / `- expect:` lines. `gate:freeze` refuses a
+  plan missing either (`CONTRIBUTING.md`).
 - Keep acceptance criteria observable: see `writing-for-agents` for the standard.
   "Works well" is not a criterion.
 

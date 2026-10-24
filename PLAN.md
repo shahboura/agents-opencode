@@ -52,7 +52,7 @@ Release 3.1.4. Adds a new blocking precondition; A changes what the gate verifie
 
 - `criterion-B1`: `gate:freeze` requires `.gate/plan.md` and hashes it into `manifest.json`.
 - `criterion-B2`: `.gate/plan.md` carries runnable checks (command + expected output), not prose criteria.
-- `criterion-B3`: lens allowlist is `requirements|code|security|ux-responsive|ponytail`;
+- `criterion-B3`: lens allowlist is `requirements|code|security|ux-responsive|architecture|ponytail`;
   unknown names are rejected (hard reject; no prior release shipped custom names).
 - `criterion-B4`: a skipped requirements lens is recorded with a reason, not silently omitted.
 - `criterion-B5`: effort-scaling delegation budgets are documented (BACKLOG GATE-1).
@@ -76,8 +76,10 @@ as shipped and adds the rest.
 - `criterion-D3`: `blogger` owns voice, claims, anti-slop; channel formats live in `references/formats.md` as defaults.
 - `criterion-D4`: `brutal-critic` grades against a rubric and no longer prescribes channel format.
 - `criterion-D5`: `design-review` + `DESIGN.md` define reference-first decisions (no invented looks).
-- `criterion-D6`: `lens-ponytail.md` exists; every finding carries `Conflicts-with: criterion-X`
-  or `none`.
+- `criterion-D6`: the lens briefs cover every allowlisted lens, `ponytail` and
+  `architecture` included; findings on those two carry `Conflicts-with: criterion-X`
+  or `none`. Briefs are inline in `.opencode/agents/review.md`; the pack ships no
+  standalone `lens-*.md` files.
 - `criterion-D7`: thin operational skills get deterministic scripts instead of deletion (BACKLOG SKILL-1).
 
 ### E - Operating loop
@@ -129,13 +131,14 @@ usage rather than guesses. Baseline: 38 scripts, 11,670 lines.
 
 - Every workstream: freeze the diff, run the lenses for its risk surface (code always;
   security when scripts/permissions/CI change; requirements when behaviour changes;
-  ponytail when the diff adds files, options, or abstractions), triage, then commit.
+  architecture when a module, layer, dependency, or abstraction is added; ponytail when
+  the diff adds files, options, or abstractions), triage, then commit.
 - Lenses read the frozen patch and `.gate/plan.md`; never the implementation transcript.
 - A lens finding that would remove something a criterion requires must cite
   `Conflicts-with: criterion-X`. Cited conflicts block the commit and become a user
   decision. Uncited findings are recorded as suggestions.
 - Requirement wins by default; ponytail cannot veto an approved criterion.
-- Budget: at most 4 lenses per workstream (the allowlist names 5 possible lenses), at
+- Budget: at most 4 lenses per workstream (the allowlist names 6 possible lenses), at
   most 8 reviewer dispatches per task.
 
 ## Sequence
@@ -158,7 +161,7 @@ A and C are independent and may run in parallel. F measures A-E and gates G.
 | Planner writes the plan file | Rejected | `edit: deny` is the role's safety property; orchestrator writes |
 | Full spec-driven pipeline / tracker setup | Rejected | published criticism: overkill, review burden, false control |
 | Separate Spec axis | Replaced | make the existing requirements lens enforceable instead |
-| `design` lens name | Rejected | no design lens exists; unused component |
+| `design` lens name | Rejected | collides with `ux-responsive`'s visual design review; the gap is covered by the `architecture` lens |
 | Voting pass (GATE-2) | Deferred | doubles review cost; revisit after A shows panel yield |
 | Live-host v2 resolved-rule test (PERM-1) | Separate ticket | needs a pinned v2 host in CI |
 | v2 runtime guard verification | Separate ticket | the pack's most consequential unverified claim |
