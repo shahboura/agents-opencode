@@ -14,10 +14,11 @@ opencode run --standalone --auto \
 - `--auto` approves permissions that are **not explicitly denied**. The pack's `deny`
   rules (`.env` reads through the read/grep tools, `rm -rf`, force-push) still apply —
   that is what D02 tests.
-- **Known weakening:** `--auto` also approves `ask`-level shell commands. The pack's
-  secret guard covers the `read` and `grep` tools, not `cat .env`. Run D02 without
-  `--auto`, or add a temporary agent override with `"* .env*": "deny"` under `bash`.
-  Tracked as PERM-5 in `BACKLOG.md`.
+- **Known weakening:** `--auto` also approves `ask`-level shell commands. The plugin
+  guard blocks direct shell reads and copies of secret files, including wrappers
+  (`sudo`, `bash -c`), absolute paths, `<` redirection and globs. Interpreters
+  (`python -c`, `node -e`) and aliases still bypass it by design. Tracked as PERM-5 in
+  `BACKLOG.md`.
 - `--format json` gives a machine-readable transcript; store the relevant events, not
   the whole stream.
 

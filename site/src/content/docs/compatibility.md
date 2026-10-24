@@ -91,3 +91,10 @@ External checks are also executed by a scheduled non-blocking workflow.
 `validate-risk-path` derives changed files from git context and reports a computed
 risk level plus whether the PR template acknowledges it. The check is **advisory**
 and does not block merges.
+
+## The review gate is maintainer tooling
+
+`npm run gate:*`, `.githooks/`, and `scripts/gate/**` belong to **this repository**, not
+to the installed pack. In a project that installs the agents, the gate command will not
+exist: follow the review flow manually (freeze the diff, run the lenses, record the
+verdict) instead. `scripts/lib/**` ships because the installer needs it.

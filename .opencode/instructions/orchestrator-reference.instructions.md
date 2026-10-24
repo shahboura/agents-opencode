@@ -129,7 +129,8 @@ orchestrator → chunk → implement (per Implementation Routing)
 ```
 Freeze before dispatch: `npm run gate:freeze` writes `.gate/diff.patch` (+
 `.gate/manifest.json`); a manual freeze is `git add -N . && git diff HEAD > .gate/review.patch`
-(staged + unstaged, new files included). Each lens brief names the patch path; `@review` reads
+(staged + unstaged, new files included). Installed projects do not ship `scripts/gate`:
+when the command is absent, freeze manually and continue with the lens panel. Each lens brief names the patch path; `@review` reads
 the brief path, then `.gate/diff.patch`, then `.gate/review.patch`. A lens that returns
 **PARTIAL** (step budget) or **INSUFFICIENT_DIFF** (no readable patch) is re-dispatched, never
 accepted as PASS.
