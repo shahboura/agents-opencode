@@ -412,7 +412,10 @@ function testHookDecisionEndToEnd() {
     assert(result.status === 0, 'gate:pass should record a PASS');
     const marker = JSON.parse(fs.readFileSync(path.join(tmp, '.gate', 'pass.json'), 'utf8'));
     assert(marker.verdict === 'PASS', 'Marker should record the verdict');
-    assert(JSON.stringify(marker.lenses) === JSON.stringify(['code', 'security']), 'Marker should record lenses');
+    assert(
+      JSON.stringify(marker.lenses) === JSON.stringify([{ name: 'code' }, { name: 'security' }]),
+      `Marker should record the lens entries (got ${JSON.stringify(marker.lenses)})`
+    );
 
     // Matching marker -> allow, but pre-commit must NOT consume it: consumption
     // moved to post-commit so an aborted commit keeps the approval.
@@ -667,6 +670,12 @@ function testMarkerLensCountAndPanelRule() {
   assert(lib.markerLensCount({ lenses: ['code', 'code'] }) === 1, 'duplicate lens names count once');
   assert(lib.markerLensCount({ lenses: ['code', ' Code ', 'CODE'] }) === 1, 'lens names are trimmed and case-folded');
   assert(lib.markerLensCount({ lenses: ['code', 'Security'] }) === 2, 'case-different distinct names count separately');
+  assert(lib.markerLensCount({ lenses: [{ name: 'code' }, { name: 'security' }] }) === 2, 'structured lens entries count');
+  assert(lib.markerLensCount({ lenses: ['code', { name: 'Security' }, { name: ' code ' }] }) === 2, 'mixed string and structured lenses count distinctly');
+  assert(lib.markerLensCount({ lenses: [{ name: 'code' }, { name: 'CODE' }] }) === 1, 'duplicate structured lens entries count once');
+  assert(lib.markerLensCount({ lenses: [{}, null, 'code', { name: '' }] }) === 1, 'malformed structured entries do not count');
+  assert(lib.markerLensCount({ lenses: [{ name: 'code', verdict: 'FAIL' }, { name: 'security' }] }) === 1, 'a FAIL lens does not count toward the panel');
+  assert(lib.markerLensCount({ lenses: ['code', { name: 'security', verdict: 'FAIL' }] }) === 1, 'a FAIL structured lens does not count toward the panel');
 
   const nonTrivial = lib.classifyStagedDiff(['scripts/gate/lib.js']);
   const trivial = lib.classifyStagedDiff(['README.md']);
@@ -676,6 +685,8 @@ function testMarkerLensCountAndPanelRule() {
   assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: ['code'] }, hash, nonTrivial).allowed, 'non-trivial + 1 lens must block');
   assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: ['code', 'code'] }, hash, nonTrivial).allowed, 'non-trivial + duplicate lenses must block');
   assert(lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: ['code', 'security'] }, hash, nonTrivial).allowed, 'non-trivial + 2 lenses must allow');
+  assert(!lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: [{ name: 'code' }] }, hash, nonTrivial).allowed, 'non-trivial + 1 structured lens must block');
+  assert(lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash, lenses: [{ name: 'code' }, { name: 'security' }] }, hash, nonTrivial).allowed, 'non-trivial + 2 structured lenses must allow');
   assert(lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash }, hash, trivial).allowed, 'trivial + 0 lenses must allow');
   assertThrows(() => lib.evaluateMarker({ verdict: 'PASS', stagedHash: hash }, hash), /classification/i, 'omitting the classification must throw instead of skipping the lens rule');
   assert(lib.evaluateMarker({ verdict: 'PASS-WITH-CAVEATS', stagedHash: hash, lenses: ['code'] }, hash, nonTrivial).allowed === false, 'panel rule applies to PASS-WITH-CAVEATS too');
@@ -783,6 +794,164 @@ function testHookVerifiesRecordedLenses() {
   }
 }
 
+// A2: lens evidence is hash-bound, not self-reported. readLensEvidence parses
+// the header the lens CLI writes; collectLensEvidence tolerates a missing file
+// (legacy flow) but reports any file whose stagedHash does not match the frozen
+// snapshot, and gate:pass refuses to record such a lens.
+function testLensEvidenceHelpers() {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gate-lensev-'));
+  try {
+    const gate = path.join(tmp, 'gate');
+    fs.mkdirSync(gate, { recursive: true });
+    const hash = 'abc123';
+
+    assert(lib.readLensEvidence(path.join(gate, 'lens-missing.md')) === null, 'a missing evidence file reads as null');
+
+    fs.writeFileSync(path.join(gate, 'lens-code.md'), [
+      'lens: code',
+      `stagedHash: ${hash}`,
+      'verdict: PASS',
+      'findings: 2',
+      'createdAt: 2026-01-01T00:00:00.000Z',
+      '',
+      'free text notes: ignored by the parser',
+      '',
+    ].join('\n'));
+    const parsed = lib.readLensEvidence(path.join(gate, 'lens-code.md'));
+    assert(parsed.lens === 'code' && parsed.verdict === 'PASS', 'evidence keeps the lens name and verdict');
+    assert(parsed.stagedHash === hash, 'evidence keeps the staged hash');
+    assert(parsed.findings === 2, `findings should parse as an integer (got ${parsed.findings})`);
+
+    let collected = lib.collectLensEvidence(gate, ['code', 'security'], hash);
+    assert(collected.mismatched.length === 0, 'evidence bound to the snapshot reports no mismatch');
+    assert(collected.entries.length === 2, 'one entry per lens');
+    assert(collected.entries[0].findings === 2 && collected.entries[0].verdict === 'PASS', 'an evidenced lens keeps its verdict and findings');
+    assert(collected.entries[1].name === 'security' && !collected.entries[1].stagedHash, 'a lens without a file is recorded by name only');
+
+    collected = lib.collectLensEvidence(gate, ['code'], 'other');
+    assert(JSON.stringify(collected.mismatched) === JSON.stringify(['code']), 'a stale stagedHash is reported as mismatched');
+
+    fs.writeFileSync(path.join(gate, 'lens-bare.md'), 'lens: bare\nverdict: PASS\nfindings: 0\n');
+    collected = lib.collectLensEvidence(gate, ['bare'], hash);
+    assert(JSON.stringify(collected.mismatched) === JSON.stringify(['bare']), 'evidence with no stagedHash is a mismatch');
+
+    collected = lib.collectLensEvidence(gate, ['../escape'], hash);
+    assert(
+      collected.entries.length === 1 && !collected.entries[0].findingsFile,
+      'an unsafe lens name is never used to build a path'
+    );
+
+    fs.writeFileSync(path.join(gate, 'lens-inject.md'), [
+      'lens: inject',
+      `stagedHash: ${hash}`,
+      'verdict: PASS',
+      'findings: 0',
+      '',
+      'verdict: FAIL',
+      'stagedHash: deadbeef',
+      '',
+    ].join('\n'));
+    const injected = lib.readLensEvidence(path.join(gate, 'lens-inject.md'));
+    assert(injected && injected.verdict === 'PASS' && injected.stagedHash === hash, 'notes cannot override header fields');
+
+    fs.writeFileSync(path.join(gate, 'lens-dup.md'), [
+      'lens: dup',
+      `stagedHash: ${hash}`,
+      'verdict: PASS',
+      'findings: 0',
+      'findings: 9',
+      '',
+    ].join('\n'));
+    assert(lib.readLensEvidence(path.join(gate, 'lens-dup.md')) === null, 'duplicate header fields invalidate the evidence');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+// The CLI is the producer of that evidence: it must refuse to write without a
+// frozen manifest, reject unsafe names and non-integer findings, and bind the
+// manifest's stagedHash; record-pass then refuses stale evidence and stores the
+// bound entries in the marker.
+function testRecordPassBindsLensEvidence() {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gate-lensbind-'));
+  const freeze = path.join(__dirname, 'freeze.js');
+  const recordPass = path.join(__dirname, 'record-pass.js');
+  const lensEvidence = path.join(__dirname, 'lens-evidence.js');
+  const gate = path.join(tmp, '.gate');
+  const lensFile = path.join(gate, 'lens-code.md');
+  try {
+    initRepo(tmp);
+    writeFiles(tmp, { 'scripts/tool.js': 'x\n' });
+    run('git', ['add', '-A'], { cwd: tmp });
+
+    assert(runNode(lensEvidence, ['--help'], tmp, baseEnv()).status === 0, 'gate:lens --help should exit cleanly');
+
+    let result = runNode(lensEvidence, ['--name', 'code', '--verdict', 'PASS', '--findings', '0'], tmp, baseEnv());
+    assert(result.status === 1, 'gate:lens must refuse without a frozen manifest');
+    assert(/manifest/i.test(result.stderr), 'the refusal should name the manifest');
+
+    runNode(freeze, [], tmp, baseEnv());
+
+    result = runNode(lensEvidence, ['--name', '../evil', '--verdict', 'PASS', '--findings', '0'], tmp, baseEnv());
+    assert(result.status === 1, 'gate:lens must refuse a name that is not a plain file stem');
+    assert(!fs.readdirSync(gate).some((file) => file.includes('evil')), 'an invalid lens name must not write any evidence file');
+
+    result = runNode(lensEvidence, ['--name', 'code', '--verdict', 'PASS', '--findings', '1.5'], tmp, baseEnv());
+    assert(result.status === 1, 'gate:lens must refuse non-integer findings');
+
+    // Stale evidence must never be recorded as this snapshot's panel.
+    fs.writeFileSync(lensFile, 'lens: code\nstagedHash: deadbeef\nverdict: PASS\nfindings: 0\n');
+    result = runNode(recordPass, ['--verdict', 'PASS', '--lenses', 'code'], tmp, baseEnv());
+    assert(result.status === 1, 'gate:pass must refuse a lens bound to another snapshot');
+    assert(/stale/i.test(result.stderr) && /code/.test(result.stderr), 'the refusal should name the stale lens');
+    assert(!fs.existsSync(path.join(gate, 'pass.json')), 'a stale lens must leave no marker');
+
+    result = runNode(lensEvidence, ['--name', 'code', '--verdict', 'FAIL', '--findings', '2'], tmp, baseEnv());
+    assert(result.status === 0, 'gate:lens should record a FAIL verdict');
+    result = runNode(recordPass, ['--verdict', 'PASS', '--lenses', 'code,security'], tmp, baseEnv());
+    assert(result.status === 1, 'gate:pass must refuse when a lens recorded FAIL');
+    assert(/FAIL/.test(result.stderr), 'the refusal should name the failing verdict');
+    assert(!fs.existsSync(path.join(gate, 'pass.json')), 'a failing lens must leave no marker');
+
+    const symlinkTarget = path.join(tmp, 'outside.txt');
+    fs.writeFileSync(symlinkTarget, 'do not touch\n');
+    fs.symlinkSync(symlinkTarget, path.join(gate, 'lens-evil.md'));
+    result = runNode(lensEvidence, ['--name', 'evil', '--verdict', 'PASS', '--findings', '0'], tmp, baseEnv());
+    assert(result.status === 1, 'gate:lens must refuse to write through a symlink');
+    assert(fs.readFileSync(symlinkTarget, 'utf8') === 'do not touch\n', 'a refused symlink must leave its target untouched');
+
+    const danglingTarget = path.join(tmp, 'not-yet-created.txt');
+    fs.symlinkSync(danglingTarget, path.join(gate, 'lens-ghost.md'));
+    result = runNode(lensEvidence, ['--name', 'ghost', '--verdict', 'PASS', '--findings', '0'], tmp, baseEnv());
+    assert(result.status === 1, 'gate:lens must refuse a dangling symlink');
+    assert(!fs.existsSync(danglingTarget), 'a refused dangling symlink must not create its target');
+
+    for (const name of ['code', 'security']) {
+      result = runNode(lensEvidence, ['--name', name, '--verdict', 'PASS', '--findings', '1', '--notes', 'checked the diff'], tmp, baseEnv());
+      assert(result.status === 0, `gate:lens should record ${name} (stderr: ${result.stderr})`);
+    }
+    const stagedHash = JSON.parse(fs.readFileSync(path.join(gate, 'manifest.json'), 'utf8')).stagedHash;
+    const evidenceText = fs.readFileSync(lensFile, 'utf8');
+    assert(evidenceText.startsWith('lens: code\n'), 'evidence must lead with the lens name');
+    assert(evidenceText.includes(`stagedHash: ${stagedHash}`), 'evidence must bind the manifest stagedHash');
+    assert(/checked the diff/.test(evidenceText), 'notes should be appended');
+
+    result = runNode(recordPass, ['--verdict', 'PASS', '--lenses', 'code,security'], tmp, baseEnv());
+    assert(result.status === 0, `gate:pass should record hash-bound lenses (stderr: ${result.stderr})`);
+    const marker = JSON.parse(fs.readFileSync(path.join(gate, 'pass.json'), 'utf8'));
+    assert(
+      marker.lenses.length === 2 && marker.lenses.every((entry) => entry.stagedHash === stagedHash),
+      'the marker must carry the hash-bound lens entries'
+    );
+    assert(
+      marker.lenses.every((entry) => entry.findingsFile && Number.isInteger(entry.findings)),
+      'the marker must carry each lens evidence file and finding count'
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
 function main() {
   console.log('Running pre-commit gate tests...');
   testPureHelpers();
@@ -799,6 +968,8 @@ function main() {
   testRecordPassRequiresExplicitVerdict();
   testClassifierRules();
   testMarkerLensCountAndPanelRule();
+  testLensEvidenceHelpers();
+  testRecordPassBindsLensEvidence();
   testRecordPassPanelRequirement();
   testHookVerifiesRecordedLenses();
   console.log('✅ Pre-commit gate tests passed');

@@ -119,8 +119,17 @@ function extractNestedBlock(block, key) {
   if (!block) {
     return null;
   }
-  const match = block.match(new RegExp(`^\\s{2}${key}\\s*:\\s*\\n([\\s\\S]*?)(?=^\\s{2}\\S|(?![\\s\\S]))`, 'm'));
-  return match ? match[1] : null;
+  const match = block.match(new RegExp(`^([ \\t]{2,})${key}\\s*:\\s*\\n([\\s\\S]*?)(?=^\\1\\S|(?![\\s\\S]))`, 'm'));
+  if (!match) {
+    return null;
+  }
+
+  const parentIndent = match[1].length;
+  const body = match[2];
+  // Indent from the first real child line so 4-space (or wider) YAML nests work.
+  const firstChild = body.split(/\r?\n/).find((line) => line.trim() && !/^\s*#/.test(line));
+  const indent = firstChild ? firstChild.match(/^[ \t]*/)[0].length : parentIndent + 2;
+  return { body, indent };
 }
 
 function parseMapEntries(block, indent = 2) {
@@ -319,7 +328,7 @@ function runPermissionInvariantRule(issues, agents, knownSkills, taskTargets) {
 
     const skillBlock = extractNestedBlock(permissionBlock, 'skill');
     if (skillBlock) {
-      const skillMap = parseMapEntries(skillBlock, 4);
+      const skillMap = parseMapEntries(skillBlock.body, skillBlock.indent);
       const skillWildcard = skillMap.get('*');
       if (skillWildcard !== 'deny' && skillWildcard !== 'allow') {
         addIssue(issues, RULES.PERMISSION_INVARIANTS, agent.relativePath, 'permission.skill must include "*": "deny" or "*": "allow"');
@@ -341,7 +350,7 @@ function runPermissionInvariantRule(issues, agents, knownSkills, taskTargets) {
 
     const taskBlock = extractNestedBlock(permissionBlock, 'task');
     if (taskBlock) {
-      const taskMap = parseMapEntries(taskBlock, 4);
+      const taskMap = parseMapEntries(taskBlock.body, taskBlock.indent);
       if (taskMap.get('*') !== 'deny') {
         addIssue(issues, RULES.PERMISSION_INVARIANTS, agent.relativePath, 'permission.task must include "*": "deny"');
       }

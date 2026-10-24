@@ -9,11 +9,16 @@
  * the `--`) fails with a usage error instead of silently recording a verdict.
  * Requires .gate/manifest.json (written by `gate:freeze`) and refuses unless the
  * current staged tree still matches manifest.stagedHash, so a pass can only bind
- * to the snapshot the lenses actually reviewed. Non-trivial diffs (see
- * lib.classifyStagedDiff) additionally require a Tier 2 panel of at least
- * MIN_NON_TRIVIAL_LENSES lenses; the decision is evaluated through the same
- * lib.evaluateMarker the hook uses, so `gate:pass` and the hook cannot diverge.
- * Writes .gate/pass.json ({ verdict, stagedHash, timestamp, lenses }).
+ * to the snapshot the lenses actually reviewed. Each `--lenses` name is checked
+ * against its .gate/lens-<name>.md evidence (`gate:lens`): stale, malformed, or
+ * mislabelled evidence is refused, so a lens file that did not see the current
+ * snapshot can never be recorded. Missing evidence is recorded by name only;
+ * workstream B turns that into a precondition. Non-trivial
+ * diffs (see lib.classifyStagedDiff) additionally require a Tier 2 panel of at
+ * least MIN_NON_TRIVIAL_LENSES lenses; the decision is evaluated through the
+ * same lib.evaluateMarker the hook uses, so `gate:pass` and the hook cannot
+ * diverge. Writes .gate/pass.json ({ verdict, stagedHash, timestamp, lenses }),
+ * where `lenses` holds the collected evidence entries.
  * `precommit-check.js` verifies the marker; the versioned post-commit hook
  * consumes it after a successful commit.
  */
@@ -85,6 +90,28 @@ function main() {
     return 1;
   }
 
+  // Hash-bound lens evidence: a missing file is tolerated (older flows), but a
+  // file bound to another snapshot must never be recorded as this pass's panel.
+  const evidence = lib.collectLensEvidence(lib.gateDir(repoRoot), options.lenses, stagedHash);
+  if (evidence.mismatched.length > 0) {
+    console.error('❌ gate:pass refusing: lens evidence does not match the frozen snapshot.');
+    console.error(`   Lens(es) with stale, malformed, or mislabelled evidence: ${evidence.mismatched.join(', ')}`);
+    console.error(`   Frozen staged tree: ${stagedHash}`);
+    console.error('   Re-run each lens against the current snapshot: `npm run gate:freeze`, review the diff,');
+    console.error('   then record it with `npm run gate:lens -- --name <lens> --verdict PASS --findings <n>`.');
+    return 1;
+  }
+
+  const failedLenses = evidence.entries.filter(
+    (entry) => typeof entry.verdict === 'string' && entry.verdict.toUpperCase() === 'FAIL'
+  );
+  if (failedLenses.length > 0) {
+    console.error('❌ gate:pass refusing: a lens recorded FAIL.');
+    console.error(`   Failing lens(es): ${failedLenses.map((entry) => entry.name).join(', ')}`);
+    console.error('   Fix the findings, then re-run the lens against the frozen snapshot.');
+    return 1;
+  }
+
   let stagedFiles;
   let gitlinkPaths;
   try {
@@ -97,7 +124,7 @@ function main() {
 
   const classification = lib.classifyStagedDiff(stagedFiles, { gitlinkPaths });
   const decision = lib.evaluateMarker(
-    { verdict: options.verdict, stagedHash, lenses: options.lenses },
+    { verdict: options.verdict, stagedHash, lenses: evidence.entries },
     stagedHash,
     classification
   );
@@ -128,7 +155,7 @@ function main() {
       verdict: options.verdict,
       stagedHash,
       timestamp: new Date().toISOString(),
-      lenses: options.lenses,
+      lenses: evidence.entries,
     }, null, 2)}\n`
   );
 

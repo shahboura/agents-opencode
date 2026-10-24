@@ -40,6 +40,17 @@ back to `.gate/diff.patch`, then `.gate/review.patch`, and reads no other source
 fresh `@review` subagent runs per lens, concurrently. Each lens receives only the frozen diff,
 the plan, and its lens brief - never the implementation reasoning.
 
+Each lens records hash-bound evidence before the gate can pass:
+
+```bash
+npm run gate:lens -- --name code --verdict PASS --findings 3
+npm run gate:pass -- --verdict PASS --lenses requirements,code,security
+```
+
+`gate:lens` copies `stagedHash` from `.gate/manifest.json`. `gate:pass` refuses stale,
+malformed, or mislabelled evidence, and any lens that recorded `FAIL`. Missing evidence is
+recorded by name only; workstream B makes it a precondition.
+
 ### Lenses
 
 | Lens | Runs when | Focus |

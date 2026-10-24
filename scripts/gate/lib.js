@@ -213,20 +213,125 @@ function readJson(filePath) {
 
 // Number of DISTINCT lenses recorded in a marker (G6): trimmed, case-folded
 // names, so `["code", "Code", " code "]` counts once and `--lenses code,code`
-// cannot fake a Tier 2 panel. Legacy markers predating the `lenses` field (or
-// with a malformed value) count as 0, which fails closed for non-trivial diffs
-// without crashing the hook.
+// cannot fake a Tier 2 panel. Accepts both the legacy string form and the
+// structured `{ name, ... }` form added for hash-bound lens evidence. Legacy
+// markers predating the `lenses` field (or with a malformed value) count as 0,
+// which fails closed for non-trivial diffs without crashing the hook.
+function lensNameOf(lens) {
+  const raw = typeof lens === 'string' ? lens : lens && lens.name;
+  return typeof raw === 'string' ? raw.trim() : '';
+}
+
 function markerLensCount(passData) {
   if (!passData || !Array.isArray(passData.lenses)) {
     return 0;
   }
   const distinct = new Set();
   for (const lens of passData.lenses) {
-    if (typeof lens === 'string' && lens.trim()) {
-      distinct.add(lens.trim().toLowerCase());
+    // A lens that recorded FAIL does not count toward a passing panel.
+    if (lens && typeof lens === 'object' && String(lens.verdict || '').toUpperCase() === 'FAIL') {
+      continue;
+    }
+    const name = lensNameOf(lens);
+    if (name) {
+      distinct.add(name.toLowerCase());
     }
   }
   return distinct.size;
+}
+
+// Parse `.gate/lens-<name>.md`. The lens writes a short header; `gate:pass`
+// verifies the hash rather than trusting a self-reported count in the CLI.
+// Only the header block counts: the first blank line ends it, so free-text
+// notes cannot inject `verdict: PASS`. Duplicate, unknown, or malformed fields
+// invalidate the file instead of being silently ignored.
+const LENS_EVIDENCE_FIELDS = new Set(['lens', 'stagedHash', 'verdict', 'findings', 'createdAt']);
+const SAFE_LENS_NAME = /^[a-z0-9][a-z0-9-]*$/i;
+
+function isSafeLensName(name) {
+  return typeof name === 'string' && SAFE_LENS_NAME.test(name);
+}
+
+function readLensEvidence(filePath) {
+  let text;
+  try {
+    text = fs.readFileSync(filePath, 'utf8');
+  } catch {
+    return null;
+  }
+  const evidence = { path: filePath };
+  const seen = new Set();
+  for (const line of text.split('\n')) {
+    if (!line.trim()) {
+      break;
+    }
+    const match = line.match(/^([A-Za-z][A-Za-z0-9]*)\s*:\s*(.*?)\s*$/);
+    if (!match) {
+      return null;
+    }
+    const key = match[1];
+    if (!LENS_EVIDENCE_FIELDS.has(key) || seen.has(key) || !match[2]) {
+      return null;
+    }
+    seen.add(key);
+    if (key === 'verdict' && !/^(PASS|FAIL)$/.test(match[2])) {
+      return null;
+    }
+    if (key === 'findings') {
+      if (!/^\d+$/.test(match[2])) {
+        return null;
+      }
+      evidence.findings = Number.parseInt(match[2], 10);
+    } else {
+      evidence[key] = match[2];
+    }
+  }
+  if (!evidence.lens || !evidence.stagedHash || !evidence.verdict || evidence.findings === undefined) {
+    return null;
+  }
+  return evidence;
+}
+
+// Collect evidence files for the lens names passed to `gate:pass`. Every lens
+// with a file must bind to the frozen snapshot; a missing file is recorded by
+// name only and tolerated in workstream A (workstream B makes it a
+// precondition). Names are restricted to a safe charset so a CLI value like
+// `../x` cannot read outside `.gate/`.
+function collectLensEvidence(gateDirPath, lensNames, expectedHash) {
+  const entries = [];
+  const mismatched = [];
+  const seen = new Set();
+  for (const rawName of lensNames) {
+    const name = lensNameOf(rawName);
+    if (!name || seen.has(name.toLowerCase())) {
+      continue;
+    }
+    seen.add(name.toLowerCase());
+    const evidencePath = isSafeLensName(name)
+      ? path.join(gateDirPath, `lens-${name.toLowerCase()}.md`)
+      : null;
+    if (!evidencePath || !fs.existsSync(evidencePath)) {
+      entries.push({ name });
+      continue;
+    }
+    const evidence = readLensEvidence(evidencePath);
+    if (!evidence || evidence.lens.toLowerCase() !== name.toLowerCase()) {
+      entries.push({ name });
+      mismatched.push(name);
+      continue;
+    }
+    entries.push({
+      name,
+      verdict: evidence.verdict,
+      findingsFile: evidence.path,
+      findings: evidence.findings,
+      stagedHash: evidence.stagedHash,
+    });
+    if (evidence.stagedHash !== expectedHash) {
+      mismatched.push(name);
+    }
+  }
+  return { entries, mismatched };
 }
 
 // Decide whether a marker approves the current staged tree. Pure: no I/O.
@@ -282,6 +387,9 @@ module.exports = {
   listStagedGitlinks,
   classifyStagedDiff,
   markerLensCount,
+  isSafeLensName,
+  readLensEvidence,
+  collectLensEvidence,
   isPassVerdict,
   isSkipGate,
   readJson,
