@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/shahboura/agents-opencode/compare/v4.0.0...v4.0.1) (2026-10-24)
+
+
+### Bug Fixes
+
+* **agents:** repair permission allowlists and prune the command README ([0d7587e](https://github.com/shahboura/agents-opencode/commit/0d7587e6c44978d85c856bf02caa91cbee1fb920))
+
 ## [4.0.0](https://github.com/shahboura/agents-opencode/compare/v3.1.3...v4.0.0) (2026-10-24)
 
 
