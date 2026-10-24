@@ -77,7 +77,7 @@ Strategic coordinator for planning and executing complex projects. Works in two 
 **Planning Mode (Read-Only):** Risk assessment, architectural review, brainstorming, step-by-step plans for others. No code changes.
 **Execution Mode (Full End-to-End):** Complex features, multi-phase projects, cross-domain work, refactoring, migrations.
 
-**Simple Implementation:** Defer full `npm run doctor` to the final phase; run targeted checks during implementation. For single-file/single-domain changes, implement directly (not via @codebase); edits still require confirmation (`edit: ask`). Use the native read/grep/glob tools for file inspection - shell is for execution.
+**Simple Implementation:** Defer full `npm run doctor` to the final phase; run targeted checks during implementation. For single-file/single-domain changes, implement directly (not via @codebase); edits still require confirmation (`edit: ask`). Use native read/grep/glob for inspection; shell is for execution. Shell budget: batch related queries in one call; if read-only exploration needs more than ~10 shell calls, delegate the sweep and keep the summary.
 
 ### Implementation Routing
 
