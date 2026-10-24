@@ -11,6 +11,7 @@
 
 const { execFileSync } = require('child_process');
 const fs = require('fs');
+const path = require('path');
 const lib = require('./lib.js');
 
 function git(args, cwd) {
@@ -98,13 +99,56 @@ function main() {
     }
   }
 
+  let classification;
+  try {
+    classification = lib.classifyStagedDiff(lib.listStagedFiles(repoRoot), {
+      gitlinkPaths: lib.listStagedGitlinks(repoRoot),
+    });
+  } catch (err) {
+    console.error(`❌ gate:freeze could not classify the staged diff: ${err.message}`);
+    process.exit(1);
+  }
+
+  // A non-trivial diff needs an approved plan with executable checks. The hash
+  // binds the snapshot to that plan, so a later pass cannot cite a different one.
+  const planPath = path.join(lib.gateDir(repoRoot), 'plan.md');
+  let planHash = null;
+  if (fs.existsSync(planPath)) {
+    let planText;
+    try {
+      if (fs.lstatSync(planPath).isSymbolicLink()) {
+        console.error('❌ gate:freeze refusing: .gate/plan.md is a symlink.');
+        process.exit(1);
+      }
+      planText = fs.readFileSync(planPath, 'utf8');
+    } catch (err) {
+      console.error(`❌ gate:freeze could not read .gate/plan.md: ${err.message}`);
+      process.exit(1);
+    }
+    const plan = lib.validatePlan(planText);
+    if (!plan.ok) {
+      if (classification.nonTrivial) {
+        console.error(`❌ gate:freeze refusing: .gate/plan.md is not executable (${plan.reason}).`);
+        console.error('   Add a "## Checks" section with "- run:" and "- expect:" pairs.');
+        process.exit(1);
+      }
+      console.warn(`⚠️  .gate/plan.md is not executable (${plan.reason}); trivial diff, continuing.`);
+    } else {
+      planHash = lib.hashText(planText);
+    }
+  } else if (classification.nonTrivial) {
+    console.error('❌ gate:freeze refusing: a non-trivial diff requires .gate/plan.md.');
+    console.error('   Write the approved plan with a "## Checks" section (- run: / - expect:), then re-freeze.');
+    process.exit(1);
+  }
+
   const gate = lib.gateDir(repoRoot);
   fs.mkdirSync(gate, { recursive: true });
 
   fs.writeFileSync(lib.diffPath(repoRoot), diff ? `${diff}\n` : '');
   fs.writeFileSync(
     lib.manifestPath(repoRoot),
-    `${JSON.stringify({ schemaVersion: 1, base, head, stagedHash, createdAt: new Date().toISOString() }, null, 2)}\n`
+    `${JSON.stringify({ schemaVersion: 1, base, head, stagedHash, planHash, createdAt: new Date().toISOString() }, null, 2)}\n`
   );
 
   const lines = diff ? diff.split('\n').length : 0;
@@ -114,6 +158,7 @@ function main() {
   console.log(`   Base:      ${base || '(none)'}`);
   console.log(`   Head:      ${head || '(none)'}`);
   console.log(`   Staged:    ${stagedHash}`);
+  console.log(`   Plan:      ${planHash ? planHash.slice(0, 12) : '(none)'}`);
   console.log('   Next: review the diff, then record `npm run gate:pass -- --verdict PASS` after a PASS');
 }
 

@@ -21,11 +21,13 @@ Most commands accept an optional argument to scope the task:
 | `/code-review` | Security, perf, and style review |
 | `/content-review` | Score and critique content quality |
 | `/create-readme` | Generate or improve a README |
+| `/design-audit` | Reference-first design proposals against DESIGN.md |
 | `/generate-tests` | Generate targeted tests |
 | `/plan-project` | Multi-phase implementation plan |
 | `/execution-loop` | Bounded verify-and-continue execution loop |
 | `/legal-review` | Review licenses, compliance, and data privacy |
 | `/refactor-plan` | Safe staged refactor strategy |
+| `/retro` | One durable check, standard, or drill from the last task |
 | `/security-audit` | Security-focused code review |
 | `/stop-loop` | Halt loop execution and report state |
 | `/checkpoint` | Structured phase-boundary pause for human decision |
@@ -36,8 +38,12 @@ Most commands accept an optional argument to scope the task:
 Skills are reusable behaviors loaded on demand. Common utility skills include:
 
 - `project-bootstrap` - Create a minimal `AGENTS.md` scaffold
-- `agent-diagnostics` - Validate agent setup and instruction coverage
-- `docs-validation` - Outline docs lint and link checks
+
+Docs and agent-config checks ship as commands, not skills:
+
+- `npm run validate:docs` - Docs lint and link checks
+- `npm run doctor` - Full local validation suite (agents, docs, schema, install)
+- `node scripts/validate-agents.js` - Agent config and instruction coverage only
 
 For the canonical current skill inventory and trigger policy, see [Skills Matrix](/skills-matrix/).
 
@@ -49,7 +55,7 @@ agent to use it:
 
 ```txt title="TUI"
 @codebase Use the project-bootstrap skill to create AGENTS.md
-@codebase Run agent-diagnostics to check my setup
+@codebase Run npm run doctor and tell me which checks fail
 ```
 
 Skills cannot be called directly from the TUI — they are invoked through agents.
@@ -92,8 +98,8 @@ skills for your own agents, use skill-level permissions in agent frontmatter:
 permission:
   skill:
     "*": "deny"
-    "docs-validation": "allow"
-    "agent-diagnostics": "allow"
+    "project-bootstrap": "allow"
+    "security-audit": "allow"
 ```
 
 Pattern notes:

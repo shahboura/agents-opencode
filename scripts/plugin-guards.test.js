@@ -12,7 +12,7 @@ function assert(condition, message) {
 
 async function main() {
   const guardsPath = path.join(process.cwd(), '.opencode', 'lib', 'guards.mjs');
-  const { isBlockedReadPath, selectPackVersion } = await import(pathToFileURL(guardsPath).href);
+  const { isBlockedReadPath, readGuardError, selectPackVersion } = await import(pathToFileURL(guardsPath).href);
 
   const blocked = [
     '/x/.env',
@@ -72,6 +72,53 @@ async function main() {
   }
   assert(!isBlockedReadPath(''), 'Expected empty path to be allowed');
   assert(!isBlockedReadPath(undefined), 'Expected undefined path to be allowed');
+
+  // Shell guard: obvious read verbs on secret files are blocked; mentioning a
+  // secret filename without reading it is not. Interpreters stay unguarded.
+  const shellBlocked = [
+    'cat .env',
+    'head -n 5 .env.local',
+    'source .env',
+    '. ./.envrc',
+    'grep API_KEY .env',
+    'sed -n 1p .env',
+    'cat --file=.env',
+    '\\cat .env',
+    '/bin/cat .env',
+    "bash -c 'cat .env'",
+    'sudo cat .env',
+    'cat<.env',
+    'cat .env*',
+    'cp .env /tmp/x',
+    'sudo -u x cat .env',
+    'FOO=1 cat .env',
+    'xargs -n 1 cat .env',
+  ];
+  const shellAllowed = [
+    'echo .env',
+    'ls -la',
+    'cat .env.example',
+    'cp .env.example .env',
+    'git check-ignore .env',
+    'python -c "print(open(\'.env\').read())"',
+    'cat README.md',
+  ];
+  for (const command of shellBlocked) {
+    assert(
+      readGuardError('bash', { args: { command } }),
+      `Expected shell command blocked: ${command}`
+    );
+    assert(
+      readGuardError('shell', { input: { args: { command } } }),
+      `Expected v2 shell command blocked: ${command}`
+    );
+  }
+  for (const command of shellAllowed) {
+    assert(
+      !readGuardError('bash', { args: { command } }),
+      `Expected shell command allowed: ${command}`
+    );
+  }
 
   assert(selectPackVersion({ markers: [' 2.4.0 '] }) === '2.4.0', 'Marker should be trimmed');
   assert(

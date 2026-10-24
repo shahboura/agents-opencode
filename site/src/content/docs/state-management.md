@@ -10,8 +10,8 @@ plus generated handoff packets for session-to-session continuity.
 
 ## Files
 
-- `AGENTS.md` — canonical Context Persistence Format (milestone entry template,
-  format rules, agent session workflow). All agents reference this format.
+- `MILESTONES.md` — canonical milestone format and history (entry template,
+  format rules, agent session workflow). All agents reference this file.
 - `state/session-state.json` — canonical working state (project-scoped, installer scaffolded for project installs)
 - `handoff/latest.md` — generated handoff summary (runtime output, not installer-seeded)
 
@@ -68,7 +68,7 @@ Durable state remains the source of truth across compactions:
 
 - `state/session-state.json` keeps decisions, risks, blockers, and next actions
 - `handoff/latest.md` is regenerated from state for session-to-session continuity
-- `AGENTS.md` records milestone history
+- `MILESTONES.md` records milestone history
 
 Session compaction reduces context window usage without relying on context alone.
 
@@ -77,7 +77,9 @@ Session compaction reduces context window usage without relying on context alone
 - **Instruction files**: Keep each `.opencode/instructions/*.md` file under 250 lines
   (checked by `scripts/check-context-size.js`). Use progressive disclosure — load details
   on demand rather than eagerly.
-- **AGENTS.md**: Hard limit of 100 KB with auto-pruning at 75 KB. Entries follow
-  `### YYYY-MM-DD` dated milestone format with a max of 5 top-level bullets per entry.
+- **MILESTONES.md**: keep under 100 KB by pruning the oldest entries. Entries follow
+  `### YYYY-MM-DD` dated milestone format with a max of 5 top-level bullets. The line
+  budgets for AGENTS.md, agents, and instruction files are enforced by
+  `scripts/check-context-size.js`.
 - **Progressive disclosure pattern**: Ship concise instructions first, then expand on
   demand via skill loading or sub-agent delegation. Avoid preloading unrelated context.

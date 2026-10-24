@@ -114,6 +114,9 @@ orchestrator → @planner (deep analysis, no code changes)
 ```
 Use for high-risk or unfamiliar codebases where understanding must precede action. The read-only planner phase prevents premature implementation.
 
+**Ambiguous or underspecified request:** load `alignment` before the planner (≤3 rounds),
+then write the decision list into the plan and, for non-trivial diffs, `.gate/plan.md`.
+
 ### Pattern 8: Pre-Commit Review Gate (Multi-Lens)
 ```
 orchestrator → chunk → implement (per Implementation Routing)
@@ -126,7 +129,8 @@ orchestrator → chunk → implement (per Implementation Routing)
 ```
 Freeze before dispatch: `npm run gate:freeze` writes `.gate/diff.patch` (+
 `.gate/manifest.json`); a manual freeze is `git add -N . && git diff HEAD > .gate/review.patch`
-(staged + unstaged, new files included). Each lens brief names the patch path; `@review` reads
+(staged + unstaged, new files included). Installed projects do not ship `scripts/gate`:
+when the command is absent, freeze manually and continue with the lens panel. Each lens brief names the patch path; `@review` reads
 the brief path, then `.gate/diff.patch`, then `.gate/review.patch`. A lens that returns
 **PARTIAL** (step budget) or **INSUFFICIENT_DIFF** (no readable patch) is re-dispatched, never
 accepted as PASS.
@@ -134,6 +138,11 @@ Use as the final gate before a commit leaves your machine (push / PR / merge) �
 per push, or once per tracked-branch commit. Budget: ≤8 reviewer dispatches per task
 (a full panel = 4; delta re-reviews dispatch only affected lenses), max 2 cycles per push;
 it **supersedes per-loop caps** and does not multiply the 5-cycle or Pattern 5 budgets.
+Scale the panel to the diff, not to habit: docs/comment-only → Tier 1 alone; one or two risk
+files → 2 lenses; security surface or 3+ files under a risk path (definition:
+`review-gate.md` → risk path) → 3–4 lenses and one re-review cycle. The
+same rule sizes implementation dispatch: one implementer for a single-file edit, at most three
+lanes for disjoint multi-file work.
 **Canonical spec — tier rules, lens selection, triage and decision-panel templates, freeze
 mechanism, skip criteria, and edge cases: `site/src/content/docs/review-gate.md`.**
 
@@ -201,6 +210,11 @@ Fallback patterns per failure type:
 When resuming or retrying, avoid re-executing completed work:
 - Before each sub-task, check if it was already completed (`git diff --stat`, artifact existence, test-pass status).
 - Skip completed sub-tasks; report them as "already done" in checkpoint; reference `state/session-state.json` for prior phase status.
+
+## End-of-Task Retro
+
+Before closing a non-trivial task, run `/retro`: it turns the diff and `.gate` receipts
+into one durable check, standard, or drill recorded in `LEARNINGS.md`.
 
 ## Progress Tracking for Long-Running Work
 

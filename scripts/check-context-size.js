@@ -56,6 +56,76 @@ function warnEntryQuality(entryList) {
 const MAX_INSTRUCTION_LINES = 250;
 const MAX_SKILL_LINES = 200;
 const MAX_AGENT_LINES = 200;
+// Count is a rough proxy; the real brake is MAX_SKILL_DESCRIPTION_WORDS below.
+const MAX_SKILL_COUNT = 32;
+const MAX_SKILL_DESCRIPTION_WORDS = 600;
+
+function countWords(text) {
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+function extractDescription(content) {
+  const frontmatter = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!frontmatter) return '';
+
+  const lines = frontmatter[1].split(/\r?\n/);
+  const start = lines.findIndex((line) => /^description\s*:/.test(line));
+  if (start === -1) return '';
+
+  const inline = lines[start].replace(/^description\s*:\s*/, '').trim();
+  if (inline && !/^[>|][+-]?$/.test(inline)) {
+    return inline;
+  }
+
+  // Folded (>) or literal (|) block: gather indented continuation lines.
+  const block = [];
+  for (const line of lines.slice(start + 1)) {
+    if (!line.trim()) continue;
+    if (!/^\s/.test(line)) break;
+    block.push(line.trim());
+  }
+  return block.join(' ');
+}
+
+function checkSkillContextBudgets() {
+  const skillsDir = path.join(process.cwd(), '.opencode', 'skills');
+  if (!fs.existsSync(skillsDir)) return 0;
+
+  let entries;
+  try {
+    entries = fs.readdirSync(skillsDir, { withFileTypes: true });
+  } catch {
+    return 0;
+  }
+
+  let skillCount = 0;
+  let totalWords = 0;
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const skillFile = path.join(skillsDir, entry.name, 'SKILL.md');
+    if (!fs.existsSync(skillFile)) continue;
+    let content;
+    try { content = fs.readFileSync(skillFile, 'utf8'); } catch { continue; }
+    skillCount += 1;
+    totalWords += countWords(extractDescription(content));
+  }
+
+  const countOver = skillCount > MAX_SKILL_COUNT;
+  const wordsOver = totalWords > MAX_SKILL_DESCRIPTION_WORDS;
+
+  log(countOver ? colors.yellow : colors.green, `${skillCount}/${MAX_SKILL_COUNT} skills`);
+  if (countOver) {
+    log(colors.yellow, `WARNING: skill count exceeds budget (max: ${MAX_SKILL_COUNT})`);
+  }
+
+  log(wordsOver ? colors.yellow : colors.green, `${totalWords}/${MAX_SKILL_DESCRIPTION_WORDS} description words`);
+  if (wordsOver) {
+    log(colors.yellow, `WARNING: skill description words exceed budget (max: ${MAX_SKILL_DESCRIPTION_WORDS})`);
+  }
+
+  return (countOver ? 1 : 0) + (wordsOver ? 1 : 0);
+}
 
 function checkFileGroup(dirPath, label, maxLines, filePattern) {
   if (!fs.existsSync(dirPath)) {
@@ -153,6 +223,9 @@ function main() {
   console.log('');
   log(colors.cyan, 'Checking skill file budgets...');
   budgetViolations += checkSkillFiles();
+  console.log('');
+  log(colors.cyan, 'Checking skill context budgets...');
+  budgetViolations += checkSkillContextBudgets();
   console.log('');
   log(colors.cyan, 'Checking agent file budgets...');
   budgetViolations += checkAgentFiles();

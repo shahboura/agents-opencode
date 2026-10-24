@@ -17,10 +17,10 @@ metadata:
 
 ## What I do
 
-- Detect code smells: long methods, duplicate code, large classes, feature envy,
-  primitive obsession, and switch/if-else chains
+- **Decide what should not exist first:** apply the deletion test and YAGNI before
+  proposing any extraction
+- Detect code smells from the twelve-smell baseline in `references/code-smells.md`
 - Produce a phased refactoring plan that preserves existing behavior
-- Recommend applicable patterns for each problem area
 - Define risk mitigations and measurable success criteria
 
 ## When to use me
@@ -35,26 +35,35 @@ Activate this skill when:
 
 ## Key Rules
 
-### Refactoring Principles (always apply)
+### Refactoring Principles (always apply, in this order)
 
-1. **Preserve Behavior** — functionality stays the same; refactoring is not rewriting
-2. **Small Steps** — make tiny, verifiable changes so every commit is safe to revert
-3. **Test First** — ensure tests exist before refactoring; add missing coverage first
-4. **Commit Often** — each small change is its own checkpoint
-5. **Review Code** — get feedback early and often
+1. **Delete first (YAGNI)** — the safest refactor is removing code nobody needs. Dead
+   code, unused flags, single-use indirection: delete before you extract, rename, or
+   abstract. Extraction adds lines; deletion cannot regress behavior nobody uses.
+2. **Apply the deletion test** — delete the module and see where the complexity lands.
+   If it concentrates in the callers, the module earns its keep. If it vanishes, the
+   module was a pass-through — leave it deleted. Run this test before defending any
+   seam, wrapper, or layer.
+3. **Speculative generality gets deleted or inlined** — an abstraction with one caller
+   and no scheduled second caller is a guess. Inline it until a real need exists.
+4. **One adapter is a hypothetical seam; two adapters make it real** — do not add an
+   interface, port, or factory until a second implementation is on the roadmap. A seam
+   with one implementation is a wrapper with extra files.
+5. **Preserve Behavior** — functionality stays the same; refactoring is not rewriting
+6. **Small Steps** — make tiny, verifiable changes so every commit is safe to revert
+7. **Test First** — ensure tests exist before refactoring; add missing coverage first
+8. **Commit Often** — each small change is its own checkpoint
+9. **Review Code** — get feedback early and often
+
+Deletion first does not weaken rule 5: removing unused code changes behavior for nobody.
+If a piece of code has a live caller, it is not a deletion candidate — refactor it instead.
 
 ### Code Smell Detection
 
-Before building the plan, scan the target area for:
-
-| Smell | Signal | Typical Fix |
-|---|---|---|
-| Long methods/functions | >~30 lines or high cyclomatic complexity | Extract method |
-| Duplicate code | Same logic in 2+ locations | Extract shared utility |
-| Large classes | >~10 public methods or mixed concerns | Extract class / delegate |
-| Feature envy | One class heavily accesses another's internals | Move method to data |
-| Primitive obsession | Primitives used where domain types belong | Value object / domain type |
-| Switch/if-else chains | Long conditional blocks, especially on type codes | Strategy or polymorphism |
+Before building the plan, scan the target area. The baseline catalogue of twelve
+Fowler smells — what each one is, its signal, and how to fix it — lives in
+`references/code-smells.md`. Read the entries matching what you find; do not carry the
+whole list into the plan.
 
 ### Five-Phase Refactoring Plan
 
@@ -69,8 +78,12 @@ Before building the plan, scan the target area for:
 
 #### Phase 2 — Extract & Simplify
 
-**Goal:** Break down complex code into manageable, single-responsibility pieces.
+**Goal:** Delete what has no caller, then break down what remains into
+single-responsibility pieces.
 
+- Delete first: dead code, unused exports, unreferenced flags and config, and any
+  abstraction with a single implementation and no second one scheduled. Apply the
+  deletion test before keeping a module.
 - Extract helper functions: pull validation, calculation, persistence, and
   notification out of monolithic functions
 - Eliminate duplication: identify repeated patterns across files, extract to a
@@ -81,8 +94,8 @@ Before building the plan, scan the target area for:
 
 **Goal:** Better separation of concerns and testability.
 
-- Introduce a service layer when controllers/functions directly access data
-  sources (Controllers → Services → Repositories / Functions → Services → Data)
+- Introduce a service layer only when a second consumer or a test seam already
+  exists (Controllers → Services → Repositories / Functions → Services → Data)
 - Replace large switch/if-else chains on type codes with the Strategy pattern
   (interface + concrete implementations + lookup map)
 - Move business logic close to the data it operates on (resolve feature envy)
@@ -142,8 +155,9 @@ After refactoring:
 
 ```bash
 # Manual verification checklist — no automated validation
-# [ ] All five refactoring principles are observed in the plan
-# [ ] Code smells catalogued with severity and fix recommendation
+# [ ] Deletion was considered first: the deletion test was applied and YAGNI reviewed
+# [ ] Remaining refactoring principles (behavior, small steps, tests) are observed
+# [ ] Code smells are named from references/code-smells.md, with severity and fix
 # [ ] Each phase has concrete, verifiable tasks (not "improve code")
 # [ ] Risks and mitigations are listed
 # [ ] Success criteria are measurable (not "code is better")

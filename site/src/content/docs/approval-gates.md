@@ -48,7 +48,7 @@ Silence or implied intent does not count.
 
 ## Context Log Quality Guardrail
 
-For `AGENTS.md` milestone entries, keep updates concise:
+For `MILESTONES.md` milestone entries, keep updates concise:
 
 - Aim for **3-5 top-level bullets** per entry.
 - Prefer one decision-oriented bullet per major outcome.

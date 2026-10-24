@@ -5,54 +5,54 @@ license: MIT
 compatibility: opencode
 metadata:
   author: shahboura
-  version: "2.0.0"
+  version: "2.1.0"
   audience: developers
   workflow: content-creation
 ---
 
 ## What I do
-- Enforce simple, minimal English writing standards for fast reading
-- Apply structured formats for blog posts, podcast outlines, and YouTube scripts
-- Guide research validation, SEO optimization, and quality checks
+- Apply one voice standard across blog, video, podcast, and career content
+- Enforce claim sourcing and explicit uncertainty
+- Keep channel formats as defaults in a reference file, not as laws in the skill body
 
 ## When to use me
-Use this when creating blog posts, podcast outlines, or YouTube scripts for tech, finance, or leadership content.
+Use this when drafting or revising content: blog posts, video and podcast scripts,
+LinkedIn posts, resumes, cover letters, and professional bios.
 
-## Key Rules
-- Sentences under 20 words; active voice; one idea per paragraph
-- Bullet points over paragraphs; skip unnecessary words
-- Cross-reference facts against 2+ reputable sources; include source links
-- Note uncertainty explicitly when facts are unclear — never present unverified claims as definitive
-- Blog structure: Problem → Solution → Code Example → Benefits → Resources
-- Blog posts must be under 800 words with 3+ source links and working code examples (for tech)
-- Podcast structure: Hook (first 30 seconds) → Main content (15-20 min) → CTA (last 2 min)
-- YouTube script timestamps: Hook 0:00 → Problem 0:15 → Solution 0:45 → Demo 2:00 → Benefits 4:00 → CTA 5:00
-- YouTube scripts must be under 6 minutes when spoken; include visual cues and pattern breaks every 20-40 seconds
-- SEO titles follow Action + Benefit + Time format (e.g., "Master React in 30 Days")
-- Meta descriptions under 160 characters
-- Finance posts must include risk assessment, historical context, and source attribution with dates
-- Leadership posts must draw from real experience — avoid generic advice
-- For repository/process posts, do not introduce optional skill-pack claims unless explicitly present in current repo policy
+## Voice
+- Short sentences by default. Vary rhythm deliberately; a word cap is a default, not a law.
+- Active voice. One idea per paragraph.
+- Concrete nouns and specific numbers over abstractions.
+- Bullets for steps and options; prose for reasoning.
+- Say the thing in the first two sentences. No warm-up paragraph.
 
-## Validation Commands
-```bash
-# Manual checklist — no automated validation
-# [ ] Under 800 words (blog) or 6 min spoken (video)
-# [ ] Facts verified against 2+ sources
-# [ ] All links tested
-# [ ] SEO title optimized
-```
+## Claims and evidence
+- Cross-check factual claims against 2+ reputable sources and link them.
+- Date every time-sensitive fact; undated claims read as current when they are not.
+- State uncertainty explicitly. Never present an unverified claim as settled.
+- Finance: include risk, historical context, and dated sources.
+- Leadership: draw on real experience; generic advice is the failure mode.
 
-## Career Content (Resumes, LinkedIn, Cover Letters)
+## Anti-slop
+- No throat-clearing ("In today's fast-paced world", "It's no secret that").
+- Delete any sentence whose removal loses nothing.
+- No rule-of-three padding or list-filler to hit a word count.
+- Do not restate the heading in the first sentence.
+- No call to action unless the piece was asked to have one.
+- Prefer one strong example over three weak ones.
 
-For resume writing, LinkedIn profile optimization, cover letters, and professional bios,
-see [references/career-content.md](references/career-content.md) for detailed rules covering:
+## Formats
+Load [references/formats.md](references/formats.md) for per-channel defaults
+(blog, YouTube, podcast, SEO). Those numbers are starting points. Deviate when the
+idea needs it, and note why.
 
-- STAR + metrics bullet formulas and ATS optimization
-- LinkedIn headline strategies, profile visuals, and skills section
-- Cover letter structure and AI-detection avoidance
-- Writing conventions, proofreading checklist, and file format recommendations
+## Career content
+Resumes, LinkedIn, cover letters, and bios are in
+[references/career-content.md](references/career-content.md).
 
-The career-content reference was previously a standalone skill (`career-content`), now
-consolidated under the blogger skill. Both `@blogger` and `@em-advisor` agents can use
-this reference for career content tasks.
+## Validation
+Manual review against the `brutal-critic` rubric. There is no automated check for prose.
+
+## Repository content
+When writing about this repository or its process, do not claim optional skill packs
+or features that the current repo policy does not ship.

@@ -72,6 +72,32 @@ function testNegativeFixtureFails(tmpRoot) {
   assert(result.output.includes('command-routing-metadata'), 'Expected command routing rule failure in output');
 }
 
+function testFourSpaceNestedSkillBlockParsed(tmpRoot) {
+  const fixture = path.join(tmpRoot, 'four-space-nested');
+  const agentPath = path.join(fixture, '.opencode', 'agents', 'four-space.md');
+  fs.mkdirSync(path.dirname(agentPath), { recursive: true });
+  fs.writeFileSync(agentPath, [
+    '---',
+    'description: four-space permissions',
+    'mode: subagent',
+    'permission:',
+    '    "*": "deny"',
+    '    skill:',
+    '        "*": "deny"',
+    '        "ghost-skill": "allow"',
+    '---',
+    '',
+    'Body.',
+    '',
+  ].join('\n'));
+
+  const result = runHarness(repoRoot, ['--root', fixture]);
+  assert(
+    result.output.includes('Unknown allowed skill: ghost-skill'),
+    'Expected 4-space nested skill block to be parsed, not silently skipped'
+  );
+}
+
 function main() {
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agents-opencode-eval-harness-'));
 
@@ -79,6 +105,7 @@ function main() {
     console.log('Running agent eval harness tests...');
     testValidFixturePasses(tmpRoot);
     testNegativeFixtureFails(tmpRoot);
+    testFourSpaceNestedSkillBlockParsed(tmpRoot);
     console.log('✅ Agent eval harness tests passed');
   } catch (err) {
     console.error('❌ Agent eval harness tests failed');

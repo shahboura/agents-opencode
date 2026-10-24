@@ -20,6 +20,7 @@ Custom commands for common development tasks. Type `/command-name` in the OpenCo
 | `/code-review` | Perform thorough code reviews (security, performance, quality) | review |
 | `/security-audit` | Conduct comprehensive security audits | review |
 | `/architecture-review` | Validate system/feature design for robustness and scalability | review |
+| `/design-audit` | Compare current design references with DESIGN.md (max 3 sourced proposals) | researcher |
 
 ### Content Creation
 
@@ -37,6 +38,7 @@ Custom commands for common development tasks. Type `/command-name` in the OpenCo
 | `/execution-loop` | Execute work with a bounded verify-and-continue loop | orchestrator |
 | `/stop-loop` | Stop iterative loop execution and report current state | orchestrator |
 | `/checkpoint` | Structured phase-boundary checkpoint for human decision | orchestrator |
+| `/retro` | Turn the last task into one durable check, standard, or drill | orchestrator |
 
 ### Management
 

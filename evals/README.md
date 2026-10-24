@@ -36,3 +36,15 @@ node evals/harness/run-evals.js --root .
 - `0`: all checks pass
 - `1`: one or more contract violations
 - `2`: invalid CLI usage
+
+## Behavioural drills (v2)
+
+The static harness above cannot tell whether the pack changes agent behaviour. The
+drill suite does that with a human-run A/B comparison:
+
+- `drills/tasks.md` — eight pre-registered drills with pass criteria.
+- `headless.md` — how to run one with `opencode run --standalone --auto`.
+- `decision.md` — the go/no-go record for the automated runner, with cost caps.
+- `transcripts/` — one markdown file per run.
+
+Start with `drills/README.md`.

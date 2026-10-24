@@ -94,13 +94,81 @@ function resolveToolPath(payload, key) {
   return candidates.find((value) => typeof value === 'string' && value.trim() !== '');
 }
 
-// Argument that carries the guarded path, per tool. Every other tool is
-// unguarded (`bash` included): this is a best-effort secret-content guard, not
-// a sandbox — a shell can reach any file regardless.
+// Argument that carries the guarded path, per tool. Shell tools are handled
+// separately by `shellGuardError` (read verbs only); every other tool is
+// unguarded: this is a best-effort secret-content guard, not a sandbox — an
+// interpreter can reach any file regardless.
 const GUARDED_PATH_KEYS = new Map([
   ['read', 'filePath'],
   ['grep', 'path'],
 ]);
+
+// Shell tools can read the same files the `read` guard blocks, and `--auto`
+// approves `ask`-level shell commands. This covers the common direct forms
+// (wrappers and absolute paths included) but stays best-effort: globs are
+// normalized, interpreters (`python -c`, `node -e`) and aliases remain
+// unguarded. It is not a sandbox.
+const SHELL_TOOLS = new Set(['bash', 'shell']);
+const SHELL_READ_VERBS = new Set(['cat', 'head', 'tail', 'less', 'more', 'source', '.', 'grep', 'awk', 'sed']);
+// For copy-like verbs only the source argument is a read; `cp .env.example .env`
+// must keep working.
+const SHELL_COPY_VERBS = new Set(['cp', 'mv', 'ln', 'tee', 'dd']);
+
+function resolveShellCommand(payload) {
+  const candidates = [
+    payload?.args?.command,
+    payload?.command,
+    payload?.input?.command,
+    payload?.input?.args?.command,
+  ];
+  return candidates.find((value) => typeof value === 'string' && value.trim() !== '');
+}
+
+function normalizeShellToken(token) {
+  const assignment = token.match(/^-{1,2}[^=]+=(.+)$/);
+  const value = assignment ? assignment[1] : token;
+  return value
+    .replace(/^['"]|['"]$/g, '')
+    .replace(/^\\/, '')
+    .replace(/[*?[\]{}]/g, '');
+}
+
+function shellGuardError(payload) {
+  const command = resolveShellCommand(payload);
+  if (!command) return null;
+  // `<` is input redirection (`cat<.env`), not a command separator.
+  for (const segment of command.replace(/</g, ' ').split(/[;&|\n]+/)) {
+    const tokens = segment
+      .trim()
+      .split(/\s+/)
+      .map(normalizeShellToken)
+      .filter(Boolean);
+    if (tokens.length === 0) continue;
+    // Find the first token that is a read/copy verb, skipping wrappers and any
+    // options they take (`sudo -u x cat .env`, `FOO=1 cat .env`).
+    let verbIndex = -1;
+    for (let index = 0; index < tokens.length; index += 1) {
+      const candidate = tokens[index].split(/[/\\]/).pop()?.toLowerCase() || '';
+      if (SHELL_READ_VERBS.has(candidate) || SHELL_COPY_VERBS.has(candidate)) {
+        verbIndex = index;
+        break;
+      }
+    }
+    if (verbIndex === -1) continue;
+    const verb = tokens[verbIndex].split(/[/\\]/).pop()?.toLowerCase() || '';
+    const args = tokens.slice(verbIndex + 1).filter((token) => !token.startsWith('-'));
+    if (SHELL_READ_VERBS.has(verb)) {
+      for (const arg of args) {
+        if (isBlockedReadPath(arg)) {
+          return `[agents-opencode] Blocked shell read of sensitive file: ${arg}. Use the environment variable instead of reading the file.`;
+        }
+      }
+    } else if (SHELL_COPY_VERBS.has(verb) && args.length > 0 && isBlockedReadPath(args[0])) {
+      return `[agents-opencode] Blocked shell copy of sensitive file: ${args[0]}. Use the environment variable instead of copying the file.`;
+    }
+  }
+  return null;
+}
 
 /**
  * Return the block message when `tool` would surface secret content from
@@ -115,6 +183,9 @@ const GUARDED_PATH_KEYS = new Map([
  * this function stays path/policy-focused so it can be tested directly.
  */
 export function readGuardError(tool, payload) {
+  if (SHELL_TOOLS.has(tool)) {
+    return shellGuardError(payload);
+  }
   const pathKey = GUARDED_PATH_KEYS.get(tool);
   if (!pathKey) return null;
   const filePath = resolveToolPath(payload, pathKey);
@@ -143,8 +214,8 @@ function splitToolAndPayload(toolOrEvent, payload) {
  *
  * This is the pure seam the plugin calls, so tests can prove the *wiring*
  * (event shape -> policy) instead of only the policy core. The same seam covers
- * `read` and the `grep` secret-content guard; every other tool (`bash`
- * included) passes through unguarded. Two call forms cover both entrypoints:
+ * `read` and `grep` secret-content checks, plus best-effort shell read/copy
+ * forms; other tools pass through unguarded. Two call forms cover both entrypoints:
  * - whole event: `handleToolExecuteBefore(event)` for v2, where `event` is
  *   `{ tool, input }` (or a flat `{ tool, filePath }`); `tool` is read from
  *   `event.tool`.

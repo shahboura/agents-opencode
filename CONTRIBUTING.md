@@ -54,9 +54,12 @@ Install them once per clone:
 npm run gate:install
 ```
 
-The flow for each batch of changes is freeze → review → pass → commit:
+The flow for each batch of changes is plan → freeze → review → pass → commit:
 
 ```bash
+# Non-trivial diffs: write .gate/plan.md with a "## Checks" section first:
+#   - run: npm test
+#   - expect: exit 0
 npm run gate:freeze   # freeze the staged diff (.gate/diff.patch + .gate/manifest.json)
 # Tier 1 (`npm run doctor`) and the Tier 2 review lenses run against the frozen diff
 npm run gate:pass -- --verdict PASS --lenses requirements,code
@@ -76,17 +79,27 @@ npm run gate:quick   # gate:freeze → npm run doctor → gate:pass --verdict=PA
 ```
 
 `gate:quick` records a Tier 1 pass with no lenses. If the diff is actually
-non-trivial, `record-pass` refuses and points you at the Tier 2 lens flow above.
+non-trivial, `gate:freeze` refuses (it needs `.gate/plan.md`) and points you at the
+Tier 2 lens flow above.
 
 Rules that are enforced at the tooling layer:
 
+- A **non-trivial diff** requires `.gate/plan.md` with a `## Checks` section: one
+  `- run:` command per `- expect:` outcome. `gate:freeze` hashes the plan into the
+  manifest and refuses a missing, edited-at-freeze-time, or symlinked plan; both
+  `gate:pass` and the pre-commit hook recompute the hash and refuse a plan edited
+  after the freeze. Placeholder commands (`true`, `:`, `exit 0`) are rejected.
+- `--lenses` accepts only `requirements`, `code`, `security`, `ux-responsive`, and
+  `ponytail`. A non-trivial diff must include `requirements`, or record why not:
+  `--skip-requirements "no behaviour change"` (at least 12 characters; the reason is
+  printed at pass time and at commit time).
 - A **non-trivial diff** must record **at least 2 distinct lenses** in `gate:pass`.
   Non-trivial means any staged path under `scripts/`, `.opencode/`, `.github/`,
   `.githooks/`, `site/`, `evals/`, or `adapters/`; the root files `install.js`,
-  `package.json`, `opencode.json`, `AGENTS.md`, or `.gitleaks.toml`; any
-  `package-lock.json` at any depth; a staged submodule pointer (gitlink) change —
-  only the pointer appears in the superproject diff, so the content it references
-  is not reviewable from it; or more than 2 staged entries.
+  `package.json`, `opencode.json`, `AGENTS.md`, `.gitleaks.toml`, `.gitmodules`, or
+  `.npmrc`; any `package-lock.json` at any depth; a staged submodule pointer (gitlink)
+  change — only the pointer appears in the superproject diff, so the content it
+  references is not reviewable from it; or more than 2 staged entries.
 - The recorded pass is bound to the frozen snapshot (via its staged hash). The
   **post-commit** hook consumes the marker once the commit object exists, so an
   aborted commit (GPG signing failure, editor abort, hook crash) keeps the

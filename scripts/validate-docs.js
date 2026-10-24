@@ -105,7 +105,12 @@ function findMarkdownFiles(dir, rootDir = dir) {
     const fullPath = path.join(dir, entry.name);
 
     if (entry.isDirectory()) {
-      if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'example') {
+      if (
+        entry.name === 'node_modules' ||
+        entry.name === '.git' ||
+        entry.name === '.gate' ||
+        entry.name === 'example'
+      ) {
         continue;
       }
 

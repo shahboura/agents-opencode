@@ -60,6 +60,8 @@ this pack — install a pinned version into the project with
 rules in this skill as the fallback.
 
 ## References
+- `references/design-review.md` — rubric for reviewing a UI diff: distinctiveness,
+  hierarchy, type, colour, spacing, states
 - https://www.w3.org/WAI/WCAG21/Understanding/reflow.html
 - https://web.dev/responsive-web-design-basics/
 - https://www.w3.org/WAI/WCAG22/quickref/

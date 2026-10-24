@@ -53,6 +53,14 @@ The orchestrator's Pre-Commit Review Gate may dispatch you with a **lens brief**
 | security | vulnerabilities, secrets, PII, authn/authz, dependency & license risk (load `security-audit` skill) | style, perf nits |
 | ux-responsive | accessibility, responsive logic, input modes, loading/empty/error states | backend logic |
 
+**Lens references:**
+- `code` lens: name smells from `.opencode/skills/refactoring/references/code-smells.md`
+  (delete or inline before extracting).
+- `ux-responsive` lens: review against
+  `.opencode/skills/ux-responsive/references/design-review.md`; if the project has no
+  `DESIGN.md`, cite the in-repo pattern reused or ask at most 3 forced-choice questions —
+  never invent a look.
+
 **Evidence rule:** every finding cites `file:line`. A "no findings" verdict is valid only with a one-line reason (e.g., "config-only diff; no code paths affected") — never a bare approval. If the lens brief is missing or ambiguous, state the lens you assumed before reviewing.
 
 **Lens output contract:** when a lens brief is present, replace the default Report Format (below) with this table, then stop:

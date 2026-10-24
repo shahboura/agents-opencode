@@ -115,7 +115,6 @@ conclusions are incomplete investigations.
 - `test-driven-development` — write the failing reproduction first
 - `verification-before-completion` — prove the fix before claiming success
 - `code-change-impact` — after the fix, trace the blast radius of the change
-- Distinct from `agent-diagnostics`, which validates agent configuration rather than code behavior.
 
 ## Provenance
 

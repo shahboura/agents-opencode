@@ -246,11 +246,11 @@ Available agents:
 Active inventory: ${PACK.inventory} available as skills and slash commands.
 
 Memory: state/session-state.json and handoff/latest.md preserve working state.
-Context persistence: AGENTS.md tracks project milestones across sessions.`,
+Context persistence: MILESTONES.md tracks project milestones across sessions.`,
     `## Session State Reminder
 - Current phase: Read state/session-state.json for working memory
 - Check handoff/latest.md for continuation context
-- Review AGENTS.md for recent milestones and patterns`,
+- Review MILESTONES.md for recent milestones and patterns`,
   ];
 }
 

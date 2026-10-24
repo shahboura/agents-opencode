@@ -93,7 +93,7 @@ Ten agents ship in the pack: **seven delegation targets** that the orchestrator 
 | `@review` | Delegation target | Bugs, security holes, and perf issues before they ship |
 | `@researcher` | Delegation target | Grounding high-stakes decisions in current best practice |
 | `@docs` | Delegation target | READMEs, API docs, ADRs, wiki pages |
-| `@brutal-critic` | Delegation target | Ruthless content QA scored against proven frameworks |
+| `@brutal-critic` | Delegation target | Ruthless content QA scored against a rubric, with line-cited fixes |
 | `@legal-advisor` | Delegation target | License auditing, compliance checks, IP review, export controls |
 | `@blogger` | Primary (Tab switch / `@mention`) | Blog posts, YouTube scripts, podcast outlines, resumes, LinkedIn profiles |
 | `@em-advisor` | Primary (Tab switch / `@mention`) | 1-on-1 prep, team strategy, roadmap planning |
@@ -115,6 +115,7 @@ Type `/command-name` in the TUI to run:
 | `/refactor-plan` | Refactoring plan |
 | `/architecture-review` | Architecture review |
 | `/architecture-decision` | ADR creation |
+| `/design-audit` | Design reference audit (max 3 sourced proposals) |
 | `/api-docs` | Generate API documentation |
 | `/create-readme` | Generate README |
 | `/blog-post` | Blog post creation |
@@ -123,10 +124,11 @@ Type `/command-name` in the TUI to run:
 | `/execution-loop` | Bounded iterative execution workflow |
 | `/stop-loop` | Stop loop and summarize state |
 | `/checkpoint` | Phase-boundary checkpoint for human decision |
+| `/retro` | One durable check, standard, or drill from the last task |
 | `/1-on-1-prep` | Meeting preparation |
 | `/legal-review` | License, compliance, and data-privacy review |
 
-**Command surface:** the pack registers 53 catalog entries (10 agents + 16 commands + 27 skills).
+**Command surface:** the pack registers 55 catalog entries (10 agents + 18 commands + 27 skills).
 Kimaki/Discord caps the combined surface (agents + commands + skills + host skills) at 100 slash
 commands; if you hit the cap, trim low-value commands first.
 
@@ -136,10 +138,13 @@ commands; if you hit the cap, trim low-value commands first.
 
 - **11 language skills** — .NET, Flutter, Go, Java/Spring, Node/Express, Python, React/Next.js,
   Ruby/Rails, Rust, SQL migrations, TypeScript.
-- **16 workflow skills** — API docs, ADRs, docs validation, project bootstrap, agent diagnostics,
-  refactoring, security audit, code-change impact, UX/responsive, decision grounding, systematic
-  debugging, test-driven development, verification before completion, blogging, brutal critique,
-  legal compliance.
+- **16 workflow skills** — API docs, ADRs, project bootstrap, refactoring, security audit,
+  code-change impact, UX/responsive, decision grounding, systematic debugging,
+  test-driven development, verification before completion, blogging, brutal critique,
+  legal compliance, alignment, writing for agents.
+
+Docs and agent-config validation are commands, not skills: `npm run validate:docs`,
+`npm run doctor`, `node scripts/validate-agents.js`.
 
 Skills load on demand via the `skill` tool. Coding standards and language guidance live in these
 skills — not in a sprawling instruction directory. A small set of shared reference instructions
@@ -258,6 +263,7 @@ metadata. `npm run eval:agents:json` writes machine-readable output.
 - **[Review Gate](https://agnts.elkodr.com/review-gate/)**
 - **[Compatibility](https://agnts.elkodr.com/compatibility/)**
 - **[Deprecation & Migration Policy](https://agnts.elkodr.com/deprecation-migration/)**
+- **[Removed skills (4.0.0)](./DEPRECATIONS.md)**
 - **[State Management](https://agnts.elkodr.com/state-management/)**
 - **[Skills Matrix](https://agnts.elkodr.com/skills-matrix/)**
 - **[Decision Grounding](https://agnts.elkodr.com/decision-grounding/)**

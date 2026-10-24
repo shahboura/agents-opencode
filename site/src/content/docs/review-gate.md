@@ -28,7 +28,18 @@ changes, or any refactor spanning 3+ files. Optional otherwise (docs, comments,
 and mechanical bumps always skip).
 
 The diff is frozen to a patch file. The canonical freeze is `npm run gate:freeze`, which writes
-the staged snapshot to `.gate/diff.patch` plus `.gate/manifest.json`. To freeze by hand:
+the staged snapshot to `.gate/diff.patch` plus `.gate/manifest.json`. A non-trivial diff also
+requires `.gate/plan.md`, written when the plan is approved. The plan must carry executable
+checks, and `gate:freeze` hashes it into the manifest:
+
+```markdown
+## Checks
+- run: npm test
+- expect: exit 0
+```
+
+Freeze refuses a non-trivial diff with no plan, or a plan with no matching `- run:` / `- expect:`
+pairs. To freeze by hand:
 
 ```bash
 git add -N . && git diff HEAD > .gate/review.patch   # staged + unstaged, new files included
@@ -39,6 +50,25 @@ are not assumed to have shell access. If the named file is missing or empty, `@r
 back to `.gate/diff.patch`, then `.gate/review.patch`, and reads no other source. Then one
 fresh `@review` subagent runs per lens, concurrently. Each lens receives only the frozen diff,
 the plan, and its lens brief - never the implementation reasoning.
+
+Each lens records hash-bound evidence before the gate can pass:
+
+```bash
+npm run gate:lens -- --name code --verdict PASS --findings 3
+npm run gate:pass -- --verdict PASS --lenses requirements,code,security
+```
+
+`gate:lens` copies `stagedHash` from `.gate/manifest.json`. `gate:pass` refuses stale,
+malformed, or mislabelled evidence, and any lens that recorded `FAIL`. A missing evidence
+file is tolerated and recorded by name only; requiring one is a separate change.
+
+`--lenses` accepts only `requirements`, `code`, `security`, `ux-responsive`, and `ponytail`.
+A non-trivial diff must include `requirements`, or record why it does not apply:
+
+```bash
+npm run gate:pass -- --verdict PASS --lenses code,security \
+  --skip-requirements "no behaviour change"
+```
 
 ### Lenses
 
@@ -145,6 +175,11 @@ git commit                                   # pre-commit verifies; post-commit 
 there is no default. Keep the `--` before the flags: `npm run gate:pass --verdict PASS`
 lets npm swallow `--verdict`, and the command now fails with a usage error instead of
 silently recording PASS.
+
+A **risk path** is any staged path under `scripts/`, `.opencode/`, `.github/`, `.githooks/`,
+`site/`, `evals/`, or `adapters/`; the root files `install.js`, `package.json`,
+`opencode.json`, `AGENTS.md`, `.gitleaks.toml`, `.gitmodules`, or `.npmrc`; any
+`package-lock.json`; or a staged gitlink.
 
 For a **trivial** diff (≤2 entries, no risk paths, and no gitlinks), `npm run gate:quick` chains
 `gate:freeze` → `npm run doctor` → `gate:pass --verdict=PASS` in one step. It records

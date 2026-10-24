@@ -98,8 +98,11 @@
 
 ## [Unreleased]
 
-### Features
+### Breaking Changes
 
+* [capability:skills] **Retired `docs-validation` and `agent-diagnostics`** (Level C, 4.0.0) — both restated commands the pack already ships and were maintainer-only, so they leave the skill set: 29 → 27 skills, 57 → 55 catalog entries. There is no replacement skill — run `npm run validate:docs`, `npm run doctor`, or `node scripts/validate-agents.js`. Migration and rollback: `DEPRECATIONS.md`.
+
+### Features
 * [capability:agents] **Host-friendly skill policy** — pack agents now allow all skills (`skill: { "*": "allow" }`) instead of pack-only allowlists, so host and plugin skills (`ui-ux-pro-max`, `graphify-usage`, ponytail) stay usable. Added "if present" UI/UX and large-repo hooks to `codebase`/`orchestrator`, a native-tools-first note, and docs on the mechanisms that actually restrict pack agents (agent-file edits, v2 `integration.use` policies).
 * [capability:agents] **Starter shell allowlist** — `codebase`, `orchestrator`, and `em-advisor` auto-approve content-free diagnostics (`git status`, `ls`, `docker ps`, `kimaki session list`), `kimaki buttons` (Discord option buttons), and common test runners; content readers (`git diff/log/show`, `docker logs`, `kimaki session read`), redirection, and `git --output` still ask; `rm -rf` and force-pushes stay denied.
 * [capability:security] **v2 overlay fixes** — `external_directory` is `ask` (was `deny`, which blocked cross-directory flows), top-level `subagent_depth` replaced by `experimental.subagent_depth`, and `compaction.prune` replaced by `compaction.keep.tokens` (pack-repo defaults; the installer emits only `$schema`/plugin/permission, so these are not written into user configs).

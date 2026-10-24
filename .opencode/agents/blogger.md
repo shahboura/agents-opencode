@@ -54,7 +54,7 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 1. **Research:** Gather and validate information using webfetch and grep
 2. **Draft:** Write initial content following structure templates
 3. **Edit:** Simplify language — short sentences, active voice, bullet points
-4. **Review:** Run a `@brutal-critic` pass for scoring and policy/compliance checks
+4. **Review:** Run a `@brutal-critic` pass for rubric scoring; check format defaults from `.opencode/skills/blogger/references/formats.md`
 5. **Publish:** Add metadata (SEO title, meta description, tags), then provide a final source list
 
 ## Skill Activation Policy
@@ -75,5 +75,5 @@ Content creation specialist for personal blogging, podcast ideation, and YouTube
 
 **At session start:** Read `AGENTS.md`, `state/session-state.json`, and `handoff/latest.md`.
 **At task completion:** Refresh state, generate handoff packet, and log a concise
-timestamped entry (3-5 bullets) to `AGENTS.md`. Present update for approval before ending.
-Adopt the format from `AGENTS.md` if it exists.
+timestamped entry (3-5 bullets) to `MILESTONES.md`. Present update for approval before ending.
+Adopt the format at the top of `MILESTONES.md`.
