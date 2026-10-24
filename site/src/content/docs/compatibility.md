@@ -43,6 +43,13 @@ falling back to `~/.config/opencode`.
 See **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)** for the full target
 adapter, hybrid install model, and coexistence rules.
 
+### `--auto` and permission prompts
+
+`opencode run --auto` approves every permission currently set to `ask`. Explicit `deny`
+rules still apply, so the pack's secret guard, `rm -rf`, and force-push denies keep
+working. It is not a sandbox: interpreters and sub-shells can still reach files the guard
+blocks. Use it for headless runs where no human can answer a prompt.
+
 ## Expected Tooling Availability
 
 | Tool | Required for | Notes |

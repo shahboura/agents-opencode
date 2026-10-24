@@ -9,6 +9,11 @@
 // directory, and include-filtered greps are not inspected. Upgrade if the grep
 // tool exposes a complete file set.
 
+// One hint appended to every secret-block message, so a user can tell a false
+// positive from a real guard.
+const SENSITIVE_READ_HINT =
+  'See https://agnts.elkodr.com/troubleshooting/#agent-refuses-to-read-a-file-that-looks-like-a-secret';
+
 const PUBLIC_CREDENTIAL_SUFFIXES = ['.pub', '.crt', '.cer', '.cert'];
 
 const PUBLIC_PEM_BASENAMES = new Set([
@@ -160,11 +165,11 @@ function shellGuardError(payload) {
     if (SHELL_READ_VERBS.has(verb)) {
       for (const arg of args) {
         if (isBlockedReadPath(arg)) {
-          return `[agents-opencode] Blocked shell read of sensitive file: ${arg}. Use the environment variable instead of reading the file.`;
+          return `[agents-opencode] Blocked shell read of sensitive file: ${arg}. Use the environment variable instead of reading the file. ${SENSITIVE_READ_HINT}`;
         }
       }
     } else if (SHELL_COPY_VERBS.has(verb) && args.length > 0 && isBlockedReadPath(args[0])) {
-      return `[agents-opencode] Blocked shell copy of sensitive file: ${args[0]}. Use the environment variable instead of copying the file.`;
+      return `[agents-opencode] Blocked shell copy of sensitive file: ${args[0]}. Use the environment variable instead of copying the file. ${SENSITIVE_READ_HINT}`;
     }
   }
   return null;
@@ -190,7 +195,7 @@ export function readGuardError(tool, payload) {
   if (!pathKey) return null;
   const filePath = resolveToolPath(payload, pathKey);
   if (typeof filePath === 'string' && isBlockedReadPath(filePath)) {
-    return `[agents-opencode] Blocked reading sensitive file: ${filePath}. Do not read or search credential or secret files.`;
+    return `[agents-opencode] Blocked reading sensitive file: ${filePath}. Do not read or search credential or secret files. ${SENSITIVE_READ_HINT}`;
   }
   return null;
 }

@@ -34,6 +34,10 @@ console.log('\n📦 Package files exist');
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 
 for (const entry of pkg.files) {
+  // Negated entries exclude a shipped directory member; they are not paths.
+  if (entry.startsWith('!')) {
+    continue;
+  }
   const fullPath = path.join(repoRoot, entry);
   const exists = fs.existsSync(fullPath);
   assert(exists, `"${entry}" exists in package`);
