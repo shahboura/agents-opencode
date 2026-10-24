@@ -8,6 +8,7 @@
     "DEPRECATIONS.md",
     ".opencode/agents",
     ".opencode/commands",
+    "!.opencode/commands/README.md",
     ".opencode/instructions",
     ".opencode/lib",
     ".opencode/plugins",
