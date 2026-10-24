@@ -160,6 +160,7 @@ orchestrator → detect a high-stakes decision by structure (T1–T4), not self-
 cross-module/security blast radius, workaround-smell, or volatile APIs. Not on routine
 two-way-door work with in-repo precedent. **Skill:** load `decision-grounding`.
 **Budget:** ≤3 grounded decisions per task, ≤6 fetches each, depth 1.
+**Sources:** fetch once; prefer version-pinned URLs; revalidate volatile sources before a decision; read saved tool output only with approval.
 
 ## Checkpoint Format
 

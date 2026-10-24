@@ -160,7 +160,7 @@ Before claiming work is done, state each item — or an explicit reason it does 
 
 ## Planning & Templates
 
-When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains: Planning Template, Agent Selection Guide, Coordination Patterns (9 patterns including Pre-Commit Review Gate and Decision Grounding Gate), Checkpoint Format, Fallback Routing, and Progress Tracking.
+When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains: Planning Template, Agent Selection Guide, Coordination Patterns (9 patterns including Pre-Commit Review Gate and Decision Grounding Gate), Checkpoint Format, Fallback Routing, and Progress Tracking. For source-dependent decisions, dispatch `@researcher`; direct lookups follow Pattern 9's Sources rule.
 
 Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @brutal-critic, @legal-advisor, @researcher (plus built-ins general/explore); manual handoff (Tab; `primary`, not Task-invocable) → `em-advisor`, `blogger`.
 
@@ -187,3 +187,6 @@ For iterative work, define testable completion criteria first; run bounded cycle
 **At session start:** Read `AGENTS.md`, `state/session-state.json`, and `handoff/latest.md`.
 **At task completion:** refresh state, generate the handoff packet, and log a concise timestamped
 entry (3-5 bullets) to `MILESTONES.md` (adopt its format); present for approval before ending.
+**Context budget:** at each decision boundary, read the plugin's context band (v2).
+**30%:** emit the checkpoint (`/checkpoint`) with continue / delegate / hand off. **40%:** write state + handoff.
+**50%:** stop new work. A single tool result above ~2.5% of the window: extract or delegate.

@@ -90,7 +90,12 @@ The pack installs in two cooperating layers:
 - **Installer (file copy)** — delivers agent files, markdown commands, skills, and
   the `opencode.json` config/permissions.
 - **Plugin** — when installed as a **plugin spec**, delivers skills plus the
-  hooks/guards (secret-read blocking, compaction context, session-error logging).
+  hooks/guards (secret-read blocking, compaction context, session-error logging, and
+  v2 context-budget bands).
+
+The context-budget band notice is **v2-only**: the pack's v1 entrypoint does not
+register a per-request context notice, so v1 users rely on the orchestrator rule and
+the host compaction floor.
 
 A v2 plugin **cannot** register agents (the v2 agent editor exposes no `add`) and
 has no global config/permission domain. The installer therefore remains required

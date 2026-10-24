@@ -40,7 +40,8 @@ detect a high-stakes decision (T1–T4)
 
 `@researcher` is a read-only, skill-free subagent. It uses `read`, `grep`, `glob`,
 `webfetch`, and (environment-gated) `websearch` — never `edit`, `bash`, or `task`.
-It cites a `source_url` and a short verbatim `quote` for every claim, and ranks
+It cites a `source_url`, a short verbatim `quote`, and the fetch date/version for
+every claim, and ranks
 official docs above changelogs, maintainer statements, and blogs.
 
 It returns one verdict:
