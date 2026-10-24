@@ -33,6 +33,7 @@ Deferred from the permission/skill documentation pass (2026-10).
 | PERM-2 | low | Saved-approval overlay test: confirm a project-scoped **Allow always** rule (for example `edit *`) overrides `edit: "ask"` but never a configured `deny`, so the documented behavior stays regression-guarded | `scripts/`, `site/src/content/docs/customization.md` |
 | PERM-3 | low | Headless profile (deferred): a minimal agent/allowlist set for non-interactive runs, where `ask` is unusable and saved approvals do not exist | `.opencode/agents/`, `install.js` |
 | PERM-4 | low | Prune agent/skill duplication: rules restated in both agent instructions and skills inflate context and drift; keep one canonical home per rule | `.opencode/agents/`, `.opencode/skills/` |
+| PERM-5 | medium | Shell secret reads under `--auto`: the runtime guard covers `read`/`grep`, but `cat .env` is an `ask`-level bash command that `opencode run --auto` approves. Add a bash deny for env-file reads or document the headless limitation per drill | `.opencode/agents/*.md`, `evals/headless.md` |
 
 ## Review-gate patterns
 

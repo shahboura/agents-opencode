@@ -1,0 +1,35 @@
+diff --git a/src/config/theme.js b/src/config/theme.js
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/src/config/theme.js
+@@ -0,0 +1,18 @@
++const THEMES = { light: 'light' };
++
++function createTheme(name) {
++  if (!THEMES[name]) {
++    throw new Error(`unknown theme: ${name}`);
++  }
++  return THEMES[name];
++}
++
++function ThemeFactory(name) {
++  return createTheme(name);
++}
++
++function ThemeProvider(name) {
++  return ThemeFactory(name);
++}
++
++module.exports = { ThemeProvider, THEMES };
+diff --git a/src/config/settings.js b/src/config/settings.js
+index 2222222..3333333 100644
+--- a/src/config/settings.js
++++ b/src/config/settings.js
+@@ -1,5 +1,6 @@
+ const defaults = {
+   locale: 'en',
++  theme: 'light',
+ };
+ 
+ module.exports = defaults;

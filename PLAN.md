@@ -94,9 +94,14 @@ Release 3.2.2.
 
 Release 3.3.0.
 
-- `criterion-F1`: 8 drills are pre-registered with prompt, expected artifact, pass criteria, and saved transcript.
-- `criterion-F2`: a headless profile exists so drills do not stall on `ask` (BACKLOG PERM-3).
-- `criterion-F3`: go/no-go on the A/B runner is recorded, with a cost and wall-time cap if it proceeds.
+- `criterion-F1`: 8 drills are pre-registered with prompt, expected artifact, pass
+  criteria, and saved transcript. **Pre-registered:** `evals/drills/tasks.md`;
+  transcripts are produced by the screening runs.
+- `criterion-F2`: a headless profile exists so drills do not stall on `ask`
+  (BACKLOG PERM-3). **Met:** `evals/headless.md` (`--auto`; denied rules still deny).
+- `criterion-F3`: go/no-go on the A/B runner is recorded, with a cost and wall-time cap
+  if it proceeds. **Pre-registered:** `evals/decision.md`; the decision awaits the
+  screening runs.
 
 ### G - Deprecation
 
