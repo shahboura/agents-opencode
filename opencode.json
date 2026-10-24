@@ -5,9 +5,13 @@
     "subagent_depth": 2
   },
   "compaction": {
+    "buffer": 400000,
     "keep": {
       "tokens": 8000
     }
+  },
+  "tool_output": {
+    "max_bytes": 24576
   },
   "watcher": {
     "ignore": ["node_modules/**", "dist/**", ".git/**"]

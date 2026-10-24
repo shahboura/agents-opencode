@@ -150,15 +150,29 @@ permission defaults). To get the pack's full behavior, add these keys to `openco
 ```json
 {
   "experimental": { "subagent_depth": 2 },
-  "compaction": { "keep": { "tokens": 8000 } },
+  "compaction": { "buffer": 400000, "keep": { "tokens": 8000 } },
+  "tool_output": { "max_bytes": 24576 },
   "share": "disabled"
 }
 ```
 
 - `experimental.subagent_depth: 2` enables nested delegation on **v2** (use top-level
   `subagent_depth` on v1).
-- `compaction.keep.tokens` retains recent context on **v2** (use `compaction.prune` on v1).
-- `share: "disabled"` prevents accidental session sharing.
+- `compaction.buffer` is an absolute token count; the host triggers at `window - buffer`.
+  `400000` on a 1M window triggers at 600k; use `80000` on a 200k window. Keep the
+  value below the window or the host silently falls back to the 15% default.
+- `tool_output.max_bytes` caps the **preview**; the host saves the full output and
+  prints the path. A read of that path is outside the workspace and triggers
+  `external_directory: ask` — keep that prompt. Do not allow the whole `tool-output`
+  directory: saved stdout can contain secrets, and the read guard checks paths, not
+  content.
+- `compaction.keep.tokens` retains the recent tail after a summary; `8000` is the pack
+  default. Raise it only when post-compaction continuity matters more than cost.
+- The v2 plugin injects a context-band line (30/40/50); the orchestrator prompt defines
+  the actions. The 60% compaction trigger is the backstop, not the primary signal.
+- Fetched pages are snapshots: prefer version-pinned URLs, revalidate volatile sources
+  at the decision, and record URL + `fetched_at` + version in the plan/ADR. Stable docs
+  may reuse a 48h snapshot.
 
 ### OpenCode v1/v2 config keys
 

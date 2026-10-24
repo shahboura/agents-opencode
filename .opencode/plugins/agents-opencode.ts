@@ -2,10 +2,12 @@ import type { Plugin } from "@opencode-ai/plugin";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
+  createContextBudgetTracker,
   createReadGuardHandler,
   handleToolExecuteBefore,
   injectContextOnce,
   injectSystemContextOnce,
+  replaceSystemContextPart,
   safeRegister,
   selectPackVersion,
   subscribeEventStream,
@@ -382,6 +384,20 @@ type V2Context = {
   shell?: V2HookRegistrar;
   event?: V2EventStream;
   skill?: V2SkillRegistrar;
+  model?: { list?: () => Promise<unknown> };
+};
+
+type ContextBudgetTracker = {
+  note: (event: unknown) => boolean;
+  line: (sessionID: string, limit: number) => string | undefined;
+  reset: (sessionID: string) => void;
+};
+
+type ModelLimitEntry = {
+  providerID?: unknown;
+  id?: unknown;
+  modelID?: unknown;
+  limit?: { context?: unknown; input?: unknown };
 };
 
 function hasHook(registrar: V2HookRegistrar | undefined): boolean {
@@ -402,6 +418,58 @@ function isV2Context(ctx: unknown): ctx is V2Context {
   }
   const stream = candidate.event;
   return !!stream && typeof stream.subscribe === "function";
+}
+
+/**
+ * Resolve the context window for the model a request is using.
+ *
+ * The v2 `context` event's `model` is a model reference on 2.1.4, not the full
+ * `Model.Info`, so the window usually comes from `ctx.model.list()` captured at
+ * setup. A direct `limit` is still honored when a host exposes it. Unknown
+ * models are a quiet no-op (the caller logs once) — never guess a window.
+ */
+async function loadModelLimits(ctx: V2Context): Promise<Map<string, number>> {
+  const limits = new Map<string, number>();
+  try {
+    const list = await ctx.model?.list?.();
+    if (!Array.isArray(list)) return limits;
+    for (const entry of list) {
+      if (!entry || typeof entry !== "object") continue;
+      const model = entry as ModelLimitEntry;
+      const context = model.limit?.context;
+      const input = model.limit?.input;
+      const value =
+        typeof context === "number" && context > 0
+          ? context
+          : typeof input === "number" && input > 0
+            ? input
+            : 0;
+      if (!value) continue;
+      const providerID = model.providerID;
+      if (typeof providerID !== "string" || !providerID) continue;
+      for (const modelID of new Set([model.id, model.modelID])) {
+        if (typeof modelID === "string" && modelID) {
+          limits.set(`${providerID}/${modelID}`, value);
+        }
+      }
+    }
+  } catch {
+    // Fail open: a host without ctx.model.list() simply gets no notice.
+  }
+  return limits;
+}
+
+function resolveModelLimit(
+  eventModel: unknown,
+  limits: Map<string, number>
+): number | undefined {
+  if (!eventModel || typeof eventModel !== "object") return undefined;
+  const model = eventModel as ModelLimitEntry;
+  const direct = model.limit?.context ?? model.limit?.input;
+  if (typeof direct === "number" && direct > 0) return direct;
+  const id = model.id ?? model.modelID;
+  if (typeof model.providerID !== "string" || typeof id !== "string") return undefined;
+  return limits.get(`${model.providerID}/${id}`);
 }
 
 /** Ids the editor already exposes, normalized from `editor.list()` entries.
@@ -506,11 +574,15 @@ function registerPackSkills(ctx: V2Context): unknown {
  * `subscribe` is a quiet no-op. The v2 ctx itself is passed to the logger —
  * there is no separate `ctx.client`.
  */
-function subscribeEvents(ctx: V2Context): (() => void) | undefined {
+function subscribeEvents(
+  ctx: V2Context,
+  budgetTracker: ContextBudgetTracker
+): (() => void) | undefined {
   if (!ctx.event) return undefined;
 
   return subscribeEventStream(ctx.event, (event: any) => {
     if (event?.type === "session.error") return logSessionError(ctx);
+    budgetTracker.note(event);
     return undefined;
   });
 }
@@ -526,6 +598,11 @@ const AgentsOpencodeV2Plugin = {
     if (!isV2Context(ctx)) return undefined;
 
     const cleanups: Array<() => void> = [];
+
+    const budgetTracker = createContextBudgetTracker() as ContextBudgetTracker;
+    let modelLimits = new Map<string, number>();
+    let limitsLoaded = false;
+    let limitWarningShown = false;
 
     // Registrations are awaited (v2's `hook()`/`transform()` return
     // `Promise<Registration>`): a rejected registration — e.g. an unknown hook
@@ -569,7 +646,26 @@ const AgentsOpencodeV2Plugin = {
     const contextText = compactionContext().join("\n\n");
     await safeRegister(cleanups, () =>
       ctx.session?.hook?.("context", (event: any) => {
+        let budgetLine: string | undefined;
+        if (typeof event?.sessionID === "string") {
+          const limit = resolveModelLimit(event?.model, modelLimits);
+          if (limit) {
+            budgetLine = budgetTracker.line(event.sessionID, limit);
+          } else if (limitsLoaded && !limitWarningShown) {
+            limitWarningShown = true;
+            void logWarn(
+              ctx,
+              "context-budget notice skipped: model context window unknown (not in ctx.model.list()); " +
+                "the notice stays off for this plugin load"
+            );
+          }
+        }
         injectSystemContextOnce(event?.system, contextText);
+        replaceSystemContextPart(
+          event?.system,
+          ["Context budget ", "Last step added "],
+          budgetLine
+        );
       })
     );
 
@@ -587,10 +683,18 @@ const AgentsOpencodeV2Plugin = {
       })
     );
 
-    await safeRegister(cleanups, () => subscribeEvents(ctx));
+    await safeRegister(cleanups, () => subscribeEvents(ctx, budgetTracker));
 
     // Deliver the pack's skills when it is plugin-installed only.
     await safeRegister(cleanups, () => registerPackSkills(ctx));
+
+    // Window lookup is a registry read and must not gate the security guard or
+    // any other registration. Start it after setup; the context hook reads the
+    // binding once it resolves and stays off (fail-open) until then.
+    void loadModelLimits(ctx).then((limits) => {
+      modelLimits = limits;
+      limitsLoaded = true;
+    });
 
     await logLoaded(ctx);
 

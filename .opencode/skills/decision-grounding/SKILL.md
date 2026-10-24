@@ -51,7 +51,7 @@ the relevant context (stack, versions, constraints, diff), and the planned appro
 
 Consume the output contract JSON: `question`, `planned_approach`,
 `is_planned_approach_valid`, `deprecation_status`, `recommendation`,
-`claims[]` (`claim`, `source_url`, `source_tier`, `quote`), and `confidence_note`.
+`claims[]` (fields in `.opencode/agents/researcher.md`), and `confidence_note`.
 
 ## Untrusted content
 
@@ -91,4 +91,4 @@ The parent owns the decision; the researcher only supplies evidence.
 - [ ] `@researcher` dispatched with decision + context + planned approach.
 - [ ] Verdict recorded; `USE_REPLACEMENT` adopted or explained.
 - [ ] Any `INSUFFICIENT_EVIDENCE` on T1/T2 surfaced, not silently worked around.
-- [ ] Sources (`source_url` + quote) recorded in the plan/ADR/PR.
+- [ ] Sources (`source_url` + quote + `fetched_at`/version) recorded in the plan/ADR/PR.

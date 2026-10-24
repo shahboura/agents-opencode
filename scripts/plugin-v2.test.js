@@ -50,6 +50,8 @@ async function main() {
     injectSystemContextOnce,
     handleToolExecuteBefore,
     createReadGuardHandler,
+    createContextBudgetTracker,
+    replaceSystemContextPart,
     safeRegister,
     subscribeEventStream,
   } = await import(pathToFileURL(guardsPath).href);
@@ -787,6 +789,168 @@ async function main() {
     Object.values(emptyInput).every((value) => typeof value === 'string'),
     'every descriptor value must be a string for malformed input'
   );
+
+  // --- replaceSystemContextPart: update the band part without duplicating ---
+  const bandParts = [{ type: 'text', text: '## Static\nbody' }];
+  assert(
+    replaceSystemContextPart(
+      bandParts,
+      ['Context budget ', 'Last step added '],
+      'Context budget 30%+ — ask'
+    ) === true,
+    'the first band must push a part'
+  );
+  assert(bandParts.length === 2, 'the base + one band part');
+  replaceSystemContextPart(
+    bandParts,
+    ['Context budget ', 'Last step added '],
+    'Context budget 50%+ — stop'
+  );
+  assert(
+    bandParts.length === 2 && bandParts[1].text.includes('50%'),
+    'a new band must replace the old part, not duplicate it'
+  );
+  assert(
+    replaceSystemContextPart(
+      bandParts,
+      ['Context budget ', 'Last step added '],
+      undefined
+    ) === false,
+    'clearing must not push a part'
+  );
+  assert(bandParts.length === 1, 'clearing must remove the band part');
+  const frozenBandParts = Object.freeze([{ type: 'text', text: 'Context budget 30%+ — ask' }]);
+  assert(
+    replaceSystemContextPart(frozenBandParts, ['Context budget '], 'Context budget 50%+') === false,
+    'a frozen system array must be a safe no-op'
+  );
+
+  // --- createContextBudgetTracker: bands, delta, reset, safe no-ops ---
+  const tokensOf = (used) => ({
+    input: used,
+    output: 0,
+    reasoning: 0,
+    cache: { read: 0, write: 0 },
+  });
+  const assistantEvent = (sessionID, id, used, completed = true) => ({
+    type: 'message.updated',
+    properties: {
+      sessionID,
+      info: {
+        id,
+        sessionID,
+        role: 'assistant',
+        time: completed ? { created: 1, completed: 2 } : { created: 1 },
+        tokens: tokensOf(used),
+      },
+    },
+  });
+  const LIMIT = 1_000_000;
+
+  const budgetFresh = createContextBudgetTracker();
+  assert(budgetFresh.line('s', LIMIT) === undefined, 'unknown session must be a no-op');
+  budgetFresh.note(assistantEvent('s', 'm1', 290_000));
+  assert(budgetFresh.line('s', LIMIT) === undefined, 'below 30% must be silent');
+  budgetFresh.note(assistantEvent('s', 'm2', 300_000));
+  const askLine = budgetFresh.line('s', LIMIT);
+  assert(askLine && askLine.includes('30%'), '30% must emit the ask band');
+  assert(!askLine.includes('40%'), '30% must not include the handoff band');
+
+  const budgetHandoff = createContextBudgetTracker();
+  budgetHandoff.note(assistantEvent('s', 'm1', 400_000));
+  assert(budgetHandoff.line('s', LIMIT).includes('40%'), '40% must emit the handoff band');
+
+  const budgetStop = createContextBudgetTracker();
+  budgetStop.note(assistantEvent('s', 'm1', 500_000));
+  assert(budgetStop.line('s', LIMIT).includes('50%'), '50% must emit the stop band');
+
+  // A lower report must not hide the earlier band; an explicit reset may.
+  budgetStop.note(assistantEvent('s', 'm2', 350_000));
+  assert(budgetStop.line('s', LIMIT).includes('50%'), 'a lower report must not downgrade the band');
+  budgetStop.reset('s');
+  budgetStop.note(assistantEvent('s', 'm3', 350_000));
+  assert(budgetStop.line('s', LIMIT).includes('30%'), 'reset must allow the lower band again');
+
+  // Explicit lifecycle events and a >50% drop clear the band.
+  const budgetEventReset = createContextBudgetTracker();
+  budgetEventReset.note(assistantEvent('s', 'm1', 500_000));
+  budgetEventReset.line('s', LIMIT);
+  budgetEventReset.note({ type: 'session.compacted', properties: { sessionID: 's' } });
+  budgetEventReset.note(assistantEvent('s', 'm2', 350_000));
+  assert(
+    budgetEventReset.line('s', LIMIT).includes('30%'),
+    'session.compacted must reset the band'
+  );
+
+  const budgetDeleted = createContextBudgetTracker();
+  budgetDeleted.note(assistantEvent('s', 'm1', 500_000));
+  budgetDeleted.note({ type: 'session.deleted', properties: { sessionID: 's' } });
+  assert(
+    budgetDeleted.line('s', LIMIT) === undefined,
+    'session.deleted must drop the session state'
+  );
+
+  const budgetDrop = createContextBudgetTracker();
+  budgetDrop.note(assistantEvent('s', 'm1', 500_000));
+  budgetDrop.line('s', LIMIT);
+  budgetDrop.note(assistantEvent('s', 'm2', 100_000));
+  assert(budgetDrop.line('s', LIMIT) === undefined, 'a >50% drop must clear the band');
+
+  const split = createContextBudgetTracker();
+  split.note({
+    type: 'message.updated',
+    properties: {
+      sessionID: 's',
+      info: {
+        id: 'm1',
+        sessionID: 's',
+        role: 'assistant',
+        time: { created: 1, completed: 2 },
+        tokens: {
+          input: 100_000,
+          output: 100_000,
+          reasoning: 100_000,
+          cache: { read: 100_000, write: 0 },
+        },
+      },
+    },
+  });
+  assert(
+    split.line('s', LIMIT).includes('40%'),
+    'input+output+reasoning+cache.read must total 400k'
+  );
+
+  // Streaming, duplicate, and incomplete messages are ignored.
+  const budgetDup = createContextBudgetTracker();
+  budgetDup.note(assistantEvent('s', 'm1', 500_000));
+  assert(
+    budgetDup.note(assistantEvent('s', 'm1', 400_000)) === false,
+    'duplicate messageID must be ignored'
+  );
+  assert(budgetDup.note(assistantEvent('s', 'm2', 900_000, false)) === false, 'incomplete messages must be ignored');
+  assert(budgetDup.line('s', LIMIT).includes('50%'), 'ignored updates must not change the band');
+
+  // Per-call delta warning is one-shot.
+  const budgetDelta = createContextBudgetTracker();
+  budgetDelta.note(assistantEvent('s', 'm1', 100_000));
+  budgetDelta.line('s', LIMIT);
+  budgetDelta.note(assistantEvent('s', 'm2', 126_000));
+  const deltaLine = budgetDelta.line('s', LIMIT);
+  assert(deltaLine && deltaLine.includes('Last step added'), 'a >2.5% step must warn');
+  assert(budgetDelta.line('s', LIMIT) === undefined, 'the delta warning must be one-shot');
+
+  const budgetSmallDelta = createContextBudgetTracker();
+  budgetSmallDelta.note(assistantEvent('s', 'm1', 100_000));
+  budgetSmallDelta.line('s', LIMIT);
+  budgetSmallDelta.note(assistantEvent('s', 'm2', 120_000));
+  assert(budgetSmallDelta.line('s', LIMIT) === undefined, 'a <=2.5% step must stay silent');
+
+  // Missing data and an unknown window are safe no-ops.
+  const budgetMissing = createContextBudgetTracker();
+  budgetMissing.note({ type: 'message.updated', properties: { info: { role: 'assistant' } } });
+  assert(budgetMissing.line('s', LIMIT) === undefined, 'missing tokens/session must be silent');
+  budgetMissing.note(assistantEvent('s', 'm1', 500_000));
+  assert(budgetMissing.line('s', Number.NaN) === undefined, 'an unknown window must be silent');
 
   console.log('✅ Plugin v2 guard tests passed');
   console.log('✅ Plugin v2 execute.before event-wiring tests passed');

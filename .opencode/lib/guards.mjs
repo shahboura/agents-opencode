@@ -355,6 +355,54 @@ export function injectSystemContextOnce(target, text) {
 }
 
 /**
+ * Replace (or clear) one model-facing system part by text prefix.
+ *
+ * The static pack block is injected once via `injectSystemContextOnce`; the
+ * context-budget band must change as the session grows, so it lives in its own
+ * part and is replaced on every request. This also makes the update correct if
+ * the host reuses the `system` array across requests instead of rebuilding it.
+ *
+ * @param {unknown} target      Candidate `system` parts array.
+ * @param {string[]|string} prefixes Part text prefixes to replace/remove.
+ * @param {string} [text]       New part text; omit/blank to only remove.
+ * @returns {boolean} true when a part was pushed (false on clear/no-op/failure).
+ */
+export function replaceSystemContextPart(target, prefixes, text) {
+  if (!Array.isArray(target)) return false;
+
+  const markers = (Array.isArray(prefixes) ? prefixes : [prefixes]).filter(
+    (prefix) => typeof prefix === 'string' && prefix.length > 0
+  );
+  if (markers.length === 0) return false;
+
+  try {
+    for (let index = target.length - 1; index >= 0; index -= 1) {
+      const part = target[index];
+      if (
+        part !== null &&
+        typeof part === 'object' &&
+        typeof part.text === 'string' &&
+        markers.some((marker) => part.text.startsWith(marker))
+      ) {
+        target.splice(index, 1);
+      }
+    }
+  } catch {
+    // A frozen/sealed array cannot be updated; leave it untouched.
+    return false;
+  }
+
+  if (typeof text !== 'string' || text.trim() === '') return false;
+
+  try {
+    target.push({ type: 'text', text });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Run one hook/transform registration with full failure containment.
  *
  * OpenCode v2's `hook(...)` and `transform(...)` return `Promise<Registration>`,
@@ -457,6 +505,136 @@ export function subscribeEventStream(stream, handler) {
   })();
 
   return abort;
+}
+
+/**
+ * Session context-budget bands. Sorted high-to-low; `line()` reports the
+ * highest band reached and never downgrades within a session (so a transient
+ * token report cannot hide an earlier warning). Reset happens on compaction.
+ */
+const CONTEXT_BANDS = [
+  { min: 0.5, key: 'stop', text: 'Context budget 50%+ — stop new work and hand off.' },
+  { min: 0.4, key: 'handoff', text: 'Context budget 40%+ — write the handoff or delegate before the next phase.' },
+  { min: 0.3, key: 'ask', text: 'Context budget 30%+ — ask the user: continue, delegate, or hand off.' },
+];
+
+/** Sum the token fields the host uses for measured context. */
+function tokenTotal(tokens) {
+  if (!tokens || typeof tokens !== 'object') return 0;
+  const num = (value) =>
+    typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
+  const cache = tokens.cache && typeof tokens.cache === 'object' ? tokens.cache : {};
+  return num(tokens.input) + num(tokens.output) + num(tokens.reasoning) + num(cache.read) + num(cache.write);
+}
+
+/**
+ * Track measured context per session from completed assistant messages.
+ *
+ * The host emits `message.updated` several times per message while streaming;
+ * only a completed message is counted, and a repeated `messageID` is ignored.
+ * A large negative step (>50% drop) is treated as an in-band compaction and
+ * clears the band; an explicit compaction/reset event also clears it.
+ *
+ * `line()` returns at most one band line plus a one-shot per-call warning. The
+ * text is static per band (no exact percentage) so the system prefix only
+ * changes when a band changes.
+ *
+ * @param {{bands?: Array<{min: number, text: string}>, perCallFraction?: number}} [options]
+ */
+export function createContextBudgetTracker(options = {}) {
+  const bands =
+    Array.isArray(options.bands) && options.bands.length > 0 ? options.bands : CONTEXT_BANDS;
+  const perCallFraction =
+    typeof options.perCallFraction === 'number' && options.perCallFraction > 0
+      ? options.perCallFraction
+      : 0.025;
+  const perCallPercent = Number((perCallFraction * 100).toFixed(1));
+  const sessions = new Map();
+
+  const reset = (sessionID) => {
+    if (typeof sessionID === 'string' && sessionID) sessions.delete(sessionID);
+  };
+
+  const note = (event) => {
+    try {
+      if (!event || typeof event !== 'object') return false;
+
+      const eventSessionID = event?.properties?.sessionID;
+      if (
+        (event.type === 'session.compacted' ||
+          event.type === 'session.compaction.ended' ||
+          event.type === 'session.deleted') &&
+        typeof eventSessionID === 'string'
+      ) {
+        reset(eventSessionID);
+        return false;
+      }
+
+      if (event.type !== 'message.updated') return false;
+      const info = event?.properties?.info ?? event?.info;
+      if (!info || info.role !== 'assistant') return false;
+
+      const messageID = typeof info.id === 'string' ? info.id : '';
+      const sessionID =
+        typeof info.sessionID === 'string' ? info.sessionID : eventSessionID;
+      if (!messageID || !sessionID || !info.time?.completed) return false;
+
+      const used = tokenTotal(info.tokens);
+      if (used <= 0) return false;
+
+      const state =
+        sessions.get(sessionID) ?? { messageID: '', used: 0, band: -1, delta: 0 };
+      if (state.messageID === messageID) return false;
+
+      const previousUsed = state.used;
+      const delta = previousUsed > 0 ? used - previousUsed : 0;
+      state.messageID = messageID;
+      state.used = used;
+      state.delta = delta > 0 ? delta : 0;
+      // A >50% drop is compaction (even if the host's reset event is missed);
+      // a small drop is a token-report correction and keeps the earlier band.
+      if (delta < 0 && used < previousUsed * 0.5) state.band = -1;
+      sessions.set(sessionID, state);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const line = (sessionID, limit) => {
+    try {
+      const state = sessions.get(sessionID);
+      if (!state || !Number.isFinite(limit) || limit <= 0) return undefined;
+
+      let index = -1;
+      for (let i = 0; i < bands.length; i += 1) {
+        if (state.used >= limit * bands[i].min) {
+          index = i;
+          break;
+        }
+      }
+
+      const delta = state.delta;
+      state.delta = 0;
+      const deltaText =
+        delta > limit * perCallFraction
+          ? `Last step added ~${Math.round(delta / 1000)}k tokens (>${perCallPercent}% of the window) — extract or delegate the next one.`
+          : undefined;
+
+      // No band yet: still surface a large single-step warning, if any. An
+      // existing band is kept (never downgrade within a session) until a
+      // compaction reset.
+      if (index === -1 && state.band === -1) return deltaText;
+      if (index !== -1 && (state.band === -1 || index < state.band)) state.band = index;
+
+      const bandText = state.band === -1 ? undefined : bands[state.band]?.text;
+      return [bandText, deltaText].filter(Boolean).join('\n') || undefined;
+    } catch {
+      return undefined;
+    }
+  };
+
+  return { note, line, reset };
 }
 
 /**
