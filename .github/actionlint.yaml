@@ -1,0 +1,6 @@
+# actionlint's runner-label table lags GitHub's GA images. Ubuntu 26.04 is a
+# GitHub-hosted label (actions/runner-images) that the pinned actionlint release
+# does not know yet, so declare it here until the table catches up.
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04
