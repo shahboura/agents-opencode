@@ -70,10 +70,14 @@ Generate a comprehensive implementation plan with:
 ### Overview
 [Brief description of what will be built]
 
-### Success Criteria
+## Acceptance
 - [Criterion 1]
 - [Criterion 2]
 - [Criterion 3]
+
+## Checks
+- run: [command that proves the change]
+- expect: exit 0
 
 ### Affected Components
 | Component | Action | Complexity |

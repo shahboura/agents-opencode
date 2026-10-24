@@ -57,11 +57,12 @@ npm run gate:install
 The flow for each batch of changes is plan → freeze → review → pass → commit:
 
 ```bash
-# Non-trivial diffs: write .gate/plan.md with a "## Checks" section first:
-#   - run: npm test
-#   - expect: exit 0
+# Non-trivial diffs: write .gate/plan.md first, with both sections:
+#   ## Acceptance          -> - <observable criterion>
+#   ## Checks              -> - run: npm test / - expect: exit 0
 npm run gate:freeze   # freeze the staged diff (.gate/diff.patch + .gate/manifest.json)
 # Tier 1 (`npm run doctor`) and the Tier 2 review lenses run against the frozen diff
+npm run gate:lens -- --name requirements --verdict PASS --findings 0   # repeat per lens
 npm run gate:pass -- --verdict PASS --lenses requirements,code
 git commit            # pre-commit verifies the pass; post-commit consumes the marker
 ```
@@ -89,10 +90,16 @@ Rules that are enforced at the tooling layer:
   manifest and refuses a missing, edited-at-freeze-time, or symlinked plan; both
   `gate:pass` and the pre-commit hook recompute the hash and refuse a plan edited
   after the freeze. Placeholder commands (`true`, `:`, `exit 0`) are rejected.
-- `--lenses` accepts only `requirements`, `code`, `security`, `ux-responsive`, and
-  `ponytail`. A non-trivial diff must include `requirements`, or record why not:
+- `--lenses` accepts only `requirements`, `code`, `security`, `ux-responsive`,
+  `architecture`, and `ponytail`. A non-trivial diff must include `requirements`, or
+  record why not:
   `--skip-requirements "no behaviour change"` (at least 12 characters; the reason is
   printed at pass time and at commit time).
+- A **non-trivial plan** must state acceptance criteria: a `## Acceptance` section with
+  at least one `-` bullet criterion. `gate:freeze` refuses a plan that has `## Checks` but
+  no criteria, so the requirements lens always has a spec to judge against.
+- A **non-trivial panel** must record hash-bound evidence per lens. `gate:pass` refuses
+  a recorded lens with no `.gate/lens-<name>.md`, so a lens name is not a review.
 - A **non-trivial diff** must record **at least 2 distinct lenses** in `gate:pass`.
   Non-trivial means any staged path under `scripts/`, `.opencode/`, `.github/`,
   `.githooks/`, `site/`, `evals/`, or `adapters/`; the root files `install.js`,

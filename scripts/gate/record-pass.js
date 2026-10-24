@@ -12,8 +12,8 @@
  * to the snapshot the lenses actually reviewed. Each `--lenses` name is checked
  * against its .gate/lens-<name>.md evidence (`gate:lens`): stale, malformed, or
  * mislabelled evidence is refused, so a lens file that did not see the current
- * snapshot can never be recorded. Missing evidence is recorded by name only;
- * workstream B turns that into a precondition. Non-trivial
+ * snapshot can never be recorded. A non-trivial panel also refuses a lens with
+ * no evidence file at all. Non-trivial
  * diffs (see lib.classifyStagedDiff) additionally require a Tier 2 panel of at
  * least MIN_NON_TRIVIAL_LENSES lenses; the decision is evaluated through the
  * same lib.evaluateMarker the hook uses, so `gate:pass` and the hook cannot
@@ -103,8 +103,9 @@ function main() {
     return 1;
   }
 
-  // Hash-bound lens evidence: a missing file is tolerated (older flows), but a
-  // file bound to another snapshot must never be recorded as this pass's panel.
+  // A Tier 2 panel is evidence, not a name list. Structural errors (panel size,
+  // requirements) are reported by evaluateMarker first; it names any lens with
+  // no hash-bound evidence, so the operator sees which review is missing.
   const evidence = lib.collectLensEvidence(lib.gateDir(repoRoot), options.lenses, stagedHash);
   if (evidence.mismatched.length > 0) {
     console.error('❌ gate:pass refusing: lens evidence does not match the frozen snapshot.');
@@ -195,6 +196,7 @@ function main() {
     console.error('   This needs the Tier 2 flow: a concurrent lens panel on the frozen diff.');
     console.error('   (The trivial `npm run gate:quick` path records no lenses and cannot approve this diff.)');
     console.error('   After the panel passes, record it with:');
+    console.error('     npm run gate:lens -- --name <lens> --verdict PASS --findings <n>   # per lens');
     console.error('     npm run gate:pass -- --verdict PASS --lenses <lens1,lens2>');
     return 1;
   }

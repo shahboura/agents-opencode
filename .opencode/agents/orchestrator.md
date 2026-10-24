@@ -139,8 +139,9 @@ For each approved phase:
    `.opencode/instructions/orchestrator-reference.instructions.md`.
 
    - **Tier 1:** run `npm run doctor` first; fast-fail on new hard failures vs. the branch point.
-   - **Tier 2:** freeze the diff and run concurrent fresh `@review` lenses (requirements · code · security ·
-     ux-responsive). REQUIRED for agent/skill/instruction/CI/security/feature changes or any 3+ file refactor; optional otherwise (docs/comments/mechanical bumps skip).
+   - **Tier 2:** freeze the diff and run concurrent fresh `@review` lenses — the canonical
+     roster and when each fires is the lens table in `site/src/content/docs/review-gate.md`.
+     REQUIRED for agent/skill/instruction/CI/security/feature changes or any 3+ file refactor; optional otherwise (docs/comments/mechanical bumps skip).
    - **Triage:** lens severity is authoritative; declined blocking findings (critical, or any security/data-loss/
      requirement-miss) go to a user decision panel. Max 2 cycles (panel = cycle 1), ≤8 reviewer dispatches/task.
    - **Outcomes:** ✅ PASS → commit | ⚠️ PASS-WITH-CAVEATS → commit with notes | ❌ FAIL → escalate.
