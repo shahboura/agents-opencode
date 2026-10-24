@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.0](https://github.com/shahboura/agents-opencode/compare/v3.1.3...v4.0.0) (2026-10-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* docs-validation and agent-diagnostics are removed in 4.0.0. Both restated commands the pack already ships and were maintainer-only. Migration: npm run doctor, npm run validate:docs, node scripts/validate-agents.js. See DEPRECATIONS.md for the rollback note.
+
+### Features
+
+* trim context, enforce review evidence, and retire two maintainer skills ([#125](https://github.com/shahboura/agents-opencode/issues/125)) ([c9da9b0](https://github.com/shahboura/agents-opencode/commit/c9da9b07e41721eaa0c9fe7b55a80408ecba7fc2))
+
 ## [3.1.3](https://github.com/shahboura/agents-opencode/compare/v3.1.2...v3.1.3) (2026-10-22)
 
 
