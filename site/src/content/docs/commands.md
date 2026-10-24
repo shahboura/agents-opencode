@@ -21,11 +21,13 @@ Most commands accept an optional argument to scope the task:
 | `/code-review` | Security, perf, and style review |
 | `/content-review` | Score and critique content quality |
 | `/create-readme` | Generate or improve a README |
+| `/design-audit` | Reference-first design proposals against DESIGN.md |
 | `/generate-tests` | Generate targeted tests |
 | `/plan-project` | Multi-phase implementation plan |
 | `/execution-loop` | Bounded verify-and-continue execution loop |
 | `/legal-review` | Review licenses, compliance, and data privacy |
 | `/refactor-plan` | Safe staged refactor strategy |
+| `/retro` | One durable check, standard, or drill from the last task |
 | `/security-audit` | Security-focused code review |
 | `/stop-loop` | Halt loop execution and report state |
 | `/checkpoint` | Structured phase-boundary pause for human decision |

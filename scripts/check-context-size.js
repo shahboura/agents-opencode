@@ -56,7 +56,8 @@ function warnEntryQuality(entryList) {
 const MAX_INSTRUCTION_LINES = 250;
 const MAX_SKILL_LINES = 200;
 const MAX_AGENT_LINES = 200;
-const MAX_SKILL_COUNT = 30;
+// Count is a rough proxy; the real brake is MAX_SKILL_DESCRIPTION_WORDS below.
+const MAX_SKILL_COUNT = 32;
 const MAX_SKILL_DESCRIPTION_WORDS = 600;
 
 function countWords(text) {

@@ -71,7 +71,8 @@ Release 3.2.1. D3 and D4 land early on the trim branch; this workstream records 
 as shipped and adds the rest.
 
 - `criterion-D1`: `refactoring` leads with deletion and YAGNI before extraction.
-- `criterion-D2`: `review/references/code-smells.md` exists and is cited by the review lens brief.
+- `criterion-D2`: `.opencode/skills/refactoring/references/code-smells.md` exists and is
+  cited by the review lens brief.
 - `criterion-D3`: `blogger` owns voice, claims, anti-slop; channel formats live in `references/formats.md` as defaults.
 - `criterion-D4`: `brutal-critic` grades against a rubric and no longer prescribes channel format.
 - `criterion-D5`: `design-review` + `DESIGN.md` define reference-first decisions (no invented looks).

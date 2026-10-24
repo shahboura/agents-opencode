@@ -27,6 +27,16 @@ const checks = [
     args: ['scripts/validate-command-matrices.js'],
   },
   {
+    name: 'Validate inventory counts',
+    command: process.execPath,
+    args: ['scripts/validate-inventory.js'],
+  },
+  {
+    name: 'Check knowledge graph freshness (advisory)',
+    command: process.execPath,
+    args: ['scripts/check-graph-freshness.js'],
+  },
+  {
     name: 'Run risk-path assessment tests',
     command: process.execPath,
     args: ['scripts/assess-risk-path.test.js'],

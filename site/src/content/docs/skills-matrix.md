@@ -95,11 +95,13 @@ Arguments passed in `/command-name [argument]` are forwarded to the command body
 | `/code-review` | `review` | Security, performance, and style review |
 | `/content-review` | `brutal-critic` | Score and critique content quality |
 | `/create-readme` | `docs` | Generate or improve a README |
+| `/design-audit` | `researcher` | Reference-first design proposals against DESIGN.md |
 | `/generate-tests` | `codebase` | Generate targeted tests |
 | `/1-on-1-prep` | `em-advisor` | Prepare for a focused 1-on-1 |
 | `/execution-loop` | `orchestrator` | Bounded verify-and-continue execution loop |
 | `/plan-project` | `orchestrator` | Multi-phase implementation plan |
 | `/refactor-plan` | `planner` | Safe staged refactor strategy |
+| `/retro` | `orchestrator` | One durable check, standard, or drill from the last task |
 | `/security-audit` | `review` | Security-focused code and config review |
 | `/stop-loop` | `orchestrator` | Halt loop execution and report current state |
 | `/checkpoint` | `orchestrator` | Structured phase-boundary checkpoint for human decision |

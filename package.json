@@ -1,7 +1,7 @@
 {
   "name": "agents-opencode",
   "version": "3.1.2",
-  "description": "OpenCode Agents: Intelligent AI assistants for software development. Features 10 specialized agents (including researcher for decision grounding and legal-advisor for license auditing and compliance), 27 on-demand skills delivering language coding standards and domain guidance, automated code review, documentation generation, OpenCode plugin compatibility, and cross-platform installation. Supports .NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, Rust, and SQL with plan-first execution and context-aware assistance.",
+  "description": "OpenCode Agents: Intelligent AI assistants for software development. Features 10 specialized agents (including researcher for decision grounding and legal-advisor for license auditing and compliance), 29 on-demand skills delivering language coding standards and domain guidance, automated code review, documentation generation, OpenCode plugin compatibility, and cross-platform installation. Supports .NET, Python, TypeScript, Flutter, Go, Java, Node.js, React, Ruby, Rust, and SQL with plan-first execution and context-aware assistance.",
   "files": [
     "install.js",
     "THIRD_PARTY_NOTICES.md",
@@ -54,6 +54,8 @@
     "gate:check": "node scripts/gate/precommit-check.js",
     "gate:install": "node scripts/gate/install-hooks.js",
     "validate:commands": "node scripts/validate-command-matrices.js",
+    "validate:inventory": "node scripts/validate-inventory.js",
+    "graph:check": "node scripts/check-graph-freshness.js",
     "eval:agents": "node evals/harness/run-evals.js",
     "eval:agents:json": "node evals/harness/run-evals.js --json --out evals/reports/latest.json",
     "eval:agents:trend": "node scripts/compare-eval-trend.js --current evals/reports/latest.json --baseline evals/fixtures/eval-trend-baseline.json --out evals/reports/trend-summary.md",
@@ -63,7 +65,7 @@
     "validate:changelog": "node scripts/validate-changelog-labels.js",
     "validate:session": "node scripts/validate-session-state.js",
     "handoff:generate": "node scripts/generate-handoff.js --state state/session-state.json --out handoff/latest.md",
-    "validate:context": "node scripts/check-context-size.js",
+    "validate:context": "node scripts/check-context-size.js --check",
     "validate:npx": "node scripts/test-npx-integrity.js",
     "validate:all": "npm run doctor"
   },

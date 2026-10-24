@@ -6,17 +6,17 @@
 [![Documentation](https://img.shields.io/badge/docs-Cloudflare%20Workers-blue)](https://agnts.elkodr.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Ten specialist agents. 27 on-demand skills. One install.**
+**Ten specialist agents. 29 on-demand skills. One install.**
 
 Turn a single prompt into a full delivery loop — plan → implement → review → document —
 without leaving the terminal you already use. Built for [OpenCode](https://opencode.ai).
-Already on Claude Code? The same 27 skills ship as a [plugin](./adapters/claude-code/).
+Already on Claude Code? The same 29 skills ship as a [plugin](./adapters/claude-code/).
 
 ## Why this pack is different
 
 - **One prompt, four disciplines.** `@orchestrator` scopes the work, then hands off to
   `@codebase` for implementation, `@review` for quality, and `@docs` for documentation — in one session.
-- **Skills that don't tax context.** All 27 skills load only when invoked, so an idle skill costs nothing.
+- **Skills that don't tax context.** All 29 skills load only when invoked, so an idle skill costs nothing.
 - **Least-privilege tools, host-compatible skills.** Tools start at `"*": "deny"` with narrow
   allows; skills are allowed by default so host and plugin skills keep working.
 - **Verified, not vibes.** Agent contracts, command matrices, docs links, and plugin guards are
@@ -115,6 +115,7 @@ Type `/command-name` in the TUI to run:
 | `/refactor-plan` | Refactoring plan |
 | `/architecture-review` | Architecture review |
 | `/architecture-decision` | ADR creation |
+| `/design-audit` | Design reference audit (max 3 sourced proposals) |
 | `/api-docs` | Generate API documentation |
 | `/create-readme` | Generate README |
 | `/blog-post` | Blog post creation |
@@ -123,23 +124,24 @@ Type `/command-name` in the TUI to run:
 | `/execution-loop` | Bounded iterative execution workflow |
 | `/stop-loop` | Stop loop and summarize state |
 | `/checkpoint` | Phase-boundary checkpoint for human decision |
+| `/retro` | One durable check, standard, or drill from the last task |
 | `/1-on-1-prep` | Meeting preparation |
 | `/legal-review` | License, compliance, and data-privacy review |
 
-**Command surface:** the pack registers 53 catalog entries (10 agents + 16 commands + 27 skills).
+**Command surface:** the pack registers 57 catalog entries (10 agents + 18 commands + 29 skills).
 Kimaki/Discord caps the combined surface (agents + commands + skills + host skills) at 100 slash
 commands; if you hit the cap, trim low-value commands first.
 
 ## Skills
 
-27 skills live under `.opencode/skills/`, each defined in a `SKILL.md`:
+29 skills live under `.opencode/skills/`, each defined in a `SKILL.md`:
 
 - **11 language skills** — .NET, Flutter, Go, Java/Spring, Node/Express, Python, React/Next.js,
   Ruby/Rails, Rust, SQL migrations, TypeScript.
-- **16 workflow skills** — API docs, ADRs, docs validation, project bootstrap, agent diagnostics,
+- **18 workflow skills** — API docs, ADRs, docs validation, project bootstrap, agent diagnostics,
   refactoring, security audit, code-change impact, UX/responsive, decision grounding, systematic
   debugging, test-driven development, verification before completion, blogging, brutal critique,
-  legal compliance.
+  legal compliance, alignment, writing for agents.
 
 Skills load on demand via the `skill` tool. Coding standards and language guidance live in these
 skills — not in a sprawling instruction directory. A small set of shared reference instructions
@@ -237,7 +239,7 @@ See [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 /plugin update agents-opencode@shahboura
 ```
 
-This gives Claude Code access to the same 27 on-demand skills — skills only, no agents or slash
+This gives Claude Code access to the same 29 on-demand skills — skills only, no agents or slash
 commands — which load only when invoked, with no context cost until you use them.
 See [adapters/claude-code/](./adapters/claude-code/) for the plugin manifest and generator script.
 

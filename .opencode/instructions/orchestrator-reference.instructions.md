@@ -210,6 +210,11 @@ When resuming or retrying, avoid re-executing completed work:
 - Before each sub-task, check if it was already completed (`git diff --stat`, artifact existence, test-pass status).
 - Skip completed sub-tasks; report them as "already done" in checkpoint; reference `state/session-state.json` for prior phase status.
 
+## End-of-Task Retro
+
+Before closing a non-trivial task, run `/retro`: it turns the diff and `.gate` receipts
+into one durable check, standard, or drill recorded in `LEARNINGS.md`.
+
 ## Progress Tracking for Long-Running Work
 
 For complex or multi-phase tasks, include and maintain a status table in updates.

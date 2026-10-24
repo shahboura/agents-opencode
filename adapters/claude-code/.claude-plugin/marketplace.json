@@ -3,12 +3,12 @@
   "owner": {
     "name": "shahboura"
   },
-  "description": "Lean AI agent pack with 27 on-demand skills for development, security, documentation, and leadership.",
+  "description": "Lean AI agent pack with 29 on-demand skills for development, security, documentation, and leadership.",
   "plugins": [
     {
       "name": "agents-opencode",
       "source": "./",
-      "description": "27 on-demand skills: languages (.NET, Python, Go, Rust, etc.), quality (code review, security audit, refactoring, decision grounding), discipline (systematic debugging, TDD, verification before completion), documentation (API docs, ADRs), content (blogging, critique), and leadership (EM, legal). Skills load on demand — no context cost until invoked.",
+      "description": "29 on-demand skills: languages (.NET, Python, Go, Rust, etc.), quality (code review, security audit, refactoring, decision grounding), discipline (systematic debugging, TDD, verification before completion), documentation (API docs, ADRs), content (blogging, critique), and leadership (EM, legal). Skills load on demand — no context cost until invoked.",
       "author": { "name": "shahboura" },
       "license": "MIT",
       "keywords": ["skills", "development", "security", "documentation", "code-review"]
