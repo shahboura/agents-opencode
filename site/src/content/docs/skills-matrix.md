@@ -18,12 +18,12 @@ Quick read:
 | Agent | Recommended skills |
 |---|---|
 | `codebase` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `legal-advisor`, `code-change-impact`, `refactoring`, `decision-grounding`, `systematic-debugging`, `test-driven-development`, `verification-before-completion` |
-| `orchestrator` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `blogger`, `brutal-critic`, `writing-for-agents`, `code-change-impact`, `refactoring`, `legal-advisor`, `alignment`, `decision-grounding`, `systematic-debugging`, `verification-before-completion` |
-| `planner` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `docs-validation`, `agent-diagnostics`, `refactoring`, `alignment`, `writing-for-agents`, `adr`, `decision-grounding` |
-| `review` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `docs-validation`, `agent-diagnostics`, `code-change-impact`, `security-audit`, `decision-grounding` |
+| `orchestrator` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `blogger`, `brutal-critic`, `writing-for-agents`, `code-change-impact`, `refactoring`, `legal-advisor`, `alignment`, `decision-grounding`, `systematic-debugging`, `verification-before-completion` |
+| `planner` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `refactoring`, `alignment`, `writing-for-agents`, `adr`, `decision-grounding` |
+| `review` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `code-change-impact`, `security-audit`, `decision-grounding` |
 | `researcher` | _(none — read-only evidence gathering; skill-free by design)_ |
-| `docs` | `docs-validation`, `project-bootstrap`, `agent-diagnostics`, `api-documentation`, `adr`, `writing-for-agents` |
-| `em-advisor` | `project-bootstrap`, `agent-diagnostics`, `docs-validation`, `legal-advisor`, `blogger` |
+| `docs` | `project-bootstrap`, `api-documentation`, `adr`, `writing-for-agents` |
+| `em-advisor` | `project-bootstrap`, `legal-advisor`, `blogger` |
 | `blogger` | `blogger`, `brutal-critic` |
 | `brutal-critic` | `brutal-critic`, `blogger` |
 | `legal-advisor` | `legal-advisor` |
@@ -56,8 +56,8 @@ on-demand policy below and may carry additional, narrower conditional load lines
 | Large/unfamiliar repo exploration, cross-file questions (host skill) | `graphify-usage` (if present) | `codebase` |
 | Content drafting (blogs, podcasts, YouTube, resumes, LinkedIn, bios) | `blogger` | `blogger`, `orchestrator`, `em-advisor` |
 | Content critique and scoring | `brutal-critic` | `brutal-critic`, `blogger`, `orchestrator` |
-| Docs quality checks (lint/link/structure) | `docs-validation` | `docs`, `review`, `planner`, `orchestrator`, `em-advisor` |
-| Agent/package diagnostics and configuration checks | `agent-diagnostics` | `docs`, `review`, `planner`, `orchestrator`, `em-advisor` |
+| Docs quality checks (lint/link/structure) | _(no skill — run `npm run validate:docs`)_ | `docs`, `review`, `planner`, `orchestrator` |
+| Agent/package diagnostics and configuration checks | _(no skill — run `npm run doctor` or `node scripts/validate-agents.js`)_ | `docs`, `review`, `planner`, `orchestrator` |
 | Project bootstrap scaffolding | `project-bootstrap` | `docs`, `planner`, `orchestrator`, `em-advisor` |
 | Legal research, compliance, contract review, license auditing, data privacy, IP, export controls | `legal-advisor` | `legal-advisor`, `codebase`, `orchestrator`, `em-advisor` |
 | Code change impact/blast-radius analysis, regression check, safe-to-merge verification | `code-change-impact` | `review`, `codebase`, `orchestrator` |

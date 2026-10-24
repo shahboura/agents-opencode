@@ -108,8 +108,11 @@ Release 3.3.0.
 Release 4.0.0. Breaking.
 
 - `criterion-G1`: the installer prunes manifest-recorded skills that no longer ship.
+  **Met:** `pruneRemovedSkills` + install.js call, fail-closed backup, anchored to the
+  install dir, empty-source guard, installer test.
 - `criterion-G2`: retired skills are announced with a deprecation note and migration path.
-- `criterion-G3`: inventory counts are reconciled everywhere.
+  **Met:** `DEPRECATIONS.md` — Level C, `docs-validation` + `agent-diagnostics`, 4.0.0.
+- `criterion-G3`: inventory counts are reconciled everywhere. **Met:** 27 skills, 55 catalog entries.
 
 ### H - Script and gate pruning (deferred until C-G land)
 

@@ -49,7 +49,7 @@ Deferred from the permission/skill documentation pass (2026-10).
 
 | ID | Severity | Item | Files |
 |---|---|---|---|
-| SKILL-1 | low | Ship deterministic `scripts/` for operational skills | `.opencode/skills/docs-validation`, `.opencode/skills/code-change-impact` |
+| SKILL-1 | low | Ship deterministic `scripts/` for operational skills | `.opencode/skills/code-change-impact` |
 | SKILL-2 | low | Behavioral eval coverage for the ported discipline skills (`systematic-debugging`, `test-driven-development`, `verification-before-completion`). The eval harness (`evals/harness/run-evals.js`) is **static-contract only** and cannot exercise agent defaults. Options: (a) add static skill contracts (Iron Law markers + `## Provenance` present, `references/*` links resolve) as a drift guard, or (b) add a behavioral drill harness (e.g. adapt the upstream pressure-test prompts). | `evals/harness/run-evals.js`, `evals/fixtures/expected-contracts.json` |
 
 ## Docs hosting migration

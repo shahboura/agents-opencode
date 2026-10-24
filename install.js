@@ -622,6 +622,27 @@ function installScope(options) {
     const treeResult = fileOps.installManagedTree(sourceOpencodeDir, sourceManagedFiles, paths.opencodeDir, scope, backupSession, warning);
     success(`✓ Installed/updated ${treeResult.copiedCount} file(s); ${treeResult.skippedCount} unchanged`);
 
+    // Retired skills still on disk from a previous install are pruned (backed up
+    // first) so an update drops them. Only manifest-recorded dirs are eligible.
+    // shortcut: a dir kept because its backup failed drops out of the rewritten
+    // manifest, so it is not retried; revisit if retry-after-failure matters.
+    const sourceSkillsDir = path.join(sourceOpencodeDir, 'skills');
+    const sourceSkillNames = fs.existsSync(sourceSkillsDir)
+        ? fs.readdirSync(sourceSkillsDir, { withFileTypes: true })
+            .filter(function (entry) { return entry.isDirectory() || entry.isSymbolicLink(); })
+            .map(function (entry) { return entry.name; })
+        : [];
+    // Fail closed: an empty source inventory means the package is malformed,
+    // not that every skill was retired. Pruning then would delete the install.
+    if (sourceSkillNames.length === 0) {
+        warning('No source skills found — skipping retired-skill pruning to avoid deleting the install.');
+    } else {
+        fileOps.pruneRemovedSkills(sourceSkillNames, paths.opencodeDir, existingManifest, { warning: warning, info: info }, {
+            backupSession: backupSession,
+            relativeBase: paths.rootDir,
+        });
+    }
+
     const templateResult = installProjectTemplateFiles(sourceDir, scope, paths, backupSession);
     if (scope === 'project') {
         if (templateResult.installedCount > 0) {

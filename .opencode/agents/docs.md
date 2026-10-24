@@ -127,7 +127,7 @@ docs/
 - Load skills on demand only for active task/phase requirements.
 - Use one relevant skill by default; add a second only for explicit cross-domain needs.
 - If scope is ambiguous, ask a clarifying question before loading.
-- Use `docs-validation` for docs quality checks.
+- Run `npm run validate:docs` for docs lint and link checks (a command, not a skill).
 
 ## Quality Checks
 - Spell check all content

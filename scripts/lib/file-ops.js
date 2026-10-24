@@ -38,14 +38,12 @@ const LANGUAGE_SKILL_DIRS = new Set(Object.values(LANGUAGE_MAP));
 // partition over the on-disk tree so this set cannot silently rot.
 const NON_LANGUAGE_SKILLS = new Set([
   'adr',
-  'agent-diagnostics',
   'alignment',
   'api-documentation',
   'blogger',
   'brutal-critic',
   'code-change-impact',
   'decision-grounding',
-  'docs-validation',
   'legal-advisor',
   'project-bootstrap',
   'refactoring',
@@ -443,6 +441,133 @@ function filterLanguages(installDir, languages, logFns, backupContext) {
   return { removed, failed, skipped, kept: Array.from(keepDirs) };
 }
 
+// Lower-case skill directory names recorded in a previous manifest, taken from
+// managed paths of the form `.../skills/<name>/...`.
+function managedSkillNames(manifest, installDir) {
+  const names = new Set();
+  const installNorm = path.resolve(installDir).replace(/\\/g, '/').replace(/\/+$/, '');
+  for (const managedPath of manifest.managedFiles) {
+    const norm = String(managedPath).replace(/\\/g, '/');
+    // Relative-to-install form used by global manifests.
+    if (norm.startsWith('skills/')) {
+      const name = norm.slice('skills/'.length).split('/')[0].toLowerCase();
+      if (name) names.add(name);
+      continue;
+    }
+    const marker = '/skills/';
+    const index = norm.lastIndexOf(marker);
+    if (index === -1) {
+      continue;
+    }
+    const prefix = norm.slice(0, index);
+    // Anchor to this install's directory: an absolute path must resolve inside
+    // installDir; a project-relative path must end in `.opencode`. Without this,
+    // an unrelated `.../skills/<name>/` entry could target the wrong directory.
+    const absolute = path.isAbsolute(norm);
+    const underInstall = absolute
+      ? prefix === installNorm || prefix.startsWith(`${installNorm}/`)
+      : prefix === '.opencode' || prefix === './.opencode';
+    if (!underInstall) {
+      continue;
+    }
+    const name = norm.slice(index + marker.length).split('/')[0].toLowerCase();
+    if (name) names.add(name);
+  }
+  return names;
+}
+
+// Prune skill directories that a previous install managed but the current
+// package no longer ships (e.g. a retired skill). Only names recorded in
+// previousManifest.managedFiles are candidates, so user-created skills are
+// never touched. Same fail-closed backup rule as filterLanguages: a directory
+// is deleted only after a complete backup; symlinks, a missing backup session
+// and partial backups are kept and reported in `failed`/`skipped`.
+function pruneRemovedSkills(sourceSkillNames, installDir, previousManifest, logFns, backupContext) {
+  const result = { removed: [], failed: [], skipped: [] };
+  // Fail closed inside the helper too: an empty source list means "unknown",
+  // not "all skills retired". The caller also guards, but a direct call must
+  // never turn an empty list into a full wipe.
+  if (!Array.isArray(sourceSkillNames) || sourceSkillNames.length === 0) {
+    return result;
+  }
+  if (!previousManifest || !Array.isArray(previousManifest.managedFiles)) {
+    return result;
+  }
+
+  const sourceNames = new Set((sourceSkillNames || []).map(function (name) { return String(name).toLowerCase(); }));
+  const candidates = managedSkillNames(previousManifest, installDir);
+  for (const name of sourceNames) {
+    candidates.delete(name);
+  }
+  if (candidates.size === 0) {
+    return result;
+  }
+
+  const skillsDir = path.join(installDir, 'skills');
+  if (!fs.existsSync(skillsDir)) {
+    return result;
+  }
+
+  const logWarning = logFns && logFns.warning;
+  const logInfo = logFns && logFns.info;
+  const backupSession = backupContext && backupContext.backupSession;
+  const relativeBase = backupContext && backupContext.relativeBase;
+
+  const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const dirName = entry.name;
+    if (!candidates.has(dirName.toLowerCase())) {
+      continue;
+    }
+
+    if (entry.isSymbolicLink()) {
+      result.skipped.push(dirName);
+      if (logWarning) logWarning(`Skipping symlinked retired skill directory (kept): ${dirName}`);
+      continue;
+    }
+    if (!entry.isDirectory()) {
+      continue;
+    }
+
+    const dirPath = path.join(skillsDir, dirName);
+
+    if (!backupSession) {
+      result.failed.push(dirName);
+      if (logWarning) logWarning(`Not removing retired skill ${dirName}: no backup session (pruning skipped to avoid data loss).`);
+      continue;
+    }
+
+    const backup = backupDirectoryTree(dirPath, backupSession, relativeBase, logWarning);
+    if (backup.failed !== 0 || backup.skipped !== 0 || backup.count !== backup.files) {
+      result.failed.push(dirName);
+      if (logWarning) {
+        logWarning(
+          `Not removing retired skill ${dirName}: backup incomplete (${backup.count}/${backup.files} file(s) backed up, ` +
+          `${backup.failed} failure(s), ${backup.skipped} skipped entry(ies)); the directory is left in place and unmanaged.`
+        );
+      }
+      continue;
+    }
+
+    try {
+      fs.rmSync(dirPath, { recursive: true, force: true });
+      result.removed.push(dirName);
+    } catch (err) {
+      result.failed.push(dirName);
+      if (logWarning) logWarning(`Could not remove retired skill ${dirName}: ${err.message}`);
+    }
+  }
+
+  if (result.removed.length > 0 && logInfo) {
+    logInfo(`Removed ${result.removed.length} retired skill(s): ${result.removed.join(', ')} — see DEPRECATIONS.md`);
+  }
+  if (result.failed.length > 0 && logWarning) {
+    logWarning(`Retired-skill prune incomplete: ${result.failed.length} skill(s) not removed: ${result.failed.join(', ')}`);
+  }
+
+  return result;
+}
+
 function pruneEmptyDirectories(directories, stopAtDirectory) {
   const sorted = Array.from(directories).sort(function (a, b) { return b.length - a.length; });
   let prunedCount = 0;
@@ -485,5 +610,6 @@ module.exports = {
   buildManagedFilesFromSource,
   installManagedTree,
   filterLanguages,
+  pruneRemovedSkills,
   pruneEmptyDirectories,
 };

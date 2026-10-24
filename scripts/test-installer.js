@@ -5,7 +5,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { LANGUAGE_MAP, LANGUAGE_SKILL_DIRS, NON_LANGUAGE_SKILLS, filterLanguages, isUnsafeBackupKey } = require('./lib/file-ops.js');
+const { LANGUAGE_MAP, LANGUAGE_SKILL_DIRS, NON_LANGUAGE_SKILLS, filterLanguages, isUnsafeBackupKey, pruneRemovedSkills } = require('./lib/file-ops.js');
 const configMutator = require('./lib/config-mutator.js');
 const opencodeTarget = require('./lib/opencode-target.js');
 
@@ -918,7 +918,7 @@ function createMockBackupSession(options = {}) {
 
 function testFilterLanguagesReportsCleanSuccess(tmpRoot) {
   const installDir = path.join(tmpRoot, 'filter-success');
-  createSkillsTree(installDir, ['python', 'rust', 'docs-validation']);
+  createSkillsTree(installDir, ['python', 'rust', 'adr']);
   const { logs, logFns } = createLogCapture();
   const session = createMockBackupSession();
 
@@ -932,7 +932,7 @@ function testFilterLanguagesReportsCleanSuccess(tmpRoot) {
   assert(result.skipped.length === 0, 'Clean success should report no skips');
   assert(!fs.existsSync(path.join(installDir, 'skills', 'rust')), 'Backed-up dir should be removed');
   assert(fs.existsSync(path.join(installDir, 'skills', 'python')), 'Requested language dir should remain');
-  assert(fs.existsSync(path.join(installDir, 'skills', 'docs-validation')), 'Non-language dir should remain');
+  assert(fs.existsSync(path.join(installDir, 'skills', 'adr')), 'Non-language dir should remain');
   assert(session.backedUp.includes(path.join('skills', 'rust', 'SKILL.md')), 'Pruned file should be backed up');
   assert(logs.success.some((message) => message.includes('Applied language filter')), 'Clean success should log success');
   assert(!logs.warning.some((message) => message.includes('not removed')), 'Clean success should not warn');
@@ -940,7 +940,7 @@ function testFilterLanguagesReportsCleanSuccess(tmpRoot) {
 
 function testFilterLanguagesFailsClosedOnIncompleteBackup(tmpRoot) {
   const installDir = path.join(tmpRoot, 'filter-failure');
-  createSkillsTree(installDir, ['python', 'rust', 'docs-validation']);
+  createSkillsTree(installDir, ['python', 'rust', 'adr']);
   const { logs, logFns } = createLogCapture();
   const session = createMockBackupSession({ failPaths: [path.join('skills', 'rust', 'SKILL.md')] });
 
@@ -1007,7 +1007,7 @@ function testFilterLanguagesRecordsSkippedSymlink(tmpRoot) {
 // as a complete backup, so the pruned directory is not falsely kept.
 function testFilterLanguagesDedupeCountsAsCompleteBackup(tmpRoot) {
   const installDir = path.join(tmpRoot, 'filter-dedupe');
-  createSkillsTree(installDir, ['python', 'rust', 'docs-validation']);
+  createSkillsTree(installDir, ['python', 'rust', 'adr']);
   const { logs, logFns } = createLogCapture();
   const session = createMockBackupSession({
     preseedPaths: [path.join('skills', 'rust', 'SKILL.md')],
@@ -1029,7 +1029,7 @@ function testFilterLanguagesDedupeCountsAsCompleteBackup(tmpRoot) {
 // as a failed backup (which would falsely keep the pruned directory).
 function testFilterLanguagesDedupeWithoutRelativeBase(tmpRoot) {
   const installDir = path.join(tmpRoot, 'filter-dedupe-nobase');
-  createSkillsTree(installDir, ['python', 'rust', 'docs-validation']);
+  createSkillsTree(installDir, ['python', 'rust', 'adr']);
   const { logs, logFns } = createLogCapture();
   const skillFile = path.join(installDir, 'skills', 'rust', 'SKILL.md');
   // With relativeBase omitted the mock session keys entries by absolute path.
@@ -1043,6 +1043,65 @@ function testFilterLanguagesDedupeWithoutRelativeBase(tmpRoot) {
   assert(result.failed.length === 0, 'Deduped backup without relativeBase should not be reported as a failure');
   assert(!fs.existsSync(path.join(installDir, 'skills', 'rust')), 'Deduped directory should be pruned without relativeBase');
   assert(logs.success.some((message) => message.includes('Applied language filter')), 'Dedupe without relativeBase should log success');
+}
+
+// G1: skills retired from the package are pruned on the next install, but only
+// when the previous manifest recorded them; user-created and fresh-install
+// directories are never touched.
+function testPruneRemovedSkillsOnUpgrade(tmpRoot) {
+  const projectDir = path.join(tmpRoot, 'prune-upgrade');
+  createDir(projectDir);
+  runInstaller(['--project', '.'], { cwd: projectDir });
+
+  const manifestPath = path.join(projectDir, '.opencode', '.agents-opencode-manifest.json');
+  const manifest = readJson(manifestPath);
+  const legacyRelative = path.join('.opencode', 'skills', 'legacy-skill', 'SKILL.md');
+  manifest.managedFiles.push(legacyRelative.split(path.sep).join('/'));
+  writeJson(manifestPath, manifest);
+
+  const skillsDir = path.join(projectDir, '.opencode', 'skills');
+  createDir(path.join(skillsDir, 'legacy-skill'));
+  fs.writeFileSync(path.join(skillsDir, 'legacy-skill', 'SKILL.md'), '# legacy\n');
+  createDir(path.join(skillsDir, 'user-created'));
+  fs.writeFileSync(path.join(skillsDir, 'user-created', 'SKILL.md'), '# user\n');
+
+  runInstaller(['--project', '.'], { cwd: projectDir });
+
+  assert(!fs.existsSync(path.join(skillsDir, 'legacy-skill')), 'Retired skill recorded in the manifest should be pruned');
+  assert(fs.existsSync(path.join(skillsDir, 'user-created', 'SKILL.md')), 'User-created skill must be untouched');
+  assert(fs.existsSync(path.join(skillsDir, 'adr', 'SKILL.md')), 'Still-shipped skill must be kept');
+  const sessions = listProjectBackupSessions(projectDir);
+  assert(sessions.length >= 1, 'Pruning a retired skill should create a backup session');
+  assert(
+    hasBackedUpFile(sessions[sessions.length - 1], legacyRelative),
+    'Retired skill file should be backed up before deletion'
+  );
+
+  const freshDir = path.join(tmpRoot, 'prune-fresh');
+  createDir(freshDir);
+  createDir(path.join(freshDir, '.opencode', 'skills', 'stale-skill'));
+  fs.writeFileSync(path.join(freshDir, '.opencode', 'skills', 'stale-skill', 'SKILL.md'), '# stale\n');
+  runInstaller(['--project', '.'], { cwd: freshDir });
+  assert(
+    fs.existsSync(path.join(freshDir, '.opencode', 'skills', 'stale-skill', 'SKILL.md')),
+    'A fresh install with no previous manifest must prune nothing'
+  );
+
+  // Internal guard: a direct call with an empty source list must not prune.
+  const guardManifest = { managedFiles: ['.opencode/skills/guard-skill/SKILL.md'] };
+  createDir(path.join(skillsDir, 'guard-skill'));
+  fs.writeFileSync(path.join(skillsDir, 'guard-skill', 'SKILL.md'), '# guard\n');
+  const guardResult = pruneRemovedSkills([], path.join(projectDir, '.opencode'), guardManifest, {}, {});
+  assert(guardResult.removed.length === 0, 'An empty source list must never prune');
+  assert(fs.existsSync(path.join(skillsDir, 'guard-skill', 'SKILL.md')), 'Guard skill must survive an empty source list');
+
+  // Anchor: a manifest path belonging to another install is not a candidate.
+  createDir(path.join(skillsDir, 'foreign-skill'));
+  fs.writeFileSync(path.join(skillsDir, 'foreign-skill', 'SKILL.md'), '# foreign\n');
+  const foreignManifest = { managedFiles: ['../other/.opencode/skills/foreign-skill/SKILL.md'] };
+  const foreignResult = pruneRemovedSkills(['adr'], path.join(projectDir, '.opencode'), foreignManifest, {}, {});
+  assert(foreignResult.removed.length === 0, 'A manifest path outside this install must not prune');
+  assert(fs.existsSync(path.join(skillsDir, 'foreign-skill', 'SKILL.md')), 'Foreign-path skill must survive');
 }
 
 // S-7: backup keys that escape the backup directory must be rejected.
@@ -1188,6 +1247,7 @@ function main() {
     testFilterLanguagesRecordsSkippedSymlink(tmpRoot);
     testFilterLanguagesDedupeCountsAsCompleteBackup(tmpRoot);
     testFilterLanguagesDedupeWithoutRelativeBase(tmpRoot);
+    testPruneRemovedSkillsOnUpgrade(tmpRoot);
     testIsUnsafeBackupKeyRejectsEscapes();
     testGlobalAndProjectLifecycle(tmpRoot);
     testGlobalRespectsXdgConfigHome(tmpRoot);
