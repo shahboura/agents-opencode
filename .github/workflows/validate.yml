@@ -19,7 +19,7 @@ concurrency:
 jobs:
   secrets-scan:
     name: Secret Scan (Gitleaks)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -36,7 +36,7 @@ jobs:
 
   validate-agents:
     name: Validate Agent Configurations
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -48,14 +48,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Validate agents
         run: node scripts/validate-agents.js
 
   validate-opencode-schema:
     name: Validate OpenCode Schema Conformance
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -67,14 +67,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Validate OpenCode schema conformance
         run: node scripts/validate-opencode-schema.js --strict
 
   validate-opencode-schema-v2:
     name: Validate OpenCode v2 Schema Conformance
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -86,14 +86,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Validate OpenCode v2-strict schema conformance
         run: npm run validate:opencode-schema:v2
 
   validate-command-matrices:
     name: Validate Command Matrix Docs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -105,14 +105,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Validate command matrix docs parity
         run: node scripts/validate-command-matrices.js
 
   validate-risk-path:
     name: Validate Risk-Scored Review Path
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -125,7 +125,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Determine changed files
         run: |
@@ -159,7 +159,7 @@ jobs:
 
   validate-docs:
     name: Validate Documentation Links
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -171,14 +171,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Validate documentation links
         run: node scripts/validate-docs.js
 
   validate-changelog:
     name: Validate Changelog Capability Labels
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -190,14 +190,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Validate changelog capability labels
         run: node scripts/validate-changelog-labels.js
 
   validate-session-state:
     name: Validate Session State Contract
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -209,7 +209,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Validate session state
         run: node scripts/validate-session-state.js
@@ -226,7 +226,7 @@ jobs:
 
   validate-tooling-tests:
     name: Validate Tooling Regression Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -238,7 +238,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Run docs validator tests
         run: node scripts/validate-docs.test.js
@@ -281,7 +281,7 @@ jobs:
 
   validate-agent-evals:
     name: Validate Agent Eval Harness
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -293,7 +293,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Run agent eval harness
         run: npm run eval:agents
@@ -318,7 +318,7 @@ jobs:
 
   validate-context:
     name: Validate Context Size
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -330,14 +330,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Check context size
         run: node scripts/check-context-size.js --check
 
   lint-markdown:
     name: Lint Markdown Files
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -349,7 +349,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
           cache: 'npm'
 
       - name: Install dependencies
@@ -365,7 +365,7 @@ jobs:
 
   lint-workflows:
     name: Lint GitHub Workflows
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     steps:
@@ -390,7 +390,7 @@ jobs:
 
   validation-summary:
     name: Validation Summary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     needs: [secrets-scan, validate-agents, validate-opencode-schema, validate-opencode-schema-v2, validate-command-matrices, validate-risk-path, validate-docs, validate-changelog, validate-session-state, validate-tooling-tests, validate-agent-evals, validate-context, lint-markdown, lint-workflows]
     if: always()
