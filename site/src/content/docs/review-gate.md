@@ -24,8 +24,9 @@ summary from Pattern 8 in
 ## Tier 2 - Multi-Lens Adversarial Review
 
 Risk-gated: **required** for agent, skill, instruction, CI, security, or feature
-changes, or any refactor spanning 3+ files. Optional otherwise (docs, comments,
-and mechanical bumps always skip).
+changes, or any refactor spanning 3+ files. Optional otherwise: comment-only or
+docs-only edits outside a risk path (`site/` docs are non-trivial) and at most
+two staged entries; more than two entries always needs the panel.
 
 The diff is frozen to a patch file. The canonical freeze is `npm run gate:freeze`, which writes
 the staged snapshot to `.gate/diff.patch` plus `.gate/manifest.json`. A non-trivial diff also
@@ -158,9 +159,10 @@ Rationale table - declined non-critical findings:
 
 ## Skip criteria and edge cases
 
-**Skip criteria (any one):** trivial (single-line / docs / comment - unless modifying
-permissions, bash, or tool grants), mechanical bumps, a pre-existing gate pass,
-Planning Mode, or an explicit user opt-out.
+**Skip criteria (any one):** trivial (at most two staged entries, no risk path,
+no gitlink - typically a one-line or comment-only change; the risk-path list
+below is authoritative, so a one-line docs edit under `site/` is not trivial), a
+pre-existing gate pass, Planning Mode, or an explicit user opt-out.
 
 **Edge cases:**
 
@@ -222,7 +224,7 @@ lens *cardinality*); lens *names* remain self-reported, like the verdict itself.
 **non-trivial** diff must record **at least 2 distinct lenses**. Non-trivial means any
 staged path under `scripts/`, `.opencode/`, `.github/`, `.githooks/`, `site/`, `evals/`,
 or `adapters/`; the root files `install.js`, `package.json`, `opencode.json`,
-`AGENTS.md`, or `.gitleaks.toml`; a `package-lock.json` at any depth; a staged submodule
+`AGENTS.md`, `.gitleaks.toml`, `.gitmodules`, or `.npmrc`; a `package-lock.json` at any depth; a staged submodule
 pointer (gitlink) change, whose referenced content is not reviewable from the
 superproject diff; or **more than 2 staged entries**. Path matching is case-insensitive,
 a rename counts both sides, and duplicate lens names count once. `gate:pass` refuses to

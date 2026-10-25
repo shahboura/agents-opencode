@@ -54,6 +54,7 @@ example/
 # Generated eval reports
 evals/reports/*
 !evals/reports/.gitkeep
+evals/transcripts/
 
 # Generated handoff output
 handoff/*

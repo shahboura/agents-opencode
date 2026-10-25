@@ -42,23 +42,98 @@ if [[ -z "$CONDITION" ]]; then
   exit 2
 fi
 
+# Resolve --out before entering /work so artifacts land next to the transcript.
+if [[ -n "$OUT" && "$OUT" != /* ]]; then
+  OUT="$PWD/$OUT"
+fi
+
+WORK=""
+PACK=""
+HOME_DIR=""
+# Capture runs git against a harness-owned git dir, never the agent-writable
+# $WORK/.git: an agent-written config, hook, or `gitdir:` file must not execute
+# on the host. It lives outside the repo so a local-mode agent cannot reach it
+# by walking up from $WORK; container mode never mounts it.
+SAFE_GIT=""
+cleanup() { rm -rf "${WORK:-}" "${PACK:-}" "${HOME_DIR:-}" "${SAFE_GIT:-}"; }
+trap cleanup EXIT
 WORK="$(mktemp -d "$ROOT/.gate/drill-work.XXXXXX")"
 PACK="$(mktemp -d "$ROOT/.gate/drill-pack.XXXXXX")"
 HOME_DIR="$(mktemp -d "$ROOT/.gate/drill-home.XXXXXX")"
-cleanup() { rm -rf "$WORK" "$PACK" "$HOME_DIR"; }
-trap cleanup EXIT
+SAFE_GIT="$(mktemp -d "${TMPDIR:-/tmp}/drill-git.XXXXXX")"
 
-# Clean tree at HEAD; uncommitted work must not leak into a drill. `git archive`
-# honours export-ignore (.gitattributes), which drops site/, evals/, state/ and
-# scripts tests — exactly the files some drills need. Copy the tracked files
-# directly instead.
+# Copy the tracked files as they are in the working tree; uncommitted work can
+# still leak into a drill, so run from a clean checkout. `git archive` honours
+# export-ignore (.gitattributes), which drops site/, evals/, state/ and scripts
+# tests — exactly the files some drills need.
 copy_head() {
   git -C "$ROOT" ls-files -z | tar --null -T - -cf - | tar -xf - -C "$1"
 }
 copy_head "$WORK"
 copy_head "$PACK"
-# The drill answer key must not be readable from either mount.
-rm -rf "$WORK/evals/drills" "$PACK/evals/drills"
+# The drill answer key must not be readable from either mount: the task set,
+# the drill runner (its seed value), past results, and the drill notes. Keep
+# `run-evals.js` and the static fixtures: package.json and `npm run doctor`
+# reference them, and they contain no drill outcomes.
+for path in evals/drills evals/harness/run-drill.sh evals/transcripts evals/decision.md evals/headless.md evals/README.md; do
+  rm -rf "${WORK:?}/$path" "${PACK:?}/$path"
+done
+
+# Keep the post-run diff even though the workspace is deleted below. Compare
+# against the baseline commit so work the agent committed is retained too;
+# staging first includes untracked files.
+capture_artifacts() {
+  local out="${1:-}"
+  [[ -n "$out" ]] || return 0
+  if [[ ! -d "$SAFE_GIT" || -L "$SAFE_GIT" ]]; then
+    echo "warning: capture skipped: the harness git dir is missing or a symlink" >&2
+    ARTIFACT_FAILED=1
+    return 0
+  fi
+  rm -f "$SAFE_GIT/index.lock"
+  rm -rf "$SAFE_GIT/hooks"
+  # Rewrite the config so nothing copied from the workspace can execute: no
+  # filters, no fsmonitor, no external diff.
+  rm -f "$SAFE_GIT/config"
+  printf '[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = false\n' > "$SAFE_GIT/config"
+  # Remove a planted symlink before writing, so the redirect cannot truncate a
+  # host file.
+  rm -f "${out}.artifacts.patch"
+  if ! env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null \
+    git --git-dir="$SAFE_GIT" --work-tree="$WORK" -c core.fsmonitor=false add -A >/dev/null 2>&1; then
+    echo "warning: could not stage the drill workspace; the artifact may miss new files" >&2
+    ARTIFACT_FAILED=1
+  fi
+  {
+    printf '# baseline %s\n' "$BASE_COMMIT"
+    printf '\n# git status --porcelain --ignored\n'
+    env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null \
+      git --git-dir="$SAFE_GIT" --work-tree="$WORK" -c core.fsmonitor=false status --porcelain --ignored || true
+    printf '\n# git diff %s\n' "$BASE_COMMIT"
+    env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null \
+      git --git-dir="$SAFE_GIT" --work-tree="$WORK" -c core.fsmonitor=false diff "$BASE_COMMIT" || true
+  } > "${out}.artifacts.patch" 2>/dev/null || ARTIFACT_FAILED=1
+}
+
+# A secret the agent writes into a file would otherwise persist in the patch.
+# Redaction exit 3 means it redacted something (still fine); any other failure
+# removes the artifact rather than keeping secret content on disk.
+redact_artifacts() {
+  local file="${1:-}"
+  [[ -n "$file" && -f "$file" ]] || return 0
+  local tmp="${file}.redact"
+  local rc=0
+  rm -f "$tmp"
+  node "$ROOT/evals/harness/redact.mjs" "$tmp" < "$file" 2>/dev/null || rc=$?
+  if [[ -f "$tmp" && ( "$rc" -eq 0 || "$rc" -eq 3 ) ]]; then
+    mv "$tmp" "$file" || { rm -f "$file" "$tmp"; ARTIFACT_FAILED=1; }
+  else
+    rm -f "$file" "$tmp"
+    echo "warning: artifact redaction failed (rc=$rc); removed $file" >&2
+    ARTIFACT_FAILED=1
+  fi
+  return 0
+}
 
 if [[ "$CONDITION" == "bare" ]]; then
   rm -rf "$WORK/.opencode" "$WORK/AGENTS.md" "$WORK/opencode.json"
@@ -83,6 +158,11 @@ git -C "$WORK" init -q
 git -C "$WORK" add -A
 git -C "$WORK" -c user.email=drill@example.invalid -c user.name=drill \
   -c commit.gpgsign=false commit -qm baseline
+BASE_COMMIT="$(git -C "$WORK" rev-parse HEAD)"
+# Harness-owned copy of the git dir, taken before the agent runs.
+cp -a "$WORK/.git/." "$SAFE_GIT/"
+rm -rf "$SAFE_GIT/hooks" "$SAFE_GIT/index.lock"
+ARTIFACT_FAILED=0
 
 if [[ "$LOCAL" == "1" ]]; then
   # Local mode uses the host's provider (including free models) because the
@@ -112,6 +192,7 @@ if [[ "$LOCAL" == "1" ]]; then
     exit 0
   fi
   mkdir -p "$(dirname "$OUT")"
+  [[ -n "$OUT" ]] && rm -f "$OUT" || true
   set +e
   env -i "${DRILL_ENV[@]}" opencode run --standalone --auto --agent "$AGENT" \
     --model "${OPENCODE_MODEL:-deepseek/deepseek-flash}" "$PROMPT" 2>&1 \
@@ -120,7 +201,12 @@ if [[ "$LOCAL" == "1" ]]; then
   rc=${statuses[0]:-1}
   red=${statuses[1]:-0}
   set -e
-  [[ "$red" -eq 3 ]] && exit 3
+  # Capture before the redaction exit so a leaked run still keeps its diff.
+  if [[ -n "$OUT" ]]; then
+    capture_artifacts "$OUT"
+    redact_artifacts "${OUT}.artifacts.patch"
+  fi
+  [[ "$red" -eq 3 || "$ARTIFACT_FAILED" -eq 1 ]] && exit 3
   exit "$rc"
 fi
 
@@ -178,6 +264,7 @@ if [[ -z "$AGENT" || -z "$PROMPT" ]]; then
 fi
 
 mkdir -p "$(dirname "$OUT")"
+[[ -n "$OUT" ]] && rm -f "$OUT" || true
 set +e
 docker run "${DOCKER_ARGS[@]}" -e HOST_KIND="$HOST_KIND" -e CONDITION="$CONDITION" -e CHECK=0 \
   -e AGENT="$AGENT" -e PROMPT="$PROMPT" \
@@ -187,5 +274,14 @@ statuses=("${PIPESTATUS[@]}")
 rc=${statuses[0]:-1}
 red=${statuses[1]:-0}
 set -e
-[[ "$red" -eq 3 ]] && exit 3
+if [[ -n "$OUT" ]]; then
+  # The container runs as root, so hand the workspace back before git reads it.
+  if ! docker run --rm -v "$WORK:/work" -v "$HOME_DIR:/home" node:22-slim \
+    chown -R "$(id -u):$(id -g)" /work /home >/dev/null 2>&1; then
+    echo "warning: could not chown the drill workspace; artifacts may be incomplete" >&2
+  fi
+  capture_artifacts "$OUT"
+  redact_artifacts "${OUT}.artifacts.patch"
+fi
+[[ "$red" -eq 3 || "$ARTIFACT_FAILED" -eq 1 ]] && exit 3
 exit "$rc"

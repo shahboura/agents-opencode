@@ -1,15 +1,15 @@
 # Backlog
 
 Deferred work from review cycles and the OpenCode v2 readiness assessment. Update
-this file when items land or new gaps are found. Last updated: 2026-10-22.
+this file when items land or new gaps are found. Last updated: 2026-10-25.
 
 ## Evals
 
 | ID | Severity | Item | Files |
 |---|---|---|---|
-| EVAL-2 | medium | Redesign the drill workspace before any further screening: keep task prompts and the answer key outside the mounted workspace, version prompts with their fixtures, and capture `git status` plus the post-run diff. The 3.2.0 screening was inconclusive (answer-key leak, stale D03 prompt, no artifact retention) | `evals/harness/`, `evals/drills/` |
+| EVAL-2 | medium | Partial: task set, drill runner, decision record, and eval notes are removed from `/work` and `/pack` (the static harness and fixtures stay so `npm run doctor` works); post-run `git status --ignored` + baseline diff go to `<out>.artifacts.patch`, including redacted runs. Remaining: version prompts with their fixtures before the next screening | `evals/harness/`, `evals/drills/` |
 | EVAL-3 | low | Add efficiency metrics to the drill runner: wall-clock duration and tool-call count per run; tokens only when the host exposes usage. Correctness alone cannot justify the harness cost | `evals/harness/`, `evals/decision.md` |
-| EVAL-4 | low | Retire or replace D03: its original `--json` prompt was stale; the corrected `--csv` prompt has not been run | `evals/drills/tasks.md` |
+| EVAL-4 | low | D03 prompt corrected to `--csv`; re-run pending with the next screening | `evals/drills/tasks.md` |
 
 ## Validation hardening
 
@@ -23,6 +23,7 @@ The validator review cycles produced these items. VAL-1 and VAL-3 landed in the
 | VAL-3 | low | Done: regression tests for quoted vs indented frontmatter keys | `scripts/validate-opencode-schema.test.js` |
 | VAL-4 | info | Migrate remaining hand-rolled frontmatter/permission parsers to the shared module. Follow-up: `extractNestedBlock` still requires exactly 2-space indentation (silent skip for 4-space agents); fold into this migration | `evals/harness/run-evals.js`, `scripts/validate-command-matrices.js` |
 | VAL-5 | info | Optional typo hint: warn when a skill allow entry is within a small edit distance of a pack skill (restores fail-closed value for `pythonn`-style typos); also align the evals harness (errors on unknown allow names under a deny baseline) with the agent validator's warning stance | `scripts/validate-agents.js`, `evals/harness/run-evals.js` |
+| VAL-6 | low | Regression test for the drill capture path: build a temp repo, plant `core.fsmonitor`, a `hooks/post-index-change`, and a replaced `.git`, run the capture calls, and assert no marker file is written and the patch is non-empty. Today only `bash -n` covers it | `evals/harness/run-drill.sh`, `scripts/doctor.js` |
 
 ## Host-coexistence follow-ups
 
@@ -41,13 +42,13 @@ Deferred from the permission/skill documentation pass (2026-10).
 | PERM-2 | low | Saved-approval overlay test: confirm a project-scoped **Allow always** rule (for example `edit *`) overrides `edit: "ask"` but never a configured `deny`, so the documented behavior stays regression-guarded | `scripts/`, `site/src/content/docs/customization.md` |
 | PERM-3 | low | Headless profile (deferred): a minimal agent/allowlist set for non-interactive runs, where `ask` is unusable and saved approvals do not exist | `.opencode/agents/`, `install.js` |
 | PERM-4 | low | Prune agent/skill duplication: rules restated in both agent instructions and skills inflate context and drift; keep one canonical home per rule | `.opencode/agents/`, `.opencode/skills/` |
-| PERM-5 | medium | Shell secret reads under `--auto`: the guard now blocks direct read/copy forms, including wrappers (`sudo`, `bash -c`), absolute paths, `<` redirection and globs. Interpreters (`python -c`, `node -e`) and aliases still bypass; only a sandbox closes those. Keep the limitation documented | `.opencode/lib/guards.mjs`, `evals/headless.md` |
+| PERM-5 | medium | Shell secret reads under `--auto`: the guard now blocks direct read/copy forms, including wrappers (`sudo`, `bash -c`, quoted compounds), absolute paths, `<` redirection (quoted targets included), globs, `dd if=`, `cp`/`mv` target-directory forms, direct interpreter references (`python -c`, versioned names, heredocs naming the path) and simple `$(cat …)` substitutions. Mixed quoted/unquoted redirect targets, encoded/computed paths, quoted backticks, obfuscated interpreter names, other interpreters (`php`, `lua`), and aliases still bypass; only a sandbox closes those. Keep the limitation documented | `.opencode/lib/guards.mjs`, `evals/headless.md` |
 
 ## Review-gate patterns
 
 | ID | Severity | Item | Files |
 |---|---|---|---|
-| GATE-1 | medium | Add effort-scaling delegation budgets (scale subagent/tool budget to task complexity) | `.opencode/agents/orchestrator.md`, `.opencode/instructions/orchestrator-reference.instructions.md` |
+| GATE-1 | medium | Done: effort-scaling delegation budgets (implementers, lenses, cycles) added to the orchestrator and reference | `.opencode/agents/orchestrator.md`, `.opencode/instructions/orchestrator-reference.instructions.md` |
 | GATE-2 | low | Add a voting/redundancy pass to the multi-lens review gate for high-risk diffs | `.opencode/instructions/orchestrator-reference.instructions.md`, `.opencode/agents/review.md` |
 | GATE-3 | medium | Make the gate receipt informative: record per-lens outcomes (verdict + findings raised / fixed) in `.gate/pass.json`, not just lens names, so a rigorous panel (`2 lenses, 9 findings, 6 fixed`) is distinguishable from a rubber stamp (`2 lenses, 0 findings`). Today both receipts look identical, and the marker is self-attested — this is the cheapest step toward a self-policing gate. | `scripts/gate/record-pass.js`, `scripts/gate/lib.js`, `.githooks/pre-commit`, `site/src/content/docs/review-gate.md`, `CONTRIBUTING.md` |
 | GATE-4 | low | Track the ritual signal: report when markers routinely record 0 findings (or repeated single-lens trivial passes on non-trivial diffs), so degradation into box-ticking is visible before it becomes habit. Pairs with GATE-3. | `scripts/gate/record-pass.js` (+ a small report script), `scripts/doctor.js` |

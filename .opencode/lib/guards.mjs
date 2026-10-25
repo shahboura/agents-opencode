@@ -109,15 +109,20 @@ const GUARDED_PATH_KEYS = new Map([
 ]);
 
 // Shell tools can read the same files the `read` guard blocks, and `--auto`
-// approves `ask`-level shell commands. This covers the common direct forms
-// (wrappers and absolute paths included) but stays best-effort: globs are
-// normalized, interpreters (`python -c`, `node -e`) and aliases remain
-// unguarded. It is not a sandbox.
+// approves `ask`-level shell commands. This covers direct forms (wrappers,
+// absolute paths, and direct interpreter references) but stays best-effort:
+// encoded or computed paths and aliases still bypass. It is not a sandbox.
 const SHELL_TOOLS = new Set(['bash', 'shell']);
 const SHELL_READ_VERBS = new Set(['cat', 'head', 'tail', 'less', 'more', 'source', '.', 'grep', 'awk', 'sed']);
 // For copy-like verbs only the source argument is a read; `cp .env.example .env`
 // must keep working.
 const SHELL_COPY_VERBS = new Set(['cp', 'mv', 'ln', 'tee', 'dd']);
+// Interpreters can read any file from code, so a blocked path anywhere in the
+// command is treated as a read. This catches `python -c` and heredocs; encoded
+// or computed paths still bypass (best-effort guard, not a sandbox).
+const SHELL_INTERPRETER_VERBS = new Set(['python', 'python3', 'node', 'nodejs', 'perl', 'ruby', 'deno', 'bun']);
+// Commands that run another command; the interpreter can sit after them.
+const SHELL_WRAPPERS = new Set(['sudo', 'env', 'command', 'nohup', 'time', 'exec']);
 
 function resolveShellCommand(payload) {
   const candidates = [
@@ -138,17 +143,98 @@ function normalizeShellToken(token) {
     .replace(/[*?[\]{}]/g, '');
 }
 
+function splitShellSegments(command) {
+  const segments = [];
+  let current = '';
+  let quote = null;
+  for (let index = 0; index < command.length; index += 1) {
+    const char = command[index];
+    if (quote) {
+      current += char;
+      if (char === '\\' && quote === '"' && index + 1 < command.length) {
+        current += command[index + 1];
+        index += 1;
+      } else if (char === quote) {
+        quote = null;
+      }
+      continue;
+    }
+    if (char === "'" || char === '"') {
+      quote = char;
+      current += char;
+      continue;
+    }
+    if (char === '\\' && index + 1 < command.length) {
+      current += char + command[index + 1];
+      index += 1;
+      continue;
+    }
+    if (char === ';' || char === '&' || char === '|' || char === '\n' || char === '(' || char === ')' || char === '`') {
+      if (current.trim()) segments.push(current);
+      current = '';
+      continue;
+    }
+    current += char;
+  }
+  if (current.trim()) segments.push(current);
+  return segments;
+}
+
 function shellGuardError(payload) {
   const command = resolveShellCommand(payload);
   if (!command) return null;
+  // Input redirection is a read even when the command word takes no path
+  // argument (`tee out < .env`). Ignore `<` inside quotes, then check before
+  // stripping it for tokenizing.
+  const unquoted = command.replace(/(['"])(?:\\.|(?!\1)[^\\])*\1/g, ' ');
+  for (const segment of splitShellSegments(unquoted)) {
+    for (const match of segment.matchAll(/<\s*([^\s;&|]+)/g)) {
+      const target = normalizeShellToken(match[1].replace(/^<+/, ''));
+      if (isBlockedReadPath(target)) {
+        return `[agents-opencode] Blocked shell read of sensitive file: ${target}. Use the environment variable instead of reading the file. ${SENSITIVE_READ_HINT}`;
+      }
+    }
+  }
+  // The quote strip above hides a quoted target (`dd < ".env"`), so scan the
+  // raw command for that form as well.
+  for (const match of command.matchAll(/<\s*(['"])([^'"]+)\1/g)) {
+    const target = normalizeShellToken(match[2]);
+    if (isBlockedReadPath(target)) {
+      return `[agents-opencode] Blocked shell read of sensitive file: ${target}. Use the environment variable instead of reading the file. ${SENSITIVE_READ_HINT}`;
+    }
+  }
+  // Only a command word can be an interpreter: `git commit -m "node .env"` and
+  // `echo node .env` mention one. A wrapper (`sudo`, `env`, `command`) runs the
+  // next command, so an interpreter after it still counts.
+  const isInterpreter = (word) =>
+    SHELL_INTERPRETER_VERBS.has(
+      normalizeShellToken(word).split(/[/\\]/).pop()?.toLowerCase().replace(/[0-9.]+$/, '') || '',
+    );
+  const hasInterpreter = splitShellSegments(command).some((segment) => {
+    const words = segment.trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) return false;
+    const first = normalizeShellToken(words[0]).split(/[/\\]/).pop()?.toLowerCase() || '';
+    if (SHELL_WRAPPERS.has(first)) return words.slice(1).some(isInterpreter);
+    return isInterpreter(words[0]);
+  });
+  if (hasInterpreter) {
+    for (const token of command.split(/[^A-Za-z0-9._/\\-]+/)) {
+      // `process.env` is an identifier, not a file path.
+      if (/^[A-Za-z_$][\w$]*\.env$/.test(token)) continue;
+      if (isBlockedReadPath(normalizeShellToken(token))) {
+        return `[agents-opencode] Blocked shell read of sensitive file: ${normalizeShellToken(token)}. Use the environment variable instead of reading the file. ${SENSITIVE_READ_HINT}`;
+      }
+    }
+  }
   // `<` is input redirection (`cat<.env`), not a command separator.
-  for (const segment of command.replace(/</g, ' ').split(/[;&|\n]+/)) {
-    const tokens = segment
+  for (const segment of splitShellSegments(command.replace(/</g, ' '))) {
+    const rawTokens = segment
       .trim()
       .split(/\s+/)
-      .map(normalizeShellToken)
+      .flatMap((token) => token.replace(/^['"]|['"]$/g, '').split(/[;|&()`]+/))
       .filter(Boolean);
-    if (tokens.length === 0) continue;
+    if (rawTokens.length === 0) continue;
+    const tokens = rawTokens.map(normalizeShellToken);
     // Find the first token that is a read/copy verb, skipping wrappers and any
     // options they take (`sudo -u x cat .env`, `FOO=1 cat .env`).
     let verbIndex = -1;
@@ -161,6 +247,7 @@ function shellGuardError(payload) {
     }
     if (verbIndex === -1) continue;
     const verb = tokens[verbIndex].split(/[/\\]/).pop()?.toLowerCase() || '';
+    const rawArgs = rawTokens.slice(verbIndex + 1);
     const args = tokens.slice(verbIndex + 1).filter((token) => !token.startsWith('-'));
     if (SHELL_READ_VERBS.has(verb)) {
       for (const arg of args) {
@@ -168,8 +255,60 @@ function shellGuardError(payload) {
           return `[agents-opencode] Blocked shell read of sensitive file: ${arg}. Use the environment variable instead of reading the file. ${SENSITIVE_READ_HINT}`;
         }
       }
-    } else if (SHELL_COPY_VERBS.has(verb) && args.length > 0 && isBlockedReadPath(args[0])) {
-      return `[agents-opencode] Blocked shell copy of sensitive file: ${args[0]}. Use the environment variable instead of copying the file. ${SENSITIVE_READ_HINT}`;
+      continue;
+    }
+    if (!SHELL_COPY_VERBS.has(verb)) continue;
+    if (verb === 'dd') {
+      // `dd if=.env` anywhere in the argument list is a read, regardless of order.
+      for (const raw of rawArgs) {
+        const input = raw.match(/^if=(.+)$/);
+        if (input && isBlockedReadPath(normalizeShellToken(input[1]))) {
+          return `[agents-opencode] Blocked shell copy of sensitive file: ${input[1]}. Use the environment variable instead of copying the file. ${SENSITIVE_READ_HINT}`;
+        }
+      }
+      continue;
+    }
+    // For cp/mv/ln, the last positional is the destination unless a target
+    // directory was supplied (`-t`, `-rt`, `-t/dir`, `--target-directory`,
+    // `--target-dir=/dir`). With a target directory every positional is a source.
+    let targetDirValue = null;
+    for (let index = 0; index < rawArgs.length; index += 1) {
+      const raw = rawArgs[index];
+      // GNU long-option abbreviations (`--target-dir`, `--target-direct`).
+      const long = raw.match(/^--target-[a-z]+(?:=(.*))?$/);
+      if (long) {
+        if (long[1] !== undefined) {
+          targetDirValue = normalizeShellToken(long[1]);
+        } else {
+          targetDirValue = rawArgs[index + 1] ? normalizeShellToken(rawArgs[index + 1]) : null;
+          index += 1;
+        }
+        continue;
+      }
+      // Short option with `t`: attached value (`-tdir`, `-rt/tmp`) or the next
+      // argument (`-t`, `-rt`).
+      const short = raw.match(/^-[a-zA-Z]*t(.*)$/);
+      if (short) {
+        if (short[1]) {
+          targetDirValue = normalizeShellToken(short[1]);
+        } else {
+          targetDirValue = rawArgs[index + 1] ? normalizeShellToken(rawArgs[index + 1]) : null;
+          index += 1;
+        }
+      }
+    }
+    let sources;
+    if (targetDirValue) {
+      // Drop the target-directory operand, not every positional with that value.
+      const targetIndex = args.indexOf(targetDirValue);
+      sources = targetIndex === -1 ? args : [...args.slice(0, targetIndex), ...args.slice(targetIndex + 1)];
+    } else {
+      sources = args.slice(0, -1);
+    }
+    for (const source of sources) {
+      if (isBlockedReadPath(source)) {
+        return `[agents-opencode] Blocked shell copy of sensitive file: ${source}. Use the environment variable instead of copying the file. ${SENSITIVE_READ_HINT}`;
+      }
     }
   }
   return null;
