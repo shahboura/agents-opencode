@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.1.0](https://github.com/shahboura/agents-opencode/compare/v4.0.1...v4.1.0) (2026-10-24)
+
+
+### Features
+
+* add session context budget guardrail ([723063b](https://github.com/shahboura/agents-opencode/commit/723063b4be17ec6b34c87520704c4a77a1d22623))
+* **gate:** require acceptance criteria and lens evidence ([b1bfab2](https://github.com/shahboura/agents-opencode/commit/b1bfab2454a5a2aa54f216dc0cc1490b9d547f56))
+
+
+### Bug Fixes
+
+* **site:** remediate zod and undici advisories ([336e6d2](https://github.com/shahboura/agents-opencode/commit/336e6d288adfe8b0c06db1d5a950d9959fbf00f8))
+
 ## [4.0.1](https://github.com/shahboura/agents-opencode/compare/v4.0.0...v4.0.1) (2026-10-24)
 
 
