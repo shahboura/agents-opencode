@@ -19,6 +19,16 @@ Rules:
 - 3-5 bullets per entry; skip trivial edits.
 - Keep the file under 100 KB by pruning the oldest entries.
 
+### 2026-10-25 01:23 - Priority follow-ups: shell guard hardening, effort scaling, drill artifacts
+
+**Agent:** orchestrator
+**Summary:** Merged latest main into the stale `fix/priority-followups` work, evaluated it, fixed the blocking findings, and shipped one gated commit (4dc6388, 15 files).
+- Guard: quoted redirect targets, `dd if=`, `cp`/`mv`/`ln` target-directory forms, quoted compounds, backticks, simple `$(...)` reads, and versioned/quoted interpreter names; interpreter detection keys on the command word so commit messages stay allowed; tests carry a ReDoS timing bound.
+- Review gate: two panel rounds caught that the first harness fix still failed open (agent-written `.git/config` executed via fsmonitor/filter on host git). Final design copies `.git` to a harness-owned dir in `$TMPDIR`, rewrites the config, neutralizes the global config, and never touches `$WORK/.git`.
+- Docs: effort scaling expressed in staged entries to match `gate/lib.js`; the docs-only skip is capped at two entries; root risk files synced; compatibility and headless notes corrected.
+- Evals: artifacts captured before the redaction exit, ignored paths listed, capture failure exits 3; `validate-docs` skips `evals/transcripts`; record and backlog rows corrected.
+- Lesson: restoring a copied config is not isolation — run untrusted-repo git against a separate git dir. Graph: code graph refreshed; doc re-extraction is blocked by graphify's semantic shrink guard, so the complete graph was kept.
+
 ### 2026-10-22 05:46 - Permission-fatigue diagnosis validation + agent/skill hardening
 
 **Agent:** orchestrator
