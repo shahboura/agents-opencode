@@ -42,7 +42,7 @@ files. What is the safe way to clean up?"
 
 **Prompt:** "Review this diff: it adds a `theme` config option with one allowed value,
 a factory for it, and a wrapper that only delegates to the factory." (Attach
-`evals/fixtures/d04-overbuilt.patch`.)
+`evals/fixtures/patch-01.patch`.)
 
 **Expected artifact:** review findings.
 

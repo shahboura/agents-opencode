@@ -122,6 +122,11 @@ function findMarkdownFiles(dir, rootDir = dir) {
       if (entry.name === 'fixtures' && path.basename(dir) === 'scripts') {
         continue;
       }
+      // Drill transcripts are generated output: relative links inside them
+      // resolve against evals/transcripts, not the page that wrote them.
+      if (entry.name === 'transcripts' && path.basename(dir) === 'evals') {
+        continue;
+      }
       results.push(...findMarkdownFiles(fullPath, rootDir));
     } else if (entry.isFile() && entry.name.endsWith('.md')) {
       results.push(fullPath);

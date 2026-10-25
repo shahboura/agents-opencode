@@ -74,7 +74,8 @@ async function main() {
   assert(!isBlockedReadPath(undefined), 'Expected undefined path to be allowed');
 
   // Shell guard: obvious read verbs on secret files are blocked; mentioning a
-  // secret filename without reading it is not. Interpreters stay unguarded.
+  // secret filename without reading it is not. Direct interpreter references
+  // are blocked; encoded/computed paths still bypass (best-effort guard).
   const shellBlocked = [
     'cat .env',
     'head -n 5 .env.local',
@@ -86,6 +87,9 @@ async function main() {
     '\\cat .env',
     '/bin/cat .env',
     "bash -c 'cat .env'",
+    'bash -c "cat .env;"',
+    "sh -c 'cat .env|wc'",
+    'x=$(cat .env)',
     'sudo cat .env',
     'cat<.env',
     'cat .env*',
@@ -93,14 +97,50 @@ async function main() {
     'sudo -u x cat .env',
     'FOO=1 cat .env',
     'xargs -n 1 cat .env',
+    'dd if=.env',
+    'dd bs=1 if=.env',
+    'dd bs=1 if=.env of=/tmp/x',
+    'dd < ".env"',
+    'cp -t /tmp .env',
+    'cp -t/tmp a .env',
+    'cp -rt /tmp .env',
+    'cp -rt/tmp .env',
+    'cp --target-directory=/tmp .env',
+    'cp --target-directory /tmp .env',
+    'cp --target-dir=/tmp .env',
+    'cp -tdir .env',
+    'cp .env --target-directory=/tmp bar',
+    'mv .env /tmp',
+    'ln -s .env /tmp/link',
+    'tee out < .env',
+    'tee out < ".env"',
+    "awk -F= '{print $1; print $2}' .env",
+    "sed -n '1p; 2p' .env",
+    'python -c "print(open(\'.env\').read())"',
+    "python3 - <<'PY'\nopen('.env').read()\nPY",
+    'python3.11 -c "open(\'.env\').read()"',
+    '"python" -c "open(\'.env\').read()"',
+    'x=`cat .env`',
+    'node -e "require(\'fs\').readFileSync(\'.env\')"',
   ];
   const shellAllowed = [
     'echo .env',
     'ls -la',
     'cat .env.example',
     'cp .env.example .env',
+    'dd if=.env.example of=/tmp/x',
+    'cp .env.example -t /tmp',
+    'cp -t /tmp .env.example',
+    'cp -r src /tmp',
+    'mv .env.example /tmp',
+    'echo "a;b"',
+    "awk '{print $1; print $2}' data.txt",
+    'python3 -c "print(1)"',
+    'node -e "console.log(1)"',
+    'git commit -m "node reads .env"',
+    'git commit -m "tee out < .env"',
+    'echo node .env',
     'git check-ignore .env',
-    'python -c "print(open(\'.env\').read())"',
     'cat README.md',
   ];
   for (const command of shellBlocked) {
@@ -119,6 +159,11 @@ async function main() {
       `Expected shell command allowed: ${command}`
     );
   }
+  // An unterminated quote followed by backslashes must stay linear; an
+  // ambiguous alternation here made the host hang.
+  const startedAt = Date.now();
+  readGuardError('bash', { args: { command: `cat "${'\\'.repeat(60)}` } });
+  assert(Date.now() - startedAt < 2000, 'Unterminated quote must not hang the guard');
 
   assert(selectPackVersion({ markers: [' 2.4.0 '] }) === '2.4.0', 'Marker should be trimmed');
   assert(
