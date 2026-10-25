@@ -1,6 +1,6 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
-  "current_phase": "v2 host-coexistence shipped on feat/v2-host-coexistence (commit 15c47d8): host-friendly skill allow-all, narrowed shell allowlist with deny-safe ordering, overlay fixes (external_directory ask, experimental.subagent_depth, compaction.keep.tokens), hardened v2 validators, corrected docs. Verified: doctor 24/24, clean 2.0.32 resolved-rule runs, container e2e v2.0.32 43/43 + v1.19.2 regression.",
+  "current_phase": "fix/priority-followups-v2 committed 4dc6388 (15 files): shell-guard hardening (quoted redirects, dd/cp target-dir, quoted compounds, backticks, $(...) , versioned interpreters), effort-scaling/gate doc alignment, drill artifact capture via a harness-owned git dir. Gate PASS-WITH-CAVEATS (requirements/code/security), doctor 27/27. Branch pushed; PR not opened (gh unauthenticated in the container).",
   "plugin_version": "2.6.0",
   "decisions": [
     "Pack agents allow all skills (`*`: allow) because a pack cannot enumerate host/plugin skills; the working restriction mechanisms are editing the installed agent file or a v2 `integration.use` policy - global permission rules lose to agent rules, which are appended last (last match wins).",
@@ -43,7 +43,13 @@
     "--target auto detects the host via 'opencode --version' (spawnSync with a pinned cwd to avoid repo-local shim resolution, 4s timeout, stderr fallback); major >= 2 selects v2 else v1; AGENTS_OPENCODE_HOST_VERSION overrides detection for tests/CI.",
     "OpenCode v2 support is verified against the published contract, not assumed: the plugin was aligned to the v2.0.30 API (the context hook injects event.system text parts; ctx has no client/app.log so a console fallback is used; ctx.event.subscribe({signal}) is the event API; hook() returns Promise<Registration>), and a disposable Docker sandbox confirmed plugin load, 10 agents, and 27 skills on both opencode 1.19.2 and 2.0.30.",
     "v2 skill descriptors must satisfy Skill.Info exactly (id, name, path, content - 'location' does not exist) and v2-emitted config drops keys v2 marks unsupported; the installer never strips user config for keys it does not manage (a value-equality strip was removed as a data-loss risk).",
-    "The v2 secret-read guard stays fail-open by design but emits rate-limited telemetry when a read event has no resolvable path, so a payload-shape mismatch cannot silently disable it; a live-model v2 run is the exit gate before v2 is declared fully supported."
+    "The v2 secret-read guard stays fail-open by design but emits rate-limited telemetry when a read event has no resolvable path, so a payload-shape mismatch cannot silently disable it; a live-model v2 run is the exit gate before v2 is declared fully supported.",
+    "Shell guard hardening (4dc6388) covers quoted redirect targets, dd if=, cp/mv/ln target-directory forms, quoted compounds, backticks, simple $(...) reads, and versioned/quoted interpreter names; interpreter detection keys on the command word so commit messages and echo lines stay allowed. Best-effort, not a sandbox; residuals live in PERM-5.",
+    "Drill capture (4dc6388) runs host git against a harness-owned git dir in $TMPDIR with a rewritten config and neutralized global config; $WORK/.git is never used, so agent-written config, hooks, or gitdir files cannot execute. --local remains unsandboxed by design and is documented as such.",
+    "Drill artifacts are captured before the redaction exit, ignored paths are listed, and a capture or redaction failure exits 3 (documented overload with transcript redaction).",
+    "Effort scaling is expressed in staged entries so it matches gate/lib.js (>2 entries or a risk path needs the panel); the docs-only skip is capped at two entries.",
+    "validate-docs skips evals/transcripts so generated drill transcripts (D07-style relative links) cannot fail Tier 1.",
+    "Graph policy: the code graph refreshes with 'graphify update'; doc re-extraction currently trips graphify's semantic shrink guard (orchestrator/instructions lose nodes), so the complete graph is kept instead of overwriting it with --allow-partial."
   ],
   "open_risks": [
     "v2 `--auto` auto-approves asks, so `external_directory: ask` and the redirect/`--output` guards are soft in auto mode (documented); enforce with deny + explicit allows there.",
@@ -51,7 +57,10 @@
     "`kimaki buttons *` auto-approve can be abused for button spam / social engineering (low, accepted per user request).",
     "v2 `debug agents` needs 2-3 warm-up calls on a fresh service; a cold read returns [] or builtins-only.",
     "Scenario-level behavioral eval coverage is still limited.",
-    "Agent/instruction line budgets remain tight (orchestrator 197/200, reference 215/250); adding to either requires trimming.",
+    "Agent/instruction line budgets are at the cap (orchestrator 200/200, reference 245/250); any addition requires trimming first.",
+    "No executable test covers the drill capture hardening (VAL-6): doctor runs only bash -n, so the harness-owned git dir could regress silently.",
+    "Shell guard residuals (PERM-5): mixed quoted/unquoted redirect targets, quoted backticks, obfuscated interpreter names, php/lua, and aliases still bypass.",
+    "--local drills run as the invoking user with a shell; only container mode isolates. Documented, but operators may over-trust the local path.",
     "Consumer-visible opencode.json defaults are not yet in the changelog.",
     "Multi-lens panel shares one model - correlated blind spots are irreducible until per-lens model choice is available.",
     "evals/harness/run-evals.js still uses a hand-rolled permission parser (VAL-4) that can drift from the shared module.",
@@ -66,12 +75,10 @@
   ],
   "blocked_by": [],
   "next_actions": [
-    "Open the PR for feat/v2-host-coexistence (commit 15c47d8) and merge after CI; release-please minor-bumps and sha2lato picks the new version up on container start.",
-    "Run a live-model v2 session (real API key) to exercise the secret-read guard block, context injection, and --target auto detection - the exit gate for declaring v2 fully supported.",
-    "Open the PR for feat/skills-and-v2-hardening (commit d850358) and merge after CI.",
-    "Push and open PRs for chore/instruction-health-readme and feat/docs-astro-cloudflare; merge the first, then rebase the migration branch.",
-    "Launch the docs site: add CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID secrets and disable GitHub Pages (Settings -> Pages -> Source: None).",
-    "Verify feat/auto-target-detection on CI (both-target installer e2e + --v2-strict jobs).",
+    "Open the PR for fix/priority-followups-v2 (commit 4dc6388): https://github.com/shahboura/agents-opencode/compare/main...fix/priority-followups-v2 - gh is unauthenticated in the container, so this is a human step.",
+    "Watch CI on that PR and merge when green; release-please picks the version up afterwards.",
+    "VAL-6: add a drill capture-hardening test (hostile config/hook) to the doctor suite.",
+    "Mention the guard behavior change (interpreter, backtick and $(...) denial) in the release notes; the changelog validator only checks labels.",
     "Complete VAL-4: migrate evals/harness/run-evals.js to the shared parser.",
     "Expand eval fixtures toward capability/regression suites (pass@k) per Anthropic guidance."
   ],
@@ -105,6 +112,7 @@
     "scripts/lib/opencode-target.js",
     ".opencode/lib/pack-skills.mjs",
     ".opencode/lib/guards.mjs",
+    "scripts/plugin-guards.test.js",
     ".opencode/skills/systematic-debugging/SKILL.md",
     ".opencode/skills/test-driven-development/SKILL.md",
     ".opencode/skills/verification-before-completion/SKILL.md",
@@ -115,5 +123,5 @@
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-10-18T07:15:00Z"
+  "last_updated": "2026-10-25T01:23:25Z"
 }
