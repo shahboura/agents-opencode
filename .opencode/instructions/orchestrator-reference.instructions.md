@@ -145,8 +145,10 @@ it **supersedes per-loop caps** and does not multiply the 5-cycle or Pattern 5 b
 Scale the panel to the diff, not to habit: comment-only or docs-only edits
 outside a risk path and at most two staged entries → Tier 1 alone; one or two
 entries where at least one is a risk path → 2 lenses; more than two staged
-entries anywhere, or a security surface → 3–4 lenses and one re-review cycle
-(risk path definition: `review-gate.md`).
+entries anywhere, a staged gitlink, or a security surface → 3–4 lenses and one
+re-review cycle within the gate's 2-cycle cap (risk path definition:
+`review-gate.md`). Every non-trivial tier includes the requirements lens, or a
+recorded skip reason; a security surface always takes the wider panel.
 The same rule sizes implementation dispatch: one implementer for a single-file
 edit, at most three lanes for disjoint multi-file work. Those are ceilings, not
 targets: a mechanical one-file change outside a risk path uses no lens and one

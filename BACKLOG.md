@@ -48,7 +48,7 @@ Deferred from the permission/skill documentation pass (2026-10).
 
 | ID | Severity | Item | Files |
 |---|---|---|---|
-| GATE-1 | medium | Done: effort-scaling delegation budgets (implementers, lenses, cycles) added to the orchestrator and reference | `.opencode/agents/orchestrator.md`, `.opencode/instructions/orchestrator-reference.instructions.md` |
+| GATE-1 | medium | Done: effort-scaling delegation budgets (implementers, lenses, cycles) live in Pattern 8; the orchestrator bullet points at it | `.opencode/instructions/orchestrator-reference.instructions.md`, `.opencode/agents/orchestrator.md` |
 | GATE-2 | low | Add a voting/redundancy pass to the multi-lens review gate for high-risk diffs | `.opencode/instructions/orchestrator-reference.instructions.md`, `.opencode/agents/review.md` |
 | GATE-3 | medium | Make the gate receipt informative: record per-lens outcomes (verdict + findings raised / fixed) in `.gate/pass.json`, not just lens names, so a rigorous panel (`2 lenses, 9 findings, 6 fixed`) is distinguishable from a rubber stamp (`2 lenses, 0 findings`). Today both receipts look identical, and the marker is self-attested — this is the cheapest step toward a self-policing gate. | `scripts/gate/record-pass.js`, `scripts/gate/lib.js`, `.githooks/pre-commit`, `site/src/content/docs/review-gate.md`, `CONTRIBUTING.md` |
 | GATE-4 | low | Track the ritual signal: report when markers routinely record 0 findings (or repeated single-lens trivial passes on non-trivial diffs), so degradation into box-ticking is visible before it becomes habit. Pairs with GATE-3. | `scripts/gate/record-pass.js` (+ a small report script), `scripts/doctor.js` |
