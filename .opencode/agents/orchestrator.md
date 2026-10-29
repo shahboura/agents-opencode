@@ -141,7 +141,7 @@ For each approved phase:
    - **Tier 1:** run `npm run doctor` first; fast-fail on new hard failures vs. the branch point.
    - **Tier 2:** freeze the diff and run concurrent fresh `@review` lenses — the canonical
      roster and when each fires is the lens table in `site/src/content/docs/review-gate.md`.
-     REQUIRED for agent/skill/instruction/CI/security/feature changes or any 3+ file refactor; optional otherwise (comment-only or docs-only edits outside a risk path and at most two staged entries; `site/` docs are non-trivial).
+     REQUIRED for agent/skill/instruction/CI/security/feature changes or more than two staged entries; optional otherwise (comment-only or docs-only edits outside a risk path and at most two entries; `site/` docs are non-trivial). Size the panel and lanes per Pattern 8.
    - **Triage:** lens severity is authoritative; declined blocking findings (critical, or any security/data-loss/
      requirement-miss) go to a user decision panel. Max 2 cycles (panel = cycle 1), ≤8 reviewer dispatches/task.
    - **Outcomes:** ✅ PASS → commit | ⚠️ PASS-WITH-CAVEATS → commit with notes | ❌ FAIL → escalate.
@@ -182,13 +182,6 @@ Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @br
 ## Safe Execution Loop Protocol
 
 For iterative work, define testable completion criteria first; run bounded cycles (default max: 5) of plan -> implement -> validate -> assess, reporting remaining gaps each cycle. Long-running tasks use the reference Progress Tracking table. If the same blocker repeats twice, pause and escalate with options.
-
-## Effort Scaling
-
-Match budget to complexity: a single-file edit outside a risk path → implement directly, Tier 1
-only, one cycle; one or two entries → one implementer, 2 lenses if either is a risk path else Tier 1
-alone, ≤3 cycles; more than two staged entries or a security surface → ≤3 lanes, 3–4 lenses, one re-review,
-≤5 cycles. Escalate the review budget only on a failing check or a blocking finding.
 
 ## Context Persistence
 

@@ -24,9 +24,9 @@ summary from Pattern 8 in
 ## Tier 2 - Multi-Lens Adversarial Review
 
 Risk-gated: **required** for agent, skill, instruction, CI, security, or feature
-changes, or any refactor spanning 3+ files. Optional otherwise: comment-only or
-docs-only edits outside a risk path (`site/` docs are non-trivial) and at most
-two staged entries; more than two entries always needs the panel.
+changes, or more than two staged entries. Optional otherwise for diffs the gate
+classifies as trivial (at most two staged entries, no risk path, no gitlink) -
+typically comment-only or docs-only edits; `site/` docs are non-trivial.
 
 The diff is frozen to a patch file. The canonical freeze is `npm run gate:freeze`, which writes
 the staged snapshot to `.gate/diff.patch` plus `.gate/manifest.json`. A non-trivial diff also
@@ -204,7 +204,8 @@ silently recording PASS.
 A **risk path** is any staged path under `scripts/`, `.opencode/`, `.github/`, `.githooks/`,
 `site/`, `evals/`, or `adapters/`; the root files `install.js`, `package.json`,
 `opencode.json`, `AGENTS.md`, `.gitleaks.toml`, `.gitmodules`, or `.npmrc`; any
-`package-lock.json`; or a staged gitlink.
+`package-lock.json`; or a staged gitlink (its referenced content is not reviewable
+from the superproject diff).
 
 For a **trivial** diff (≤2 entries, no risk paths, and no gitlinks), `npm run gate:quick` chains
 `gate:freeze` → `npm run doctor` → `gate:pass --verdict=PASS` in one step. It records
@@ -222,12 +223,9 @@ binds only to the snapshot the lenses reviewed.
 **The lens requirement is enforced at the tooling layer** (diff classification and
 lens *cardinality*); lens *names* remain self-reported, like the verdict itself. A
 **non-trivial** diff must record **at least 2 distinct lenses**. Non-trivial means any
-staged path under `scripts/`, `.opencode/`, `.github/`, `.githooks/`, `site/`, `evals/`,
-or `adapters/`; the root files `install.js`, `package.json`, `opencode.json`,
-`AGENTS.md`, `.gitleaks.toml`, `.gitmodules`, or `.npmrc`; a `package-lock.json` at any depth; a staged submodule
-pointer (gitlink) change, whose referenced content is not reviewable from the
-superproject diff; or **more than 2 staged entries**. Path matching is case-insensitive,
-a rename counts both sides, and duplicate lens names count once. `gate:pass` refuses to
+risk path (list above) or **more than 2 staged entries**. Path matching is
+case-insensitive, a rename counts both sides, and duplicate lens names count once.
+`gate:pass` refuses to
 write the marker below that, and the hook re-checks the recorded count against the same
 rule. A **trivial** diff (≤2 entries, no risk paths, and no gitlinks) may record a Tier 1 pass with no
 lenses. A marker written before this rule (no lens list) counts as zero lenses.
