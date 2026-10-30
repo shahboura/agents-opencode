@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.2.0](https://github.com/shahboura/agents-opencode/compare/v4.1.0...v4.2.0) (2026-10-30)
+
+
+### Features
+
+* **agents:** add review triggers and shared discovery skill ([f2e7fea](https://github.com/shahboura/agents-opencode/commit/f2e7fea0f38a2c1cd807798442503777710c2d3a))
+
+
+### Bug Fixes
+
+* **guards:** close shell-guard bypasses and retain drill artifacts ([163f8bd](https://github.com/shahboura/agents-opencode/commit/163f8bd7b6d780c93bbece96354ce2882ab88f06))
+
 ## [4.1.0](https://github.com/shahboura/agents-opencode/compare/v4.0.1...v4.1.0) (2026-10-24)
 
 
