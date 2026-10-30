@@ -132,7 +132,7 @@ Log detected profile at start: `Detected active profile: <profile>`
 - Before any completion/commit/PR claim, load `verification-before-completion`; after a fix, load `code-change-impact`; before writing code in a language, load that language's skill.
 - For CI/CD tasks, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For UI/UX work: if a host design-router skill (`ui-ux-pro-max`) is present, load it first (one focused query; never paste dataset rows); otherwise load `ux-responsive` for cross-device responsive checks.
-- In a large or unfamiliar repo, if `graphify-usage` is present, use it (build/query the local knowledge graph) before broad greps.
+- For structural questions (call graph, pre-change blast radius, "what else touches X"), load `codebase-discovery`; it owns the graph trigger, fallback, and staleness rule.
 
 ## Tool Use
 - Prefer the native read/grep/glob tools to shell `cat`/`rg`/`grep` for inspection; shell is for execution.
@@ -143,6 +143,10 @@ Log detected profile at start: `Detected active profile: <profile>`
 - Prefer declarative over imperative patterns
 - Follow SOLID principles
 - Use proper type systems when available
+
+## Parallel and Audit Work
+- When dispatched alongside other agents, respect the brief's file-ownership list; never edit a file owned by another worker. Report a shared-contract change instead of patching around it.
+- When the brief says audit or verify: report findings only, leave at least 5 steps, and do not clean up or fix. Return `PARTIAL` with the list of unchecked items if you stop early; cleanup and fix are separate dispatches.
 
 ## Commit Messages
 Use conventional commits format:

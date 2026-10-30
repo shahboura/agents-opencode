@@ -21,7 +21,7 @@ skills framework.
 - **Adoption plan:** `PLAN.md`.
 - **Deferred work:** `BACKLOG.md`.
 - **Session history:** `MILESTONES.md`.
-- **Knowledge graph:** when `graphify-out/graph.json` exists, use `graphify query|path|explain` before broad grepping. After code edits run `graphify update .`; after doc edits run `graphify extract . --backend deepseek` then `graphify cluster-only .`. Skip silently when absent.
+- **Knowledge graph:** trigger, fallback, and staleness per the `codebase-discovery` skill.
 
 ## Quality Requirements
 

@@ -110,7 +110,7 @@ When implementing directly, follow the @codebase profile detection rules and val
    - Classify ambiguous requests into `implementation`, `documentation`, `review`, `planning`, `content`, or `legal`; route to the matching agent and pattern.
    - Decompose and sequence multiple intents; present the classification for confirmation before dispatching.
 
-3. **Analyze Current State** - read the codebase; identify affected files, patterns, conventions, and existing similar implementations.
+3. **Analyze Current State** - read the codebase; identify affected files, patterns, conventions, and similar implementations. For structural questions, load `codebase-discovery`; it owns the graph/fallback/staleness rule.
 
 4. **Research & Context** - fetch external docs when needed; identify technology best practices, challenges, and risks.
 
@@ -119,6 +119,7 @@ When implementing directly, follow the @codebase profile detection rules and val
    - Document steps with clear sequencing
    - Identify which specialized agents are needed (see Agent Selection Guide in reference)
    - Clarify dependencies between phases
+   - **Review the plan:** dispatch `@planner` (read-only) on the plan; record the verdict or a stated skip reason
    - **Present plan and await approval**
 
 ### Execution Phase (Optional - After User Approval)
@@ -141,10 +142,11 @@ For each approved phase:
    - **Tier 1:** run `npm run doctor` first; fast-fail on new hard failures vs. the branch point.
    - **Tier 2:** freeze the diff and run concurrent fresh `@review` lenses — the canonical
      roster and when each fires is the lens table in `site/src/content/docs/review-gate.md`.
-     REQUIRED for agent/skill/instruction/CI/security/feature changes or more than two staged entries; optional otherwise (comment-only or docs-only edits outside a risk path and at most two entries; `site/` docs are non-trivial). Size the panel and lanes per Pattern 8.
+     REQUIRED for agent/skill/instruction/CI/security/feature changes or more than two staged entries; optional otherwise (comment-only or docs-only edits outside a risk path and at most two entries; `site/` docs are non-trivial). Size the panel per Pattern 8; size implementation lanes per Pattern 6.
    - **Triage:** lens severity is authoritative; declined blocking findings (critical, or any security/data-loss/
-     requirement-miss) go to a user decision panel. Max 2 cycles (panel = cycle 1), ≤8 reviewer dispatches/task.
+     requirement-miss) go to a user decision panel. Max 2 cycles (panel = cycle 1), ≤8 pre-commit reviewer dispatches/task plus ≤2 plan reviews.
    - **Outcomes:** ✅ PASS → commit | ⚠️ PASS-WITH-CAVEATS → commit with notes | ❌ FAIL → escalate.
+   - **Delegated verification:** browser, E2E, and user-flow passes go to a fresh agent; Tier 1 stays here.
 
 4. Produce final summary with links to deliverables
 
@@ -152,10 +154,10 @@ For each approved phase:
 
 Before claiming work is done, state each item — or an explicit reason it does not apply:
 
-- **Tests run:** exact commands and their result, never "should pass".
-- **Lenses run:** which Tier 2 lenses ran and their verdicts.
+- **Tests run:** exact commands and result, from this run or the verifier's pasted output attributed as theirs; never "should pass".
+- **Lenses run:** plan-review and Tier 2 lens verdicts, or the stated skip reason.
 - **Skills loaded:** the skills you actually loaded (`[]` if none).
-- **Graph updated:** refresh the knowledge graph if `graphify-usage` is in use.
+- **Graph:** per `codebase-discovery` (queried/refreshed, or N/A).
 - **Bundle / Playwright:** build and browser-check output for UI changes.
 - **TDD evidence:** the failing test that preceded the fix, or why TDD did not apply.
 
@@ -173,6 +175,7 @@ Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @br
 - For CI/CD phases, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For UI/UX work, load `ui-ux-pro-max` first (one focused query; never paste dataset rows) and state that you loaded it; if it is unavailable, fall back to `ux-responsive`.
 - For high-risk refactors or cross-cutting changes, load `code-change-impact` to assess blast radius before delegating implementation.
+- For structural questions (call graph, reuse, pre-change blast radius), load `codebase-discovery`; it owns the graph/fallback/staleness rule.
 - For single-file dependency changes, load `legal-advisor` for fast license checks; delegate to @legal-advisor for full compliance audits.
 - For one-way/high-stakes decisions, load `decision-grounding` and dispatch `@researcher` to ground the approach.
 

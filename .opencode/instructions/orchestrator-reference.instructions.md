@@ -13,6 +13,11 @@ Use this format when creating a multi-phase plan:
 ```markdown
 ## Orchestration Plan
 
+### Inputs
+- Docs and precedence: [e.g. PLAN > DESIGN > LEARNINGS]
+- Conflicts: [none, or the contradiction; a mid-run spec asks once, then re-plans affected phases]
+- Plan review: [verdict | skip reason — recorded here and in `.gate/plan.md`]
+
 ### Phases
 1. **[Phase Name]** (@agent-name)
    - Tasks: [What needs to be done]
@@ -107,7 +112,8 @@ orchestrator → @codebase (frontend) ∥ @codebase (backend)
             → @review (integration / contract gate)
             → @docs (unified documentation)
 ```
-Use when tasks can be cleanly sectioned into independent subtasks (e.g., frontend + backend, API + client SDK). Aggregate results at the integration gate. Ensure consistent contracts across parallel workers.
+Use when tasks can be cleanly sectioned into independent subtasks (e.g., frontend + backend, API + client SDK).
+Freeze shared contracts (types, exports) before dispatch; give each worker an explicit file-ownership list and merge order; no file has two owners. One worker per file, ≤3 lanes — ceilings, not targets. Verify ownership in the integration diff.
 
 ### Pattern 7: Analyze-Then-Act
 ```
@@ -131,29 +137,24 @@ orchestrator → chunk → implement (per Implementation Routing)
             → apply accepted fixes → scoped re-review of delta only ⊛ max 2 cycles
             → ✅ PASS → commit | ⚠️ caveats → commit with notes | ❌ FAIL → escalate
 ```
+Plan entry point: before presenting a plan, dispatch `@planner` (read-only) on scope,
+executability, and acceptance criteria; blocking findings revise once and re-review,
+then go to the user if still blocking; others are recorded with the verdict or skip reason.
 Freeze before dispatch: `npm run gate:freeze` writes `.gate/diff.patch` (+
 `.gate/manifest.json`); a manual freeze is `git add -N . && git diff HEAD > .gate/review.patch`
 (staged + unstaged, new files included). Installed projects do not ship `scripts/gate`:
 when the command is absent, freeze manually and continue with the lens panel. Each lens brief names the patch path; `@review` reads
-the brief path, then `.gate/diff.patch`, then `.gate/review.patch`. A lens that returns
+the brief path, then `.gate/diff.patch`, then `.gate/review.patch`. An optional `Graph:`
+line may carry a one-line structural summary from `codebase-discovery`. A lens that returns
 **PARTIAL** (step budget) or **INSUFFICIENT_DIFF** (no readable patch) is re-dispatched, never
 accepted as PASS.
 Use as the final gate before a commit leaves your machine (push / PR / merge) — run once
-per push, or once per tracked-branch commit. Budget: ≤8 reviewer dispatches per task
-(a full panel = 4; delta re-reviews dispatch only affected lenses), max 2 cycles per push;
-it **supersedes per-loop caps** and does not multiply the 5-cycle or Pattern 5 budgets.
-Scale the panel to the diff, not to habit: comment-only or docs-only edits
-outside a risk path and at most two staged entries → Tier 1 alone; one or two
-entries where at least one is a risk path → 2 lenses; more than two staged
-entries anywhere, a staged gitlink, or a security surface → 3–4 lenses and one
-re-review cycle within the gate's 2-cycle cap (risk path definition:
-`review-gate.md`). Every non-trivial tier includes the requirements lens, or a
-recorded skip reason; a security surface always takes the wider panel.
-The same rule sizes implementation dispatch: one implementer for a single-file
-edit, at most three lanes for disjoint multi-file work. Those are ceilings, not
-targets: a mechanical one-file change outside a risk path uses no lens and one
-cycle; an ambiguous cross-domain change uses the full panel. Escalate only on a
-failing check or a blocking finding.
+per push, or once per tracked-branch commit. Budget: ≤8 pre-commit reviewer dispatches per task (a full panel = 4) plus ≤2 plan-review dispatches; delta re-reviews dispatch only affected lenses, max 2 cycles; it supersedes per-loop caps and does not multiply the 5-cycle or Pattern 5 budgets.
+Scale the panel to the diff: comment-/docs-only edits outside a risk path and
+≤2 staged entries → Tier 1; any risk-path entry, a feature change, >2 entries, or
+a gitlink → 2 lenses (3–4 with a security surface) and one delta cycle
+(`review-gate.md`). Non-trivial tiers include the requirements lens or a stated
+skip; escalate only on a failing check or blocking finding.
 **Canonical spec — tier rules, lens selection, triage and decision-panel templates, freeze
 mechanism, skip criteria, and edge cases: `site/src/content/docs/review-gate.md`.**
 

@@ -17,10 +17,10 @@ Quick read:
 
 | Agent | Recommended skills |
 |---|---|
-| `codebase` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `legal-advisor`, `code-change-impact`, `refactoring`, `decision-grounding`, `systematic-debugging`, `test-driven-development`, `verification-before-completion` |
-| `orchestrator` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `blogger`, `brutal-critic`, `writing-for-agents`, `code-change-impact`, `refactoring`, `legal-advisor`, `alignment`, `decision-grounding`, `systematic-debugging`, `verification-before-completion` |
-| `planner` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `refactoring`, `alignment`, `writing-for-agents`, `adr`, `decision-grounding` |
-| `review` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `code-change-impact`, `security-audit`, `decision-grounding` |
+| `codebase` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `legal-advisor`, `code-change-impact`, `refactoring`, `decision-grounding`, `systematic-debugging`, `test-driven-development`, `verification-before-completion`, `codebase-discovery` |
+| `orchestrator` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `blogger`, `brutal-critic`, `writing-for-agents`, `code-change-impact`, `refactoring`, `legal-advisor`, `alignment`, `decision-grounding`, `systematic-debugging`, `verification-before-completion`, `codebase-discovery` |
+| `planner` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `project-bootstrap`, `refactoring`, `alignment`, `writing-for-agents`, `adr`, `decision-grounding`, `codebase-discovery` |
+| `review` | `dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ux-responsive`, `ruby-rails`, `rust`, `sql-migrations`, `code-change-impact`, `security-audit`, `decision-grounding`, `codebase-discovery` (context only) |
 | `researcher` | _(none — read-only evidence gathering; skill-free by design)_ |
 | `docs` | `project-bootstrap`, `api-documentation`, `adr`, `writing-for-agents` |
 | `em-advisor` | `project-bootstrap`, `legal-advisor`, `blogger` |
@@ -37,7 +37,7 @@ Quick read:
 - Installer `--languages` prunes non-requested language skill directories; non-language skills are always kept.
 - `ux-responsive` optionally delegates to the third-party UI UX Pro Max skill when a project installs
   it (not bundled) — see [Customization](/customization/#optional-ui-ux-pro-max-delegation).
-- `graphify-usage` is preferred for large or unfamiliar repos when the host provides it.
+- `graphify-usage` is the host backend; structural discovery (trigger, fallback, staleness) is owned by `codebase-discovery`.
 
 ## Skill Trigger Guide (Canonical)
 
@@ -53,7 +53,7 @@ on-demand policy below and may carry additional, narrower conditional load lines
 | Language/framework implementation or review | Matching stack skill (`dotnet`, `python`, `typescript`, `flutter`, `go`, `java-spring`, `node-express`, `react-next`, `ruby-rails`, `rust`, `sql-migrations`) | `codebase`, `review`, `planner`, `orchestrator` |
 | Responsive UX across phone/tablet/desktop | `ux-responsive` | `codebase`, `review`, `planner`, `orchestrator` |
 | UI/UX design, styling, palettes, typography (host skill) | `ui-ux-pro-max` (if present; one focused query, never paste dataset rows) | `codebase`, `orchestrator` |
-| Large/unfamiliar repo exploration, cross-file questions (host skill) | `graphify-usage` (if present) | `codebase` |
+| Find where behavior lives, callers, reuse candidates, and pre-change blast radius (graph first, explore/grep fallback) | `codebase-discovery` (wraps host `graphify-usage` when present) | `codebase`, `orchestrator`, `planner`, `review` (context only) |
 | Content drafting (blogs, podcasts, YouTube, resumes, LinkedIn, bios) | `blogger` | `blogger`, `orchestrator`, `em-advisor` |
 | Content critique and scoring | `brutal-critic` | `brutal-critic`, `blogger`, `orchestrator` |
 | Docs quality checks (lint/link/structure) | _(no skill — run `npm run validate:docs`)_ | `docs`, `review`, `planner`, `orchestrator` |

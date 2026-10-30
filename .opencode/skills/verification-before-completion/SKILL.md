@@ -37,8 +37,9 @@ Always, before:
 NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 ```
 
-If the verification command has not been run in this message, it cannot be
-claimed as passing.
+A claim is verified here (you ran the command in this message) or by a fresh verifier
+whose raw output you paste with its exit code, attributed. A verifier's summary is not
+evidence. If neither exists, it cannot be claimed as passing.
 
 ## The gate function
 
@@ -52,6 +53,10 @@ claimed as passing.
 
 Skipping a step is not verifying.
 
+## Delegating the final pass
+
+- Dispatch browser, E2E, and user-flow verification to a fresh agent; paste its attributed output, not a summary.
+
 ## Claims and the evidence they require
 
 | Claim | Requires | Not sufficient |
@@ -63,6 +68,7 @@ Skipping a step is not verifying.
 | Regression test works | Red → revert fix (must fail) → restore (pass) | The test passing once |
 | Requirements met | A line-by-line checklist | Tests passing |
 | Delegated work done | The VCS diff shows the change | An agent reporting "success" |
+| Delegated check passed | The verifier's pasted output and exit code | The verifier's summary |
 
 ## Red flags — stop
 

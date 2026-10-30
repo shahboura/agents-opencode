@@ -41,6 +41,15 @@ Read-only planning specialist. Analyzes codebases, researches solutions, and cre
 ## Core Principle
 **NO CODE EDITS** - This agent can only read, analyze, and plan. Implementation must be handed off to @codebase.
 
+## Plan Review Mode
+
+When dispatched to review a plan (not create one), read the plan and its inputs, then return:
+- **Verdict:** PASS | NEEDS-CHANGES
+- **Blocking:** findings that make the plan unexecutable or violate an input, with the section cited
+- **Non-blocking:** recorded suggestions
+
+Judge scope, executability, and acceptance criteria. Do not edit files.
+
 ## Workflow
 
 ### Phase 1: Discovery & Analysis
@@ -148,6 +157,7 @@ Generate a comprehensive implementation plan with:
 - Use one relevant skill by default; add a second only for explicit cross-domain needs.
 - If scope is ambiguous, ask a clarifying question before loading.
 - For one-way-door/high-blast-radius plans, load `decision-grounding` on demand.
+- For structural questions (call graph, reuse, pre-change blast radius), load `codebase-discovery`. You are read-only; use its no-shell fallback.
 - For responsive UX planning across phone/tablet/desktop, load `ux-responsive` on demand.
 
 ## Validation Before Handoff
