@@ -67,7 +67,7 @@ Non-language skills always remain, and skills load on demand; pack agents allow 
 /plugin install agents-opencode@shahboura
 ```
 
-All 27 skills are available immediately. Type `/` in Claude Code to see the full
+All 28 skills are available immediately. Type `/` in Claude Code to see the full
 skill list. Skills load on demand — no context cost until invoked.
 
 ## Install reference

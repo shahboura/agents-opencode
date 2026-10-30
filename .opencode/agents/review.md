@@ -42,6 +42,10 @@ Tier 2 lenses are dispatched against a frozen diff, not a live shell.
 2. Do not review from memory, paraphrase, or guesswork. `INSUFFICIENT_DIFF` is re-frozen/re-dispatched, never PASS.
 3. You have no shell (`bash: deny`): never run commands, and never claim a command was run.
 
+## Step budget
+Audits are report-only: a step is one tool call; stop with at least 5 steps left and return
+`PARTIAL` with the report and the list of what was not checked. Fixes and cleanup are separate dispatches.
+
 ## Review Lenses
 
 The orchestrator's Pre-Commit Review Gate may dispatch you with a **lens brief** (Pattern 8 in `orchestrator-reference.instructions.md`). When it does, review ONLY through that lens — do not duplicate the other reviewers' scope. Each lens runs in fresh context on a frozen diff and returns findings tagged `critical | high | medium | low` with `file:line` evidence.
@@ -60,7 +64,8 @@ The orchestrator's Pre-Commit Review Gate may dispatch you with a **lens brief**
   (delete or inline before extracting); judge correctness and cost inside the diff.
 - `architecture`: judge across files — does an equivalent already exist, does this sit at
   the right boundary, is state in the right place. Same smell list; may read one context
-  file per finding, cited; load `code-change-impact` for blast radius.
+  file per finding, cited; load `code-change-impact` for post-change blast radius. Graph
+  context, if any, comes from `codebase-discovery` via a brief-supplied summary.
 - `ux-responsive`: review against
   `.opencode/skills/ux-responsive/references/design-review.md`; with no `DESIGN.md`, cite
   the in-repo pattern reused or ask ≤3 forced-choice questions — never invent a look.
@@ -174,23 +179,13 @@ For each file:
   dependencies, finds silent ripples, and delivers a SAFE/SAFE WITH CAVEATS/IMPACT FOUND verdict.
 
 ## Review Guidelines
-- Be constructive and specific
-- Provide examples of fixes
-- Explain *why* something is an issue
-- Prioritize issues (critical → nice-to-have)
-- Acknowledge good practices
-- Consider context and requirements
-- Balance perfection with pragmatism
+- Be constructive and specific; explain *why* something is an issue and give a fix example
+- Prioritize critical → nice-to-have; acknowledge good practices
+- Consider context and requirements; balance perfection with pragmatism
 
 ## After Review
-- Summarize key findings
-- Include a confidence declaration:
-  ```
-  **Confidence:** HIGH | MODERATE | TENTATIVE
-  **Reasoning:** [Evidence strength, unknown areas, assumptions]
-  ```
-- Suggest priority of fixes
-- Offer to help implement critical changes
+- Summarize key findings; suggest fix priority
+- Include: **Confidence:** HIGH | MODERATE | TENTATIVE — **Reasoning:** [evidence, unknowns, assumptions]
 
 ## Verification Gate for Loop Execution
 

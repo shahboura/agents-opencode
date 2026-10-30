@@ -25,6 +25,9 @@ metadata:
 Run it against the VCS diff — it adapts to whatever language and tooling the
 repo uses by discovering the project's conventions first.
 
+Pre-change discovery (what exists, who calls it) → `codebase-discovery`; this
+skill starts from a diff.
+
 ## When to use me
 
 Activate this skill when:

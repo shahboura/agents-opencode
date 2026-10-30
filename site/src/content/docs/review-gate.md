@@ -10,6 +10,11 @@ The Review Gate is the final checkpoint before a commit leaves your machine
 deterministic automated harness (Tier 1) and a risk-gated, multi-lens adversarial
 review (Tier 2).
 
+The gate has two entry points: a **plan review** (`@planner`, read-only, before a plan
+is presented; record the verdict or a stated skip reason) and the **pre-commit gate**
+below. A plan review that still has blocking findings after one revision goes to the
+user with options; it never proceeds silently.
+
 This page is the **canonical full spec**. The orchestrator loads a compact flow
 summary from Pattern 8 in
 `.opencode/instructions/orchestrator-reference.instructions.md`, which points here.
@@ -135,8 +140,9 @@ Rationale table - declined non-critical findings:
 - A **cycle** is one review pass: the initial panel is cycle 1, and a scoped delta
   re-review of the fixes is cycle 2.
 - Maximum **2 cycles** per gate (initial panel plus at most one delta re-review).
-- Binding task budget: **8 reviewer dispatches** per task (a full panel = 4; delta
-  re-reviews dispatch only the affected lenses). It **supersedes per-loop caps**.
+- Binding task budget: **8 pre-commit reviewer dispatches** per task (a full panel = 4;
+  delta re-reviews dispatch only the affected lenses), plus **up to 2 plan-review
+  dispatches** (initial plan review + one re-review). It **supersedes per-loop caps**.
 - A lens that exhausts its step budget returns **PARTIAL**, and a lens with no readable patch
   returns **INSUFFICIENT_DIFF**. Neither is a verdict: re-freeze the patch if it is missing, then
   re-dispatch the affected lens (it counts against the dispatch budget). Never accept either as PASS.
@@ -162,7 +168,10 @@ Rationale table - declined non-critical findings:
 **Skip criteria (any one):** trivial (at most two staged entries, no risk path,
 no gitlink - typically a one-line or comment-only change; the risk-path list
 below is authoritative, so a one-line docs edit under `site/` is not trivial), a
-pre-existing gate pass, Planning Mode, or an explicit user opt-out.
+pre-existing pre-commit pass, Planning Mode for the pre-commit entry point, or an
+explicit user opt-out. The plan review skips only for a trivial plan (one phase, no new
+files, no interface or schema change), with the reason recorded in the plan's `### Inputs`
+or under `## Plan review` in `.gate/plan.md`.
 
 **Edge cases:**
 
