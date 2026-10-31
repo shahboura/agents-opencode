@@ -49,17 +49,67 @@ const SOURCES = [
     ],
   },
   {
-    file: 'site/src/content/docs/index.md',
+    file: 'site/src/content/docs/index.mdx',
     patterns: [
       {
-        label: 'specialized agents',
-        regex: /(\d+) specialized agents/,
+        label: 'specialist agents',
+        regex: /(\d+) specialist agents/,
         values: ['agents'],
       },
       {
-        label: 'all agents verified',
-        regex: /all (\d+) agents/,
+        label: 'on-demand skills',
+        regex: /(\d+) on-demand skills/,
+        values: ['skills'],
+      },
+      {
+        label: 'slash commands',
+        regex: /(\d+) slash commands/,
+        values: ['commands'],
+      },
+    ],
+  },
+  {
+    file: 'site/src/content/docs/agentic-installation.md',
+    patterns: [
+      {
+        label: 'verify table',
+        regex: /(\d+) agents, (\d+) skills, (\d+) commands landed/,
+        values: ['agents', 'skills', 'commands'],
+      },
+      {
+        label: 'verify block agents',
+        regex: /# (\d+) agents/,
         values: ['agents'],
+      },
+      {
+        label: 'verify block skills',
+        regex: /# (\d+) skills/,
+        values: ['skills'],
+      },
+      {
+        label: 'verify block commands',
+        regex: /# (\d+) slash commands/,
+        values: ['commands'],
+      },
+    ],
+  },
+  {
+    file: 'site/public/llms.txt',
+    patterns: [
+      {
+        label: 'specialist agents',
+        regex: /(\d+) specialist agents/,
+        values: ['agents'],
+      },
+      {
+        label: 'on-demand skills',
+        regex: /(\d+) on-demand skills/,
+        values: ['skills'],
+      },
+      {
+        label: 'slash commands',
+        regex: /(\d+) slash/,
+        values: ['commands'],
       },
     ],
   },

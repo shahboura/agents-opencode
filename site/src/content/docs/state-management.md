@@ -8,6 +8,11 @@ sidebar:
 This repository uses a structured state contract for short-lived working memory,
 plus generated handoff packets for session-to-session continuity.
 
+:::tip[What you get]
+- What the session state file stores and who writes it.
+- How to refresh state and the handoff packet at the end of a task.
+:::
+
 ## Files
 
 - `MILESTONES.md` — canonical milestone format and history (entry template,
@@ -83,3 +88,11 @@ Session compaction reduces context window usage without relying on context alone
   `scripts/check-context-size.js`.
 - **Progressive disclosure pattern**: Ship concise instructions first, then expand on
   demand via skill loading or sub-agent delegation. Avoid preloading unrelated context.
+
+## Verify It Worked
+
+```bash
+npm run doctor
+```
+
+Exits 0 — including the session-state validator.

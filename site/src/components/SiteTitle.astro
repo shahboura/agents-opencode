@@ -1,0 +1,67 @@
+---
+/**
+ * Site title — brand lockup in the header.
+ *
+ * The wordmark is rendered as HTML text next to the badge, not as an <img> of
+ * wordmark.svg: an <img> SVG cannot see the page's @font-face, so it fell back
+ * to whatever monospace the OS provided. HTML text uses the self-hosted
+ * JetBrains Mono and stays selectable and translatable.
+ */
+---
+
+<a class="site-wordmark" href="/" aria-label="OpenCode Agents — home">
+  <img src="/brand/logo-badge.svg" alt="" width="256" height="256" aria-hidden="true" />
+  <span class="site-wordmark__text">
+    <span class="site-wordmark__name">agents-opencode</span>
+    <span class="site-wordmark__tagline">opencode agents pack</span>
+  </span>
+</a>
+
+<style>
+  .site-wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--sl-color-white);
+  }
+  .site-wordmark img {
+    display: block;
+    width: 30px;
+    height: 30px;
+    flex: none;
+  }
+  .site-wordmark__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+  }
+  .site-wordmark__name {
+    font-family: var(--sl-font-mono);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .site-wordmark__tagline {
+    font-family: var(--sl-font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.02em;
+    /* gray-2: gray-3 on the header surface is 4.48:1 in dark mode. */
+    color: var(--sl-color-gray-2);
+    white-space: nowrap;
+  }
+  :root[data-theme='light'] .site-wordmark {
+    color: #141414;
+  }
+  .site-wordmark:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 4px;
+    border-radius: 6px;
+  }
+  @media (max-width: 480px) {
+    .site-wordmark__tagline {
+      display: none;
+    }
+  }
+</style>

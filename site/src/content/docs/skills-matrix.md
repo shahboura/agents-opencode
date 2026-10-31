@@ -9,6 +9,11 @@ The pack allows **all skills** by default (`skill: {"*": "allow"}`), so host and
 plugin skills keep working. This table lists the skills each agent should prefer,
 not a restriction list.
 
+:::tip[What you get]
+- All 28 skills, and which agent loads each one.
+- Which skills are language-specific and which always stay.
+:::
+
 Quick read:
 - Pack agents use `"*": "allow"`; hosts may restrict via a v2 `integration.use` policy
   or by editing the installed agent file.
@@ -107,3 +112,11 @@ Arguments passed in `/command-name [argument]` are forwarded to the command body
 | `/checkpoint` | `orchestrator` | Structured phase-boundary checkpoint for human decision |
 | `/blog-post` | `blogger` | Draft a blog post |
 | `/legal-review` | `legal-advisor` | Review licenses, compliance, and data privacy |
+
+## Verify It Worked
+
+```bash
+ls .opencode/skills | wc -l
+```
+
+Prints 28 — one directory per skill.

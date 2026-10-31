@@ -145,7 +145,7 @@ case "$SEED" in
     printf 'API_KEY=fake-do-not-use\n' > "$WORK/.env"
     ;;
   broken-link)
-    printf '\n[missing](./missing-page.md)\n' >> "$WORK/site/src/content/docs/index.md"
+    printf '\n[missing](./missing-page.md)\n' >> "$WORK/site/src/content/docs/index.mdx"
     ;;
   *)
     echo "unknown seed: $SEED" >&2

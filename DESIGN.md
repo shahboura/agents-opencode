@@ -57,3 +57,29 @@ Describe it in one sentence and name where it appears. Exactly one.
   it here._
 - Source of truth for tokens: _TODO — e.g. `src/styles/tokens.css`._
 - Last reviewed by: _TODO — name, date._
+
+## Brand mark — confirmed
+
+The logo is settled; treat these as the standard, not a proposal.
+
+- **Files:** `site/public/brand/logo-mark.svg` (primary), `logo-mark-dark.svg`,
+  `logo-mark-mono.svg` (`currentColor`), `logo-badge.svg`. Favicon is
+  `site/public/favicon.svg`, a copy of the badge.
+- **Wordmarks:** `wordmark.svg`, `wordmark-dark.svg`, `wordmark-mono.svg`,
+  `wordmark-stacked.svg`. The site header renders the lockup as HTML text rather than
+  these files: an `<img>` SVG cannot see the page's `@font-face`.
+- **Construction:** a `C` ring, two chevrons reading as lens frames (`<` `>`), and a
+  pinched `L` between them reading as a nose. Round style — round caps and round joins
+  throughout.
+- **Colour:** accent `#D7263D` (ring and badge field), ink `#141414` (mark on light),
+  `#F5F5F5` (mark on dark), `#FFFFFF` (mark on the badge field). Contrast: 4.96:1 on
+  white, 3.97:1 on `#0B0B0C`, 4.96:1 for white on the field — all above the 3:1
+  non-text minimum.
+- **Geometry:** 232×240 box, ring r88 with a ±32° mouth, face scaled 0.9552 and centred
+  on the counter. The face's extremes sit at r60 against the ring's r75 inner edge, and
+  the nearest two strokes are 9.7 units apart. Do not hand-tune these; rebuild from the
+  source if the mark must change.
+- **Minimum size:** 40 px for the mark, 24 px for the badge. Below 24 px use the badge
+  only — the chevrons merge with the nose under that.
+- **Do not:** recolour only part of the mark, add outlines or shadows, rotate it, or set
+  the dotted-ring variant beside the solid one.

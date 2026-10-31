@@ -8,6 +8,11 @@ sidebar:
 The pack supports OpenCode v1 and v2 from one source: v1-shaped files are
 auto-translated by v2 in memory, and the installer emits per-target config.
 
+:::tip[What you get]
+- What runs on OpenCode v1, and what is proven on v2.
+- The exact version the v2 claim was verified against.
+:::
+
 ## Target adapter
 
 `install.js` accepts a `--target` flag:
@@ -184,3 +189,11 @@ npm run validate:opencode-schema:v2
 sets, v1-only action names rejected, plugin-defined actions accepted) and scans agents
 and commands for untranslatable tokens. CI runs it as its own job
 (`validate-opencode-schema-v2`).
+
+## Verify It Worked
+
+```bash
+npx agents-opencode --status
+```
+
+Prints the install state so you can confirm which scope is active.

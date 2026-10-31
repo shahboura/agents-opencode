@@ -1,0 +1,94 @@
+---
+title: OpenCode Agents
+description: Lean OpenCode agents pack with 10 specialized agents, core language/domain skills, and slash commands.
+keywords: opencode, ai agents, code generation, development workflow, .NET, Python, TypeScript, Flutter, code review, documentation
+sidebar:
+  label: Home
+  order: 1
+template: splash
+---
+
+import { LinkCard, Card, CardGrid, LinkButton } from '@astrojs/starlight/components';
+
+<div class="landing-hero">
+  <div>
+    <p class="landing-eyebrow">OpenCode agents</p>
+    <p class="landing-headline">Ten agents. One command.</p>
+    <p class="landing-lede">
+      10 specialist agents, 28 on-demand skills, 18 slash commands. Plan, implement, review,
+      and document without leaving the terminal — every stage has an owner.
+    </p>
+    {/* A JSX string keeps the double hyphen: markdown text would render `--` as an en dash. */}
+    <div class="install-line">{'$ npx agents-opencode --global'}</div>
+    <p class="landing-alt">or <a href="/agentic-installation/">let an agent install it</a> — one prompt, same installer</p>
+    <div class="landing-cta">
+      <LinkButton href="/getting-started/">Get started</LinkButton>
+      <LinkButton href="/agents/" variant="secondary">Browse agents</LinkButton>
+    </div>
+    <p><small>OpenCode v1 + v2 · MIT licensed</small></p>
+  </div>
+
+  <div class="loop-panel">
+    <h2>Suggested workflow</h2>
+    <div class="loop-grid">
+      <div class="loop-step">
+        <span>Plan</span>
+        <strong>orchestrator + planner</strong>
+        <small>Scope the work, then review the plan read-only.</small>
+      </div>
+      <div class="loop-step">
+        <span>Implement</span>
+        <strong>codebase</strong>
+        <small>Edits across ten language and framework profiles.</small>
+      </div>
+      <div class="loop-step">
+        <span>Review</span>
+        <strong>review</strong>
+        <small>Reports findings; the review gate decides what blocks.</small>
+      </div>
+      <div class="loop-step">
+        <span>Document</span>
+        <strong>docs</strong>
+        <small>Records what changed and why.</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+## Start here
+
+<CardGrid>
+  <LinkCard title="Getting started" href="/getting-started/" description="Install the pack and run your first prompt." />
+  <LinkCard title="Agents" href="/agents/" description="Ten agents and when to use each." />
+  <LinkCard title="Skills matrix" href="/skills-matrix/" description="28 on-demand skills and which agent loads them." />
+  <LinkCard title="Review gate" href="/review-gate/" description="What runs before a change leaves your machine." />
+</CardGrid>
+
+## Core agents
+
+<CardGrid>
+  <Card title="orchestrator">Scopes the work, then delegates. Plans before it acts.</Card>
+  <Card title="codebase">Implements across ten stacks with profile detection.</Card>
+  <Card title="review">Security, performance, and best-practice findings.</Card>
+  <Card title="docs">Generates the written record of a change.</Card>
+  <Card title="planner">Read-only planning and plan review.</Card>
+  <Card title="researcher">Grounds high-stakes decisions in primary sources.</Card>
+</CardGrid>
+
+[View all ten agents →](/agents/)
+
+## Compatibility
+
+| Runtime | Status |
+| --- | --- |
+| OpenCode v1 | Supported |
+| OpenCode v2 | Installs and loads; runtime hooks not yet exercised |
+
+See [OpenCode v1/v2 support](/opencode-v1-v2-support/) for the verified version and what is still untested.
+
+## Why this pack
+
+- **Fast setup:** install and run in minutes.
+- **Clear workflow:** orchestrate → implement → review → document.
+- **Safe skill model:** on-demand loading + host-compatible skill access.
+- **Release-ready defaults:** validation and CI/CD hygiene included.

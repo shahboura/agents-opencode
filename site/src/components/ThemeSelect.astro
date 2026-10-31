@@ -1,0 +1,164 @@
+---
+/**
+ * Brand theme control — overrides Starlight's ThemeSelect with one cycling button.
+ *
+ * Keeps Starlight's storage contract (`starlight-theme` = light | dark | '' for
+ * system) so the pre-paint script still prevents a flash, and replaces only the
+ * markup. Starlight renders this component twice (header + mobile menu), so the
+ * document listener binds once and both instances stay in sync.
+ */
+const t = { light: 'Light', dark: 'Dark', auto: 'System' };
+---
+
+<starlight-theme-select>
+  <button
+    class="theme-toggle"
+    type="button"
+    data-theme-toggle
+    data-theme-state="auto"
+    aria-label={`Theme: ${t.auto}`}
+    title="Switch to dark"
+  >
+    <svg data-theme-icon="light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.2"></circle>
+      <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"></path>
+    </svg>
+    <svg data-theme-icon="dark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M14.5 4a8.5 8.5 0 1 0 5.5 12.6A7 7 0 0 1 14.5 4z"></path>
+    </svg>
+    <svg data-theme-icon="auto" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"></circle>
+      <path d="M12 5a7 7 0 0 1 0 14z"></path>
+    </svg>
+  </button>
+</starlight-theme-select>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 8px;
+    border: 1px solid var(--sl-color-gray-5);
+    background: var(--sl-color-black);
+    color: var(--sl-color-gray-2);
+    cursor: pointer;
+    transition: background-color 120ms ease-out, color 120ms ease-out;
+  }
+  .theme-toggle:hover {
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+  }
+  .theme-toggle:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+  .theme-toggle svg {
+    display: none;
+    width: 18px;
+    height: 18px;
+  }
+  /* The icon shows the current state; the label describes the next one. */
+  .theme-toggle[data-theme-state='light'] [data-theme-icon='light'],
+  .theme-toggle[data-theme-state='dark'] [data-theme-icon='dark'],
+  .theme-toggle[data-theme-state='auto'] [data-theme-icon='auto'] {
+    display: block;
+  }
+
+  /* Starlight switches to the mobile layout at 50rem; keep touch targets 44px. */
+  @media (width < 50rem) {
+    .theme-toggle {
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle {
+      transition: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    // The component renders twice (header + mobile menu). Bind once; the click
+    // listener is delegated so both instances activate the same cycle.
+    if (window.__brandThemeControl) return;
+    window.__brandThemeControl = true;
+
+    const STORAGE_KEY = 'starlight-theme';
+
+    // Cycle order: dark → light → system → dark.
+    const NEXT = { dark: 'light', light: 'auto', auto: 'dark' };
+    const LABEL = { light: 'Light', dark: 'Dark', auto: 'System' };
+    const NEXT_ACTION = {
+      dark: 'Switch to light',
+      light: 'Switch to system',
+      auto: 'Switch to dark',
+    };
+
+    const parseTheme = (value) =>
+      value === 'light' || value === 'dark' || value === 'auto' ? value : 'auto';
+
+    const loadTheme = () => {
+      try {
+        return parseTheme(localStorage.getItem(STORAGE_KEY) || 'auto');
+      } catch {
+        return 'auto';
+      }
+    };
+
+    const systemTheme = () =>
+      matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+
+    function syncUI(theme) {
+      document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+        button.dataset.themeState = theme;
+        button.setAttribute('aria-label', 'Theme: ' + LABEL[theme]);
+        button.title = NEXT_ACTION[theme];
+      });
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme === 'auto' ? systemTheme() : theme;
+      try {
+        localStorage.setItem(STORAGE_KEY, theme === 'auto' ? '' : theme);
+      } catch {
+        /* storage blocked: the theme still applies for this page view */
+      }
+      syncUI(theme);
+    }
+
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (!target.closest('[data-theme-toggle]')) return;
+      applyTheme(NEXT[loadTheme()]);
+    });
+
+    // Another tab changed the theme: apply it here too (system resolves against
+    // this tab's prefers-color-scheme), so the control and page never disagree.
+    window.addEventListener('storage', (event) => {
+      if (event.key === STORAGE_KEY) applyTheme(loadTheme());
+    });
+
+    matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+      if (loadTheme() === 'auto') {
+        document.documentElement.dataset.theme = systemTheme();
+        syncUI('auto');
+      }
+    });
+
+    const start = () => syncUI(loadTheme());
+    // Run immediately so the header instance is correct on first paint, then
+    // again after DOMContentLoaded brings the mobile-menu instance in.
+    start();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', start, { once: true });
+    }
+  })();
+</script>

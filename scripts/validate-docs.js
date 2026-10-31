@@ -3,7 +3,7 @@
 
 /**
  * Documentation Link Validator
- * Finds all .md files and validates internal markdown links.
+ * Finds all .md and .mdx files and validates internal markdown links.
  * Optional mode: validate external http(s) links with retries/timeouts.
  */
 
@@ -86,8 +86,19 @@ function loadExternalAllowlist(options) {
   }
 }
 
+const DOC_EXTENSIONS = ['.md', '.mdx'];
+const isDocsFile = (name) => DOC_EXTENSIONS.some((ext) => name.endsWith(ext));
+
+/** Page files a Starlight route resolves to, most specific first. */
+function docsCandidates(basePath) {
+  return DOC_EXTENSIONS.flatMap((ext) => [
+    `${basePath}${ext}`,
+    path.join(basePath, `index${ext}`),
+  ]);
+}
+
 /**
- * Recursively find all .md files, excluding node_modules and .git directories.
+ * Recursively find all .md and .mdx files, excluding node_modules and .git directories.
  * The docs site's dependency/build output (site/node_modules, site/dist,
  * site/.astro) is skipped; its authored content is validated from source.
  */
@@ -109,6 +120,8 @@ function findMarkdownFiles(dir, rootDir = dir) {
         entry.name === 'node_modules' ||
         entry.name === '.git' ||
         entry.name === '.gate' ||
+        entry.name === '.worktrees' ||
+        entry.name === '.tmp-skscan' ||
         entry.name === 'example'
       ) {
         continue;
@@ -128,7 +141,7 @@ function findMarkdownFiles(dir, rootDir = dir) {
         continue;
       }
       results.push(...findMarkdownFiles(fullPath, rootDir));
-    } else if (entry.isFile() && entry.name.endsWith('.md')) {
+    } else if (entry.isFile() && isDocsFile(entry.name)) {
       results.push(fullPath);
     }
   }
@@ -165,7 +178,7 @@ function isUnderStarlightContent(rootDir, filePath) {
 
 /**
  * Resolve a root-absolute Starlight route (e.g. `/skills-matrix/`) against the
- * docs site's content collection. Returns the matching .md path, or null.
+ * docs site's content collection. Returns the matching .md/.mdx path, or null.
  *
  * Guards:
  * - Rejects `..` traversal segments outright.
@@ -197,8 +210,8 @@ function resolveStarlightRoute(rootDir, cleanPath) {
   const basePath = path.join(contentRoot, routePath);
 
   const candidates = routePath === ''
-    ? [path.join(contentRoot, 'index.md')]
-    : [`${basePath}.md`, path.join(basePath, 'index.md')];
+    ? DOC_EXTENSIONS.map((ext) => path.join(contentRoot, `index${ext}`))
+    : docsCandidates(basePath);
 
   for (const candidate of candidates) {
     const resolved = path.resolve(candidate);
@@ -245,10 +258,7 @@ function resolveInternalLink(rootDir, filePath, rawLinkPath) {
     };
   }
 
-  const alternatives = [
-    `${targetPath}.md`,
-    path.join(targetPath, 'index.md'),
-  ];
+  const alternatives = docsCandidates(targetPath);
 
   for (const altPath of alternatives) {
     if (fs.existsSync(altPath)) {

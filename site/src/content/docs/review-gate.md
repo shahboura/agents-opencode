@@ -10,6 +10,11 @@ The Review Gate is the final checkpoint before a commit leaves your machine
 deterministic automated harness (Tier 1) and a risk-gated, multi-lens adversarial
 review (Tier 2).
 
+:::tip[What you get]
+- What runs before a change leaves your machine.
+- Which findings block a commit and which are advisory.
+:::
+
 The gate has three entry points: a **plan review** (`@planner`, read-only, before a plan
 is presented; record the verdict or a stated skip reason), a **pre-report review** for
 changes that ship to installed users (permissions, agents, skills: run the panel before
@@ -17,9 +22,9 @@ reporting the change as applied), and the **pre-commit gate** below. A plan revi
 still has blocking findings after one revision goes to the user with options; it never
 proceeds silently.
 
-The pre-report trigger exists because the commit gate is too late for a policy users
-inherit on `--update`: reviewing only at commit means the change is already presented as
-done, and its blast radius (every installed project) went unexamined.
+The pre-report review exists because a permissions or agent change cannot be un-shipped by a
+later commit: reviewing only at commit means the change is already presented as done, and its
+blast radius (every installed project) went unexamined.
 
 This page is the **canonical full spec**. The orchestrator loads a compact flow
 summary from Pattern 8 in
@@ -267,6 +272,14 @@ The pre-commit hook is a **local workflow guardrail, not a security boundary**:
 It exists for honest-operator discipline, not to stop a motivated bypass. Commits
 made with `--no-verify`, or merges that produce a merge commit, must be gated
 manually before they reach a shared branch.
+
+## Verify It Worked
+
+```bash
+npm run gate:check
+```
+
+Reports the gate state for the current diff.
 
 ## Related
 

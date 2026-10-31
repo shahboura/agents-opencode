@@ -7,6 +7,11 @@ sidebar:
 
 This matrix captures tested runtime/tooling targets for this repository.
 
+:::tip[What you get]
+- Which runtimes and versions the pack supports today.
+- What is verified, and what installs but is not yet exercised.
+:::
+
 ## Runtime and CI Targets
 
 | Surface | Target | Notes |
@@ -106,3 +111,11 @@ and does not block merges.
 to the installed pack. In a project that installs the agents, the gate command will not
 exist: follow the review flow manually (freeze the diff, run the lenses, record the
 verdict) instead. `scripts/lib/**` ships because the installer needs it.
+
+## Verify It Worked
+
+```bash
+npx agents-opencode --status
+```
+
+Prints the install state for the global and project scopes.

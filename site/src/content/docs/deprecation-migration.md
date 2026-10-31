@@ -7,6 +7,11 @@ sidebar:
 
 This policy defines how contract-affecting changes are introduced for:
 
+:::tip[What you get]
+- What changed between releases and what to do about it.
+- The migration steps that keep existing installs working.
+:::
+
 - Agent prompts/behavior guidance (`.opencode/agents/*.md`)
 - Agent permissions (`permission`, `permission.skill`, `permission.task`)
 - Command frontmatter/routing (`.opencode/commands/*.md`)
@@ -96,3 +101,12 @@ When introducing Level B/C changes:
   verified to load on v2.0.30 (plugin, all 10 agents, and 27 skills discovered; runtime
   hooks not yet exercised). See
   **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.
+
+## Verify It Worked
+
+```bash
+npm run doctor
+```
+
+Exits 0, and the changelog validator confirms the `[capability:*]` label on the
+Unreleased entry is valid alongside the other pack checks.
