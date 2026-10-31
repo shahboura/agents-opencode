@@ -23,7 +23,7 @@ import { LinkCard, Card, CardGrid, LinkButton } from '@astrojs/starlight/compone
       <LinkButton href="/getting-started/">Get started</LinkButton>
       <LinkButton href="/agents/" variant="secondary">Browse agents</LinkButton>
     </div>
-    <p><small>OpenCode v1 + v2 · Claude Code plugin · MIT licensed</small></p>
+    <p><small>OpenCode v1 + v2 · MIT licensed</small></p>
   </div>
 
   <div class="loop-panel">
@@ -81,7 +81,6 @@ import { LinkCard, Card, CardGrid, LinkButton } from '@astrojs/starlight/compone
 | --- | --- |
 | OpenCode v1 | Supported |
 | OpenCode v2 | Installs and loads; runtime hooks not yet exercised |
-| Claude Code | Plugin with the same skills |
 
 See [OpenCode v1/v2 support](/opencode-v1-v2-support/) for the verified version and what is still untested.
 
@@ -91,15 +90,6 @@ See [OpenCode v1/v2 support](/opencode-v1-v2-support/) for the verified version 
 - **Clear workflow:** orchestrate → implement → review → document.
 - **Safe skill model:** on-demand loading + host-compatible skill access.
 - **Release-ready defaults:** validation and CI/CD hygiene included.
-
-## Claude Code
-
-Also available as a Claude Code plugin:
-
-```txt title="TUI"
-/plugin marketplace add shahboura/agents-opencode-claude
-/plugin install agents-opencode@shahboura
-```
 
 ## Let an agent install it
 

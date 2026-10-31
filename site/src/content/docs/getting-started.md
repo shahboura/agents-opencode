@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install and configure agents for OpenCode (npx/curl) or Claude Code (plugin).
+description: Install and configure agents for OpenCode (npx/curl).
 sidebar:
   order: 2
 ---
@@ -62,19 +62,6 @@ Non-language skills always remain, and skills load on demand; pack agents allow 
    ```txt title="TUI"
    @orchestrator Build a user authentication API with JWT tokens
    ```
-
-### Claude Code Plugin
-
-```bash
-# Add marketplace (one-time)
-/plugin marketplace add shahboura/agents-opencode-claude
-
-# Install
-/plugin install agents-opencode@shahboura
-```
-
-All 28 skills are available immediately. Type `/` in Claude Code to see the full
-skill list. Skills load on demand — no context cost until invoked.
 
 ## Install reference
 

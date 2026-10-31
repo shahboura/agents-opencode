@@ -1,99 +1,40 @@
 ---
 /**
- * Brand theme control — overrides Starlight's ThemeSelect.
+ * Brand theme control — overrides Starlight's ThemeSelect with one cycling button.
  *
  * Keeps Starlight's storage contract (`starlight-theme` = light | dark | '' for
- * auto) so the pre-paint script still prevents a flash, and replaces only the
+ * system) so the pre-paint script still prevents a flash, and replaces only the
  * markup. Starlight renders this component twice (header + mobile menu), so the
- * radio groups get a per-render name and the document listeners bind once.
+ * document listener binds once and both instances stay in sync.
  */
-const uid = Math.random().toString(36).slice(2, 8);
-const groupName = `theme-${uid}`;
-
 const t = { light: 'Light', dark: 'Dark', auto: 'System' };
 ---
 
 <starlight-theme-select>
-  <div class="theme-control">
-    <button
-      class="theme-trigger"
-      type="button"
-      aria-haspopup="true"
-      aria-expanded="false"
-      aria-controls={`theme-popover-${uid}`}
-      aria-label={`Theme: ${t.auto}`}
-      data-theme-trigger
-    >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="4.2"></circle>
-        <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"></path>
-      </svg>
-    </button>
-
-    <div class="theme-popover" id={`theme-popover-${uid}`} data-theme-popover role="radiogroup" aria-label="Theme" hidden>
-      <label class="theme-option">
-        <input type="radio" name={groupName} value="light" data-theme-radio />
-        <span>{t.light}</span>
-      </label>
-      <label class="theme-option">
-        <input type="radio" name={groupName} value="dark" data-theme-radio />
-        <span>{t.dark}</span>
-      </label>
-      <label class="theme-option">
-        <input type="radio" name={groupName} value="auto" data-theme-radio checked />
-        <span>{t.auto}</span>
-      </label>
-    </div>
-
-    <div class="theme-switch" role="radiogroup" aria-label="Theme">
-      <label class="theme-stop">
-        <input type="radio" name={`${groupName}-switch`} value="light" data-theme-radio />
-        <span class="sr-only">{t.light}</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="4"></circle>
-          <path d="M12 4v1.5M12 18.5V20M4 12h1.5M18.5 12H20"></path>
-        </svg>
-      </label>
-      <label class="theme-stop">
-        <input type="radio" name={`${groupName}-switch`} value="auto" data-theme-radio checked />
-        <span class="sr-only">{t.auto}</span>
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"></circle>
-          <path d="M12 5a7 7 0 0 1 0 14z"></path>
-        </svg>
-      </label>
-      <label class="theme-stop">
-        <input type="radio" name={`${groupName}-switch`} value="dark" data-theme-radio />
-        <span class="sr-only">{t.dark}</span>
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M14.5 4a8.5 8.5 0 1 0 5.5 12.6A7 7 0 0 1 14.5 4z"></path>
-        </svg>
-      </label>
-    </div>
-  </div>
+  <button
+    class="theme-toggle"
+    type="button"
+    data-theme-toggle
+    data-theme-state="auto"
+    aria-label={`Theme: ${t.auto}`}
+    title="Switch to dark"
+  >
+    <svg data-theme-icon="light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.2"></circle>
+      <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"></path>
+    </svg>
+    <svg data-theme-icon="dark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M14.5 4a8.5 8.5 0 1 0 5.5 12.6A7 7 0 0 1 14.5 4z"></path>
+    </svg>
+    <svg data-theme-icon="auto" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"></circle>
+      <path d="M12 5a7 7 0 0 1 0 14z"></path>
+    </svg>
+  </button>
 </starlight-theme-select>
 
 <style>
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  .theme-control {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-
-  /* ---- desktop: 36px button + popover ---- */
-  .theme-trigger {
+  .theme-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -107,109 +48,36 @@ const t = { light: 'Light', dark: 'Dark', auto: 'System' };
     cursor: pointer;
     transition: background-color 120ms ease-out, color 120ms ease-out;
   }
-  .theme-trigger:hover {
+  .theme-toggle:hover {
     background: var(--sl-color-gray-6);
     color: var(--sl-color-white);
   }
-  .theme-trigger:focus-visible {
+  .theme-toggle:focus-visible {
     outline: 2px solid var(--sl-color-accent);
     outline-offset: 2px;
   }
-  .theme-trigger svg {
+  .theme-toggle svg {
+    display: none;
     width: 18px;
     height: 18px;
   }
-
-  .theme-popover {
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    z-index: 30;
-    min-width: 132px;
-    padding: 4px;
-    border-radius: 10px;
-    border: 1px solid var(--sl-color-gray-5);
-    background: var(--sl-color-black);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
-  }
-  .theme-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 9px;
-    border-radius: 6px;
-    font-size: var(--sl-text-sm);
-    color: var(--sl-color-gray-2);
-    cursor: pointer;
-  }
-  .theme-option:hover,
-  .theme-option:has(input:checked) {
-    background: var(--sl-color-gray-6);
-    color: var(--sl-color-white);
-  }
-  .theme-option input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .theme-option:focus-within {
-    outline: 2px solid var(--sl-color-accent);
-    outline-offset: -2px;
+  /* The icon shows the current state; the label describes the next one. */
+  .theme-toggle[data-theme-state='light'] [data-theme-icon='light'],
+  .theme-toggle[data-theme-state='dark'] [data-theme-icon='dark'],
+  .theme-toggle[data-theme-state='auto'] [data-theme-icon='auto'] {
+    display: block;
   }
 
-  /* ---- mobile: three native radios styled as a switch ---- */
-  .theme-switch {
-    display: none;
-    gap: 2px;
-    padding: 2px;
-    border-radius: 999px;
-    border: 1px solid var(--sl-color-gray-5);
-    background: var(--sl-color-gray-6);
-  }
-  .theme-stop {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
-    color: var(--sl-color-gray-3);
-    cursor: pointer;
-  }
-  .theme-stop input {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    margin: 0;
-    cursor: pointer;
-  }
-  .theme-stop:has(input:checked) {
-    background: var(--sl-color-accent);
-    color: #fff;
-  }
-  .theme-stop:has(input:focus-visible) {
-    outline: 2px solid var(--sl-color-accent);
-    outline-offset: 2px;
-  }
-  .theme-stop svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  /* Starlight switches to the mobile layout at 50rem. */
+  /* Starlight switches to the mobile layout at 50rem; keep touch targets 44px. */
   @media (width < 50rem) {
-    .theme-trigger,
-    .theme-popover {
-      display: none;
-    }
-    .theme-switch {
-      display: flex;
+    .theme-toggle {
+      width: 44px;
+      height: 44px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .theme-trigger,
-    .theme-option {
+    .theme-toggle {
       transition: none;
     }
   }
@@ -217,12 +85,21 @@ const t = { light: 'Light', dark: 'Dark', auto: 'System' };
 
 <script is:inline>
   (() => {
-    // The component renders twice (header + mobile menu). Bind document-level
-    // handlers once; per-instance radio groups are already scoped by name.
+    // The component renders twice (header + mobile menu). Bind once; the click
+    // listener is delegated so both instances activate the same cycle.
     if (window.__brandThemeControl) return;
     window.__brandThemeControl = true;
 
     const STORAGE_KEY = 'starlight-theme';
+
+    // Cycle order: dark → light → system → dark.
+    const NEXT = { dark: 'light', light: 'auto', auto: 'dark' };
+    const LABEL = { light: 'Light', dark: 'Dark', auto: 'System' };
+    const NEXT_ACTION = {
+      dark: 'Switch to light',
+      light: 'Switch to system',
+      auto: 'Switch to dark',
+    };
 
     const parseTheme = (value) =>
       value === 'light' || value === 'dark' || value === 'auto' ? value : 'auto';
@@ -239,11 +116,10 @@ const t = { light: 'Light', dark: 'Dark', auto: 'System' };
       matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 
     function syncUI(theme) {
-      document.querySelectorAll('input[data-theme-radio]').forEach((input) => {
-        input.checked = input.value === theme;
-      });
-      document.querySelectorAll('[data-theme-trigger]').forEach((trigger) => {
-        trigger.setAttribute('aria-label', 'Theme: ' + (theme === 'auto' ? 'System' : theme));
+      document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+        button.dataset.themeState = theme;
+        button.setAttribute('aria-label', 'Theme: ' + LABEL[theme]);
+        button.title = NEXT_ACTION[theme];
       });
     }
 
@@ -257,76 +133,14 @@ const t = { light: 'Light', dark: 'Dark', auto: 'System' };
       syncUI(theme);
     }
 
-    function closeAll(focusTarget) {
-      document.querySelectorAll('[data-theme-popover]').forEach((popover) => {
-        if (!popover.hidden) {
-          popover.hidden = true;
-          const root = popover.closest('starlight-theme-select');
-          const trigger = root && root.querySelector('[data-theme-trigger]');
-          if (trigger) trigger.setAttribute('aria-expanded', 'false');
-        }
-      });
-      if (focusTarget) focusTarget.focus();
-    }
-
     document.addEventListener('click', (event) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
-
-      const trigger = target.closest('[data-theme-trigger]');
-      if (trigger) {
-        const root = trigger.closest('starlight-theme-select');
-        const popover = root && root.querySelector('[data-theme-popover]');
-        if (!popover) return;
-        const willOpen = popover.hidden;
-        syncUI(loadTheme());
-        closeAll();
-        popover.hidden = !willOpen;
-        trigger.setAttribute('aria-expanded', String(willOpen));
-        if (willOpen) {
-          const checked = popover.querySelector('input:checked');
-          if (checked) checked.focus();
-        }
-        return;
-      }
-
-      // A pointer pick inside the popover closes it and returns focus. Keyboard
-      // changes skip this (radio activation fires a detail-0 click), so arrow
-      // keys can move Light → Dark → System without losing focus.
-      const popover = target.closest('[data-theme-popover]');
-      if (popover && event.detail > 0) {
-        const root = popover.closest('starlight-theme-select');
-        const owner = root && root.querySelector('[data-theme-trigger]');
-        closeAll(owner || undefined);
-        return;
-      }
-
-      if (!target.closest('starlight-theme-select')) closeAll();
+      if (!target.closest('[data-theme-toggle]')) return;
+      applyTheme(NEXT[loadTheme()]);
     });
 
-    document.addEventListener('change', (event) => {
-      const input = event.target;
-      if (!(input instanceof HTMLInputElement) || !input.hasAttribute('data-theme-radio')) return;
-      applyTheme(parseTheme(input.value));
-    });
-
-    document.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape') return;
-      const open = document.querySelector('[data-theme-popover]:not([hidden])');
-      if (!open) return;
-      event.preventDefault();
-      const root = open.closest('starlight-theme-select');
-      const trigger = root && root.querySelector('[data-theme-trigger]');
-      closeAll(trigger || undefined);
-    });
-
-    // Close the popover when focus leaves it (keyboard Tab out).
-    document.addEventListener('focusin', (event) => {
-      const target = event.target;
-      if (target instanceof Element && !target.closest('starlight-theme-select')) closeAll();
-    });
-
-    // Another tab changed the theme: apply it here too (auto resolves against
+    // Another tab changed the theme: apply it here too (system resolves against
     // this tab's prefers-color-scheme), so the control and page never disagree.
     window.addEventListener('storage', (event) => {
       if (event.key === STORAGE_KEY) applyTheme(loadTheme());

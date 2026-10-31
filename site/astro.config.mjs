@@ -71,7 +71,7 @@ export default defineConfig({
         },
       ],
       components: {
-        // Brand theme control: 36px popover on desktop, 3-stop switch on mobile.
+        // Brand theme control: one cycling button (dark → light → system).
         ThemeSelect: './src/components/ThemeSelect.astro',
         // Starlight's search plus the `/` keyboard shortcut.
         Search: './src/components/Search.astro',

@@ -1,46 +1,66 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('theme control — desktop', () => {
-  test('exposes all three states in a popover', async ({ page }) => {
+  test('cycles dark → light → system and wraps back to dark', async ({ page }) => {
     await page.goto('/');
 
-    const trigger = page.locator('[data-theme-trigger]:visible');
-    await expect(trigger).toBeVisible();
-    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    const button = page.locator('[data-theme-toggle]:visible');
+    await expect(button).toHaveCount(1);
+    await expect(button).toHaveAttribute('aria-label', 'Theme: System');
+    await expect(button).toHaveAttribute('title', 'Switch to dark');
 
-    await trigger.click();
-    const popover = page.locator('[data-theme-popover]:visible');
-    await expect(popover).toBeVisible();
-    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    await expect(popover.getByRole('radio')).toHaveCount(3);
-  });
-
-  test('choosing dark applies and survives a reload', async ({ page }) => {
-    await page.goto('/');
-
-    await page.locator('[data-theme-trigger]:visible').click();
-    await page.locator('[data-theme-popover]:visible').locator('label', { hasText: 'Dark' }).click();
-
+    await button.click();
+    await expect(button).toHaveAttribute('aria-label', 'Theme: Dark');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     expect(await page.evaluate(() => localStorage.getItem('starlight-theme'))).toBe('dark');
 
-    await page.reload();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await button.click();
+    await expect(button).toHaveAttribute('aria-label', 'Theme: Light');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    expect(await page.evaluate(() => localStorage.getItem('starlight-theme'))).toBe('light');
 
-    await page.locator('[data-theme-trigger]:visible').click();
-    await expect(page.locator('[data-theme-popover]:visible input[value="dark"]')).toBeChecked();
+    await button.click();
+    await expect(button).toHaveAttribute('aria-label', 'Theme: System');
+    // System resolves from prefers-color-scheme, which Playwright defaults to light.
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    expect(await page.evaluate(() => localStorage.getItem('starlight-theme'))).toBe('');
+
+    await button.click();
+    await expect(button).toHaveAttribute('aria-label', 'Theme: Dark');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 
-  test('escape closes the popover and returns focus', async ({ page }) => {
+  test('the chosen value persists across a reload', async ({ page }) => {
     await page.goto('/');
 
-    const trigger = page.locator('[data-theme-trigger]:visible');
-    await trigger.click();
-    await page.locator('[data-theme-popover]:visible label').first().click();
-    await trigger.click();
-    await page.keyboard.press('Escape');
+    await page.locator('[data-theme-toggle]:visible').click(); // dark
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
-    await expect(page.locator('[data-theme-popover]:visible')).toHaveCount(0);
-    await expect(trigger).toBeFocused();
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(page.locator('[data-theme-toggle]:visible')).toHaveAttribute(
+      'aria-label',
+      'Theme: Dark',
+    );
+
+    await page.locator('[data-theme-toggle]:visible').click(); // light
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    await expect(page.locator('[data-theme-toggle]:visible')).toHaveAttribute(
+      'aria-label',
+      'Theme: Light',
+    );
+  });
+
+  test('keyboard activation cycles the theme', async ({ page }) => {
+    await page.goto('/');
+
+    const button = page.locator('[data-theme-toggle]:visible');
+    await button.focus();
+    await page.keyboard.press('Enter');
+    await expect(button).toHaveAttribute('aria-label', 'Theme: Dark');
+
+    await page.keyboard.press(' ');
+    await expect(button).toHaveAttribute('aria-label', 'Theme: Light');
   });
 });

@@ -3,7 +3,7 @@
 > Lean agent pack for OpenCode: 10 specialist agents, 28 on-demand skills, 18 slash
 > commands. Plan, implement, review, and document without leaving the terminal.
 > MIT licensed. OpenCode v1 supported; v2 installs and loads, runtime hooks not yet
-> exercised. Also ships as a Claude Code plugin.
+> exercised.
 
 ## Install
 
@@ -30,13 +30,6 @@ Update:
 ```
 npx agents-opencode --update
 npx agents-opencode --update --all
-```
-
-Claude Code plugin:
-
-```
-/plugin marketplace add shahboura/agents-opencode-claude
-/plugin install agents-opencode@shahboura
 ```
 
 ## Entry points
