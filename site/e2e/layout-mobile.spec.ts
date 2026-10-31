@@ -16,8 +16,10 @@ test.describe('landing layout — mobile', () => {
   });
 
   test('no horizontal overflow', async ({ page }) => {
-    await page.goto('/');
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    expect(overflow).toBeLessThanOrEqual(1);
+    for (const path of ['/', '/getting-started/']) {
+      await page.goto(path);
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(overflow, `${path} overflows`).toBeLessThanOrEqual(1);
+    }
   });
 });

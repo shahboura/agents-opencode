@@ -18,6 +18,28 @@ test.describe('content correctness', () => {
     expect(body).not.toContain('19 commands');
   });
 
+  test('landing offers the agentic install beside the install command', async ({ page }) => {
+    await page.goto('/');
+    const link = page.getByRole('link', { name: /let an agent install it/i });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute('href', '/agentic-installation/');
+  });
+
+  test('getting-started leads with the agentic install tab', async ({ page }) => {
+    await page.goto('/getting-started/');
+    const tabs = page.getByRole('tab');
+    await expect(tabs).toHaveCount(2);
+    await expect(tabs.nth(0)).toHaveText(/Let an agent install it/);
+    await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
+    await expect(tabs.nth(1)).toHaveText(/Manual install/);
+
+    // The visible panel is the agentic one; the manual commands live behind tab 2.
+    await expect(page.getByRole('tabpanel')).toContainText('npx agents-opencode --project .');
+    await tabs.nth(1).click();
+    await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tabpanel')).toContainText('npx agents-opencode --global');
+  });
+
   test('the review stage does not claim the agent blocks merges', async ({ page }) => {
     await page.goto('/');
     const body = await page.locator('body').innerText();

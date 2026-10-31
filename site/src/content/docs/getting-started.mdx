@@ -5,6 +5,8 @@ sidebar:
   order: 2
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 Get up and running with OpenCode agents in under 5 minutes.
 
 :::tip[What you get]
@@ -21,27 +23,56 @@ Get up and running with OpenCode agents in under 5 minutes.
 
 ## Quick Setup (60 seconds)
 
-### Via npx (Recommended)
+<Tabs>
+  <TabItem label="Let an agent install it">
 
-```bash
-# Global install
-npx agents-opencode --global
+    Paste this into OpenCode (or any agent with shell access) from the project you want the
+    pack installed into:
 
-# Project install
-npx agents-opencode --project .
+    ```txt wrap title="Agent prompt"
+    Install the OpenCode agents pack
+    in this project with:
+    `npx agents-opencode --project .`
+    Check that Node.js/npm and the OpenCode
+    CLI are available first; stop if either
+    is missing.
+    Show me the command before running it,
+    then verify `.opencode/agents/`,
+    `.opencode/skills/`, and
+    `.opencode/commands/`. Report the counts
+    (10 agents, 28 skills, 18 commands),
+    and run `npx agents-opencode --status`.
+    ```
 
-# Keep only selected language skills for a lighter install
-npx agents-opencode --global --languages python,typescript
+    Swap `--project .` for `--global` to install into every project instead. The full prompt,
+    the commands it runs, and the guardrails are on
+    **[Agentic installation](/agentic-installation/)**.
 
-# Update existing installation
-npx agents-opencode --update
+  </TabItem>
+  <TabItem label="Manual install (npx)">
 
-# Force update both global + current project scopes
-npx agents-opencode --update --all
-```
+    ```bash
+    # Global install
+    npx agents-opencode --global
 
-`--languages` keeps only the requested language skills, pruning the others from `.opencode/skills/`.
-Non-language skills always remain, and skills load on demand; pack agents allow host skills by default.
+    # Project install
+    npx agents-opencode --project .
+
+    # Keep only selected language skills for a lighter install
+    npx agents-opencode --global --languages python,typescript
+
+    # Update existing installation
+    npx agents-opencode --update
+
+    # Force update both global + current project scopes
+    npx agents-opencode --update --all
+    ```
+
+    `--languages` keeps only the requested language skills, pruning the others from `.opencode/skills/`.
+    Non-language skills always remain, and skills load on demand; pack agents allow host skills by default.
+
+  </TabItem>
+</Tabs>
 
 ### Your First Run
 

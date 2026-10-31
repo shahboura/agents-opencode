@@ -129,7 +129,7 @@ samp {
   display: flex;
   align-items: center;
   gap: var(--brand-2);
-  margin-block: var(--brand-4);
+  margin-block: var(--brand-4) var(--brand-2);
   padding: var(--brand-3) var(--brand-4);
   border-radius: var(--brand-radius);
   background: var(--brand-code-bg);
@@ -137,6 +137,13 @@ samp {
   font-family: var(--sl-font-mono);
   font-size: var(--sl-text-sm);
   overflow-x: auto;
+}
+
+/* The delegated-install option belongs to the install command, not the CTA row. */
+.landing-alt {
+  margin-block: 0 var(--brand-4);
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-2);
 }
 
 .landing-cta {
