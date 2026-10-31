@@ -7,6 +7,11 @@ sidebar:
 
 ## Commands
 
+:::tip[What you get]
+- Every slash command in the pack, with what it does and when to run it.
+- The mapping from command to agent, so you can pick the right entry point.
+:::
+
 Type `/command-name` in the OpenCode TUI to run.
 
 Most commands accept an optional argument to scope the task:
@@ -146,6 +151,14 @@ whether the alias still delegates, so prefer `subagent` in new v2-native command
 See [OpenCode v1/v2 Support](/opencode-v1-v2-support/).
 
 See [OpenCode Commands docs](https://opencode.ai/docs/commands/) for full reference.
+
+## Verify It Worked
+
+```bash
+ls .opencode/commands/*.md | grep -v README | wc -l
+```
+
+Prints 18 — one line per command.
 
 ## Next Steps
 

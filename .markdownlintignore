@@ -1,5 +1,6 @@
 AGENTS.md
 CHANGELOG.md
 MILESTONES.md
-graphify-out/
 evals/transcripts/
+graphify-out/
+site/node_modules

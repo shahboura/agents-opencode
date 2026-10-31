@@ -7,6 +7,12 @@ sidebar:
 
 Get up and running with OpenCode agents in under 5 minutes.
 
+:::tip[What you get]
+- A working install in either project or global scope.
+- A first `@orchestrator` prompt that returns a plan.
+- Update, uninstall, and status commands you can rerun any time.
+:::
+
 ## Prerequisites
 
 - [OpenCode CLI](https://opencode.ai/docs/cli/) installed
@@ -171,9 +177,21 @@ Full details: **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.
 - Coding standards are delivered as on-demand skills in
   `.opencode/skills/<name>/SKILL.md`.
 
+## Verify It Worked
+
+```bash
+npx agents-opencode --status
+```
+
+Prints `installed` or `not installed` for the global and project scopes.
+
 ## Next Steps
 
 - **[Agents](/agents/)**
 - **[Customization](/customization/)**
 - **[Commands & Skills](/commands/)**
 - **[Troubleshooting](/troubleshooting/)**
+
+## Next
+
+Continue with [Agentic Installation](/agentic-installation/).

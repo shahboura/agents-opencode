@@ -164,6 +164,8 @@ samp {
 .loop-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 1fr;
+  align-items: stretch;
   gap: var(--brand-3);
 }
 
@@ -174,6 +176,11 @@ samp {
 }
 
 .loop-step {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+  margin: 0;
   border: 1px solid var(--sl-color-gray-5);
   border-radius: var(--brand-radius);
   padding: var(--brand-3);
@@ -217,7 +224,9 @@ samp {
    plans, nine support it. Sizes are honest, not decorative. */
 .agent-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  align-items: stretch;
   gap: var(--brand-3);
   margin-block: var(--brand-5);
 }
@@ -247,9 +256,10 @@ samp {
 
 .agent-card--lead {
   grid-column: span 2;
-  grid-row: span 2;
+  grid-row: span 1;
   gap: var(--brand-2);
-  padding: var(--brand-5);
+  /* Bottom padding matches the 1x1 cards so every badge sits on one line. */
+  padding: var(--brand-4);
 }
 
 .agent-card__role {
@@ -278,6 +288,7 @@ samp {
 
 .agent-card__badge {
   margin-top: auto;
+  white-space: nowrap;
   padding-top: var(--brand-2);
   font-family: var(--sl-font-mono);
   font-size: var(--sl-text-xs);

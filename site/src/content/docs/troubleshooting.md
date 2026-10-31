@@ -7,6 +7,11 @@ sidebar:
 
 ## Common Issues
 
+:::tip[What you get]
+- The failure modes that actually happen, with the fix for each.
+- Which diagnostic command to run before guessing.
+:::
+
 ### Agents not showing up
 
 - Verify agent files exist in `.opencode/agents/*.md`
@@ -163,3 +168,11 @@ sidebar:
 - [Getting Started](/getting-started/)
 - [Agents](/agents/)
 - [Commands & Skills](/commands/)
+
+## Verify It Worked
+
+```bash
+npm run doctor
+```
+
+Exits 0 when the repository is healthy; failures name the check.

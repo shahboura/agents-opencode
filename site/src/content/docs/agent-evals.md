@@ -15,6 +15,12 @@ It verifies behavior-critical metadata and instruction markers for:
 - Command routing/frontmatter/argument consistency
 - Permission skill/task invariants
 
+:::tip[What you get]
+- A pass/fail summary for every agent and command contract check.
+- A JSON report at `evals/reports/latest.json` when you ask for one.
+- A trend snapshot you can compare against the previous run.
+:::
+
 ## Commands
 
 ```bash
@@ -42,3 +48,15 @@ as workflow artifacts.
 
 Regression fixtures for harness and validator tests live under `scripts/fixtures/`.
 This keeps golden inputs explicit and reusable across tests.
+
+## Verify It Worked
+
+```bash
+npm run eval:agents
+```
+
+Prints `Agent eval passed` and exits 0 when every contract check holds.
+
+## Next
+
+Continue with [Agent Skills Matrix](/skills-matrix/).

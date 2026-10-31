@@ -7,6 +7,11 @@ sidebar:
 
 ## Project Context
 
+:::tip[What you get]
+- How to prune skills you do not need without breaking agent behaviour.
+- Where the config lives and which knobs are supported.
+:::
+
 Create or update `AGENTS.md` (created on first run or via `/init`) with a short project summary:
 
 ```markdown
@@ -180,6 +185,14 @@ v1 and v2 use disjoint config keys. The installer emits one target's keys and
 never mixes them (`--target v1|v2|auto`). In v2, agent `request.body.temperature`
 is preserved but not yet sent to the model, and command `subtask` is a deprecated
 alias for `subagent`. See **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.
+
+## Verify It Worked
+
+```bash
+ls .opencode/skills | wc -l
+```
+
+Prints 28 — the default skill set before any pruning.
 
 ## Next Steps
 

@@ -10,6 +10,11 @@ approach against **current primary sources before implementation**. It is trigge
 by the **structure** of a decision, never by self-reported confidence — model
 confidence is unreliable, so the gate escalates to evidence instead.
 
+:::tip[What you get]
+- When a decision is expensive to reverse, how to ground it in sources.
+- The trigger conditions that should send you to `@researcher`.
+:::
+
 It is defined by the `decision-grounding` skill, executed by the read-only
 `@researcher` subagent, and wired into the orchestrator as **Pattern 9: Decision
 Grounding Gate**.
@@ -68,6 +73,14 @@ API/symbol/version terms (never caller code, diffs, or internal identifiers).
 At most **3 grounded decisions** per task, **6 fetches** each, search depth 1, and one
 grounding cycle. Do not loop research, and do not ask the agent to self-report
 confidence.
+
+## Verify It Worked
+
+```bash
+ls .opencode/skills/decision-grounding
+```
+
+Prints SKILL.md — the skill is installed and loadable.
 
 ## Related
 

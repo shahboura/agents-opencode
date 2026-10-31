@@ -4,6 +4,7 @@ description: Ten specialist agents — what each one owns, its tools, and when t
 sidebar:
   label: Overview
   order: 3
+tableOfContents: false
 ---
 
 Every agent has one job and its own tool permissions. The list below is ordered by how often
@@ -71,14 +72,14 @@ you will reach for it, not alphabetically.
     <span class="agent-card__role">Team strategy</span>
     <strong>em-advisor</strong>
     <p>Engineering-management decisions, team dynamics and technical strategy.</p>
-    <span class="agent-card__badge">primary · advice</span>
+    <span class="agent-card__badge">primary</span>
   </a>
 
   <a class="agent-card" href="#blogger">
     <span class="agent-card__role">Writes content</span>
     <strong>blogger</strong>
     <p>Tech, finance and leadership writing with fact validation.</p>
-    <span class="agent-card__badge">primary · content</span>
+    <span class="agent-card__badge">primary</span>
   </a>
 </div>
 
