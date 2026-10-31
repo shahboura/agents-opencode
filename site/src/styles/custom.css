@@ -158,7 +158,8 @@ samp {
   font-size: var(--sl-text-xs);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--sl-color-gray-3);
+  /* gray-2: gray-3 on the panel surface is 4.48:1 in dark mode. */
+  color: var(--sl-color-gray-2);
 }
 
 .loop-grid {
