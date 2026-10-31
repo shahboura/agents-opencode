@@ -290,6 +290,17 @@ const t = { light: 'Light', dark: 'Dark', auto: 'System' };
         return;
       }
 
+      // A pointer pick inside the popover closes it and returns focus. Keyboard
+      // changes skip this (radio activation fires a detail-0 click), so arrow
+      // keys can move Light → Dark → System without losing focus.
+      const popover = target.closest('[data-theme-popover]');
+      if (popover && event.detail > 0) {
+        const root = popover.closest('starlight-theme-select');
+        const owner = root && root.querySelector('[data-theme-trigger]');
+        closeAll(owner || undefined);
+        return;
+      }
+
       if (!target.closest('starlight-theme-select')) closeAll();
     });
 
@@ -297,9 +308,6 @@ const t = { light: 'Light', dark: 'Dark', auto: 'System' };
       const input = event.target;
       if (!(input instanceof HTMLInputElement) || !input.hasAttribute('data-theme-radio')) return;
       applyTheme(parseTheme(input.value));
-      const root = input.closest('starlight-theme-select');
-      const trigger = root && root.querySelector('[data-theme-trigger]');
-      if (input.closest('[data-theme-popover]')) closeAll(trigger || undefined);
     });
 
     document.addEventListener('keydown', (event) => {
@@ -318,9 +326,10 @@ const t = { light: 'Light', dark: 'Dark', auto: 'System' };
       if (target instanceof Element && !target.closest('starlight-theme-select')) closeAll();
     });
 
-    // Another tab changed the theme: keep this control in sync.
+    // Another tab changed the theme: apply it here too (auto resolves against
+    // this tab's prefers-color-scheme), so the control and page never disagree.
     window.addEventListener('storage', (event) => {
-      if (event.key === STORAGE_KEY) syncUI(loadTheme());
+      if (event.key === STORAGE_KEY) applyTheme(loadTheme());
     });
 
     matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
@@ -331,10 +340,11 @@ const t = { light: 'Light', dark: 'Dark', auto: 'System' };
     });
 
     const start = () => syncUI(loadTheme());
+    // Run immediately so the header instance is correct on first paint, then
+    // again after DOMContentLoaded brings the mobile-menu instance in.
+    start();
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', start, { once: true });
-    } else {
-      start();
     }
   })();
 </script>

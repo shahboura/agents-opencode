@@ -105,7 +105,8 @@ When introducing Level B/C changes:
 ## Verify It Worked
 
 ```bash
-npm run validate:inventory
+npm run doctor
 ```
 
-Exits 0 — stated counts still match the filesystem.
+Exits 0, and the changelog validator confirms the `[capability:*]` label on the
+Unreleased entry is valid alongside the other pack checks.

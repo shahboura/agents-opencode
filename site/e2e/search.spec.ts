@@ -5,7 +5,7 @@ test.describe('search keyboard shortcut', () => {
     await page.goto('/');
     const trigger = page.locator('[data-open-modal]');
     await expect(trigger).toBeEnabled();
-    await expect(trigger).toHaveAttribute('aria-keyshortcuts', '/');
+    await expect(trigger).toHaveAttribute('aria-keyshortcuts', '/ Control+K');
     await expect(page.locator('[data-open-modal] > kbd')).toHaveText('/');
 
     await page.keyboard.press('/');

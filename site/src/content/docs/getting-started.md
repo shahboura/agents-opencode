@@ -191,7 +191,3 @@ Prints `installed` or `not installed` for the global and project scopes.
 - **[Customization](/customization/)**
 - **[Commands & Skills](/commands/)**
 - **[Troubleshooting](/troubleshooting/)**
-
-## Next
-
-Continue with [Agentic Installation](/agentic-installation/).

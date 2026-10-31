@@ -19,11 +19,12 @@ import Default from '@astrojs/starlight/components/Search.astro';
     const button = document.querySelector('button[data-open-modal]');
     if (!button) return;
 
-    button.setAttribute('aria-keyshortcuts', '/');
+    button.setAttribute('aria-keyshortcuts', '/ Control+K');
     const hint = button.querySelector('kbd');
     if (hint) hint.textContent = '/';
 
     document.addEventListener('keydown', (event) => {
+      if (event.defaultPrevented || event.isComposing) return;
       // Shift is allowed: `/` needs it on some layouts. Ctrl/Cmd/Alt are not.
       if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey) return;
 
