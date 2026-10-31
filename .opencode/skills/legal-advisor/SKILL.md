@@ -43,7 +43,7 @@ Evaluate sources by authority, in descending order:
 - **Guidance:** Regulatory body publications, official interpretations, advisory opinions
 - **Commentary:** Law review articles, treatises, practitioner guides
 
-Always prefer official government sources over secondary summaries. Note when sources may be outdated, repealed, or overruled.
+Always favor official government sources over secondary summaries. Note when sources may be outdated, repealed, or overruled.
 
 Reference: `references/research-methodology.md` for detailed source evaluation guidance.
 
