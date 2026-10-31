@@ -165,8 +165,11 @@ function testDenyOrdering(agents) {
 }
 
 function matchesPattern(pattern, command) {
-  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
-  return new RegExp(`^${escaped}$`).test(command);
+  const match = (value) =>
+    new RegExp(`^${value.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}$`).test(command);
+  // OpenCode also matches a pattern ending in " *" against the command without arguments.
+  // Host behavior: v2 permission matching (packages/core/src/util/wildcard.ts, docs permissions#matching).
+  return match(pattern) || (pattern.endsWith(' *') && match(pattern.slice(0, -2)));
 }
 
 // Documents OpenCode behavior: the last matching pattern decides.
@@ -201,6 +204,53 @@ function testShellMatcher(agents) {
     assert(
       resolveShell(bash, 'TEST_DATABASE_URL=x pnpm exec vitest run') === 'ask',
       `${name}: expected an env-prefixed test command to fall through to the "*": "ask" guard`
+    );
+    // Existing test-runner entries, including bare forms covered by the trailing " *".
+    for (const command of [
+      'npm test',
+      'npm run test',
+      'pnpm test',
+      'yarn test',
+      'yarn run test',
+      'bun test',
+      'bun run test',
+      'pytest',
+      'go test',
+      'cargo test',
+      'mvn test',
+      'rails test',
+    ]) {
+      assert(resolveShell(bash, command) === 'allow', `${name}: expected "${command}" to be allowed`);
+    }
+    // Playwright's official scaffold commands and the installed binary may run tests;
+    // installs, env prefixes, and secret reads chained to them still ask.
+    for (const command of [
+      'npx playwright test',
+      'npx playwright test --project=desktop',
+      'pnpm exec playwright test',
+      'pnpm exec playwright test --project=desktop',
+      'yarn playwright test',
+      'yarn playwright test --project=desktop',
+      './node_modules/.bin/playwright test',
+      './node_modules/.bin/playwright test --project=desktop',
+    ]) {
+      assert(resolveShell(bash, command) === 'allow', `${name}: expected "${command}" to be allowed`);
+    }
+    for (const command of [
+      'npx playwright install chromium',
+      'pnpm exec playwright install',
+      'yarn playwright install',
+      './node_modules/.bin/playwright install',
+      'PLAYWRIGHT_BROWSERS_PATH=x npx playwright test',
+      'PLAYWRIGHT_BROWSERS_PATH=x ./node_modules/.bin/playwright test',
+      'mvn test exec:exec -Dexec.executable=bash',
+      'mvn test -f /tmp/pom.xml',
+    ]) {
+      assert(resolveShell(bash, command) === 'ask', `${name}: expected "${command}" to ask`);
+    }
+    assert(
+      resolveCompound(bash, 'npx playwright test && cat .env') === 'ask',
+      `${name}: expected a &&-chained secret read to ask`
     );
     assert(resolveShell(bash, 'rm -rf build') === 'deny', `${name}: expected "rm -rf" to match a shell deny`);
     // Current behavior: the redirection guards also match `2>&1`, so this asks.
