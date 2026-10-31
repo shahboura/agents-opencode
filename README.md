@@ -1,6 +1,7 @@
 # OpenCode Agents
 
 [![Validate Agents & Documentation](https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml/badge.svg)](https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml)
+[![SkillSpector](https://github.com/shahboura/agents-opencode/actions/workflows/skillspector.yml/badge.svg?branch=main)](https://github.com/shahboura/agents-opencode/actions/workflows/skillspector.yml)
 [![npm version](https://img.shields.io/npm/v/agents-opencode)](https://www.npmjs.com/package/agents-opencode)
 [![Socket Badge](https://badge.socket.dev/npm/package/agents-opencode)](https://socket.dev/npm/package/agents-opencode)
 [![Documentation](https://img.shields.io/badge/docs-Cloudflare%20Workers-blue)](https://agnts.elkodr.com/)

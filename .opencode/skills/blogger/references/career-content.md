@@ -74,7 +74,7 @@ When you don't have precise numbers, use reasonable estimates with approximate m
 - Volume/scale: "processed ~10K requests daily" or "supported 3x growth without adding headcount"
 - Before/after comparisons: "improved test coverage from ~40% to 85%"
 - Dollar impact via proxies: "saved ~$50K/year by consolidating 3 vendor tools into 1"
-- Always prefer concrete ranges over vague adjectives ("improved" → "improved by 30-40%")
+- Always favor concrete ranges over vague adjectives ("improved" → "improved by 30-40%")
 
 ## LinkedIn Rules
 
