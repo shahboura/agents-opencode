@@ -12,6 +12,11 @@
 
 * **site:** stop tracking the shared node_modules symlink ([6ce9d97](https://github.com/shahboura/agents-opencode/commit/6ce9d977509d7eb980425c57de6960c78f73bc9c))
 
+
+### Documentation
+
+* **site:** brand revamp — landing, tokens, theme control, IA, agentic install ([82b3acd](https://github.com/shahboura/agents-opencode/commit/82b3acdac261bec9544366248f6f0e576a6c8172))
+
 ## [4.2.1](https://github.com/shahboura/agents-opencode/compare/v4.2.0...v4.2.1) (2026-10-31)
 
 
