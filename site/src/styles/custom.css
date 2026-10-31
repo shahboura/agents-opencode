@@ -320,3 +320,15 @@ samp {
     transform: none;
   }
 }
+
+/* Splash pages render no `data-has-sidebar` on <html> (docs pages do). With no
+   menu button, the header group holding the theme control is the only way to
+   reach it below 50rem: show that group, but only the theme select inside it. */
+@media (width < 50rem) {
+  html:not([data-has-sidebar]) header .sl-hidden:has(starlight-theme-select) {
+    display: flex;
+  }
+  html:not([data-has-sidebar]) header .sl-hidden:has(starlight-theme-select) > :not(starlight-theme-select) {
+    display: none;
+  }
+}

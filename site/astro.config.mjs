@@ -73,6 +73,8 @@ export default defineConfig({
       components: {
         // Brand theme control: 36px popover on desktop, 3-stop switch on mobile.
         ThemeSelect: './src/components/ThemeSelect.astro',
+        // Starlight's search plus the `/` keyboard shortcut.
+        Search: './src/components/Search.astro',
         // Wordmark lockup instead of the plain text title.
         SiteTitle: './src/components/SiteTitle.astro',
       },

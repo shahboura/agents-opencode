@@ -1,0 +1,46 @@
+---
+/**
+ * Adds the `/` search shortcut to Starlight's Search component.
+ *
+ * Renders the built-in component unchanged, then rewrites the visible hint and
+ * `aria-keyshortcuts`. Ctrl/Cmd+K keeps working: Starlight still owns it.
+ */
+import Default from '@astrojs/starlight/components/Search.astro';
+---
+
+<Default {...Astro.props} />
+
+<script is:inline>
+  (() => {
+    // Rendered once, but guard so a second render cannot double-bind.
+    if (window.__searchShortcut) return;
+    window.__searchShortcut = true;
+
+    const button = document.querySelector('button[data-open-modal]');
+    if (!button) return;
+
+    button.setAttribute('aria-keyshortcuts', '/');
+    const hint = button.querySelector('kbd');
+    if (hint) hint.textContent = '/';
+
+    document.addEventListener('keydown', (event) => {
+      // Shift is allowed: `/` needs it on some layouts. Ctrl/Cmd/Alt are not.
+      if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey) return;
+
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        (target.isContentEditable || /^(input|textarea|select)$/i.test(target.tagName))
+      ) {
+        return;
+      }
+      // The search dialog is open: let the `/` be typed in its input.
+      if (document.body.hasAttribute('data-search-modal-open')) return;
+      // Starlight enables the button once its search module has loaded.
+      if (button.disabled) return;
+
+      event.preventDefault();
+      button.click();
+    });
+  })();
+</script>

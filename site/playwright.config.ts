@@ -9,8 +9,10 @@ export default defineConfig({
     baseURL: 'http://localhost:4321',
     screenshot: 'only-on-failure',
   },
+  // Plain static server: `astro preview` runs a persistent manager that holds
+  // the port, which makes a Playwright-managed server exit immediately.
   webServer: {
-    command: 'npm run preview -- --port 4321',
+    command: 'python3 -m http.server 4321 --bind 127.0.0.1 --directory dist',
     port: 4321,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
@@ -19,7 +21,7 @@ export default defineConfig({
     {
       name: 'desktop',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 900 } },
-      testMatch: ['**/content.spec.ts', '**/layout-desktop.spec.ts', '**/theme-desktop.spec.ts', '**/links.spec.ts'],
+      testMatch: ['**/content.spec.ts', '**/layout-desktop.spec.ts', '**/theme-desktop.spec.ts', '**/search.spec.ts', '**/links.spec.ts'],
     },
     {
       name: 'mobile',
