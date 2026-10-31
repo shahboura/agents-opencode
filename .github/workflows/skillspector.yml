@@ -57,9 +57,9 @@ jobs:
             const r = require("./skillspector.json");
             const score = r.max_risk_score;
             const findings = (r.skills ?? []).reduce((n, s) => n + (s.finding_count || 0), 0);
-            console.log(`SkillSpector score: ${score}/100, findings: ${findings}`);
+            console.log("SkillSpector score: " + score + "/100, findings: " + findings);
             if (score !== 0) {
-              console.error(`Score changed from 0 to ${score}; failing the gate.`);
+              console.error("Score changed from 0 to " + score + "; failing the gate.");
               process.exit(1);
             }
           ' | tee -a "$GITHUB_STEP_SUMMARY"
