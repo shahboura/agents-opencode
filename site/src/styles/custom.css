@@ -1,3 +1,10 @@
+/* Brand typefaces — self-hosted via Fontsource so the site's CSP
+   (font-src 'self') holds and no visitor data goes to a third party. */
+@import '@fontsource/ibm-plex-sans/latin-400.css';
+@import '@fontsource/ibm-plex-sans/latin-600.css';
+@import '@fontsource/jetbrains-mono/latin-400.css';
+@import '@fontsource/jetbrains-mono/latin-600.css';
+
 /*
  * Custom styles for the OpenCode Agents documentation.
  * Ported from the Jekyll (just-the-docs) `docs/_sass/custom.scss`.
@@ -28,4 +35,180 @@
 .sl-markdown-content th {
   background-color: var(--sl-color-gray-6);
   font-weight: 600;
+}
+
+/* ------------------------------------------------------------------
+ * Brand tokens — see /DESIGN.md "Brand mark".
+ * Crimson is the only accent; everything else is neutral.
+ * ------------------------------------------------------------------ */
+:root {
+  --sl-font: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --brand-accent: #d7263d;
+  --brand-accent-ink: #ffffff;
+  --brand-radius: 8px;
+  --brand-code-bg: #0f1115;
+
+  /* Spacing scale: 4px base, 8px rhythm. */
+  --brand-1: 4px;
+  --brand-2: 8px;
+  --brand-3: 12px;
+  --brand-4: 16px;
+  --brand-5: 24px;
+  --brand-6: 32px;
+  --brand-7: 48px;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #fbe5e8;
+  --sl-color-accent: var(--brand-accent);
+  --sl-color-accent-high: #8f1622;
+}
+
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #3d1018;
+  --sl-color-accent: var(--brand-accent);
+  --sl-color-accent-high: #ff8f98;
+}
+
+html body {
+  font-family: var(--sl-font);
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--sl-font-mono);
+}
+
+/* Landing page primitives (used by src/content/docs/index.mdx). */
+.landing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: var(--brand-7);
+  align-items: start;
+  margin-block: var(--brand-5) var(--brand-7);
+}
+
+/* Starlight adds vertical rhythm to markdown blocks; the grid handles its own. */
+.landing-hero > * {
+  margin-block: 0;
+}
+
+@media (max-width: 900px) {
+  .landing-hero {
+    grid-template-columns: 1fr;
+    gap: var(--brand-5);
+  }
+}
+
+.landing-eyebrow {
+  font-size: var(--sl-text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sl-color-accent-high);
+  font-weight: 600;
+}
+
+.landing-headline {
+  margin: var(--brand-2) 0 var(--brand-3);
+  font-size: clamp(2rem, 1.4rem + 2.6vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+.landing-lede {
+  color: var(--sl-color-gray-2);
+  max-width: 48ch;
+}
+
+.install-line {
+  display: flex;
+  align-items: center;
+  gap: var(--brand-2);
+  margin-block: var(--brand-4);
+  padding: var(--brand-3) var(--brand-4);
+  border-radius: var(--brand-radius);
+  background: var(--brand-code-bg);
+  color: #e8e8ea;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-sm);
+  overflow-x: auto;
+}
+
+.landing-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--brand-3);
+  margin-block: var(--brand-4);
+}
+
+.loop-panel {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 12px;
+  padding: var(--brand-4);
+  background: var(--sl-color-gray-6);
+}
+
+.loop-panel h2 {
+  margin: 0 0 var(--brand-3);
+  font-size: var(--sl-text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}
+
+.loop-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--brand-3);
+}
+
+@media (max-width: 520px) {
+  .loop-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.loop-step {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: var(--brand-radius);
+  padding: var(--brand-3);
+  background: var(--sl-color-bg);
+}
+
+.loop-step span {
+  display: block;
+  font-size: var(--sl-text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sl-color-accent-high);
+  font-weight: 700;
+}
+
+.loop-step strong {
+  display: block;
+  margin-block: 2px 2px;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-sm);
+  font-weight: 600;
+}
+
+.loop-step small {
+  color: var(--sl-color-gray-3);
+  font-size: var(--sl-text-xs);
+}
+
+.agent-badge {
+  display: inline-block;
+  margin-top: var(--brand-2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--sl-color-gray-6);
+  color: var(--sl-color-gray-2);
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-xs);
 }

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 232 240" role="img" aria-labelledby="t">
+  <title id="t">OpenCode Agents — round soft</title>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M190.6 73.4A88 88 0 1 0 190.6 166.6" stroke="#D7263D" stroke-width="26"/>
+    <g transform="translate(116,120) scale(0.9552) translate(-116.00,-99.00)" stroke="#141414">
+    <g stroke-width="17"><path d="M86 66L66 82L86 98" stroke-width="17"/><path d="M146 66L166 82L146 98" stroke-width="17"/></g>
+    <path d="M116 98V132L140 126" stroke-width="20"/>
+  </g>
+  </g>
+</svg>

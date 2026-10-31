@@ -1,0 +1,81 @@
+# OpenCode Agents
+
+> Lean agent pack for OpenCode: 10 specialist agents, 28 on-demand skills, 18 slash
+> commands. Plan, implement, review, and document without leaving the terminal.
+> MIT licensed. OpenCode v1 supported; v2 installs and loads, runtime hooks not yet
+> exercised. Also ships as a Claude Code plugin.
+
+## Install
+
+Global (shared by every project):
+
+```
+npx agents-opencode --global
+```
+
+Project scope (preferred for agentic installation):
+
+```
+npx agents-opencode --project .
+```
+
+Keep only selected language skills:
+
+```
+npx agents-opencode --global --languages python,typescript
+```
+
+Update:
+
+```
+npx agents-opencode --update
+npx agents-opencode --update --all
+```
+
+Claude Code plugin:
+
+```
+/plugin marketplace add shahboura/agents-opencode-claude
+/plugin install agents-opencode@shahboura
+```
+
+## Entry points
+
+- Getting started: https://agnts.elkodr.com/getting-started/
+- Agentic installation (hand the install to an agent): https://agnts.elkodr.com/agentic-installation/
+- Agents: https://agnts.elkodr.com/agents/
+- Skills matrix: https://agnts.elkodr.com/skills-matrix/
+- Commands: https://agnts.elkodr.com/commands/
+- Review gate: https://agnts.elkodr.com/review-gate/
+- Compatibility: https://agnts.elkodr.com/compatibility/
+- OpenCode v1/v2 support: https://agnts.elkodr.com/opencode-v1-v2-support/
+- Troubleshooting: https://agnts.elkodr.com/troubleshooting/
+
+## Facts
+
+- 10 agents: orchestrator, codebase, review, docs, planner, researcher, brutal-critic,
+  legal-advisor, em-advisor, blogger.
+- 28 skills, loaded on demand — no context cost until a skill is invoked.
+- 18 slash commands.
+- Skills are host-compatible: pack agents allow host skills by default.
+- `--languages` prunes unused language skills; non-language skills always remain.
+
+## First prompt
+
+```txt
+opencode
+/init
+@orchestrator Build a user authentication API with JWT tokens
+```
+
+## Verification
+
+```
+ls .opencode/agents | wc -l      # 10
+ls .opencode/skills | wc -l      # 28
+ls .opencode/commands | wc -l    # 18
+```
+
+## License
+
+MIT. Source: https://github.com/shahboura/agents-opencode

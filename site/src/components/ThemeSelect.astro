@@ -1,0 +1,340 @@
+---
+/**
+ * Brand theme control — overrides Starlight's ThemeSelect.
+ *
+ * Keeps Starlight's storage contract (`starlight-theme` = light | dark | '' for
+ * auto) so the pre-paint script still prevents a flash, and replaces only the
+ * markup. Starlight renders this component twice (header + mobile menu), so the
+ * radio groups get a per-render name and the document listeners bind once.
+ */
+const uid = Math.random().toString(36).slice(2, 8);
+const groupName = `theme-${uid}`;
+
+const t = { light: 'Light', dark: 'Dark', auto: 'System' };
+---
+
+<starlight-theme-select>
+  <div class="theme-control">
+    <button
+      class="theme-trigger"
+      type="button"
+      aria-haspopup="true"
+      aria-expanded="false"
+      aria-controls={`theme-popover-${uid}`}
+      aria-label={`Theme: ${t.auto}`}
+      data-theme-trigger
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"></circle>
+        <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"></path>
+      </svg>
+    </button>
+
+    <div class="theme-popover" id={`theme-popover-${uid}`} data-theme-popover role="radiogroup" aria-label="Theme" hidden>
+      <label class="theme-option">
+        <input type="radio" name={groupName} value="light" data-theme-radio />
+        <span>{t.light}</span>
+      </label>
+      <label class="theme-option">
+        <input type="radio" name={groupName} value="dark" data-theme-radio />
+        <span>{t.dark}</span>
+      </label>
+      <label class="theme-option">
+        <input type="radio" name={groupName} value="auto" data-theme-radio checked />
+        <span>{t.auto}</span>
+      </label>
+    </div>
+
+    <div class="theme-switch" role="radiogroup" aria-label="Theme">
+      <label class="theme-stop">
+        <input type="radio" name={`${groupName}-switch`} value="light" data-theme-radio />
+        <span class="sr-only">{t.light}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 4v1.5M12 18.5V20M4 12h1.5M18.5 12H20"></path>
+        </svg>
+      </label>
+      <label class="theme-stop">
+        <input type="radio" name={`${groupName}-switch`} value="auto" data-theme-radio checked />
+        <span class="sr-only">{t.auto}</span>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"></circle>
+          <path d="M12 5a7 7 0 0 1 0 14z"></path>
+        </svg>
+      </label>
+      <label class="theme-stop">
+        <input type="radio" name={`${groupName}-switch`} value="dark" data-theme-radio />
+        <span class="sr-only">{t.dark}</span>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M14.5 4a8.5 8.5 0 1 0 5.5 12.6A7 7 0 0 1 14.5 4z"></path>
+        </svg>
+      </label>
+    </div>
+  </div>
+</starlight-theme-select>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .theme-control {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ---- desktop: 36px button + popover ---- */
+  .theme-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 8px;
+    border: 1px solid var(--sl-color-gray-5);
+    background: var(--sl-color-black);
+    color: var(--sl-color-gray-2);
+    cursor: pointer;
+    transition: background-color 120ms ease-out, color 120ms ease-out;
+  }
+  .theme-trigger:hover {
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+  }
+  .theme-trigger:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+  .theme-trigger svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .theme-popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 30;
+    min-width: 132px;
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid var(--sl-color-gray-5);
+    background: var(--sl-color-black);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  }
+  .theme-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 9px;
+    border-radius: 6px;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-2);
+    cursor: pointer;
+  }
+  .theme-option:hover,
+  .theme-option:has(input:checked) {
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+  }
+  .theme-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .theme-option:focus-within {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: -2px;
+  }
+
+  /* ---- mobile: three native radios styled as a switch ---- */
+  .theme-switch {
+    display: none;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 999px;
+    border: 1px solid var(--sl-color-gray-5);
+    background: var(--sl-color-gray-6);
+  }
+  .theme-stop {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    color: var(--sl-color-gray-3);
+    cursor: pointer;
+  }
+  .theme-stop input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+  .theme-stop:has(input:checked) {
+    background: var(--sl-color-accent);
+    color: #fff;
+  }
+  .theme-stop:has(input:focus-visible) {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+  .theme-stop svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Starlight switches to the mobile layout at 50rem. */
+  @media (width < 50rem) {
+    .theme-trigger,
+    .theme-popover {
+      display: none;
+    }
+    .theme-switch {
+      display: flex;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .theme-trigger,
+    .theme-option {
+      transition: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    // The component renders twice (header + mobile menu). Bind document-level
+    // handlers once; per-instance radio groups are already scoped by name.
+    if (window.__brandThemeControl) return;
+    window.__brandThemeControl = true;
+
+    const STORAGE_KEY = 'starlight-theme';
+
+    const parseTheme = (value) =>
+      value === 'light' || value === 'dark' || value === 'auto' ? value : 'auto';
+
+    const loadTheme = () => {
+      try {
+        return parseTheme(localStorage.getItem(STORAGE_KEY) || 'auto');
+      } catch {
+        return 'auto';
+      }
+    };
+
+    const systemTheme = () =>
+      matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+
+    function syncUI(theme) {
+      document.querySelectorAll('input[data-theme-radio]').forEach((input) => {
+        input.checked = input.value === theme;
+      });
+      document.querySelectorAll('[data-theme-trigger]').forEach((trigger) => {
+        trigger.setAttribute('aria-label', 'Theme: ' + (theme === 'auto' ? 'System' : theme));
+      });
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme === 'auto' ? systemTheme() : theme;
+      try {
+        localStorage.setItem(STORAGE_KEY, theme === 'auto' ? '' : theme);
+      } catch {
+        /* storage blocked: the theme still applies for this page view */
+      }
+      syncUI(theme);
+    }
+
+    function closeAll(focusTarget) {
+      document.querySelectorAll('[data-theme-popover]').forEach((popover) => {
+        if (!popover.hidden) {
+          popover.hidden = true;
+          const root = popover.closest('starlight-theme-select');
+          const trigger = root && root.querySelector('[data-theme-trigger]');
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+      if (focusTarget) focusTarget.focus();
+    }
+
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      const trigger = target.closest('[data-theme-trigger]');
+      if (trigger) {
+        const root = trigger.closest('starlight-theme-select');
+        const popover = root && root.querySelector('[data-theme-popover]');
+        if (!popover) return;
+        const willOpen = popover.hidden;
+        syncUI(loadTheme());
+        closeAll();
+        popover.hidden = !willOpen;
+        trigger.setAttribute('aria-expanded', String(willOpen));
+        if (willOpen) {
+          const checked = popover.querySelector('input:checked');
+          if (checked) checked.focus();
+        }
+        return;
+      }
+
+      if (!target.closest('starlight-theme-select')) closeAll();
+    });
+
+    document.addEventListener('change', (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || !input.hasAttribute('data-theme-radio')) return;
+      applyTheme(parseTheme(input.value));
+      const root = input.closest('starlight-theme-select');
+      const trigger = root && root.querySelector('[data-theme-trigger]');
+      if (input.closest('[data-theme-popover]')) closeAll(trigger || undefined);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const open = document.querySelector('[data-theme-popover]:not([hidden])');
+      if (!open) return;
+      event.preventDefault();
+      const root = open.closest('starlight-theme-select');
+      const trigger = root && root.querySelector('[data-theme-trigger]');
+      closeAll(trigger || undefined);
+    });
+
+    // Close the popover when focus leaves it (keyboard Tab out).
+    document.addEventListener('focusin', (event) => {
+      const target = event.target;
+      if (target instanceof Element && !target.closest('starlight-theme-select')) closeAll();
+    });
+
+    // Another tab changed the theme: keep this control in sync.
+    window.addEventListener('storage', (event) => {
+      if (event.key === STORAGE_KEY) syncUI(loadTheme());
+    });
+
+    matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+      if (loadTheme() === 'auto') {
+        document.documentElement.dataset.theme = systemTheme();
+        syncUI('auto');
+      }
+    });
+
+    const start = () => syncUI(loadTheme());
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', start, { once: true });
+    } else {
+      start();
+    }
+  })();
+</script>

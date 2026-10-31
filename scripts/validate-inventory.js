@@ -49,17 +49,22 @@ const SOURCES = [
     ],
   },
   {
-    file: 'site/src/content/docs/index.md',
+    file: 'site/src/content/docs/index.mdx',
     patterns: [
       {
-        label: 'specialized agents',
-        regex: /(\d+) specialized agents/,
+        label: 'specialist agents',
+        regex: /(\d+) specialist agents/,
         values: ['agents'],
       },
       {
-        label: 'all agents verified',
-        regex: /all (\d+) agents/,
-        values: ['agents'],
+        label: 'on-demand skills',
+        regex: /(\d+) on-demand skills/,
+        values: ['skills'],
+      },
+      {
+        label: 'slash commands',
+        regex: /(\d+) slash commands/,
+        values: ['commands'],
       },
     ],
   },

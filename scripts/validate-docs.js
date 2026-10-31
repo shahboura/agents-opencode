@@ -109,6 +109,8 @@ function findMarkdownFiles(dir, rootDir = dir) {
         entry.name === 'node_modules' ||
         entry.name === '.git' ||
         entry.name === '.gate' ||
+        entry.name === '.worktrees' ||
+        entry.name === '.tmp-skscan' ||
         entry.name === 'example'
       ) {
         continue;
