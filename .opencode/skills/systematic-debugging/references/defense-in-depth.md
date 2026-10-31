@@ -78,7 +78,7 @@ async function gitInit(directory: string) {
 
 ### Layer 4 — Debug instrumentation
 
-Capture context for forensics.
+Record diagnostic context for forensic analysis.
 
 ```typescript
 async function gitInit(directory: string) {

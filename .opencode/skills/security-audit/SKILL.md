@@ -88,7 +88,7 @@ Activate this skill when:
 
 - No secrets in source code or config files; environment variables or secret manager used
 - Secret management service in place (Vault, AWS Secrets Manager, Doppler)
-- Secrets rotated regularly; git history cleaned of any leaked secrets; .env in .gitignore
+- Secrets rotated regularly; git history cleaned of any leaked secrets; environment files (dotenv) excluded from version control
 - Pre-commit hooks or CI secret scanning active (TruffleHog, GitGuardian)
 
 #### 8. Logging & Monitoring
