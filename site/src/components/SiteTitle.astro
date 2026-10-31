@@ -1,0 +1,43 @@
+---
+/**
+ * Site title — brand wordmark lockup in the header.
+ * Two images because the lockup has a light and a dark variant; CSS shows the
+ * one that matches the active theme, so no JavaScript is involved.
+ */
+---
+
+<a class="site-wordmark" href="/" aria-label="OpenCode Agents — home">
+  <img class="wm-light" src="/brand/wordmark.svg" alt="agents-opencode" width="268" height="48" />
+  <img class="wm-dark" src="/brand/wordmark-dark.svg" alt="" width="268" height="48" aria-hidden="true" />
+</a>
+
+<style>
+  .site-wordmark {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .site-wordmark img {
+    display: block;
+    height: 30px;
+    width: auto;
+  }
+  /* Default (pre-hydration) and dark mode show the dark lockup. */
+  .site-wordmark .wm-light {
+    display: none;
+  }
+  .site-wordmark .wm-dark {
+    display: block;
+  }
+  :root[data-theme='light'] .site-wordmark .wm-light {
+    display: block;
+  }
+  :root[data-theme='light'] .site-wordmark .wm-dark {
+    display: none;
+  }
+  .site-wordmark:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 4px;
+    border-radius: 6px;
+  }
+</style>

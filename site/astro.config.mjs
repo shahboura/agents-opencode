@@ -26,9 +26,55 @@ export default defineConfig({
           'https://github.com/shahboura/agents-opencode/edit/main/site/',
       },
       customCss: ['./src/styles/custom.css'],
+      // Explicit IA: five groups. Page order inside a group follows this list.
+      sidebar: [
+        {
+          label: 'Start',
+          items: [
+            { label: 'Home', link: '/' },
+            { label: 'Getting started', slug: 'getting-started' },
+            { label: 'Agentic installation', slug: 'agentic-installation' },
+          ],
+        },
+        {
+          label: 'Agents',
+          items: [
+            { label: 'Overview', slug: 'agents' },
+            { label: 'Decision grounding', slug: 'decision-grounding' },
+            { label: 'Agent evals', slug: 'agent-evals' },
+          ],
+        },
+        {
+          label: 'Skills & Commands',
+          items: [
+            { label: 'Skills matrix', slug: 'skills-matrix' },
+            { label: 'Commands', slug: 'commands' },
+            { label: 'Customization', slug: 'customization' },
+          ],
+        },
+        {
+          label: 'Operations',
+          items: [
+            { label: 'Review gate', slug: 'review-gate' },
+            { label: 'Approval gates', slug: 'approval-gates' },
+            { label: 'State management', slug: 'state-management' },
+          ],
+        },
+        {
+          label: 'Reference',
+          items: [
+            { label: 'Compatibility', slug: 'compatibility' },
+            { label: 'OpenCode v1/v2', slug: 'opencode-v1-v2-support' },
+            { label: 'Deprecation & migration', slug: 'deprecation-migration' },
+            { label: 'Troubleshooting', slug: 'troubleshooting' },
+          ],
+        },
+      ],
       components: {
         // Brand theme control: 36px popover on desktop, 3-stop switch on mobile.
         ThemeSelect: './src/components/ThemeSelect.astro',
+        // Wordmark lockup instead of the plain text title.
+        SiteTitle: './src/components/SiteTitle.astro',
       },
       head: [
         // Machine-readable summary for agents (see public/llms.txt).
