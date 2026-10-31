@@ -65,6 +65,9 @@ The logo is settled; treat these as the standard, not a proposal.
 - **Files:** `site/public/brand/logo-mark.svg` (primary), `logo-mark-dark.svg`,
   `logo-mark-mono.svg` (`currentColor`), `logo-badge.svg`. Favicon is
   `site/public/favicon.svg`, a copy of the badge.
+- **Wordmarks:** `wordmark.svg`, `wordmark-dark.svg`, `wordmark-mono.svg`,
+  `wordmark-stacked.svg`. The site header renders the lockup as HTML text rather than
+  these files: an `<img>` SVG cannot see the page's `@font-face`.
 - **Construction:** a `C` ring, two chevrons reading as lens frames (`<` `>`), and a
   pinched `L` between them reading as a nose. Round style — round caps and round joins
   throughout.

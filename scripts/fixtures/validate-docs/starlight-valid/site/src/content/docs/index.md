@@ -3,3 +3,4 @@
 [Guide](/guide/)
 [Guide via index](/guide/index)
 [Agents](/agents/)
+[Notes](/notes/)

@@ -46,7 +46,6 @@
   --sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --brand-accent: #d7263d;
-  --brand-accent-ink: #ffffff;
   --brand-radius: 8px;
   --brand-code-bg: #0f1115;
 
@@ -56,7 +55,6 @@
   --brand-3: 12px;
   --brand-4: 16px;
   --brand-5: 24px;
-  --brand-6: 32px;
   --brand-7: 48px;
 }
 
@@ -217,17 +215,6 @@ samp {
   font-size: var(--sl-text-xs);
 }
 
-.agent-badge {
-  display: inline-block;
-  margin-top: var(--brand-2);
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: var(--sl-color-gray-6);
-  color: var(--sl-color-gray-2);
-  font-family: var(--sl-font-mono);
-  font-size: var(--sl-text-xs);
-}
-
 /* Bento catalogue on /agents/. The lead card carries the weight: one agent
    plans, nine support it. Sizes are honest, not decorative. */
 .agent-grid {
@@ -264,10 +251,7 @@ samp {
 
 .agent-card--lead {
   grid-column: span 2;
-  grid-row: span 1;
   gap: var(--brand-2);
-  /* Bottom padding matches the 1x1 cards so every badge sits on one line. */
-  padding: var(--brand-4);
 }
 
 .agent-card__role {
