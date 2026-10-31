@@ -7,6 +7,8 @@
 [![Documentation](https://img.shields.io/badge/docs-Cloudflare%20Workers-blue)](https://agnts.elkodr.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+[Latest scan report](https://github.com/shahboura/agents-opencode/actions/workflows/skillspector.yml)
+
 **Ten specialist agents. 28 on-demand skills. One install.**
 
 Turn a single prompt into a full delivery loop — plan → implement → review → document —
