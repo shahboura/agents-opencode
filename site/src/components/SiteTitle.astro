@@ -1,43 +1,66 @@
 ---
 /**
- * Site title — brand wordmark lockup in the header.
- * Two images because the lockup has a light and a dark variant; CSS shows the
- * one that matches the active theme, so no JavaScript is involved.
+ * Site title — brand lockup in the header.
+ *
+ * The wordmark is rendered as HTML text next to the badge, not as an <img> of
+ * wordmark.svg: an <img> SVG cannot see the page's @font-face, so it fell back
+ * to whatever monospace the OS provided. HTML text uses the self-hosted
+ * JetBrains Mono and stays selectable and translatable.
  */
 ---
 
 <a class="site-wordmark" href="/" aria-label="OpenCode Agents — home">
-  <img class="wm-light" src="/brand/wordmark.svg" alt="agents-opencode" width="268" height="48" />
-  <img class="wm-dark" src="/brand/wordmark-dark.svg" alt="" width="268" height="48" aria-hidden="true" />
+  <img src="/brand/logo-badge.svg" alt="" width="256" height="256" aria-hidden="true" />
+  <span class="site-wordmark__text">
+    <span class="site-wordmark__name">agents-opencode</span>
+    <span class="site-wordmark__tagline">opencode agents pack</span>
+  </span>
 </a>
 
 <style>
   .site-wordmark {
     display: inline-flex;
     align-items: center;
+    gap: 10px;
     text-decoration: none;
+    color: var(--sl-color-white);
   }
   .site-wordmark img {
     display: block;
+    width: 30px;
     height: 30px;
-    width: auto;
+    flex: none;
   }
-  /* Default (pre-hydration) and dark mode show the dark lockup. */
-  .site-wordmark .wm-light {
-    display: none;
+  .site-wordmark__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
   }
-  .site-wordmark .wm-dark {
-    display: block;
+  .site-wordmark__name {
+    font-family: var(--sl-font-mono);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
   }
-  :root[data-theme='light'] .site-wordmark .wm-light {
-    display: block;
+  .site-wordmark__tagline {
+    font-family: var(--sl-font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.02em;
+    color: var(--sl-color-gray-3);
+    white-space: nowrap;
   }
-  :root[data-theme='light'] .site-wordmark .wm-dark {
-    display: none;
+  :root[data-theme='light'] .site-wordmark {
+    color: #141414;
   }
   .site-wordmark:focus-visible {
     outline: 2px solid var(--sl-color-accent);
     outline-offset: 4px;
     border-radius: 6px;
+  }
+  @media (max-width: 480px) {
+    .site-wordmark__tagline {
+      display: none;
+    }
   }
 </style>
