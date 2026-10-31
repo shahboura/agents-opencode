@@ -2,3 +2,7 @@ node_modules/
 dist/
 .astro/
 .wrangler/
+.pw-browsers/
+test-results/
+playwright-report/
+blob-report/

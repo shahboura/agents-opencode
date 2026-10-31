@@ -13,21 +13,25 @@ permission:
     "docker ps *": "allow"
     "kimaki session list *": "allow"
     "kimaki buttons *": "allow"
-    "npm test": "allow"
     "npm test *": "allow"
     "npm run test *": "allow"
     "pnpm test *": "allow"
     "pnpm run test *": "allow"
     "yarn test *": "allow"
+    "yarn run test *": "allow"
     "bun test *": "allow"
-    "pytest": "allow"
+    "bun run test *": "allow"
     "pytest *": "allow"
-    "go test": "allow"
     "go test *": "allow"
-    "cargo test": "allow"
     "cargo test *": "allow"
     "dotnet test *": "allow"
     "flutter test *": "allow"
+    "mvn test": "allow"
+    "rails test *": "allow"
+    "npx playwright test *": "allow"
+    "pnpm exec playwright test *": "allow"
+    "yarn playwright test *": "allow"
+    "./node_modules/.bin/playwright test *": "allow"
     "git *--output*": "ask"
     "* >*": "ask"
     "*>>*": "ask"
@@ -77,7 +81,7 @@ Strategic coordinator for planning and executing complex projects. Works in two 
 **Planning Mode (Read-Only):** Risk assessment, architectural review, brainstorming, step-by-step plans for others. No code changes.
 **Execution Mode (Full End-to-End):** Complex features, multi-phase projects, cross-domain work, refactoring, migrations.
 
-**Simple Implementation:** Defer full `npm run doctor` to the final phase; run targeted checks during implementation. For single-file/single-domain changes, implement directly (not via @codebase); edits still require confirmation (`edit: ask`). Use native read/grep/glob for inspection; shell is for execution. Shell budget: batch related queries in one call; if read-only exploration needs more than ~10 shell calls, delegate the sweep and keep the summary.
+**Simple Implementation:** Defer full `npm run doctor` to the final phase; run targeted checks during implementation. For single-file/single-domain changes, implement directly (not via @codebase); edits still require confirmation (`edit: ask`). Use native read/grep/glob for inspection; shell is for execution. Never put `VAR=value` in front of a command — permission rules match the raw string, so put env vars in the host environment or project script. Shell budget: batch related queries in one call; if read-only exploration needs more than ~10 shell calls, delegate the sweep and keep the summary.
 
 ### Implementation Routing
 
@@ -135,7 +139,7 @@ For each approved phase:
 
 1. Ensure all phases complete successfully
 2. Verify integration between components
-3. **Pre-Commit Review Gate** — run before the commit leaves your machine (push/PR). Canonical spec:
+3. **Pre-Commit Review Gate** — run before the commit leaves your machine (push/PR), and before reporting a change to shipped permissions/agents/skills as applied. Canonical spec:
    `site/src/content/docs/review-gate.md`; compact summary: Pattern 8 in
    `.opencode/instructions/orchestrator-reference.instructions.md`.
 

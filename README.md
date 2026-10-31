@@ -170,11 +170,22 @@ Treat project skills in untrusted clones as untrusted content.
 **Shell allowlist (codebase / orchestrator / em-advisor only).** These three auto-approve
 content-free diagnostics (`git status`, `ls`, `docker ps`, `kimaki session list` — Kimaki is the
 Discord front end, inert when absent), `kimaki buttons`, and common test runners
-(`npm`/`pnpm`/`yarn`/`bun` test, `pytest`, `go test`, `cargo test`, `dotnet test`, `flutter test`).
+(`npm`/`pnpm`/`yarn`/`bun` test and run, `pytest`, `go test`, `cargo test`, `dotnet test`,
+`flutter test`, `mvn test`, `rails test`).
 Content readers (`git diff/log/show`, `docker logs`, `kimaki session read`) and every other
 command still ask; redirection and `git --output` force an ask; `rm -rf` and force-pushes stay
-denied. Test runners execute repo code — a deliberate trust decision. The other seven agents deny
-shell entirely; built-in agents (`build`) are unaffected by pack agent rules.
+denied. Playwright tests are allowed in the official forms (`npx playwright test`,
+`pnpm exec playwright test`, `yarn playwright test`) and from the installed binary
+(`./node_modules/.bin/playwright test`); browser installs and commands with a `VAR=value`
+prefix still ask. npx resolves the local package when installed and fetches an unpinned copy
+when it is missing, so install dependencies first. If the binary is not on that path (monorepo
+root, Yarn PnP), run the project's test script — `npm test`/`pnpm test`/`yarn test` are already
+allowed and resolve the binary wherever the package manager puts it. Put non-secret env vars in
+the host environment (shell profile or CI) or the project's test script; keep credentials in
+`.env` or CI secrets. `PLAYWRIGHT_BROWSERS_PATH` must point at a private, user-owned cache —
+Playwright executes the browser binaries it finds there. Test runners execute repo code — a
+deliberate trust decision. The other seven agents deny shell entirely; built-in agents (`build`)
+are unaffected by pack agent rules.
 
 **Subagent invocation (`task`) remains deny-by-default** with explicit per-agent allowlists.
 

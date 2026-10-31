@@ -149,7 +149,7 @@ line may carry a one-line structural summary from `codebase-discovery`. A lens t
 **PARTIAL** (step budget) or **INSUFFICIENT_DIFF** (no readable patch) is re-dispatched, never
 accepted as PASS.
 Use as the final gate before a commit leaves your machine (push / PR / merge) — run once
-per push, or once per tracked-branch commit. Budget: ≤8 pre-commit reviewer dispatches per task (a full panel = 4) plus ≤2 plan-review dispatches; delta re-reviews dispatch only affected lenses, max 2 cycles; it supersedes per-loop caps and does not multiply the 5-cycle or Pattern 5 budgets.
+per push, or once per tracked-branch commit. Pre-report trigger: a change to shipped permissions, agents, or skills runs the panel before it is reported applied. Budget: ≤8 pre-commit reviewer dispatches per task (a full panel = 4) plus ≤2 plan-review dispatches; delta re-reviews dispatch only affected lenses, max 2 cycles; it supersedes per-loop caps and does not multiply the 5-cycle or Pattern 5 budgets.
 Scale the panel to the diff: comment-/docs-only edits outside a risk path and
 ≤2 staged entries → Tier 1; any risk-path entry, a feature change, >2 entries, or
 a gitlink → 2 lenses (3–4 with a security surface) and one delta cycle
