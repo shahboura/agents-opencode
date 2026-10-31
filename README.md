@@ -9,6 +9,8 @@
 
 [Latest scan report](https://github.com/shahboura/agents-opencode/actions/workflows/skillspector.yml)
 
+Scanned by [NVIDIA SkillSpector](https://github.com/NVIDIA/SkillSpector). CI fails if the score moves from 0/100.
+
 **Ten specialist agents. 28 on-demand skills. One install.**
 
 Turn a single prompt into a full delivery loop — plan → implement → review → document —

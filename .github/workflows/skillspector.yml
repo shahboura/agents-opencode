@@ -42,7 +42,27 @@ jobs:
       - name: Scan skills
         run: >-
           skillspector scan .opencode/skills --recursive --no-llm
-          --format sarif --output skillspector.sarif --fail-on-findings
+          --format json --output skillspector.json --fail-on-findings
+
+      - name: Enforce score
+        if: always()
+        run: |
+          set -o pipefail
+          if [ ! -f skillspector.json ]; then
+            echo "No SkillSpector report; the scan failed before writing it." >&2
+            exit 1
+          fi
+          # Score is confidence-weighted; --fail-on-findings covers zero-point hits.
+          node -e '
+            const r = require("./skillspector.json");
+            const score = r.max_risk_score;
+            const findings = (r.skills ?? []).reduce((n, s) => n + (s.finding_count || 0), 0);
+            console.log(`SkillSpector score: ${score}/100, findings: ${findings}`);
+            if (score !== 0) {
+              console.error(`Score changed from 0 to ${score}; failing the gate.`);
+              process.exit(1);
+            }
+          ' | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Write scan summary
         if: always()
@@ -53,10 +73,11 @@ jobs:
             skillspector scan .opencode/skills --recursive --no-llm --format markdown | head -c 900000
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload SARIF
+      - name: Upload report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: skillspector-sarif
-          path: skillspector.sarif
+          name: skillspector-report
+          path: skillspector.json
+          if-no-files-found: ignore
           retention-days: 30
