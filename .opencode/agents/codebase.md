@@ -13,21 +13,25 @@ permission:
     "docker ps *": "allow"
     "kimaki session list *": "allow"
     "kimaki buttons *": "allow"
-    "npm test": "allow"
     "npm test *": "allow"
     "npm run test *": "allow"
     "pnpm test *": "allow"
     "pnpm run test *": "allow"
     "yarn test *": "allow"
+    "yarn run test *": "allow"
     "bun test *": "allow"
-    "pytest": "allow"
+    "bun run test *": "allow"
     "pytest *": "allow"
-    "go test": "allow"
     "go test *": "allow"
-    "cargo test": "allow"
     "cargo test *": "allow"
     "dotnet test *": "allow"
     "flutter test *": "allow"
+    "mvn test": "allow"
+    "rails test *": "allow"
+    "npx playwright test *": "allow"
+    "pnpm exec playwright test *": "allow"
+    "yarn playwright test *": "allow"
+    "./node_modules/.bin/playwright test *": "allow"
     "git *--output*": "ask"
     "* >*": "ask"
     "*>>*": "ask"
@@ -96,6 +100,7 @@ Log detected profile at start: `Detected active profile: <profile>`
 2. After each step:
    - Run appropriate build/type check for detected profile
    - Execute tests if test directory exists
+   - For browser/E2E tests, use the project script or Playwright's official command (`npx playwright test`, `pnpm exec playwright test`, or `yarn playwright test`); never put `VAR=value` in front of a command — permission rules match the raw string, so put non-secret env vars in the host environment or test script (credentials belong in `.env` or CI secrets)
    - Pause only if a step fails validation or introduces unexpected complexity
 
 ### Phase 3: Completion

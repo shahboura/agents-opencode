@@ -137,6 +137,12 @@ sidebar:
 - Edit the agent file to change permission levels
 - `agents.<id>.permissions` in `opencode.json` cannot override a pack agent - the markdown rule
   is applied last. See [Customization](/customization/#permission-overrides).
+- An environment-variable assignment (`VAR=value` in front of the command) stops every allow
+  rule from matching, and an approval is keyed to that exact string (for example
+  `PLAYWRIGHT_BROWSERS_PATH=... ./node_modules/.bin/playwright test`). Put non-secret env vars
+  in the host environment (shell profile or CI) or the project's test script; the Playwright
+  config runs too late for `PLAYWRIGHT_BROWSERS_PATH`. Keep the browser cache private and
+  user-owned — Playwright executes the binaries there.
 
 ### Working in a git worktree
 

@@ -4,3 +4,6 @@ MILESTONES.md
 evals/transcripts/
 graphify-out/
 site/node_modules
+site/test-results/
+site/playwright-report/
+site/.pw-browsers/

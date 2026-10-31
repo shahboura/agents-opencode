@@ -15,10 +15,16 @@ review (Tier 2).
 - Which findings block a commit and which are advisory.
 :::
 
-The gate has two entry points: a **plan review** (`@planner`, read-only, before a plan
-is presented; record the verdict or a stated skip reason) and the **pre-commit gate**
-below. A plan review that still has blocking findings after one revision goes to the
-user with options; it never proceeds silently.
+The gate has three entry points: a **plan review** (`@planner`, read-only, before a plan
+is presented; record the verdict or a stated skip reason), a **pre-report review** for
+changes that ship to installed users (permissions, agents, skills: run the panel before
+reporting the change as applied), and the **pre-commit gate** below. A plan review that
+still has blocking findings after one revision goes to the user with options; it never
+proceeds silently.
+
+The pre-report review exists because a permissions or agent change cannot be un-shipped by a
+later commit: reviewing only at commit means the change is already presented as done, and its
+blast radius (every installed project) went unexamined.
 
 This page is the **canonical full spec**. The orchestrator loads a compact flow
 summary from Pattern 8 in

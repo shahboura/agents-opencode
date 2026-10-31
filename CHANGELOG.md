@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.2.1](https://github.com/shahboura/agents-opencode/compare/v4.2.0...v4.2.1) (2026-10-31)
+
+
+### Bug Fixes
+
+* **deps:** override re2js to 2.8.7 ([eb261bc](https://github.com/shahboura/agents-opencode/commit/eb261bc49966f39461b41bf716ea124144b335f7))
+* **skills:** clear SkillSpector findings and add scan gate ([ef0832c](https://github.com/shahboura/agents-opencode/commit/ef0832c6499a10a506950a1f3331865c1c51202b))
+
 ## [4.2.0](https://github.com/shahboura/agents-opencode/compare/v4.1.0...v4.2.0) (2026-10-30)
 
 
