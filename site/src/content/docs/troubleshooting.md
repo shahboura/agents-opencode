@@ -101,8 +101,20 @@ sidebar:
 - Checked-in templates (`.env.example`, `.env.sample`, `.env.template`, `.env.dist`,
   `.env.defaults`) and public certs (`*.pub`, `*.crt`, `*.cer`, `*.cert`, `ca.pem`,
   `cert.pem`, `certificate.pem`, `chain.pem`, `fullchain.pem`) remain readable.
-- `grep` is blocked only when its `path` names a secret file; directory or pathless searches
-  are not filtered (the guard is best-effort).
+- Shell commands are scanned too: read/copy verbs, input redirection (`cat < .env`), and
+  interpreter references (`python3 -c`, `node -e`, heredocs). The scan is best-effort, not a
+  sandbox.
+- Pattern and script operands of `grep`/`sed`/`awk` are text, not paths, so a regex or code
+  snippet mentioning `.env` does not block the command. File operands still count, including
+  `-f`/`--file`, `--exclude-from`, and `--include` values. A script that reads a file itself
+  (`sed -n '1r .env'`, awk `getline`) is not inspected.
+  A quoted pattern that contains a space and has no file operand can still block
+  (fail-closed); keep such patterns simple or pass the file operand explicitly.
+- Interpreter text and heredoc bodies are still scanned, so a `.env` literal inside
+  `python3 - <<'PY'` blocks even when it is only prose. Keep the snippet in a file, or drop
+  the literal, instead of using a heredoc.
+- `grep` as a tool is blocked only when its `path` names a secret file; directory or pathless
+  searches are not filtered (the guard is best-effort).
 - A saved `read` approval ("Allow always") is project-scoped; whether it overrides a configured
   `deny` is untested here (PERM-2). The plugin guard is the runtime backstop.
 - To inspect a blocked file, open it outside the agent session.

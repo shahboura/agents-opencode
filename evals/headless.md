@@ -20,7 +20,7 @@ opencode run --standalone --auto \
   references (`python -c`, `node -e`, heredocs naming the path) and simple
   `$(cat …)` substitutions. Encoded/computed paths, quoted backticks, obfuscated
   interpreter names (`p'ython'`, `"$PY"`), unlisted interpreters, and aliases still
-  bypass it by design. Tracked as PERM-5 in `BACKLOG.md`.
+  bypass it by design. Tracked as #141 (PERM-5).
 - `--format json` gives a machine-readable transcript; store the relevant events, not
   the whole stream.
 
