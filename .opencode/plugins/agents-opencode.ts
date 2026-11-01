@@ -23,8 +23,9 @@ import { buildSkillInfo, shouldRegisterPackSkills } from "../lib/pack-skills.mjs
  * One file, two entrypoints:
  * - `AgentsOpencodePlugin` (named export) is the v1 server plugin; OpenCode v1
  *   loads it and runs the returned hook object.
- * - the default export is the v2 plugin (`{ id, setup }`); OpenCode v2 calls
- *   `setup(ctx)` and uses the returned cleanup.
+ * - the default export is the dual entrypoint (`{ id, server, setup }`): OpenCode
+ *   v2 calls `setup(ctx)` and uses the returned cleanup; v1 (1.18.29+) calls
+ *   `server()` and runs the returned hook object.
  *
  * Defensive assumption: v1 has been *observed* to also call the default
  * export's `setup` with a v1-shaped ctx that lacks the tool/session/shell
