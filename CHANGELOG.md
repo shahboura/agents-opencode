@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.1](https://github.com/shahboura/agents-opencode/compare/v4.3.0...v4.3.1) (2026-11-01)
+
+
+### Bug Fixes
+
+* **guards:** stop treating grep/sed/awk patterns as secret paths ([#167](https://github.com/shahboura/agents-opencode/issues/167)) ([6b64297](https://github.com/shahboura/agents-opencode/commit/6b64297182494883d5b02122c2694ab48e418245))
+
 ## [4.3.0](https://github.com/shahboura/agents-opencode/compare/v4.2.1...v4.3.0) (2026-10-31)
 
 
