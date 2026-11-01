@@ -180,9 +180,158 @@ function splitShellSegments(command) {
   return segments;
 }
 
+// grep/sed/awk take a pattern/script operand that is text, never a file path.
+// Only the remaining operands (and explicit file options) are reads, so a grep
+// pattern containing `.env`/`.key` must not block the command.
+const PATTERN_VERBS = new Set(['grep', 'sed', 'awk']);
+
+// Short options whose value is the pattern/script, a pattern file, or a value
+// that must be consumed so it cannot be mistaken for a positional operand.
+const PATTERN_SHORT_OPTIONS = { grep: new Set(['e']), sed: new Set(['e']), awk: new Set(['e']) };
+const FILE_SHORT_OPTIONS = { grep: new Set(['f']), sed: new Set(['f']), awk: new Set(['f', 'E', 'i']) };
+const VALUE_SHORT_OPTIONS = { grep: new Set(['A', 'B', 'C', 'd', 'D', 'm']), awk: new Set(['v', 'F']) };
+
+// Long options by role: pattern/script text, a file read (`--exclude-from`
+// reads its file), or a content filter (`--include` surfaces matching files).
+const PATTERN_LONG_OPTIONS = { grep: new Set(['regexp']), sed: new Set(['expression']), awk: new Set(['source']) };
+const FILE_LONG_OPTIONS = new Set(['file', 'exclude-from', 'exec', 'include']);
+// Long options whose value must be consumed but is not a read.
+const VALUE_LONG_OPTIONS = new Set([
+  'after-context', 'before-context', 'context', 'max-count', 'exclude', 'exclude-dir',
+  'label', 'binary-files', 'devices', 'directories',
+  'field-separator', 'assign', 'line-length',
+]);
+
+function hasPatternOption(verb, rawArgs) {
+  for (const raw of rawArgs) {
+    const probe =
+      raw.length > 2 && (raw[0] === '"' || raw[0] === '\'') && raw[raw.length - 1] === raw[0]
+        ? raw.slice(1, -1)
+        : raw;
+    if (probe === '--') return false;
+    if (probe.startsWith('--')) {
+      const name = probe.slice(2).split('=')[0];
+      if (PATTERN_LONG_OPTIONS[verb]?.has(name) || FILE_LONG_OPTIONS.has(name)) return true;
+      continue;
+    }
+    if (probe.startsWith('-') && probe.length > 1) {
+      for (const flag of probe.slice(1)) {
+        if (PATTERN_SHORT_OPTIONS[verb]?.has(flag) || FILE_SHORT_OPTIONS[verb]?.has(flag)) return true;
+      }
+    }
+  }
+  return false;
+}
+
+// Classify the operands of grep/sed/awk: pattern/script text is skipped, file
+// operands are returned for the secret-path check.
+function readVerbOperands(verb, rawArgs) {
+  const paths = [];
+  let patternAssigned = hasPatternOption(verb, rawArgs);
+  let positionalOnly = false;
+
+  for (let index = 0; index < rawArgs.length; index += 1) {
+    const raw = rawArgs[index];
+    // A quoted option is still an option: strip one quote layer for detection.
+    const probe =
+      raw.length > 2 && (raw[0] === '"' || raw[0] === '\'') && raw[raw.length - 1] === raw[0]
+        ? raw.slice(1, -1)
+        : raw;
+    if (!positionalOnly && probe === '--') {
+      positionalOnly = true;
+      continue;
+    }
+    if (!positionalOnly && probe.startsWith('--')) {
+      const name = probe.slice(2).split('=')[0];
+      const inline = probe.includes('=') ? probe.slice(probe.indexOf('=') + 1) : null;
+      const takeValue = () => (inline === null ? rawArgs[++index] : inline);
+      if (PATTERN_LONG_OPTIONS[verb]?.has(name)) {
+        takeValue();
+        patternAssigned = true;
+      } else if (FILE_LONG_OPTIONS.has(name)) {
+        const value = takeValue();
+        if (value) paths.push(value);
+      } else if (VALUE_LONG_OPTIONS.has(name)) {
+        takeValue();
+      }
+      continue;
+    }
+    if (!positionalOnly && probe.startsWith('-') && probe.length > 1) {
+      const chars = probe.slice(1);
+      for (let position = 0; position < chars.length; position += 1) {
+        const flag = chars[position];
+        const isPattern = PATTERN_SHORT_OPTIONS[verb]?.has(flag);
+        const isFile = FILE_SHORT_OPTIONS[verb]?.has(flag);
+        const isValue = VALUE_SHORT_OPTIONS[verb]?.has(flag);
+        if (!isPattern && !isFile && !isValue) continue;
+        const attached = chars.slice(position + 1);
+        const value = attached || rawArgs[++index];
+        if (isPattern) {
+          patternAssigned = true;
+        } else if (isFile && value) {
+          paths.push(value);
+        }
+        break;
+      }
+      continue;
+    }
+    if (!patternAssigned) {
+      patternAssigned = true;
+      continue;
+    }
+    paths.push(raw);
+  }
+  return paths;
+}
+
+// Split one segment into argument tokens, keeping quoted spans (including the
+// quotes) as a single token. The previous quote-stripping split broke grep
+// patterns into fragments, so `"...process.env"` became a fake path.
+function splitArgs(segment) {
+  const tokens = [];
+  let current = '';
+  let quote = null;
+  for (let index = 0; index < segment.length; index += 1) {
+    const char = segment[index];
+    if (quote) {
+      current += char;
+      if (char === '\\' && quote === '"' && index + 1 < segment.length) {
+        current += segment[index + 1];
+        index += 1;
+      } else if (char === quote) {
+        quote = null;
+      }
+      continue;
+    }
+    if (char === "'" || char === '"') {
+      quote = char;
+      current += char;
+      continue;
+    }
+    if (char === '\\' && index + 1 < segment.length) {
+      current += char + segment[index + 1];
+      index += 1;
+      continue;
+    }
+    if (/\s/.test(char)) {
+      if (current) tokens.push(current);
+      current = '';
+      continue;
+    }
+    current += char;
+  }
+  if (current) tokens.push(current);
+  return tokens;
+}
+
 function shellGuardError(payload) {
   const command = resolveShellCommand(payload);
   if (!command) return null;
+  // Command substitution inside a quoted operand still runs; scan its body.
+  for (const match of command.matchAll(/\$\(([^()]*)\)/g)) {
+    const substituted = shellGuardError({ args: { command: match[1] } });
+    if (substituted) return substituted;
+  }
   // Input redirection is a read even when the command word takes no path
   // argument (`tee out < .env`). Ignore `<` inside quotes, then check before
   // stripping it for tokenizing.
@@ -228,13 +377,15 @@ function shellGuardError(payload) {
   }
   // `<` is input redirection (`cat<.env`), not a command separator.
   for (const segment of splitShellSegments(command.replace(/</g, ' '))) {
-    const rawTokens = segment
+    // Naive tokens keep the previous verb detection for wrapped command
+    // strings (`bash -c 'cat .env'`), where the quoted body hides the verb.
+    const naiveTokens = segment
       .trim()
       .split(/\s+/)
-      .flatMap((token) => token.replace(/^['"]|['"]$/g, '').split(/[;|&()`]+/))
+      .flatMap((token) => (token.length > 2 ? token.replace(/^['"]|['"]$/g, '') : token).split(/[;|&()`]+/))
       .filter(Boolean);
-    if (rawTokens.length === 0) continue;
-    const tokens = rawTokens.map(normalizeShellToken);
+    if (naiveTokens.length === 0) continue;
+    const tokens = naiveTokens.map(normalizeShellToken);
     // Find the first token that is a read/copy verb, skipping wrappers and any
     // options they take (`sudo -u x cat .env`, `FOO=1 cat .env`).
     let verbIndex = -1;
@@ -247,12 +398,33 @@ function shellGuardError(payload) {
     }
     if (verbIndex === -1) continue;
     const verb = tokens[verbIndex].split(/[/\\]/).pop()?.toLowerCase() || '';
-    const rawArgs = rawTokens.slice(verbIndex + 1);
+    const rawArgs = naiveTokens.slice(verbIndex + 1);
     const args = tokens.slice(verbIndex + 1).filter((token) => !token.startsWith('-'));
     if (SHELL_READ_VERBS.has(verb)) {
-      for (const arg of args) {
-        if (isBlockedReadPath(arg)) {
-          return `[agents-opencode] Blocked shell read of sensitive file: ${arg}. Use the environment variable instead of reading the file. ${SENSITIVE_READ_HINT}`;
+      // Pattern verbs re-parse with quotes preserved so a pattern is not split
+      // into fake paths. When the verb sits inside a quoted command string the
+      // quote-aware pass finds none, so classify the naive operands the same
+      // way instead of treating the pattern as a file.
+      let targets = PATTERN_VERBS.has(verb) ? readVerbOperands(verb, rawArgs) : args;
+      if (PATTERN_VERBS.has(verb)) {
+        const quotedTokens = splitArgs(segment);
+        const quotedVerbIndex = quotedTokens.findIndex(
+          (token) => (normalizeShellToken(token).split(/[/\\]/).pop()?.toLowerCase() || '') === verb,
+        );
+        // A quoted literal later in the line is not the verb; requiring the
+        // same position keeps the naive operands instead of dropping the read.
+        // The quoted parse is authoritative only when it names a real file
+        // operand; an empty result means a quoted body hid the read, so keep
+        // the conservative naive operands.
+        if (quotedVerbIndex === verbIndex && !segment.includes('$(')) {
+          const quotedPaths = readVerbOperands(verb, quotedTokens.slice(quotedVerbIndex + 1));
+          if (quotedPaths.length > 0) targets = quotedPaths;
+        }
+      }
+      for (const target of targets) {
+        const candidate = normalizeShellToken(target);
+        if (isBlockedReadPath(candidate)) {
+          return `[agents-opencode] Blocked shell read of sensitive file: ${candidate}. Use the environment variable instead of reading the file. ${SENSITIVE_READ_HINT}`;
         }
       }
       continue;
@@ -274,7 +446,6 @@ function shellGuardError(payload) {
     let targetDirValue = null;
     for (let index = 0; index < rawArgs.length; index += 1) {
       const raw = rawArgs[index];
-      // GNU long-option abbreviations (`--target-dir`, `--target-direct`).
       const long = raw.match(/^--target-[a-z]+(?:=(.*))?$/);
       if (long) {
         if (long[1] !== undefined) {
