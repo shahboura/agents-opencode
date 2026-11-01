@@ -31,10 +31,6 @@ install, and gate checks. `CONTRIBUTING.md` documents the review gate and releas
 
 ## Session State
 
-- **Start:** read `state/session-state.json` and `handoff/latest.md`.
+- **Start:** read `state/session-state.json` (it supersedes `handoff/latest.md`; read the handoff only when state is absent).
 - **Finish:** refresh state, regenerate the handoff packet, and log a milestone in
   `MILESTONES.md` (format and rules are at the top of that file). Present for approval.
-
-## Milestones
-
-Full history in [`MILESTONES.md`](./MILESTONES.md). Add new entries there, newest first.
