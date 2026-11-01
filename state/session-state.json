@@ -1,6 +1,6 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
-  "current_phase": "chore/context-pruning (from origin/main f6422e4): duplicate-prose pruning in six agent files, session-start read narrowed to state (handoff as fallback), superseded decisions dropped. Tier 1 PASS (doctor, eval); gate open; nothing committed (approval pending). fix/shell-guard-false-positives now lives in its own worktree.",
+  "current_phase": "main: PR #167 (shell guard false-positive fix, 6b64297) merged, graph rebuilt. Open: PR #166 chore/context-pruning - duplicate-prose pruning, state-first session read with the handoff as fallback, untrusted-memory rule; doctor and eval green, awaiting merge. fix/shell-guard-false-positives has its own worktree.",
   "plugin_version": "2.6.0",
   "decisions": [
     "Pack agents allow all skills (`*`: allow) because a pack cannot enumerate host/plugin skills; the working restriction mechanisms are editing the installed agent file or a v2 `integration.use` policy - global permission rules lose to agent rules, which are appended last (last match wins).",
@@ -44,7 +44,10 @@
     "Drill artifacts are captured before the redaction exit, ignored paths are listed, and a capture or redaction failure exits 3 (documented overload with transcript redaction).",
     "Effort scaling is expressed in staged entries so it matches gate/lib.js (>2 entries or a risk path needs the panel); the docs-only skip is capped at two entries.",
     "validate-docs skips evals/transcripts so generated drill transcripts (D07-style relative links) cannot fail Tier 1.",
-    "Graph policy: the code graph refreshes with 'graphify update'; doc re-extraction currently trips graphify's semantic shrink guard (orchestrator/instructions lose nodes), so the complete graph is kept instead of overwriting it with --allow-partial."
+    "Graph policy: the code graph refreshes with 'graphify update'; doc re-extraction currently trips graphify's semantic shrink guard (orchestrator/instructions lose nodes), so the complete graph is kept instead of overwriting it with --allow-partial.",
+    "Shell guard: pattern/script operands of grep/sed/awk are text, never paths. Option values (-e/-f/--file/--include/--exclude-from, -A/-m, awk -E/-i/--exec/-e/--source) are consumed, quoted options are peeled, and wrapped command strings fall back to the conservative naive parse. The quoted parse may replace naive targets only when it finds a real path.",
+    "Review-lens findings must be reproduced before acting: two security-lens FAIL claims (grep -e empty-string operand, unquoted $(...) operand) were disproven by comparing base and patched guards, while three genuine bypasses from the same rounds were fixed with tests.",
+    "Concurrent sessions must not share a checkout: the guard fix moved to its own git worktree after another session switched the shared branch; staged work is restored out of the shared index before switching."
   ],
   "open_risks": [
     "v2 `--auto` auto-approves asks, so `external_directory: ask` and the redirect/`--output` guards are soft in auto mode (documented); enforce with deny + explicit allows there.",
@@ -66,15 +69,15 @@
     "The pre-commit hook cannot distinguish skip-eligible docs/comment commits from risky ones - it blocks unconditionally, so documentation-only commits need an explicit SKIP_GATE=1 or a marker.",
     "Hardening a new mechanism can legitimately exceed the <=8-dispatch gate budget; the gate on the gate itself ran 5+ cycles.",
     "The pre-commit hook's untrusted-content and read/grep scope rules are instruction-level, not runtime-enforced (the plugin guards only read, not grep).",
-    "feat/docs-astro-cloudflare is stacked on chore/instruction-health-readme and must be rebased onto main after that PR merges."
+    "feat/docs-astro-cloudflare is stacked on chore/instruction-health-readme and must be rebased onto main after that PR merges.",
+    "Shell guard limits (documented in troubleshooting): sed/awk script reads, heredoc and interpreter prose, quoted multi-word patterns without a file operand, and unquoted $(...) operands are not fully inspected."
   ],
   "blocked_by": [],
   "next_actions": [
-    "Approve and commit chore/context-pruning (9 files, gated); then open its PR against main.",
-    "Open the PR for fix/priority-followups-v2 (commit 4dc6388): https://github.com/shahboura/agents-opencode/compare/main...fix/priority-followups-v2 - gh is unauthenticated in the container, so this is a human step.",
-    "Watch CI on that PR and merge when green; release-please picks the version up afterwards.",
+    "Merge PR #166 (chore/context-pruning) once CI is green, then refresh the graph on main with `graphify update .`.",
+    "Watch release-please for the next pack release containing PR #167; reinstall globally after any agent edits.",
+    "Context-pruning session owns /tmp/opencode/agents-opencode-ctx (chore/context-pruning); merge or discard it before further state edits.",
     "VAL-6: add a drill capture-hardening test (hostile config/hook) to the doctor suite.",
-    "Mention the guard behavior change (interpreter, backtick and $(...) denial) in the release notes; the changelog validator only checks labels.",
     "Complete VAL-4: migrate evals/harness/run-evals.js to the shared parser.",
     "Expand eval fixtures toward capability/regression suites (pass@k) per Anthropic guidance."
   ],
@@ -119,5 +122,5 @@
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-11-01T10:05:00Z"
+  "last_updated": "2026-11-01T11:13:44Z"
 }

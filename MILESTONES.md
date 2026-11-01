@@ -19,6 +19,16 @@ Rules:
 - 3-5 bullets per entry; skip trivial edits.
 - Keep the file under 100 KB by pruning the oldest entries.
 
+### 2026-11-01 11:08 - Shell secret-guard false positives fixed (PR #167)
+
+**Agent:** orchestrator
+**Summary:** Diagnosed and shipped a guard fix that stopped grep/sed/awk pattern text from being treated as a secret path; merged to main as 6b64297 via PR #167.
+- Root cause: the shell scan path-checked the first positional of `cat`-class verbs, so `process.env`, `event.key`, regex patterns, and heredoc prose blocked real work.
+- Fix: pattern/script operands are text; option values are consumed (`-e/-f/--file/--include/--exclude-from`, `-A/-m`, awk `-E/-i/--exec/-e/--source`); quoted options are peeled; wrapped `sh -c`/`eval` bodies fall back to the conservative naive parse; `$(...)` bodies are rescanned.
+- Review: six lens rounds; three real bypasses fixed (quoted-literal override, wrapped empty pattern, quoted option), two lens FAIL claims disproven by base-vs-patched execution. Gate recorded security PASS + code PASS; requirements skipped with cycle-2 rationale.
+- Ops: work isolated in a git worktree after a concurrent session switched the shared checkout; global install refreshed and live-verified; graph rebuilt (1,413 nodes) and matches 6b642971.
+- Lesson: reproduce lens findings against base before fixing, and test option-level cases — verb-level tests miss `-f`, `-e`, `-A`, and quoted forms.
+
 ### 2026-11-01 09:54 - Context-footprint pruning pass (duplicate instruction text)
 
 **Agent:** orchestrator
