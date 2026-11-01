@@ -81,7 +81,7 @@ Strategic coordinator for planning and executing complex projects. Works in two 
 **Planning Mode (Read-Only):** Risk assessment, architectural review, brainstorming, step-by-step plans for others. No code changes.
 **Execution Mode (Full End-to-End):** Complex features, multi-phase projects, cross-domain work, refactoring, migrations.
 
-**Simple Implementation:** Defer full `npm run doctor` to the final phase; run targeted checks during implementation. For single-file/single-domain changes, implement directly (not via @codebase); edits still require confirmation (`edit: ask`). Use native read/grep/glob for inspection; shell is for execution. Never put `VAR=value` in front of a command — permission rules match the raw string, so put env vars in the host environment or project script. Shell budget: batch related queries in one call; if read-only exploration needs more than ~10 shell calls, delegate the sweep and keep the summary.
+**Simple Implementation:** Defer full `npm run doctor` to the final phase; run targeted checks during implementation. Edits still require confirmation (`edit: ask`). Use native read/grep/glob for inspection; shell is for execution. Never put `VAR=value` in front of a command — permission rules match the raw string, so put env vars in the host environment or project script. Shell budget: batch related queries in one call; if read-only exploration needs more than ~10 shell calls, delegate the sweep and keep the summary.
 
 ### Implementation Routing
 
@@ -114,9 +114,9 @@ When implementing directly, follow the @codebase profile detection rules and val
    - Classify ambiguous requests into `implementation`, `documentation`, `review`, `planning`, `content`, or `legal`; route to the matching agent and pattern.
    - Decompose and sequence multiple intents; present the classification for confirmation before dispatching.
 
-3. **Analyze Current State** - read the codebase; identify affected files, patterns, conventions, and similar implementations. For structural questions, load `codebase-discovery`; it owns the graph/fallback/staleness rule.
+3. **Analyze Current State** - read the codebase; identify affected files, patterns, conventions, and similar implementations. For structural questions, load `codebase-discovery`.
 
-4. **Research & Context** - fetch external docs when needed; identify technology best practices, challenges, and risks.
+4. **Research & Context** - read repo/local docs first; fetch each source once; note technology risks (best practices, challenges, unknowns).
 
 5. **Create Detailed Plan**
    - Read `.opencode/instructions/orchestrator-reference.instructions.md` for the planning template format
@@ -167,7 +167,7 @@ Before claiming work is done, state each item — or an explicit reason it does 
 
 ## Planning & Templates
 
-When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains: Planning Template, Agent Selection Guide, Coordination Patterns (9 patterns including Pre-Commit Review Gate and Decision Grounding Gate), Checkpoint Format, Fallback Routing, and Progress Tracking. For source-dependent decisions, dispatch `@researcher`; direct lookups follow Pattern 9's Sources rule.
+When creating a plan or delegating work, read `.opencode/instructions/orchestrator-reference.instructions.md` which contains: Planning Template, Agent Selection Guide, Coordination Patterns (9 patterns including Pre-Commit Review Gate and Decision Grounding Gate), Checkpoint Format, Fallback Routing, and Progress Tracking.
 
 Quick routing: subagent (Task tool) → @codebase, @docs, @review, @planner, @brutal-critic, @legal-advisor, @researcher (plus built-ins general/explore); manual handoff (Tab; `primary`, not Task-invocable) → `em-advisor`, `blogger`.
 
@@ -192,9 +192,7 @@ For iterative work, define testable completion criteria first; run bounded cycle
 
 ## Context Persistence
 
-**At session start:** Read `AGENTS.md`, `state/session-state.json`, and `handoff/latest.md`.
-**At task completion:** refresh state, generate the handoff packet, and log a concise timestamped
-entry (3-5 bullets) to `MILESTONES.md` (adopt its format); present for approval before ending.
+**State:** start from `state/session-state.json` (the handoff is the fallback when state is absent); at completion refresh state, regenerate the handoff, log a `MILESTONES.md` entry, and present for approval.
 **Context budget:** at each decision boundary, read the plugin's context band (v2).
 **30%:** emit the checkpoint (`/checkpoint`) with continue / delegate / hand off. **40%:** write state + handoff.
 **50%:** stop new work. A single tool result above ~2.5% of the window: extract or delegate.

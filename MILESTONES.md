@@ -19,6 +19,15 @@ Rules:
 - 3-5 bullets per entry; skip trivial edits.
 - Keep the file under 100 KB by pruning the oldest entries.
 
+### 2026-11-01 09:54 - Context-footprint pruning pass (duplicate instruction text)
+
+**Agent:** orchestrator
+**Summary:** Measured the pack's context surfaces, deleted duplicated prose from six agent files and the session state, and fixed the one structural duplication behind the startup read.
+- Model: only one agent prompt is live per session, so identical prose in two different agent files costs nothing; the hot surfaces are the active agent body, `AGENTS.md`, the 28 skill descriptions (8.7 KB), `state/session-state.json`, and the handoff (fallback only, no longer read at startup).
+- Pruned: orchestrator step 4 states the fetch budget in place (repo/local docs first, fetch each source once); routing, `codebase-discovery`, and reference-pointer duplicates collapsed; `review.md`'s three no-shell copies reduced to one sentence plus a reporting rule in Diff access; five superseded or duplicated state decisions dropped (v2 translation claim, adapter-required, e2e warm-up fact, GitHub-Pages rationale, split Astro entry) and two rewritten in place (compaction keys, docs host).
+- Structural fix: `AGENTS.md`, the six agent files, and the plugin's injected reminder now make state the session-start source and the handoff its fallback - reading both re-rendered the same 14 KB every session. Hot startup read for the orchestrator persona: 50,524 -> 34,440 B (-32%, catalog included); agent bodies -815 B (orchestrator 198/200 lines), state -841 B, handoff -908 B.
+- Declined with reasons: skill reference files (all six "unreferenced" files are linked one level up from a reference index), skill descriptions (max 36 words against the 409-word target), `BACKLOG.md` (rewritten on the queued `docs/backlog-issue-index` branch), `MILESTONES.md` pruning (13 KB against a 100 KB cap), cross-file agent duplication (free per the model above).
+
 ### 2026-10-25 01:23 - Priority follow-ups: shell guard hardening, effort scaling, drill artifacts
 
 **Agent:** orchestrator

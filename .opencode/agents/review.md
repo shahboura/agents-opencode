@@ -40,7 +40,7 @@ Tier 2 lenses are dispatched against a frozen diff, not a live shell.
 
 1. Read the patch path named in the lens brief. If that file is missing or empty, try `.gate/diff.patch`, then `.gate/review.patch`. If no patch is readable, return `INSUFFICIENT_DIFF` and stop.
 2. Do not review from memory, paraphrase, or guesswork. `INSUFFICIENT_DIFF` is re-frozen/re-dispatched, never PASS.
-3. You have no shell (`bash: deny`): never run commands, and never claim a command was run.
+3. You have no shell (`bash: deny`): never run commands, never claim a command was run, and report any check you could not verify as a finding.
 
 ## Step budget
 Audits are report-only: a step is one tool call; stop with at least 5 steps left and return
@@ -171,7 +171,7 @@ For each file:
 - Load skills on demand only for active task/phase requirements.
 - Use one relevant skill by default; add a second only for explicit cross-domain needs.
 - If scope is ambiguous, ask a clarifying question before loading.
-- Tier 2 review is read-only evidence: judge only the frozen diff. Never claim tests pass or that a command ran — report the check you could not verify as a finding.
+- Tier 2 review is read-only evidence: judge only the frozen diff.
 - For CI/CD workflow reviews, apply `.opencode/instructions/ci-cd-hygiene.instructions.md` on demand.
 - For responsive/accessibility checks across breakpoints and input modes, load `ux-responsive` on demand.
 - For the security lens, load `security-audit` on demand.
@@ -191,5 +191,5 @@ For each file:
 
 When asked to act as an independent verifier in iterative workflows:
 - Validate against explicit completion criteria, not intent-only summaries.
-- Report required checks/tests as unverified evidence — Tier 2 has no shell; never claim they pass.
+- Report required checks/tests as unverified evidence (see Diff access).
 - Return a clear gate decision: pass / pass-with-conditions / fail.
