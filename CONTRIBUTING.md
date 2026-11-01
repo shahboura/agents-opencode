@@ -169,6 +169,8 @@ Current pins (see `package.json`):
 - `brace-expansion`: `^5.0.12`
 - `katex`: `^0.18.2`
 - `smol-toml`: `^1.9.1`
+- `re2js`: `2.8.7`
+- `minimatch`: `^11.0.3` (markdownlint-cli still pins `~10.2.6`; Dependabot alert 37)
 
 They affect development installs only — the published package has no runtime
 dependencies. Revisit each pin when the dependent upstream package widens its range to

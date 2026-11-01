@@ -194,7 +194,4 @@ After plan approval, recommend the appropriate agent to the user (manual handoff
 
 ## Context Persistence
 
-**At session start:** Read `AGENTS.md`, `state/session-state.json`, and `handoff/latest.md`.
-**At task completion:** Refresh state, generate handoff packet, and log a concise
-timestamped entry (3-5 bullets) to `MILESTONES.md`. Present update for approval before ending.
-Adopt the format at the top of `MILESTONES.md`.
+At session start read `state/session-state.json` (`handoff/latest.md` only if state is absent); at completion refresh state, regenerate the handoff, log a `MILESTONES.md` entry, and present for approval.
