@@ -19,7 +19,8 @@ skills framework.
 - **Coordination patterns:** `.opencode/instructions/orchestrator-reference.instructions.md`.
 - **Review gate:** `site/src/content/docs/review-gate.md`.
 - **Adoption plan:** `PLAN.md`.
-- **Deferred work:** `BACKLOG.md`.
+- **Deferred work:** GitHub issues (P1/P2/P3 in the title); `BACKLOG.md` is the index plus
+  the OpenCode v1/v2 migration plan.
 - **Session history:** `MILESTONES.md`.
 - **Knowledge graph:** trigger, fallback, and staleness per the `codebase-discovery` skill.
 

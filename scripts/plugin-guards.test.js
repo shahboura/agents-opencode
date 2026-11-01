@@ -122,6 +122,49 @@ async function main() {
     '"python" -c "open(\'.env\').read()"',
     'x=`cat .env`',
     'node -e "require(\'fs\').readFileSync(\'.env\')"',
+    // A pattern is not a path; only the file operands are reads.
+    'grep -rn "x" .env tests/',
+    'grep -r PATTERN .env',
+    'grep -e API_KEY .env',
+    'grep --file=.env dump.txt',
+    'grep -f .env dump.txt',
+    'sed -f .env in.txt',
+    'awk -f .env in.txt',
+    'grep --include=*.env -r x .',
+    'cat $HOME/.env',
+    'cat "$(pwd)/.env"',
+    // Option values and wrapper command strings keep the old blocking.
+    'grep -rnf .env x',
+    'grep --exclude-from=.env x',
+    'grep -f .env',
+    'grep --include=*.env',
+    'grep x -- .env',
+    'grep -A 2 x .env',
+    'grep -rn x ".env"',
+    'sed -n 1p ".env"',
+    'grep -f.env',
+    'grep -f patterns.txt .env',
+    'grep .env -f patterns.txt',
+    "/bin/bash -c 'cat .env'",
+    "bash -o pipefail -c 'cat .env'",
+    "eval 'cat .env'",
+    "ssh host 'cat .env'",
+    'bash -c "grep -f .env .env" grep',
+    'grep --color x .env',
+    'awk -E .env data.txt',
+    'awk --exec .env data.txt',
+    'bash grep -c "grep -f .env .env"',
+    'awk -i .env data.txt',
+    'bash -c "grep -e \'\' .env"',
+    'grep -f "$(cat .env)" README.md',
+    'awk --source={print} .env',
+    'awk -eprog .env',
+    'sed -l 2p .env',
+    'grep .env "--regexp=x"',
+    'grep "--file=.env" x',
+    'awk -e "{print}" .env',
+    'awk --source "{print}" .env',
+    'grep .env "-f" patterns.txt',
   ];
   const shellAllowed = [
     'echo .env',
@@ -142,6 +185,23 @@ async function main() {
     'echo node .env',
     'git check-ignore .env',
     'cat README.md',
+    // Patterns/scripts are not file paths (the four reported false positives).
+    'grep -n "designSecrets\\|Object.assign(process.env" e2e/playwright.config.ts',
+    'grep -E "^\\.-.*\\.env" -r .',
+    "grep 'event.key'",
+    'grep -rn "process.env" src/',
+    'grep --regexp=.env src/file.ts',
+    'grep -f patterns.txt src/',
+    "sed -e 's/.env/.x/' README.md",
+    'awk -f prog.awk data.txt',
+    "grep -A 2 'event.key' src/app.ts",
+    'grep -e.env src/app.ts',
+    'grep --exclude=*.env -r x .',
+    'grep --exclude-dir node_modules "process.env" src/',
+    'bash -c "grep \'event.key\' app.ts"',
+    'grep --color=auto x README.md',
+    'grep -A 2 .env src/app.ts',
+    'echo $((1+2))',
   ];
   for (const command of shellBlocked) {
     assert(
@@ -157,6 +217,10 @@ async function main() {
     assert(
       !readGuardError('bash', { args: { command } }),
       `Expected shell command allowed: ${command}`
+    );
+    assert(
+      !readGuardError('shell', { input: { args: { command } } }),
+      `Expected v2 shell command allowed: ${command}`
     );
   }
   // An unterminated quote followed by backslashes must stay linear; an
