@@ -1,6 +1,6 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
-  "current_phase": "main: PR #167 (shell guard false-positive fix, 6b64297) merged, graph rebuilt. Open: PR #166 chore/context-pruning - duplicate-prose pruning, state-first session read with the handoff as fallback, untrusted-memory rule; doctor and eval green, awaiting merge. fix/shell-guard-false-positives has its own worktree.",
+  "current_phase": "PR #166 squash-merged (5895765) and released as 4.3.1 (d7361a3): pruning pass, state-first session read, untrusted-memory rule, minimatch 11.0.3 override. Doctor green on main; code graph rebuilt (1,416 nodes) and matches d7361a3.",
   "plugin_version": "2.6.0",
   "decisions": [
     "Pack agents allow all skills (`*`: allow) because a pack cannot enumerate host/plugin skills; the working restriction mechanisms are editing the installed agent file or a v2 `integration.use` policy - global permission rules lose to agent rules, which are appended last (last match wins).",
@@ -74,9 +74,8 @@
   ],
   "blocked_by": [],
   "next_actions": [
-    "Merge PR #166 (chore/context-pruning) once CI is green, then refresh the graph on main with `graphify update .`.",
-    "Watch release-please for the next pack release containing PR #167; reinstall globally after any agent edits.",
-    "Context-pruning session owns /tmp/opencode/agents-opencode-ctx (chore/context-pruning); merge or discard it before further state edits.",
+    "Remove the merged worktree and branch: git worktree remove /tmp/opencode/agents-opencode-ctx, then git branch -D chore/context-pruning (squash-merged; content lives in 5895765).",
+    "Doc re-extraction (`/graphify --update`) stays deferred: it trips the semantic shrink guard that drops orchestrator/instruction nodes.",
     "VAL-6: add a drill capture-hardening test (hostile config/hook) to the doctor suite.",
     "Complete VAL-4: migrate evals/harness/run-evals.js to the shared parser.",
     "Expand eval fixtures toward capability/regression suites (pass@k) per Anthropic guidance."
@@ -122,5 +121,5 @@
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-11-01T11:13:44Z"
+  "last_updated": "2026-11-01T11:53:20Z"
 }

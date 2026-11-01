@@ -29,7 +29,8 @@ Already on Claude Code? The same 28 skills ship as a [plugin](./adapters/claude-
 
 ## Quick Start
 
-**Requires:** Node.js (current LTS) and the [OpenCode CLI](https://opencode.ai/docs/cli/).
+**Requires:** Node.js 24 or newer (the package's `engines` field) and the
+[OpenCode CLI](https://opencode.ai/docs/cli/).
 
 ```bash
 npx agents-opencode --global      # install into your global OpenCode config
@@ -41,7 +42,18 @@ opencode                          # start the TUI
 That last line triggers the orchestrator: it plans the work, delegates implementation to
 `@codebase`, quality checks to `@review`, and documentation to `@docs` — all in one session.
 
-<details><summary>Install options (filter, update, uninstall, status)</summary>
+**What it writes:** the pack's `.opencode/` tree (agents, commands, skills, instructions,
+plugin helpers) into the OpenCode config dir — `$XDG_CONFIG_HOME/opencode/` or
+`~/.config/opencode/` for `--global`, `.opencode/` for a project — plus only the
+`opencode.json` keys it manages (permission defaults; `$schema` when it creates the file).
+Other keys are never touched, and previous versions are backed up next to the config.
+
+```bash
+npx agents-opencode --status              # show detected install scopes
+npx agents-opencode --uninstall --global  # remove a global install
+```
+
+<details><summary>More options (language filter, update, config target)</summary>
 
 ```bash
 # Lighter install: keep only selected language skills
@@ -49,12 +61,6 @@ npx agents-opencode --global --languages python,typescript
 
 # Update an existing install (auto-detects scope; --all, --global, or --project [dir] to be explicit)
 npx agents-opencode --update
-
-# Uninstall (current project by default; --global or --all for explicit scope)
-npx agents-opencode --uninstall
-
-# Show detected installation scopes
-npx agents-opencode --status
 
 # Choose an OpenCode config target (default: auto)
 npx agents-opencode --global --target v2    # emit v2 keys ('permissions'; 'plugins' only if a plugin entry exists)
