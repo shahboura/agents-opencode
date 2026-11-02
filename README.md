@@ -254,8 +254,9 @@ build that ships plugin-spec support). Do not combine a file install with the pl
 A sandbox run on v2.0.30 verified the plugin loads, with all 10 agents and 27 skills discovered (the pack now ships 28).
 On OpenCode 2.0.32 the resolved rules (`opencode debug agents`) confirm v1-shaped agent
 frontmatter translates to the v2 `permissions` array (`bash`→`shell`, `task`→`subagent`,
-`skill`→`skill`). v2 runtime hook behaviour is not yet exercised end-to-end. The plugin-spec path
-is verified to load on v2.0.30; its runtime skill delivery is likewise not yet exercised end-to-end.
+`skill`→`skill`). On v2.2.5 the secret-read guard and shell-env hooks were observed firing
+end-to-end; event-stream and compaction hooks are not yet, and the plugin-spec path's runtime
+skill delivery remains unexercised.
 
 See [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 

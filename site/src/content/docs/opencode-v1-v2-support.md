@@ -84,9 +84,10 @@ migrate-v1 guide states "V2 translates legacy agent frontmatter automatically" �
 disposable sandbox run against **v2.0.30** confirmed the pack's 10 agents are discovered
 from v1-shaped frontmatter, while **2.0.32** confirmed the resolved permission rules.
 The adapter still changes only the keys v2 does not translate. The plugin is written
-against the published **v2.0.30** plugin API and verified to load on that host; runtime
-hook behaviour (secret-read guard, context injection, event subscription) has not yet
-been exercised with a model. The skill descriptor uses `path`, v2's only file field.
+against the published **v2.0.30** plugin API and verified to load on that host. On
+**2.2.5** the secret-read guard and shell-env injection were observed firing with a model;
+event subscription, compaction context, and plugin-spec skill delivery remain unexercised.
+The skill descriptor uses `path`, v2's only file field.
 
 ## Hybrid install model
 
@@ -123,11 +124,12 @@ The first form is v1, the second v2. A version pin also works
 plugin-spec install covers **skills and hooks/guards only** — not agents or global
 config.
 
-**Verified loading, unexercised runtime.** A live OpenCode **v2.0.30** run confirmed the
+**Verified loading, partly exercised runtime.** A live OpenCode **v2.0.30** run confirmed the
 plugin loads, and all 10 agents and all skills shipped in that build are discovered; **2.0.32** confirmed the
-translated agent permission rules. The v2 plugin API is still evolving, and runtime hook
-behaviour and plugin-spec skill delivery have not been exercised with a model — prefer a
-file install for production use.
+translated agent permission rules, and on **2.2.5** the secret-read guard and shell-env
+injection were observed firing in a live session with a model. Event-stream and compaction
+hooks, and plugin-spec skill delivery, remain unobserved — prefer a file install for
+production use.
 
 ## Coexistence guard
 

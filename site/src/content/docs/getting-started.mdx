@@ -156,8 +156,8 @@ To restore files, use `backup-manifest.json` from a backup session and copy the 
 ### OpenCode v1/v2 support
 
 The pack supports OpenCode **v1** and **v2** from one source — verified to load
-(plugin, all 10 agents, and all skills shipped in that build) on v2.0.30, with v2 runtime hook behaviour
-not yet exercised.
+(plugin, all 10 agents, and all skills shipped in that build) on v2.0.30; the secret-read guard and
+shell-env hooks were observed on v2.2.5, while event and compaction hooks are not yet.
 The two use **disjoint config keys**, so the installer emits per-target output and never
 mixes key sets:
 

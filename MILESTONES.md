@@ -19,6 +19,15 @@ Rules:
 - 3-5 bullets per entry; skip trivial edits.
 - Keep the file under 100 KB by pruning the oldest entries.
 
+### 2026-11-02 22:27 - v2 runtime hooks exercised; docs claims corrected
+
+**Agent:** orchestrator
+**Summary:** Verified on this host (OpenCode 2.2.5) that the pack's guard and shell-env hooks fire, then corrected every doc that said hooks were unexercised.
+- Secret-read guard blocked a `.pem` read on deepseek-v4.1-flash and claude-haiku-5-5; a README read succeeded as the negative control.
+- `shell.env` injected `AGENTS_OPENCODE_VERSION` (4.3.2 on the installed copy; repo at 4.3.3) into the shell on both models.
+- Remaining gaps: event stream (`session.error`), `experimental.session.compacting`, plugin-spec skill delivery, and `--target auto` detection.
+- Fixed the support page's stale paragraph and bold lead, `llms.txt`, README, and the three other site pages; the landing line now shows green/amber state dots.
+
 ### 2026-11-01 11:08 - Shell secret-guard false positives fixed (PR #167)
 
 **Agent:** orchestrator

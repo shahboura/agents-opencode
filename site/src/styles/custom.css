@@ -366,3 +366,43 @@ samp {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Landing compatibility line: green/amber state dots, neutral copy. */
+.compat-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.35rem 1.25rem;
+  margin-top: 1rem;
+  color: var(--sl-color-gray-2);
+}
+
+.compat-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--sl-color-white);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.compat-dot {
+  flex: none;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+}
+
+.compat-dot--ok {
+  background: var(--sl-color-green);
+}
+
+.compat-dot--warn {
+  background: var(--sl-color-orange);
+}
+
+.compat-note {
+  flex: 1 1 30rem;
+  font-size: var(--sl-text-sm);
+  line-height: 1.45;
+}

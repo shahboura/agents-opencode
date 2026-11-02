@@ -55,9 +55,13 @@ import { LinkCard, Card, CardGrid, LinkButton } from '@astrojs/starlight/compone
   </div>
 </div>
 
-OpenCode v1 is supported. v2 installs and loads, with permission rules verified on
-2.0.32 and plugin hooks not yet exercised with a model — see
-[OpenCode v1/v2 support](/opencode-v1-v2-support/).
+<p class="compat-line">
+  <span class="compat-state"><span class="compat-dot compat-dot--ok" aria-hidden="true"></span>OpenCode v1 supported</span>
+  <span class="compat-state"><span class="compat-dot compat-dot--warn" aria-hidden="true"></span>OpenCode v2 partial</span>
+  <span class="compat-note">v2 installs and loads, with permission rules verified on 2.0.32 and the
+  secret-read guard and shell-env hooks observed on 2.2.5; event and compaction hooks are not
+  yet observed. See <a href="/opencode-v1-v2-support/">OpenCode v1/v2 support</a>.</span>
+</p>
 
 ## Start here
 
