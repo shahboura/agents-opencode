@@ -124,7 +124,7 @@ plugin-spec install covers **skills and hooks/guards only** — not agents or gl
 config.
 
 **Verified loading, unexercised runtime.** A live OpenCode **v2.0.30** run confirmed the
-plugin loads, and all 10 agents and 27 skills are discovered; **2.0.32** confirmed the
+plugin loads, and all 10 agents and all skills shipped in that build are discovered; **2.0.32** confirmed the
 translated agent permission rules. The v2 plugin API is still evolving, and runtime hook
 behaviour and plugin-spec skill delivery have not been exercised with a model — prefer a
 file install for production use.

@@ -98,7 +98,7 @@ When introducing Level B/C changes:
 - Command docs parity is enforced against canonical command frontmatter
 - The installer's target adapter emits v1 and v2 config key sets until a future breaking major
   (`--target v1|v2|auto`); the two sets are never co-written. Both are supported; v2 is
-  verified to load on v2.0.30 (plugin, all 10 agents, and 27 skills discovered; runtime
+  verified to load on v2.0.30 (plugin, all 10 agents, and all skills shipped in that build discovered; runtime
   hooks not yet exercised). See
   **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.
 

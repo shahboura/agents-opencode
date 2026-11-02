@@ -169,7 +169,7 @@ samp {
 
 .loop-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-auto-rows: 1fr;
   align-items: stretch;
   gap: var(--brand-3);
@@ -363,6 +363,54 @@ samp {
 
 @media (width < 50rem) {
   .powered-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Landing compatibility strip: one quiet panel, two states. */
+.compat-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 2rem;
+  margin-top: 1rem;
+  padding: 1rem 1.15rem;
+  border-radius: 0.6rem;
+  background: var(--sl-color-gray-6);
+}
+
+.compat-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.compat-dot {
+  flex: none;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+}
+
+.compat-dot--ok {
+  background: var(--sl-color-green);
+}
+
+.compat-dot--warn {
+  background: var(--sl-color-orange);
+}
+
+.compat-text {
+  font-size: var(--sl-text-sm);
+  line-height: 1.4;
+  color: var(--sl-color-gray-2);
+}
+
+.compat-text strong {
+  color: var(--sl-color-white);
+}
+
+@media (width < 50rem) {
+  .compat-strip {
     grid-template-columns: minmax(0, 1fr);
   }
 }

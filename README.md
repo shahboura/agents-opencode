@@ -251,8 +251,7 @@ OpenCode plugin entry in `opencode.json`: `"plugin": ["agents-opencode"]` (v1) o
 `"plugins": ["agents-opencode"]` (v2); a version pin like `agents-opencode@X.Y.Z` also works (use a
 build that ships plugin-spec support). Do not combine a file install with the plugin entry.
 
-A sandbox run on v2.0.30 verified the plugin loads, with all 10 agents and 27 skills discovered
-(the pack now ships 28).
+A sandbox run on v2.0.30 verified the plugin loads, with all 10 agents and 27 skills discovered (the pack now ships 28).
 On OpenCode 2.0.32 the resolved rules (`opencode debug agents`) confirm v1-shaped agent
 frontmatter translates to the v2 `permissions` array (`bash`→`shell`, `task`→`subagent`,
 `skill`→`skill`). v2 runtime hook behaviour is not yet exercised end-to-end. The plugin-spec path
