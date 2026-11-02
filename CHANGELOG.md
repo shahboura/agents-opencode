@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.3](https://github.com/shahboura/agents-opencode/compare/v4.3.2...v4.3.3) (2026-11-02)
+
+
+### Bug Fixes
+
+* **site:** quote the landing description so frontmatter parses ([#174](https://github.com/shahboura/agents-opencode/issues/174)) ([f12982b](https://github.com/shahboura/agents-opencode/commit/f12982be45ca8700d59d2dee4da79cbd67a06cf3))
+
 ## [4.3.2](https://github.com/shahboura/agents-opencode/compare/v4.3.1...v4.3.2) (2026-11-02)
 
 
