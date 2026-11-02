@@ -1,27 +1,32 @@
-# OpenCode Agents
+<p align="center">
+  <img src="assets/brand/logo.png" width="88" height="88" alt="" />
+</p>
 
-[![Validate Agents & Documentation](https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml/badge.svg)](https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml)
-[![SkillSpector](https://github.com/shahboura/agents-opencode/actions/workflows/skillspector.yml/badge.svg?branch=main)](https://github.com/shahboura/agents-opencode/actions/workflows/skillspector.yml)
-[![npm version](https://img.shields.io/npm/v/agents-opencode)](https://www.npmjs.com/package/agents-opencode)
-[![Socket Badge](https://badge.socket.dev/npm/package/agents-opencode)](https://socket.dev/npm/package/agents-opencode)
-[![Documentation](https://img.shields.io/badge/docs-Cloudflare%20Workers-blue)](https://agnts.elkodr.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<h1 align="center">OpenCode Agents</h1>
 
-**Ten specialist agents. 28 on-demand skills. One install.**
+<p align="center"><strong>Ten agents. 28 on-demand skills. 18 commands. One install.</strong></p>
 
-Turn a single prompt into a full delivery loop — plan → implement → review → document —
-without leaving the terminal you already use. Built for [OpenCode](https://opencode.ai).
+<!-- markdownlint-disable MD013 -->
+<p align="center">
+  <a href="https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml">
+    <img src="https://github.com/shahboura/agents-opencode/actions/workflows/validate.yml/badge.svg" alt="Validate" /></a>
+  <a href="https://www.npmjs.com/package/agents-opencode">
+    <img src="https://img.shields.io/npm/v/agents-opencode" alt="npm version" /></a>
+  <a href="https://agnts.elkodr.com/">
+    <img src="https://img.shields.io/badge/docs-agnts.elkodr.com-blue" alt="Documentation" /></a>
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
+  <a href="https://socket.dev/npm/package/agents-opencode">
+    <img src="https://badge.socket.dev/npm/package/agents-opencode" alt="Socket" /></a>
+  <a href="https://github.com/shahboura/agents-opencode/actions/workflows/skillspector.yml">
+    <img src="https://github.com/shahboura/agents-opencode/actions/workflows/skillspector.yml/badge.svg?branch=main" alt="SkillSpector" /></a>
+</p>
+<!-- markdownlint-enable MD013 -->
+
+An agent pack for [OpenCode](https://opencode.ai): `@orchestrator` plans, `@codebase` builds,
+`@review` checks, `@docs` records — one session.
+
 Already on Claude Code? The same 28 skills ship as a [plugin](./adapters/claude-code/).
-
-## Why this pack is different
-
-- **One prompt, four disciplines.** `@orchestrator` scopes the work, then hands off to
-  `@codebase` for implementation, `@review` for quality, and `@docs` for documentation — in one session.
-- **Skills that don't tax context.** All 28 skills load only when invoked, so an idle skill costs nothing.
-- **Least-privilege tools, host-compatible skills.** Tools start at `"*": "deny"` with narrow
-  allows; skills are allowed by default so host and plugin skills keep working.
-- **Verified, not vibes.** Agent contracts, command matrices, docs links, and plugin guards are
-  checked in CI on every change.
 
 ## Quick Start
 
@@ -76,6 +81,16 @@ rewrites your provider, model, instructions, share, or session compaction settin
 [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 
 </details>
+
+## Why this pack is different
+
+- **One prompt, four disciplines.** `@orchestrator` scopes the work, then hands off to
+  `@codebase` for implementation, `@review` for quality, and `@docs` for documentation — in one session.
+- **Skills that don't tax context.** All 28 skills load only when invoked, so an idle skill costs nothing.
+- **Least-privilege tools, host-compatible skills.** Tools start at `"*": "deny"` with narrow
+  allows; skills are allowed by default so host and plugin skills keep working.
+- **Verified, not vibes.** Agent contracts, command matrices, docs links, and plugin guards are
+  checked in CI on every change.
 
 ## Built with this pack
 
@@ -251,12 +266,12 @@ OpenCode plugin entry in `opencode.json`: `"plugin": ["agents-opencode"]` (v1) o
 `"plugins": ["agents-opencode"]` (v2); a version pin like `agents-opencode@X.Y.Z` also works (use a
 build that ships plugin-spec support). Do not combine a file install with the plugin entry.
 
-A sandbox run on v2.0.30 verified the plugin loads, with all 10 agents and 27 skills discovered
-(the pack now ships 28).
+A sandbox run on v2.0.30 verified the plugin loads, with all 10 agents and 27 skills discovered (the pack now ships 28).
 On OpenCode 2.0.32 the resolved rules (`opencode debug agents`) confirm v1-shaped agent
 frontmatter translates to the v2 `permissions` array (`bash`→`shell`, `task`→`subagent`,
-`skill`→`skill`). v2 runtime hook behaviour is not yet exercised end-to-end. The plugin-spec path
-is verified to load on v2.0.30; its runtime skill delivery is likewise not yet exercised end-to-end.
+`skill`→`skill`). On v2.2.5 the secret-read guard and shell-env hooks were observed firing
+end-to-end; event-stream and compaction hooks are not yet, and the plugin-spec path's runtime
+skill delivery remains unexercised.
 
 See [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 

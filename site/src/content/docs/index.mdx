@@ -25,7 +25,7 @@ import { LinkCard, Card, CardGrid, LinkButton } from '@astrojs/starlight/compone
       <LinkButton href="/getting-started/">Get started</LinkButton>
       <LinkButton href="/agents/" variant="secondary">Browse agents</LinkButton>
     </div>
-    <p><small>OpenCode v1 + v2 · MIT licensed</small></p>
+    <p><small>MIT licensed</small></p>
   </div>
 
   <div class="loop-panel">
@@ -55,6 +55,21 @@ import { LinkCard, Card, CardGrid, LinkButton } from '@astrojs/starlight/compone
   </div>
 </div>
 
+<div class="compat-line">
+  <span class="compat-state"><span class="compat-dot compat-dot--ok" aria-hidden="true"></span>OpenCode v1 supported</span>
+  <details class="compat-details">
+    <summary aria-label="OpenCode v2 partial — compatibility details">
+      <span class="compat-state"><span class="compat-dot compat-dot--warn" aria-hidden="true"></span>OpenCode v2 partial</span>
+      <span class="compat-help" aria-hidden="true">?</span>
+    </summary>
+    <div class="compat-tip">
+      v2 installs and loads, with permission rules verified on 2.0.32 and the secret-read
+      guard and shell-env hooks observed on 2.2.5; event and compaction hooks are not yet
+      observed. See <a href="/opencode-v1-v2-support/">OpenCode v1/v2 support</a>.
+    </div>
+  </details>
+</div>
+
 ## Start here
 
 <CardGrid>
@@ -79,23 +94,20 @@ import { LinkCard, Card, CardGrid, LinkButton } from '@astrojs/starlight/compone
 
 ## Built with this pack
 
-- <img src="/powered-by/sha2lato.png" width="24" alt="" /> **[sha2lato](https://sha2lato.elkodr.com/)**
-  — self-hosted coding-agent box: Discord is the control surface for OpenCode 2;
-  every channel is a project, every thread a session.
-- <img src="/powered-by/stackr.png" width="24" alt="" /> **[stackr](https://stackr.elkodr.com/)**
-  — pick self-hosted services, get a docker-compose file with a working `.env`,
-  generated in your browser.
-- <img src="/powered-by/agnts.png" width="24" alt="" /> **[agnts](https://agnts.elkodr.com/)**
-  — this site: documented and maintained with the same workflow it describes.
-
-## Compatibility
-
-| Runtime | Status |
-| --- | --- |
-| OpenCode v1 | Supported |
-| OpenCode v2 | Installs and loads; runtime hooks not yet exercised |
-
-See [OpenCode v1/v2 support](/opencode-v1-v2-support/) for the verified version and what is still untested.
+<div class="powered-grid">
+  <a class="powered-card" href="https://sha2lato.elkodr.com/">
+    <img class="powered-logo" src="/powered-by/sha2lato.png" alt="" width="56" height="56" />
+    <span class="powered-name">sha2lato</span>
+  </a>
+  <a class="powered-card" href="https://stackr.elkodr.com/">
+    <img class="powered-logo" src="/powered-by/stackr.png" alt="" width="56" height="56" />
+    <span class="powered-name">stackr</span>
+  </a>
+  <a class="powered-card" href="https://agnts.elkodr.com/">
+    <img class="powered-logo" src="/powered-by/agnts.png" alt="" width="56" height="56" />
+    <span class="powered-name">agnts</span>
+  </a>
+</div>
 
 ## Why this pack
 

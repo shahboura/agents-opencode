@@ -2,8 +2,8 @@
 
 > Lean agent pack for OpenCode: 10 specialist agents, 28 on-demand skills, 18 slash
 > commands. Plan, implement, review, and document without leaving the terminal.
-> MIT licensed. OpenCode v1 supported; v2 installs and loads, runtime hooks not yet
-> exercised.
+> MIT licensed. OpenCode v1 supported; v2 installs and loads, with the secret-read guard
+> and shell-env hooks observed on 2.2.5; event and compaction hooks not yet exercised.
 
 ## Install
 

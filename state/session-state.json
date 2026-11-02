@@ -62,7 +62,7 @@
     "Consumer-visible opencode.json defaults are not yet in the changelog.",
     "Multi-lens panel shares one model - correlated blind spots are irreducible until per-lens model choice is available.",
     "evals/harness/run-evals.js still uses a hand-rolled permission parser (VAL-4) that can drift from the shared module.",
-    "v2 runtime hook behaviour (the guard actually blocking a live read, context injection, event subscription) and --target auto detection remain unexercised because the sandbox has no model/API key; this is the tracked exit gate before declaring v2 fully supported.",
+    "v2 runtime hooks partly exercised on v2.2.5 (2026-11-02): the secret-read guard blocked a live read and shell.env injected AGENTS_OPENCODE_VERSION on two models; event subscription, compaction context, plugin-spec skill delivery, and --target auto detection remain unexercised. This is the tracked exit gate before declaring v2 fully supported.",
     "v2 host wrinkles: the load log goes to stdout, which OpenCode's background service discards; 'opencode debug agents' returns [] on 2.0.30 (use the workspace API instead).",
     "Host detection runs 'opencode --version' via spawnSync; the Windows cmd.exe CWD-vs-PATH behavior is mitigated by a pinned cwd but was not executed on a live Windows opencode.cmd host.",
     "The v2 secret-read guard is best-effort: if a beta v2 host does not expose the tool hook, the plugin warns but the guard is absent.",
@@ -121,5 +121,5 @@
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-11-01T11:53:20Z"
+  "last_updated": "2026-11-02T14:27:00Z"
 }

@@ -29,10 +29,11 @@ The pack supports OpenCode v1 and v2 from one source; the two use
 **disjoint config keys**. The installer emits per-target output
 (`--target v1|v2|auto`; `auto` detects the installed OpenCode version — v2 when the
 major is >= 2, else v1) and never co-writes both key sets. The **v2 path is
-verified to load** on v2.0.30 (plugin, all 10 agents, and 27 skills discovered,
+verified to load** on v2.0.30 (plugin, all 10 agents, and all skills shipped in that build discovered,
 including v1-shaped frontmatter translation), and on **v2.0.32** the resolved
-permission rules were confirmed with `opencode debug agents`; runtime hooks and
-plugin-spec skill delivery are not yet exercised with a model (see
+permission rules were confirmed with `opencode debug agents`, and on **v2.2.5** the
+secret-read guard and shell-env injection were observed firing with a model. Event-stream
+and compaction hooks, and plugin-spec skill delivery, remain unobserved (see
 [OpenCode v1/v2 support](/opencode-v1-v2-support/)).
 
 | Concern | v1 | v2 |
