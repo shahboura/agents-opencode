@@ -324,7 +324,7 @@ samp {
   }
 }
 
-/* "Built with this pack" cards on the docs landing. */
+/* "Built with this pack" logo strip on the docs landing. */
 .powered-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -336,18 +336,15 @@ samp {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
-  padding: 1.1rem 1rem;
-  border: 1px solid var(--sl-color-gray-5);
+  gap: 0.5rem;
+  padding: 1rem 0.75rem;
   border-radius: 0.6rem;
   color: inherit;
-  text-align: center;
   text-decoration: none;
 }
 
-.powered-card:hover,
-.powered-card:focus-visible {
-  border-color: var(--sl-color-gray-3);
+.powered-card:hover {
+  background: var(--sl-color-gray-6);
 }
 
 .powered-card:focus-visible {
@@ -362,12 +359,6 @@ samp {
 
 .powered-name {
   font-weight: 600;
-}
-
-.powered-note {
-  font-size: 0.9rem;
-  line-height: 1.35;
-  color: var(--sl-color-gray-2);
 }
 
 @media (width < 50rem) {
