@@ -283,8 +283,9 @@ Run `npm run doctor` for the complete local validation suite (agent contracts, m
 docs links, session state, eval trends, and more). For the full check mapping (local commands ↔ CI
 gates), see **[Compatibility](https://agnts.elkodr.com/compatibility/)**.
 
-SkillSpector scans every push to `main` and every pull request; the score is pinned at
-0/100 and CI fails if it moves.
+Scanned by [NVIDIA SkillSpector](https://github.com/NVIDIA/SkillSpector). It runs on every
+push to `main` and every pull request targeting `main`; the score is pinned at 0/100 and CI
+fails if it moves.
 [Latest report](https://github.com/shahboura/agents-opencode/actions/workflows/skillspector.yml).
 
 Agent evals: `npm run eval:agents` runs deterministic contract checks for agent and command
