@@ -372,7 +372,7 @@ samp {
   position: relative;
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.35rem 1.25rem;
   margin-top: 1rem;
   color: var(--sl-color-gray-2);
@@ -409,8 +409,17 @@ samp {
 
 .compat-details > summary {
   display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.75rem;
   margin: 0;
   padding: 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.compat-help {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 1.5rem;
@@ -421,8 +430,6 @@ samp {
   font-size: 0.75rem;
   font-weight: 700;
   line-height: 1;
-  cursor: pointer;
-  list-style: none;
 }
 
 .compat-details > summary::-webkit-details-marker {
@@ -440,19 +447,24 @@ samp {
 
 .compat-details > summary:hover,
 .compat-details[open] > summary {
-  border-color: var(--sl-color-gray-3);
   color: var(--sl-color-white);
+}
+
+.compat-details > summary:hover .compat-help,
+.compat-details[open] > summary .compat-help {
+  border-color: var(--sl-color-gray-3);
 }
 
 .compat-details > summary:focus-visible {
   outline: 2px solid var(--sl-color-accent);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  border-radius: 0.4rem;
 }
 
 .compat-tip {
   position: absolute;
   z-index: 10;
-  top: 1.7rem;
+  top: calc(2.75rem + 0.35rem);
   left: 0;
   right: 0;
   max-width: 34rem;

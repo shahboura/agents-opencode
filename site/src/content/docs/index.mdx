@@ -57,9 +57,11 @@ import { LinkCard, Card, CardGrid, LinkButton } from '@astrojs/starlight/compone
 
 <div class="compat-line">
   <span class="compat-state"><span class="compat-dot compat-dot--ok" aria-hidden="true"></span>OpenCode v1 supported</span>
-  <span class="compat-state"><span class="compat-dot compat-dot--warn" aria-hidden="true"></span>OpenCode v2 partial</span>
   <details class="compat-details">
-    <summary aria-label="Compatibility details">?</summary>
+    <summary aria-label="OpenCode v2 partial — compatibility details">
+      <span class="compat-state"><span class="compat-dot compat-dot--warn" aria-hidden="true"></span>OpenCode v2 partial</span>
+      <span class="compat-help" aria-hidden="true">?</span>
+    </summary>
     <div class="compat-tip">
       v2 installs and loads, with permission rules verified on 2.0.32 and the secret-read
       guard and shell-env hooks observed on 2.2.5; event and compaction hooks are not yet
