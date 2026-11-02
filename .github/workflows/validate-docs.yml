@@ -1,0 +1,51 @@
+name: Validate Docs Site
+
+# Builds the Astro site on pull requests that touch it. The deploy workflow only
+# runs on main, so without this job a broken frontmatter or config lands green and
+# fails after merge. It reports on site PRs only: a path-filtered workflow cannot be
+# a required check without leaving non-site PRs waiting forever.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - '.github/workflows/validate-docs.yml'
+      - '.github/workflows/deploy-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build docs site
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # Same depth as deploy-docs.yml: Starlight `lastUpdated` reads git history.
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install site dependencies
+        run: npm ci
+        working-directory: site
+
+      - name: Build docs site
+        run: npm run build
+        working-directory: site
