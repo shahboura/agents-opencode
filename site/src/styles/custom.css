@@ -369,6 +369,7 @@ samp {
 
 /* Landing compatibility line: green/amber state dots, neutral copy. */
 .compat-line {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -401,8 +402,78 @@ samp {
   background: var(--sl-color-orange);
 }
 
-.compat-note {
-  flex: 1 1 30rem;
+.compat-details {
+  border: 0;
+  padding: 0;
+}
+
+.compat-details > summary {
+  display: inline-flex;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--sl-color-gray-4);
+  border-radius: 50%;
+  color: var(--sl-color-gray-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  list-style: none;
+}
+
+.compat-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.compat-details > summary::marker {
+  content: "";
+}
+
+.compat-details > summary::before {
+  content: none;
+  display: none;
+}
+
+.compat-details > summary:hover,
+.compat-details[open] > summary {
+  border-color: var(--sl-color-gray-3);
+  color: var(--sl-color-white);
+}
+
+.compat-details > summary:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
+}
+
+.compat-tip {
+  position: absolute;
+  z-index: 10;
+  top: 1.7rem;
+  left: 0;
+  right: 0;
+  max-width: 34rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.5rem;
+  background: var(--sl-color-bg);
+  box-shadow: var(--sl-shadow-lg);
+  color: var(--sl-color-gray-2);
   font-size: var(--sl-text-sm);
   line-height: 1.45;
+}
+
+@media (width < 50rem) {
+  .compat-details {
+    flex-basis: 100%;
+  }
+
+  .compat-tip {
+    position: static;
+    max-width: none;
+    margin-top: 0.5rem;
+  }
 }
