@@ -12,7 +12,10 @@
 // One hint appended to every secret-block message, so a user can tell a false
 // positive from a real guard.
 const SENSITIVE_READ_HINT =
-  'See https://agnts.elkodr.com/troubleshooting/#agent-refuses-to-read-a-file-that-looks-like-a-secret';
+  'See https://agnts.elkodr.com/troubleshooting/#agent-refuses-to-read-a-file-that-looks-like-a-secret; .env.example lists the expected variable names.';
+
+// A quoted literal is a real path argument; an unquoted identifier is code.
+const QUOTES = ["'", '"', '`'];
 
 const PUBLIC_CREDENTIAL_SUFFIXES = ['.pub', '.crt', '.cer', '.cert'];
 
@@ -113,7 +116,8 @@ const GUARDED_PATH_KEYS = new Map([
 // absolute paths, and direct interpreter references) but stays best-effort:
 // encoded or computed paths and aliases still bypass. It is not a sandbox.
 const SHELL_TOOLS = new Set(['bash', 'shell']);
-const SHELL_READ_VERBS = new Set(['cat', 'head', 'tail', 'less', 'more', 'source', '.', 'grep', 'awk', 'sed']);
+const NEW_READER_VERBS = new Set(['rg', 'bat', 'xxd', 'base64', 'od', 'strings']);
+const SHELL_READ_VERBS = new Set(['cat', 'head', 'tail', 'less', 'more', 'source', '.', 'grep', 'awk', 'sed', 'rg', 'bat', 'xxd', 'base64', 'od', 'strings']);
 // For copy-like verbs only the source argument is a read; `cp .env.example .env`
 // must keep working.
 const SHELL_COPY_VERBS = new Set(['cp', 'mv', 'ln', 'tee', 'dd']);
@@ -183,23 +187,28 @@ function splitShellSegments(command) {
 // grep/sed/awk take a pattern/script operand that is text, never a file path.
 // Only the remaining operands (and explicit file options) are reads, so a grep
 // pattern containing `.env`/`.key` must not block the command.
-const PATTERN_VERBS = new Set(['grep', 'sed', 'awk']);
+const PATTERN_VERBS = new Set(['grep', 'sed', 'awk', 'rg']);
 
 // Short options whose value is the pattern/script, a pattern file, or a value
 // that must be consumed so it cannot be mistaken for a positional operand.
-const PATTERN_SHORT_OPTIONS = { grep: new Set(['e']), sed: new Set(['e']), awk: new Set(['e']) };
-const FILE_SHORT_OPTIONS = { grep: new Set(['f']), sed: new Set(['f']), awk: new Set(['f', 'E', 'i']) };
-const VALUE_SHORT_OPTIONS = { grep: new Set(['A', 'B', 'C', 'd', 'D', 'm']), awk: new Set(['v', 'F']) };
+const PATTERN_SHORT_OPTIONS = { grep: new Set(['e']), sed: new Set(['e']), awk: new Set(['e']), rg: new Set(['e']) };
+const FILE_SHORT_OPTIONS = { grep: new Set(['f']), sed: new Set(['f']), awk: new Set(['f', 'E', 'i']), rg: new Set(['f']) };
+const GLOB_SHORT_OPTIONS = { rg: new Set(['g']) };
+const VALUE_SHORT_OPTIONS = { grep: new Set(['A', 'B', 'C', 'd', 'D', 'm']), awk: new Set(['v', 'F']), rg: new Set(['A', 'B', 'C', 'm', 'M', 'j', 't', 'T', 'r']) };
 
 // Long options by role: pattern/script text, a file read (`--exclude-from`
 // reads its file), or a content filter (`--include` surfaces matching files).
-const PATTERN_LONG_OPTIONS = { grep: new Set(['regexp']), sed: new Set(['expression']), awk: new Set(['source']) };
-const FILE_LONG_OPTIONS = new Set(['file', 'exclude-from', 'exec', 'include']);
+const PATTERN_LONG_OPTIONS = { grep: new Set(['regexp']), sed: new Set(['expression']), awk: new Set(['source']), rg: new Set(['regexp']) };
+const FILE_LONG_OPTIONS = new Set(['file', 'exclude-from', 'exec', 'ignore-file']);
+const FILTER_LONG_OPTIONS = new Set(['include', 'glob']);
 // Long options whose value must be consumed but is not a read.
 const VALUE_LONG_OPTIONS = new Set([
   'after-context', 'before-context', 'context', 'max-count', 'exclude', 'exclude-dir',
   'label', 'binary-files', 'devices', 'directories',
   'field-separator', 'assign', 'line-length',
+  'type', 'type-not', 'iglob', 'max-depth', 'max-filesize', 'sort', 'sortr',
+  'threads', 'encoding', 'pre', 'pre-glob', 'colors', 'context', 'after-context',
+  'before-context', 'max-count', 'replace',
 ]);
 
 function hasPatternOption(verb, rawArgs) {
@@ -248,7 +257,7 @@ function readVerbOperands(verb, rawArgs) {
       if (PATTERN_LONG_OPTIONS[verb]?.has(name)) {
         takeValue();
         patternAssigned = true;
-      } else if (FILE_LONG_OPTIONS.has(name)) {
+      } else if (FILE_LONG_OPTIONS.has(name) || FILTER_LONG_OPTIONS.has(name)) {
         const value = takeValue();
         if (value) paths.push(value);
       } else if (VALUE_LONG_OPTIONS.has(name)) {
@@ -263,13 +272,14 @@ function readVerbOperands(verb, rawArgs) {
         const isPattern = PATTERN_SHORT_OPTIONS[verb]?.has(flag);
         const isFile = FILE_SHORT_OPTIONS[verb]?.has(flag);
         const isValue = VALUE_SHORT_OPTIONS[verb]?.has(flag);
-        if (!isPattern && !isFile && !isValue) continue;
+        const isGlob = GLOB_SHORT_OPTIONS[verb]?.has(flag);
+        if (!isPattern && !isFile && !isValue && !isGlob) continue;
         const attached = chars.slice(position + 1);
         const value = attached || rawArgs[++index];
         if (isPattern) {
           patternAssigned = true;
-        } else if (isFile && value) {
-          paths.push(value);
+        } else if ((isFile || isGlob) && value) {
+          paths.push(String(value).replace(/^(['"]?)!/, '$1'));
         }
         break;
       }
@@ -370,9 +380,26 @@ function shellGuardError(payload) {
     for (const token of command.split(/[^A-Za-z0-9._/\\-]+/)) {
       // `process.env` is an identifier, not a file path.
       if (/^[A-Za-z_$][\w$]*\.env$/.test(token)) continue;
-      if (isBlockedReadPath(normalizeShellToken(token))) {
-        return `[agents-opencode] Blocked shell read of sensitive file: ${normalizeShellToken(token)}. Use the environment variable instead of reading the file. ${SENSITIVE_READ_HINT}`;
+      const candidate = normalizeShellToken(token);
+      if (!isBlockedReadPath(candidate)) continue;
+      // `.key`/`.pem` identifiers are code (`o.key`), not paths, unless the raw
+      // command quotes them or the token carries a path separator. `.env`,
+      // `.envrc`, and credential filenames stay blocked unconditionally.
+      const basename = candidate.split(/[/\\]/).pop()?.toLowerCase() || '';
+      const ambiguous = basename.endsWith('.key');
+      if (ambiguous) {
+        // shortcut: a bare unquoted .key argv path (perl -ne 'print' x.key) is not
+        // inspected; quoted, path-like, and option values still block.
+        const words = command.split(/\s+/);
+        const unquoted = words.map((word) => word.replace(/^['"]|['"]$/g, ''));
+        const optionValue =
+          unquoted.some((word) => /^-{1,2}[^=]+=/.test(word) && word.endsWith('=' + token)) ||
+          unquoted.some((word, index) => /^-{1,2}[^=]+$/.test(word) && words[index + 1] === token);
+        const pathLike = /[/\\]/.test(token) || token.startsWith('-') || optionValue;
+        const quoted = QUOTES.some((quote) => command.includes(quote + token));
+        if (!pathLike && !quoted) continue;
       }
+      return `[agents-opencode] Blocked shell read of sensitive file: ${candidate}. Use the environment variable instead of reading the file. ${SENSITIVE_READ_HINT}`;
     }
   }
   // `<` is input redirection (`cat<.env`), not a command separator.
@@ -391,6 +418,14 @@ function shellGuardError(payload) {
     let verbIndex = -1;
     for (let index = 0; index < tokens.length; index += 1) {
       const candidate = tokens[index].split(/[/\\]/).pop()?.toLowerCase() || '';
+      if (NEW_READER_VERBS.has(candidate) && index > 0) {
+        const lead = tokens.find((token, position) => position < index && !/^[A-Za-z_][\w]*=/.test(token));
+        const leadName = lead ? lead.split(/[/\\]/).pop()?.toLowerCase() || '' : '';
+        const executes = !lead || SHELL_WRAPPERS.has(leadName) ||
+          ['bash', 'sh', 'zsh', 'dash', 'timeout', 'xargs', 'nice', 'then', 'do', 'if', 'while', 'until', '!', '{', 'eval', 'find', 'parallel', 'su', 'busybox'].includes(leadName) ||
+          /^\d*[<>]/.test(lead);
+        if (!executes) continue;
+      }
       if (SHELL_READ_VERBS.has(candidate) || SHELL_COPY_VERBS.has(candidate)) {
         verbIndex = index;
         break;

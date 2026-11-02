@@ -110,9 +110,13 @@ sidebar:
   (`sed -n '1r .env'`, awk `getline`) is not inspected.
   A quoted pattern that contains a space and has no file operand can still block
   (fail-closed); keep such patterns simple or pass the file operand explicitly.
-- Interpreter text and heredoc bodies are still scanned, so a `.env` literal inside
-  `python3 - <<'PY'` blocks even when it is only prose. Keep the snippet in a file, or drop
-  the literal, instead of using a heredoc.
+- When an interpreter is detected anywhere in the command, its text is scanned,
+  heredoc bodies included. `.env`, `.envrc`, and credential filenames block; a bare
+  `.key` identifier passes unless it is quoted, path-like, or an option value
+  (`--env-file=server.key`), so `o.key` passes while `open('server.key')` blocks. A bare
+  unquoted `.key` argv path is not inspected. Common readers (`rg`, `bat`, `xxd`,
+  `base64`, `od`, `strings`) are checked for explicit file operands;
+  recursive searches rely on ignore rules.
 - `grep` as a tool is blocked only when its `path` names a secret file; directory or pathless
   searches are not filtered (the guard is best-effort).
 - A saved `read` approval ("Allow always") is project-scoped; whether it overrides a configured
