@@ -7,10 +7,6 @@
 [![Documentation](https://img.shields.io/badge/docs-Cloudflare%20Workers-blue)](https://agnts.elkodr.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[Latest scan report](https://github.com/shahboura/agents-opencode/actions/workflows/skillspector.yml)
-
-Scanned by [NVIDIA SkillSpector](https://github.com/NVIDIA/SkillSpector). CI fails if the score moves from 0/100.
-
 **Ten specialist agents. 28 on-demand skills. One install.**
 
 Turn a single prompt into a full delivery loop — plan → implement → review → document —
@@ -73,13 +69,24 @@ npx agents-opencode --global --target auto  # detect the installed OpenCode vers
 **Install:** npm package and installer command: `agents-opencode`. OpenCode runtime command: `opencode`.
 **Uninstall:** targets the current project by default; timestamped backups are created before removal.
 **Config:** the installer only manages a small, target-specific key set in `opencode.json`: `$schema`,
-the plugin key (`plugin` on v1 / `plugins` on v2), and permission defaults (`permission` on v1 /
-`permissions` on v2). It never writes both key sets, and it never rewrites your provider, model,
-instructions, share, or session compaction settings.
+the plugin key when a plugin entry exists (`plugin` on v1 / `plugins` on v2), and permission
+defaults (`permission` on v1 / `permissions` on v2). It never writes both key sets, and it never
+rewrites your provider, model, instructions, share, or session compaction settings.
 **Targets:** `--target v1|v2|auto` (default `auto`). See
 [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 
 </details>
+
+## Built with this pack
+
+- <img src="assets/powered-by/sha2lato.png" width="24" alt=""> **[sha2lato](https://sha2lato.elkodr.com/)**
+  — self-hosted coding-agent box: Discord is the control surface for OpenCode 2;
+  every channel is a project, every thread a session.
+- <img src="assets/powered-by/stackr.png" width="24" alt=""> **[stackr](https://stackr.elkodr.com/)**
+  — pick self-hosted services, get a docker-compose file with a working `.env`,
+  generated in your browser.
+- <img src="assets/powered-by/agnts.png" width="24" alt=""> **[agnts](https://agnts.elkodr.com/)**
+  — the docs and workflow reference for this pack, including the review gate and skills matrix.
 
 ## A session, end to end
 
@@ -275,6 +282,11 @@ See [adapters/claude-code/](./adapters/claude-code/) for the plugin manifest and
 Run `npm run doctor` for the complete local validation suite (agent contracts, markdown linting,
 docs links, session state, eval trends, and more). For the full check mapping (local commands ↔ CI
 gates), see **[Compatibility](https://agnts.elkodr.com/compatibility/)**.
+
+Scanned by [NVIDIA SkillSpector](https://github.com/NVIDIA/SkillSpector). It runs on every
+push to `main` and every pull request targeting `main`; the score is pinned at 0/100 and CI
+fails if it moves.
+[Latest report](https://github.com/shahboura/agents-opencode/actions/workflows/skillspector.yml).
 
 Agent evals: `npm run eval:agents` runs deterministic contract checks for agent and command
 metadata. `npm run eval:agents:json` writes machine-readable output.
