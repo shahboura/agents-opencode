@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.2](https://github.com/shahboura/agents-opencode/compare/v4.3.1...v4.3.2) (2026-11-02)
+
+
+### Bug Fixes
+
+* **guards:** cover common readers and narrow the key exemption ([#170](https://github.com/shahboura/agents-opencode/issues/170)) ([849c11f](https://github.com/shahboura/agents-opencode/commit/849c11f7ab3236c4c122158cb7e5990460780752))
+
 ## [4.3.1](https://github.com/shahboura/agents-opencode/compare/v4.3.0...v4.3.1) (2026-11-01)
 
 
