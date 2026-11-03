@@ -257,11 +257,6 @@ function testStripV2IgnoredKeys() {
   assert(JSON.stringify(clean) === snapshot, 'a clean config must be unchanged');
 }
 
-function testRevertKeysFor() {
-  assert(deepEqual(target.revertKeysFor('v1'), ['$schema', 'plugin', 'permission']), 'v1 revert keys');
-  assert(deepEqual(target.revertKeysFor('v2'), ['$schema', 'plugins', 'permissions']), 'v2 revert keys');
-}
-
 function testConfigPatchShape() {
   const v2 = target.configPatchShape('v2');
   assert(v2.target === 'v2', 'patch target');
@@ -274,31 +269,16 @@ function testConfigPatchShape() {
   assert(v1.target === 'v1' && v1.permissionKey === 'permission' && v1.pluginKey === 'plugin', 'v1 patch shape');
 }
 
-function testPluginEntrypoints() {
-  assert(target.pluginEntrypoints('v1').exportName === 'AgentsOpencodePlugin', 'v1 named export');
-  assert(target.pluginEntrypoints('v2').exportName === 'default', 'v2 default export');
-  assert(target.pluginEntrypoints('v1').file === target.pluginEntrypoints('v2').file, 'both entrypoints share one file');
-}
-
-function testTransformsPassthrough() {
-  const text = '---\ndescription: x\nmode: subagent\n---\nbody\n';
-  for (const t of ['v1', 'v2']) {
-    assert(target.transformAgentFrontmatter(text, t) === text, `agent transform passthrough (${t})`);
-    assert(target.transformCommandFrontmatter(text, t) === text, `command transform passthrough (${t})`);
-    assert(target.transformSkillFrontmatter(text, t) === text, `skill transform passthrough (${t})`);
-  }
-}
-
 function testUnknownTargetThrows() {
   let threw = 0;
-  for (const fn of [target.configKeysFor, target.configPatchShape, target.revertKeysFor, target.pluginEntrypoints]) {
+  for (const fn of [target.configKeysFor, target.configPatchShape]) {
     try {
       fn('v9');
     } catch {
       threw += 1;
     }
   }
-  assert(threw === 4, 'all target-keyed helpers must reject an unknown target');
+  assert(threw === 2, 'all target-keyed helpers must reject an unknown target');
 }
 
 function main() {
@@ -314,10 +294,7 @@ function main() {
     testEmitConfigDefaults();
     testEmitConfigNeverCarriesV2IgnoredKeys();
     testStripV2IgnoredKeys();
-    testRevertKeysFor();
     testConfigPatchShape();
-    testPluginEntrypoints();
-    testTransformsPassthrough();
     testUnknownTargetThrows();
     console.log('✅ OpenCode target adapter tests passed');
   } catch (err) {

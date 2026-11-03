@@ -78,15 +78,16 @@ Skills cannot be called directly from the TUI — they are invoked through agent
 
 ### Risk-Scored Review Path (CI)
 
-- PR validation includes a risk-path gate that classifies changed files as low/medium/high impact.
-- Medium/high changes require the PR template `Risk level` field to acknowledge at least that level.
+- CI runs an advisory risk report that classifies changed files as low/medium/high impact.
+- Medium/high changes should acknowledge at least that level in the PR template `Risk level`
+  field, but the report never blocks a merge.
 - Risk-path logic runs in CI via `validate-risk-path` and is covered by local regression tests (`npm run doctor`).
 
 ### Changelog Capability Labels
 
 - Unreleased changelog bullets should be prefixed with `[capability:<label>]`.
 - Validate locally with `npm run validate:changelog`.
-- CI enforces this via the `validate-changelog` gate.
+- CI runs this check inside the `validate-doctor` job (`npm run doctor`).
 
 ### Skill Selection Guardrails
 

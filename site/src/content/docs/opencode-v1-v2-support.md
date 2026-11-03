@@ -1,6 +1,6 @@
 ---
 title: OpenCode v1/v2 Support
-description: How the pack supports OpenCode v1 and v2 targets - the target adapter, hybrid install model, plugin-spec option, and coexistence rules.
+description: How the pack supports OpenCode v1 and v2 targets - the target adapter, file install model, and retired plugin-spec installs.
 sidebar:
   order: 11.5
 ---
@@ -82,34 +82,34 @@ translates per target.
 OpenCode v2 translates v1-shaped config, agents, and commands in memory — the
 migrate-v1 guide states "V2 translates legacy agent frontmatter automatically" — and a
 disposable sandbox run against **v2.0.30** confirmed the pack's 10 agents are discovered
-from v1-shaped frontmatter, while **2.0.32** confirmed the resolved permission rules.
-The adapter still changes only the keys v2 does not translate. The plugin is written
-against the published **v2.0.30** plugin API and verified to load on that host. On
-**2.2.5** the secret-read guard and shell-env injection were observed firing with a model;
-event subscription, compaction context, and plugin-spec skill delivery remain unexercised.
-The skill descriptor uses `path`, v2's only file field.
+from v1-shaped frontmatter, while **2.0.32** confirmed the resolved permission rules with
+`opencode debug agents`. The adapter still changes only the keys v2 does not translate.
+On **2.2.5** the plugin loaded, the secret-read guard blocked a `.pem` read and allowed a
+README read, and the `context` hook re-injected the pack's context block after a
+578k-token compaction; the trimmed two-line block uses the same hook. Session-error
+logging, context-budget bands, shell-env version injection, and plugin-spec skill delivery
+were removed in this release rather than left unverified.
 
 ## Hybrid install model
 
-The pack installs in two cooperating layers:
+The **file install is the supported path**. It is the only install mode that delivers the
+pack:
 
-- **Installer (file copy)** — delivers agent files, markdown commands, skills, and
-  the `opencode.json` config/permissions.
-- **Plugin** — when installed as a **plugin spec**, delivers skills plus the
-  hooks/guards (secret-read blocking, compaction context, session-error logging, and
-  v2 context-budget bands).
+- **Installer (file copy)** — required for agent files, markdown commands, skills, and the
+  `opencode.json` config/permissions.
+- **Bundled plugin** — auto-loaded from `.opencode/plugins/`; ships only the secret-read
+  guard and a two-line context block (the untrusted-memory rule, plus a state pointer when
+  `state/session-state.json` exists). It delivers no skills, agents, or commands.
 
-The context-budget band notice is **v2-only**: the pack's v1 entrypoint does not
-register a per-request context notice, so v1 users rely on the orchestrator rule and
-the host compaction floor.
+A v2 plugin **cannot** register agents (the v2 agent editor exposes no `add`) and has no
+global config/permission domain. The installer therefore remains required for agents,
+commands, skills, and global config on both targets.
 
-A v2 plugin **cannot** register agents (the v2 agent editor exposes no `add`) and
-has no global config/permission domain. The installer therefore remains required
-for agents and global config on both targets.
+## Retired plugin-spec installs
 
-## Install as a plugin spec
-
-Add the package to your OpenCode config:
+Adding the package as an OpenCode plugin entry is retired. An existing entry still
+resolves in 4.x, loads the secret-read guard and the two-line context block, and logs a
+warning that the install mode is retired:
 
 ```json
 { "plugin": ["agents-opencode"] }
@@ -119,24 +119,17 @@ Add the package to your OpenCode config:
 { "plugins": ["agents-opencode"] }
 ```
 
-The first form is v1, the second v2. A version pin also works
-(`"agents-opencode@X.Y.Z"`, using a build that ships plugin-spec support). A
-plugin-spec install covers **skills and hooks/guards only** — not agents or global
-config.
+The first form is v1, the second v2. A plugin-spec install delivers **no agents, commands,
+or skills**; run the installer for those:
 
-**Verified loading, partly exercised runtime.** A live OpenCode **v2.0.30** run confirmed the
-plugin loads, and all 10 agents and all skills shipped in that build are discovered; **2.0.32** confirmed the
-translated agent permission rules, and on **2.2.5** the secret-read guard and shell-env
-injection were observed firing in a live session with a model. Event-stream and compaction
-hooks, and plugin-spec skill delivery, remain unobserved — prefer a file install for
-production use.
+```bash
+npx agents-opencode --global
+```
 
-## Coexistence guard
-
-Do **not** use the file install and the plugin spec at the same time. The plugin
-detects the installer marker (`.opencode-agents-version` at the pack root) and
-skips skill registration when the pack is file-installed, avoiding double
-registration. It also de-duplicates against skills the runtime already exposes.
+The installer's config merge strips the `agents-opencode` plugin entry, and the copied
+plugin file keeps the guard. The installer marker (`.opencode-agents-version`) now only
+suppresses the retirement warning on a file-installed copy. Version 5.0 removes the
+package entrypoint, so the plugin entry stops resolving.
 
 ## Global config path and XDG
 

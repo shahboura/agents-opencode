@@ -155,11 +155,14 @@ To restore files, use `backup-manifest.json` from a backup session and copy the 
 
 ### OpenCode v1/v2 support
 
-The pack supports OpenCode **v1** and **v2** from one source — verified to load
-(plugin, all 10 agents, and all skills shipped in that build) on v2.0.30; the secret-read guard and
-shell-env hooks were observed on v2.2.5, while event and compaction hooks are not yet.
-The two use **disjoint config keys**, so the installer emits per-target output and never
-mixes key sets:
+The pack supports OpenCode **v1** and **v2** from one source. On **v2.0.30** the pack's
+10 agents were discovered from v1-shaped frontmatter; **2.0.32** confirmed the resolved
+permission rules; on **2.2.5** the secret-read guard blocked a `.pem` read and the
+`context` hook re-injected the pack's context block after a 578k-token compaction.
+Session-error logging, context-budget bands, shell-env version injection, and plugin-spec
+skill delivery were removed in this release rather than left unverified. The two targets
+use **disjoint config keys**, so the installer emits per-target output and never mixes key
+sets:
 
 ```bash
 npx agents-opencode --global --target v1    # plugin / permission
@@ -170,14 +173,15 @@ npx agents-opencode --global --target auto  # detect the installed OpenCode vers
 - `auto` detects the installed OpenCode version (v2 when the major is >= 2, else v1)
   and falls back to v1 when OpenCode is not detected.
 - The installer records the target so uninstall reverts the correct keys.
-- A **file install** delivers agents, markdown commands, skills, and config/permissions; the bundled
-  plugin (auto-loaded from `.opencode/plugins/`) adds the runtime hooks/guards. On a file install the
-  plugin's skill registration is a no-op, because the installer already copied the skills.
-- A **plugin-spec install** (adding `"plugin": ["agents-opencode"]` on v1 or
-  `"plugins": ["agents-opencode"]` on v2) delivers **skills and hooks/guards only** — not agents
-  or global config. It is verified to load on v2.0.30; its runtime skill delivery is not yet
-  exercised end-to-end.
-- Do not combine a file install with the plugin spec.
+- A **file install** delivers agents, markdown commands, skills, and config/permissions; the
+  bundled plugin (auto-loaded from `.opencode/plugins/`) adds the secret-read guard and a
+  two-line context block (the untrusted-memory rule, plus a state pointer when
+  `state/session-state.json` exists). The file install is the supported path.
+- **Plugin-spec installs are retired.** An existing `"plugin": ["agents-opencode"]` entry on v1
+  or `"plugins": ["agents-opencode"]` entry on v2 still resolves in 4.x, loads the guard and
+  context block, and logs a warning, but delivers no agents, commands, or skills. Run the
+  installer to migrate; it strips the entry and the copied plugin keeps the guard. Version 5.0
+  removes the package entrypoint.
 
 Full details: **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.
 

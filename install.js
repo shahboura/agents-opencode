@@ -253,7 +253,7 @@ function showVersion(sourceDir) {
     }
 }
 
-function installProjectTemplateFiles(sourceDir, scope, paths, backupSession) {
+function installProjectTemplateFiles(sourceDir, scope, paths) {
     if (scope !== 'project') {
         return { installedCount: 0, skippedCount: 0 };
     }
@@ -275,14 +275,6 @@ function installProjectTemplateFiles(sourceDir, scope, paths, backupSession) {
         if (fs.existsSync(dest)) {
             skippedCount += 1;
             continue;
-        }
-
-        try {
-            if (backupSession) {
-                backupSession.backupFile(dest, relativePath);
-            }
-        } catch {
-            // backup not required for first-write path
         }
 
         fs.copyFileSync(src, dest);
@@ -415,18 +407,6 @@ function readManifest(manifestPath) {
         return null;
     }
     return manifest;
-}
-
-function backupAndRemoveAgentsMdIfPresent(agentsMdPath, backupSession) {
-    if (!agentsMdPath || !fs.existsSync(agentsMdPath)) {
-        return false;
-    }
-
-    if (backupSession) {
-        backupSession.backupFile(agentsMdPath, 'AGENTS.md');
-    }
-    fs.unlinkSync(agentsMdPath);
-    return true;
 }
 
 function verifyInstallation(opencodeDir, scope) {
@@ -643,7 +623,7 @@ function installScope(options) {
         });
     }
 
-    const templateResult = installProjectTemplateFiles(sourceDir, scope, paths, backupSession);
+    const templateResult = installProjectTemplateFiles(sourceDir, scope, paths);
     if (scope === 'project') {
         if (templateResult.installedCount > 0) {
             success(`✓ Installed ${templateResult.installedCount} project template file(s)`);
@@ -697,6 +677,57 @@ function installScope(options) {
             }
         }
     }
+
+    // Migration for local installs from older versions: the installer used to
+    // copy its own .opencode dev artifacts. Prune only paths a previous manifest
+    // recorded (so a user's own package.json is untouched), backing up first.
+    const previousManagedFiles = existingManifest && Array.isArray(existingManifest.managedFiles)
+        ? existingManifest.managedFiles
+        : [];
+    const devManagedPaths = new Set(
+        Array.from(fileOps.DEV_ONLY_ROOT_FILES).map(function (name) {
+            return pathsMod.toManagedPath(scope, name);
+        })
+    );
+    const rootPrefix = path.resolve(paths.rootDir) + path.sep;
+    let prunedDevArtifacts = 0;
+    for (var d = 0; d < previousManagedFiles.length; d++) {
+        var devManagedPath = previousManagedFiles[d];
+        if (!devManagedPaths.has(devManagedPath)) {
+            continue;
+        }
+        var devAbsolutePath = path.resolve(paths.rootDir, devManagedPath);
+        if (!devAbsolutePath.startsWith(rootPrefix) || !fs.existsSync(devAbsolutePath)) {
+            continue;
+        }
+        try {
+            if (backupSession.backupFile(devAbsolutePath, devManagedPath)) {
+                fs.unlinkSync(devAbsolutePath);
+                prunedDevArtifacts += 1;
+            }
+        } catch {
+            // Keep the file if the backup failed; fail closed.
+        }
+    }
+    if (prunedDevArtifacts > 0) {
+        info(`Pruned ${prunedDevArtifacts} installer-managed dev artifact(s).`);
+    }
+
+    // Retain manifest-recorded files that still exist but are no longer in the
+    // source (retired agents/commands), so uninstall can remove them instead of
+    // orphaning them permanently. Dev artifacts pruned above no longer exist.
+    for (var r = 0; r < previousManagedFiles.length; r++) {
+        var retainedPath = previousManagedFiles[r];
+        if (managedFiles.indexOf(retainedPath) !== -1) {
+            continue;
+        }
+        var retainedAbsolute = path.resolve(paths.rootDir, retainedPath);
+        if (!retainedAbsolute.startsWith(rootPrefix) || !fs.existsSync(retainedAbsolute)) {
+            continue;
+        }
+        managedFiles.push(retainedPath);
+    }
+
     const manifest = {
         schemaVersion: 1,
         package: PACKAGE_NAME,
@@ -858,12 +889,6 @@ function uninstallScope(options) {
     if (removedFiles === 0 && !configChanged && !removedConfigFile) {
         warning(`No ${PACKAGE_NAME} installation artifacts found for ${scope} scope at ${paths.rootDir}.`);
         return true;
-    }
-
-    if (scope === 'project') {
-        if (backupAndRemoveAgentsMdIfPresent(paths.agentsMdPath, backupSession)) {
-            success('✅ Backed up AGENTS.md and removed installer session file from project root.');
-        }
     }
 
     const backupResult = backupSession.finalize();

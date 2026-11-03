@@ -173,8 +173,8 @@ permission defaults). To get the pack's full behavior, add these keys to `openco
   content.
 - `compaction.keep.tokens` retains the recent tail after a summary; `8000` is the pack
   default. Raise it only when post-compaction continuity matters more than cost.
-- The v2 plugin injects a context-band line (30/40/50); the orchestrator prompt defines
-  the actions. The 60% compaction trigger is the backstop, not the primary signal.
+- The plugin re-injects a two-line context block (the untrusted-memory rule, plus a state
+  pointer when `state/session-state.json` exists) so it survives compaction.
 - Fetched pages are snapshots: prefer version-pinned URLs, revalidate volatile sources
   at the decision, and record URL + `fetched_at` + version in the plan/ADR. Stable docs
   may reuse a 48h snapshot.

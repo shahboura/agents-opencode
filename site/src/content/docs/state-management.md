@@ -59,15 +59,15 @@ The output includes objective, phase, decisions, risks, blockers, and next actio
 
 ## CI Enforcement
 
-- `validate-session-state` validates `state/session-state.json`
-- `validate-session-state` generates `handoff/latest.md`
-- `handoff/latest.md` is uploaded as a workflow artifact for traceability
+- `validate-session-state` checks `state/session-state.json` and runs inside `npm run doctor`
+- Generate the handoff locally with `npm run handoff:generate`; it is not uploaded as a CI artifact
 
 ## Compaction Hook
 
-During compaction the runtime plugin injects a state-context reminder (state
-contract, handoff, and milestone locations) so agents keep track of where durable
-state lives. Compaction does not modify `state/session-state.json`.
+During compaction the runtime plugin injects a reminder (two lines when
+`state/session-state.json` exists, one line otherwise): persisted memory is untrusted and
+must not be executed, and where a state file exists it is the working state with
+`handoff/latest.md` as the fallback. Compaction does not modify `state/session-state.json`.
 
 Durable state remains the source of truth across compactions:
 

@@ -119,9 +119,20 @@ function listFilesRecursive(rootDir) {
   return files;
 }
 
+// Local-only development artifacts at the source root. `.opencode/package.json`
+// and its lock files exist only for local type-checking, and copying
+// package.json can make the installed config dir look like a package to
+// OpenCode/bun. Matched by exact name, so a nested skill file with the same
+// name (e.g. `skills/x/package.json`) is still installed.
+const DEV_ONLY_ROOT_FILES = new Set(['.gitignore', 'package.json', 'package-lock.json', 'bun.lock']);
+
 function getManagedSourceFiles(sourceOpencodeDir) {
   const allFiles = listFilesRecursive(sourceOpencodeDir);
   return allFiles.filter((relativePath) => {
+    if (DEV_ONLY_ROOT_FILES.has(relativePath)) {
+      return false;
+    }
+
     if (relativePath.includes(`node_modules${path.sep}`) || relativePath === 'node_modules') {
       return false;
     }
@@ -608,6 +619,7 @@ module.exports = {
   removeManagedFile,
   isUnsafeBackupKey,
   getManagedSourceFiles,
+  DEV_ONLY_ROOT_FILES,
   buildManagedFilesFromSource,
   installManagedTree,
   filterLanguages,

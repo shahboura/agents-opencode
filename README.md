@@ -251,8 +251,8 @@ Use `--project` (defaults to the current directory) for a project install.
 
 | Mode | What you get | Pick this if… |
 |---|---|---|
-| **File install** (default) | Agents, commands, skills, hooks/guards | You want the full pack — start here |
-| **Plugin spec** (`"plugin"` / `"plugins": ["agents-opencode"]`) | Skills and hooks/guards only — no agents or config | You already manage agents yourself |
+| **File install** (default) | Agents, commands, skills, secret-read guard, context block | You want the full pack — start here |
+| **Plugin spec** (retired) | Secret-read guard and context block only; no agents, commands, or skills | Legacy 4.x entries — run the installer |
 | **Claude Code adapter** | Skills only — no agents or commands | You use Claude Code |
 
 OpenCode v1 and v2 use different config keys, so the installer emits per-target output and never
@@ -260,18 +260,24 @@ mixes the two. Select a target with `--target v1|v2|auto` (default `auto` detect
 OpenCode version — v2 when the major is >= 2, else v1; it falls back to v1 when OpenCode is not
 detected). The installer records the target so uninstall reverts the right keys.
 
-A file install adds no plugin entry: OpenCode auto-loads the bundled plugin from `.opencode/plugins/`.
-To deliver **skills and hooks/guards only** (no agents or global config), add the package as an
-OpenCode plugin entry in `opencode.json`: `"plugin": ["agents-opencode"]` (v1) or
-`"plugins": ["agents-opencode"]` (v2); a version pin like `agents-opencode@X.Y.Z` also works (use a
-build that ships plugin-spec support). Do not combine a file install with the plugin entry.
+A file install adds no plugin entry: OpenCode auto-loads the bundled plugin from
+`.opencode/plugins/`, which ships only the secret-read guard and a two-line context block
+(the untrusted-memory rule, plus a state pointer when `state/session-state.json` exists).
+Agents, commands, skills, and config come from the installer; the file install is the
+supported path.
 
-A sandbox run on v2.0.30 verified the plugin loads, with all 10 agents and 27 skills discovered (the pack now ships 28).
-On OpenCode 2.0.32 the resolved rules (`opencode debug agents`) confirm v1-shaped agent
-frontmatter translates to the v2 `permissions` array (`bash`→`shell`, `task`→`subagent`,
-`skill`→`skill`). On v2.2.5 the secret-read guard and shell-env hooks were observed firing
-end-to-end; event-stream and compaction hooks are not yet, and the plugin-spec path's runtime
-skill delivery remains unexercised.
+Plugin-spec installs are retired. An existing `"plugin": ["agents-opencode"]` (v1) or
+`"plugins": ["agents-opencode"]` (v2) entry still resolves in 4.x, loads the guard and the
+context block, and logs a warning, but delivers no agents, commands, or skills. Run
+`npx agents-opencode --global` (or `--project .`) to migrate; the installer strips the entry
+and the copied plugin keeps the guard. Version 5.0 removes the package entrypoint.
+
+On OpenCode 2.0.30 the pack's 10 agents were discovered from v1-shaped frontmatter; 2.0.32
+confirmed the resolved permission rules with `opencode debug agents` (`bash`→`shell`,
+`task`→`subagent`, `skill`→`skill`); on 2.2.5 the secret-read guard blocked a `.pem` read and
+the context block was re-injected after a 578k-token compaction. Session-error logging,
+context-budget bands, shell-env version injection, and plugin-spec skill delivery were
+removed rather than left unverified.
 
 See [OpenCode v1/v2 support](https://agnts.elkodr.com/opencode-v1-v2-support/).
 
