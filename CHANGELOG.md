@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.3.5](https://github.com/shahboura/agents-opencode/compare/v4.3.4...v4.3.5) (2026-11-03)
+
+
+### Bug Fixes
+
+* **package:** stop shipping dev-only files and scaffold project templates ([#182](https://github.com/shahboura/agents-opencode/issues/182)) ([61cca94](https://github.com/shahboura/agents-opencode/commit/61cca94a6661d22a01f3ae54f0c93db467b3dc08))
+* **site:** add npm link and clarify the v2 tooltip ([#183](https://github.com/shahboura/agents-opencode/issues/183)) ([45cb097](https://github.com/shahboura/agents-opencode/commit/45cb0974c9e00f6d9b709cecefc0d64be6c359b3))
+
 ## [4.3.4](https://github.com/shahboura/agents-opencode/compare/v4.3.3...v4.3.4) (2026-11-03)
 
 
