@@ -691,9 +691,11 @@ function installScope(options) {
         ? existingManifest.managedFiles
         : [];
     const devManagedPaths = new Set(
-        Array.from(fileOps.DEV_ONLY_ROOT_FILES).map(function (name) {
-            return pathsMod.toManagedPath(scope, name);
-        })
+        Array.from(fileOps.DEV_ONLY_ROOT_FILES)
+            .concat(Array.from(fileOps.DEV_ONLY_TREE_FILES))
+            .map(function (name) {
+                return pathsMod.toManagedPath(scope, name);
+            })
     );
     const rootPrefix = path.resolve(paths.rootDir) + path.sep;
     let prunedDevArtifacts = 0;

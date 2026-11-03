@@ -111,6 +111,10 @@ function testProjectInstallAndUninstall(tmpRoot) {
 
   const manifestPath = path.join(projectDir, '.opencode', '.agents-opencode-manifest.json');
   assert(fs.existsSync(manifestPath), 'Project manifest should exist after install');
+  assert(
+    !fs.existsSync(path.join(projectDir, '.opencode', 'commands', 'README.md')),
+    'Commands README should not install as a command'
+  );
   assert(fs.existsSync(path.join(projectDir, 'state', 'session-state.json')), 'Project state template should exist after install');
   assert(fs.existsSync(path.join(projectDir, 'handoff', '.gitkeep')), 'Project handoff scaffold should exist after install');
   const stateTemplate = fs.readFileSync(path.join(__dirname, '..', 'templates', 'state', 'session-state.json'), 'utf8');
@@ -748,19 +752,30 @@ function testUpdatePrunesInstallerManagedDevArtifacts(tmpRoot) {
   const manifestPath = path.join(dir, '.opencode', '.agents-opencode-manifest.json');
   const devRelative = path.join('.opencode', 'package.json');
   const devAbsolute = path.join(dir, devRelative);
+  const commandReadmeRelative = path.join('.opencode', 'commands', 'README.md');
+  const commandReadmeAbsolute = path.join(dir, commandReadmeRelative);
 
   runInstaller(['--project', '.'], { cwd: dir });
 
   fs.writeFileSync(devAbsolute, '{"dependencies":{}}\n');
+  fs.writeFileSync(commandReadmeAbsolute, '# commands\n');
   const manifest = readJson(manifestPath);
-  manifest.managedFiles.push(devRelative);
+  manifest.managedFiles.push(devRelative, commandReadmeRelative);
   writeJson(manifestPath, manifest);
 
   runInstaller(['--project', '.', '--update'], { cwd: dir });
 
   assert(!fs.existsSync(devAbsolute), 'update must prune an installer-managed dev artifact');
+  assert(
+    !fs.existsSync(commandReadmeAbsolute),
+    'update must prune an installer-managed commands README'
+  );
   const updated = readJson(manifestPath);
   assert(!updated.managedFiles.includes(devRelative), 'the pruned dev artifact must leave the manifest');
+  assert(
+    !updated.managedFiles.includes(commandReadmeRelative),
+    'the pruned commands README must leave the manifest'
+  );
 }
 
 // C9d: a file that a previous manifest managed but the source no longer ships

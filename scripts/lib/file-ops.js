@@ -126,10 +126,15 @@ function listFilesRecursive(rootDir) {
 // name (e.g. `skills/x/package.json`) is still installed.
 const DEV_ONLY_ROOT_FILES = new Set(['.gitignore', 'package.json', 'package-lock.json', 'bun.lock']);
 
+// Tree entries that document the source layout rather than define behavior.
+// The npm tarball excludes the commands README too, so a source-tree install
+// must match a published install instead of registering it as a command.
+const DEV_ONLY_TREE_FILES = new Set([path.join('commands', 'README.md')]);
+
 function getManagedSourceFiles(sourceOpencodeDir) {
   const allFiles = listFilesRecursive(sourceOpencodeDir);
   return allFiles.filter((relativePath) => {
-    if (DEV_ONLY_ROOT_FILES.has(relativePath)) {
+    if (DEV_ONLY_ROOT_FILES.has(relativePath) || DEV_ONLY_TREE_FILES.has(relativePath)) {
       return false;
     }
 
@@ -623,6 +628,7 @@ module.exports = {
   isUnsafeBackupKey,
   getManagedSourceFiles,
   DEV_ONLY_ROOT_FILES,
+  DEV_ONLY_TREE_FILES,
   buildManagedFilesFromSource,
   installManagedTree,
   filterLanguages,
