@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.4](https://github.com/shahboura/agents-opencode/compare/v4.3.3...v4.3.4) (2026-11-03)
+
+
+### Bug Fixes
+
+* **site:** correct the v2 compatibility status ([#180](https://github.com/shahboura/agents-opencode/issues/180)) ([0e28045](https://github.com/shahboura/agents-opencode/commit/0e2804591de4c8827a91cc2028bcaa2996f405bc))
+
 ## [4.3.3](https://github.com/shahboura/agents-opencode/compare/v4.3.2...v4.3.3) (2026-11-02)
 
 
