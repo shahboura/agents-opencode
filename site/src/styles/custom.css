@@ -381,7 +381,7 @@ samp {
   }
 }
 
-/* Landing compatibility line: green/amber state dots, neutral copy. */
+/* Landing compatibility line: green supported-state dots, neutral copy. */
 .compat-line {
   position: relative;
   display: flex;
@@ -410,10 +410,6 @@ samp {
 
 .compat-dot--ok {
   background: var(--sl-color-green);
-}
-
-.compat-dot--warn {
-  background: var(--sl-color-orange);
 }
 
 .compat-details {

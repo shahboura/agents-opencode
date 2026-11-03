@@ -32,10 +32,10 @@ major is >= 2, else v1) and never co-writes both key sets. File install is the s
 path. On **v2.0.30** the pack's 10 agents were discovered from v1-shaped frontmatter; on
 **v2.0.32** the resolved permission rules were confirmed with `opencode debug agents`; on
 **v2.2.5** the secret-read guard blocked a `.pem` read and the `context` hook re-injected
-the pack's context block after a 578k-token compaction. Session-error logging,
-context-budget bands, shell-env version injection, and plugin-spec skill delivery were
-removed in this release rather than left unverified (see
-[OpenCode v1/v2 support](/opencode-v1-v2-support/)).
+the pack's context block after a 578k-token compaction. That covers every plugin hook the
+pack ships on v2; session-error logging, context-budget bands, shell-env version injection,
+and plugin-spec skill delivery were removed in this release rather than left unverified
+(see [OpenCode v1/v2 support](/opencode-v1-v2-support/)).
 
 | Concern | v1 | v2 |
 |---|---|---|
