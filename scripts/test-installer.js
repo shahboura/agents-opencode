@@ -113,6 +113,12 @@ function testProjectInstallAndUninstall(tmpRoot) {
   assert(fs.existsSync(manifestPath), 'Project manifest should exist after install');
   assert(fs.existsSync(path.join(projectDir, 'state', 'session-state.json')), 'Project state template should exist after install');
   assert(fs.existsSync(path.join(projectDir, 'handoff', '.gitkeep')), 'Project handoff scaffold should exist after install');
+  const stateTemplate = fs.readFileSync(path.join(__dirname, '..', 'templates', 'state', 'session-state.json'), 'utf8');
+  const installedState = fs.readFileSync(path.join(projectDir, 'state', 'session-state.json'), 'utf8');
+  assert(
+    installedState === stateTemplate,
+    'Project state template content matches templates/state/session-state.json'
+  );
 
   runInstaller(['--uninstall', '--project', '.'], { cwd: projectDir });
 

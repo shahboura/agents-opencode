@@ -571,7 +571,10 @@ function pruneRemovedSkills(sourceSkillNames, installDir, previousManifest, logF
   }
 
   if (result.removed.length > 0 && logInfo) {
-    logInfo(`Removed ${result.removed.length} retired skill(s): ${result.removed.join(', ')} — see DEPRECATIONS.md`);
+    logInfo(
+      `Removed ${result.removed.length} retired skill(s): ${result.removed.join(', ')} — see ` +
+        'https://github.com/shahboura/agents-opencode/blob/main/DEPRECATIONS.md'
+    );
   }
   if (result.failed.length > 0 && logWarning) {
     logWarning(`Retired-skill prune incomplete: ${result.failed.length} skill(s) not removed: ${result.failed.join(', ')}`);
