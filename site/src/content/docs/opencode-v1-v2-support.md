@@ -10,8 +10,19 @@ auto-translated by v2 in memory, and the installer emits per-target config.
 
 :::tip[What you get]
 - What runs on OpenCode v1, and what is proven on v2.
-- The exact version the v2 claim was verified against.
+- The exact versions the v2 claim was verified against.
 :::
+
+## Support status
+
+| Target | Status |
+|---|---|
+| OpenCode v1 | Supported |
+| OpenCode v2 | Supported |
+
+v2 evidence is per surface: agent discovery on 2.0.30, permission rules on 2.0.32, and
+the plugin hooks on 2.2.5. OpenCode v1 is the long-standing path; the v1 `bash` key name
+was checked against 1.19.2.
 
 ## Target adapter
 
