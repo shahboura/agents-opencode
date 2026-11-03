@@ -6,7 +6,7 @@
     "install.js",
     "assets",
     "THIRD_PARTY_NOTICES.md",
-    "DEPRECATIONS.md",
+    "templates",
     ".opencode/agents",
     ".opencode/commands",
     "!.opencode/commands/README.md",
@@ -15,7 +15,8 @@
     ".opencode/plugins",
     ".opencode/skills",
     "opencode.json",
-    "scripts/lib"
+    "scripts/lib",
+    "!scripts/lib/opencode-schema.js"
   ],
   "main": "./.opencode/plugins/agents-opencode.ts",
   "exports": {

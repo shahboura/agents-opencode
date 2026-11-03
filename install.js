@@ -23,8 +23,14 @@ const PACKAGE_NAME = 'agents-opencode';
 const BACKUP_DIR = '.backups';
 const AGENT_DIR_LEGACY = 'agent';
 const PROJECT_TEMPLATE_FILES = [
-    path.join('state', 'session-state.json'),
-    path.join('handoff', '.gitkeep'),
+    {
+        source: path.join('templates', 'state', 'session-state.json'),
+        target: path.join('state', 'session-state.json'),
+    },
+    {
+        source: path.join('templates', 'handoff', '.gitkeep'),
+        target: path.join('handoff', '.gitkeep'),
+    },
 ];
 
 // Colors for output
@@ -262,14 +268,14 @@ function installProjectTemplateFiles(sourceDir, scope, paths) {
     let skippedCount = 0;
 
     for (var i = 0; i < PROJECT_TEMPLATE_FILES.length; i++) {
-        var relativePath = PROJECT_TEMPLATE_FILES[i];
-        var src = path.join(sourceDir, relativePath);
+        var template = PROJECT_TEMPLATE_FILES[i];
+        var src = path.join(sourceDir, template.source);
         if (!fs.existsSync(src)) {
-            warning(`Project template source is missing: ${relativePath}`);
+            warning(`Project template source is missing: ${template.source}`);
             continue;
         }
 
-        var dest = path.join(paths.rootDir, relativePath);
+        var dest = path.join(paths.rootDir, template.target);
         fileOps.ensureDir(path.dirname(dest));
 
         if (fs.existsSync(dest)) {
@@ -670,7 +676,7 @@ function installScope(options) {
     const managedFiles = fileOps.buildManagedFilesFromSource(scope, sourceManagedFiles, paths);
     if (scope === 'project') {
         for (var i = 0; i < PROJECT_TEMPLATE_FILES.length; i++) {
-            var templateRelativePath = PROJECT_TEMPLATE_FILES[i];
+            var templateRelativePath = PROJECT_TEMPLATE_FILES[i].target;
             var absoluteTemplatePath = path.join(paths.rootDir, templateRelativePath);
             if (fs.existsSync(absoluteTemplatePath)) {
                 managedFiles.push(templateRelativePath);
@@ -685,9 +691,11 @@ function installScope(options) {
         ? existingManifest.managedFiles
         : [];
     const devManagedPaths = new Set(
-        Array.from(fileOps.DEV_ONLY_ROOT_FILES).map(function (name) {
-            return pathsMod.toManagedPath(scope, name);
-        })
+        Array.from(fileOps.DEV_ONLY_ROOT_FILES)
+            .concat(Array.from(fileOps.DEV_ONLY_TREE_FILES))
+            .map(function (name) {
+                return pathsMod.toManagedPath(scope, name);
+            })
     );
     const rootPrefix = path.resolve(paths.rootDir) + path.sep;
     let prunedDevArtifacts = 0;

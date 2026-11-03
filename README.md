@@ -320,7 +320,7 @@ metadata. `npm run eval:agents:json` writes machine-readable output.
 - **[Review Gate](https://agnts.elkodr.com/review-gate/)**
 - **[Compatibility](https://agnts.elkodr.com/compatibility/)**
 - **[Deprecation & Migration Policy](https://agnts.elkodr.com/deprecation-migration/)**
-- **[Removed skills (4.0.0)](./DEPRECATIONS.md)**
+- **[Removed skills (4.0.0)](https://github.com/shahboura/agents-opencode/blob/main/DEPRECATIONS.md)**
 - **[State Management](https://agnts.elkodr.com/state-management/)**
 - **[Skills Matrix](https://agnts.elkodr.com/skills-matrix/)**
 - **[Decision Grounding](https://agnts.elkodr.com/decision-grounding/)**
