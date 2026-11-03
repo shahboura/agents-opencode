@@ -91,6 +91,37 @@ if (packResult.status !== 0) {
       !packedPaths.includes('.opencode/package.json'),
       'Packed file list excludes the local-only .opencode/package.json'
     );
+    assert(
+      packedPaths.includes('templates/state/session-state.json'),
+      'Packed file list includes the project state template'
+    );
+    assert(
+      packedPaths.includes('templates/handoff/.gitkeep'),
+      'Packed file list includes the project handoff scaffold'
+    );
+    assert(
+      !packedPaths.includes('scripts/lib/opencode-schema.js'),
+      'Packed file list excludes the dev-only schema helper'
+    );
+    assert(
+      !packedPaths.includes('DEPRECATIONS.md'),
+      'Packed file list excludes the repo-only deprecation log'
+    );
+    assert(
+      packedPaths.some((entry) => entry.startsWith('assets/')),
+      'Packed file list keeps the README assets'
+    );
+    assert(packedPaths.includes('LICENSE'), 'Packed file list keeps the license');
+    assert(
+      ['paths.js', 'file-ops.js', 'config-mutator.js', 'opencode-target.js'].every((file) =>
+        packedPaths.includes(`scripts/lib/${file}`)
+      ),
+      'Packed file list keeps the installer runtime libs'
+    );
+    assert(
+      !packedPaths.some((entry) => entry.startsWith('state/')),
+      'Packed file list excludes maintainer session state'
+    );
   } catch (err) {
     assert(false, `Could not parse npm pack --dry-run output: ${err.message}`);
   }

@@ -62,6 +62,11 @@ const checks = [
     args: ['scripts/validate-session-state.js'],
   },
   {
+    name: 'Validate project state template',
+    command: process.execPath,
+    args: ['scripts/validate-session-state.js', '--file', 'templates/state/session-state.json'],
+  },
+  {
     name: 'Run docs validator tests',
     command: process.execPath,
     args: ['scripts/validate-docs.test.js'],
