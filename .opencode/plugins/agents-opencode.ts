@@ -218,7 +218,8 @@ const AgentsOpencodeV2Plugin = {
 
     // The handler receives the whole event: it reads `event.tool` and resolves
     // the path from the documented v2 event shapes (flat, `input`,
-    // `input.args`). It blocks like the v1 guard; when a `read` event carries
+    // `input.args`; read accepts both `filePath` and v2.2.5's `path`). It blocks
+    // like the v1 guard; when a `read` event carries
     // no resolvable path it logs one visible warning (rate-limited to once per
     // handler) so a v2 payload-shape mismatch cannot silently disable the
     // guard — the guard itself stays fail-open by design.

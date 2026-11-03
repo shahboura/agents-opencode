@@ -81,34 +81,41 @@ export function isBlockedReadPath(filePath) {
 /**
  * Resolve a path argument from a hook payload, tolerating every documented
  * shape. The plugin hands the whole v2 event (or the v1 `output`) to the guard,
- * so the path can sit in any of these locations; the first non-nullish value
- * wins:
+ * so the path can sit in any of these locations:
  * - `payload.args[key]`       v1 `tool.execute.before` output
- * - `payload[key]`            flat v2 event `{ tool, filePath }`
- * - `payload.input[key]`      v2 event `{ tool, input: { filePath } }`
- * - `payload.input.args[key]` v2 event `{ tool, input: { args: { filePath } } }`
+ * - `payload[key]`            flat v2 event `{ tool, path }`
+ * - `payload.input[key]`      v2 event `{ tool, input: { path } }`
+ * - `payload.input.args[key]` v2 event `{ tool, input: { args: { path } } }`
  *
- * `key` is `filePath` for `read` and `path` for `grep`.
+ * `keys` is an array of accepted argument names. `read` accepts both `filePath`
+ * (v1 and older v2) and `path` (v2.2.5), while `grep` accepts both `path` and
+ * `filePath`. Every key is checked so a payload carrying both cannot hide a
+ * blocked path behind an allowed one.
  */
-function resolveToolPath(payload, key) {
-  const candidates = [
-    payload?.args?.[key],
-    payload?.[key],
-    payload?.input?.[key],
-    payload?.input?.args?.[key],
-  ];
-  // Skip empty/whitespace strings so a blank earlier candidate cannot shadow a
-  // real path in a later one (fail-closed on guarded paths).
-  return candidates.find((value) => typeof value === 'string' && value.trim() !== '');
+function resolveToolPath(payload, keys) {
+  const names = Array.isArray(keys) ? keys : [keys];
+  for (const key of names) {
+    const candidates = [
+      payload?.args?.[key],
+      payload?.[key],
+      payload?.input?.[key],
+      payload?.input?.args?.[key],
+    ];
+    // Skip empty/whitespace strings so a blank earlier candidate cannot shadow a
+    // real path in a later one (fail-closed on guarded paths).
+    const found = candidates.find((value) => typeof value === 'string' && value.trim() !== '');
+    if (found !== undefined) return found;
+  }
+  return undefined;
 }
 
-// Argument that carries the guarded path, per tool. Shell tools are handled
+// Argument names that carry the guarded path, per tool. Shell tools are handled
 // separately by `shellGuardError` (read verbs only); every other tool is
 // unguarded: this is a best-effort secret-content guard, not a sandbox — an
 // interpreter can reach any file regardless.
 const GUARDED_PATH_KEYS = new Map([
-  ['read', 'filePath'],
-  ['grep', 'path'],
+  ['read', ['filePath', 'path']],
+  ['grep', ['path', 'filePath']],
 ]);
 
 // Shell tools can read the same files the `read` guard blocks, and `--auto`
@@ -536,11 +543,13 @@ export function readGuardError(tool, payload) {
   if (SHELL_TOOLS.has(tool)) {
     return shellGuardError(payload);
   }
-  const pathKey = GUARDED_PATH_KEYS.get(tool);
-  if (!pathKey) return null;
-  const filePath = resolveToolPath(payload, pathKey);
-  if (typeof filePath === 'string' && isBlockedReadPath(filePath)) {
-    return `[agents-opencode] Blocked reading sensitive file: ${filePath}. Do not read or search credential or secret files. ${SENSITIVE_READ_HINT}`;
+  const pathKeys = GUARDED_PATH_KEYS.get(tool);
+  if (!pathKeys) return null;
+  for (const pathKey of pathKeys) {
+    const filePath = resolveToolPath(payload, [pathKey]);
+    if (typeof filePath === 'string' && isBlockedReadPath(filePath)) {
+      return `[agents-opencode] Blocked reading sensitive file: ${filePath}. Do not read or search credential or secret files. ${SENSITIVE_READ_HINT}`;
+    }
   }
   return null;
 }
@@ -548,7 +557,7 @@ export function readGuardError(tool, payload) {
 /**
  * Split a `tool.execute.before` call into its tool name and payload. Covers
  * both call forms: the whole v2 event (`{ tool, input }` or a flat
- * `{ tool, filePath }`) unwraps itself, while the split v1 pair
+ * `{ tool, path }`) unwraps itself, while the split v1 pair
  * (`(tool, output)`) is used as-is.
  */
 function splitToolAndPayload(toolOrEvent, payload) {
@@ -609,7 +618,7 @@ export function createReadGuardHandler(onUnresolvedRead) {
 
     if (
       split.tool === 'read' &&
-      resolveToolPath(split.payload, 'filePath') === undefined &&
+      resolveToolPath(split.payload, GUARDED_PATH_KEYS.get('read')) === undefined &&
       !warned
     ) {
       // Set the gate before notifying: a throwing callback must not lead to a

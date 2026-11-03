@@ -238,6 +238,13 @@ async function main() {
       input: { args: { filePath } },
     }),
     'v2 flat { tool, filePath }': (filePath) => ({ tool: 'read', filePath }),
+    // v2.2.5 sends `path` for the read tool (observed live); keep both names.
+    'v2 { tool, input: { path } }': (filePath) => ({ tool: 'read', input: { path: filePath } }),
+    'v2 { tool, input: { args: { path } } }': (filePath) => ({
+      tool: 'read',
+      input: { args: { path: filePath } },
+    }),
+    'v2 flat { tool, path }': (filePath) => ({ tool: 'read', path: filePath }),
   };
 
   for (const filePath of blocked) {
@@ -308,6 +315,17 @@ async function main() {
     handleToolExecuteBefore('read', { input: { filePath: '/x/.env', args: { filePath: '/x/README.md' } } }) !==
       null,
     'payload.input.filePath must win over payload.input.args.filePath'
+  );
+
+  // v2.2.5 sends `path`; a blocked path must not hide behind an allowed
+  // `filePath` in the same payload (fail closed across accepted key names).
+  assert(
+    readGuardError('read', { args: { path: '/x/.env' } }) !== null,
+    'v1 args.path must block'
+  );
+  assert(
+    readGuardError('read', { filePath: '/x/README.md', path: '/x/.env' }) !== null,
+    'a blocked path key must win over an allowed filePath key'
   );
 
   // --- createReadGuardHandler: fail-open telemetry (S1) ---
