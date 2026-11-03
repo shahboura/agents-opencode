@@ -22,6 +22,11 @@ export default defineConfig({
           label: 'GitHub',
           href: 'https://github.com/shahboura/agents-opencode',
         },
+        {
+          icon: 'npm',
+          label: 'npm',
+          href: 'https://www.npmjs.com/package/agents-opencode',
+        },
       ],
       editLink: {
         baseUrl:
