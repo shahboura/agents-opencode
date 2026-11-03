@@ -81,34 +81,41 @@ export function isBlockedReadPath(filePath) {
 /**
  * Resolve a path argument from a hook payload, tolerating every documented
  * shape. The plugin hands the whole v2 event (or the v1 `output`) to the guard,
- * so the path can sit in any of these locations; the first non-nullish value
- * wins:
+ * so the path can sit in any of these locations:
  * - `payload.args[key]`       v1 `tool.execute.before` output
- * - `payload[key]`            flat v2 event `{ tool, filePath }`
- * - `payload.input[key]`      v2 event `{ tool, input: { filePath } }`
- * - `payload.input.args[key]` v2 event `{ tool, input: { args: { filePath } } }`
+ * - `payload[key]`            flat v2 event `{ tool, path }`
+ * - `payload.input[key]`      v2 event `{ tool, input: { path } }`
+ * - `payload.input.args[key]` v2 event `{ tool, input: { args: { path } } }`
  *
- * `key` is `filePath` for `read` and `path` for `grep`.
+ * `keys` is an array of accepted argument names. `read` accepts both `filePath`
+ * (v1 and older v2) and `path` (v2.2.5), while `grep` accepts both `path` and
+ * `filePath`. Every key is checked so a payload carrying both cannot hide a
+ * blocked path behind an allowed one.
  */
-function resolveToolPath(payload, key) {
-  const candidates = [
-    payload?.args?.[key],
-    payload?.[key],
-    payload?.input?.[key],
-    payload?.input?.args?.[key],
-  ];
-  // Skip empty/whitespace strings so a blank earlier candidate cannot shadow a
-  // real path in a later one (fail-closed on guarded paths).
-  return candidates.find((value) => typeof value === 'string' && value.trim() !== '');
+function resolveToolPath(payload, keys) {
+  const names = Array.isArray(keys) ? keys : [keys];
+  for (const key of names) {
+    const candidates = [
+      payload?.args?.[key],
+      payload?.[key],
+      payload?.input?.[key],
+      payload?.input?.args?.[key],
+    ];
+    // Skip empty/whitespace strings so a blank earlier candidate cannot shadow a
+    // real path in a later one (fail-closed on guarded paths).
+    const found = candidates.find((value) => typeof value === 'string' && value.trim() !== '');
+    if (found !== undefined) return found;
+  }
+  return undefined;
 }
 
-// Argument that carries the guarded path, per tool. Shell tools are handled
+// Argument names that carry the guarded path, per tool. Shell tools are handled
 // separately by `shellGuardError` (read verbs only); every other tool is
 // unguarded: this is a best-effort secret-content guard, not a sandbox — an
 // interpreter can reach any file regardless.
 const GUARDED_PATH_KEYS = new Map([
-  ['read', 'filePath'],
-  ['grep', 'path'],
+  ['read', ['filePath', 'path']],
+  ['grep', ['path', 'filePath']],
 ]);
 
 // Shell tools can read the same files the `read` guard blocks, and `--auto`
@@ -536,11 +543,13 @@ export function readGuardError(tool, payload) {
   if (SHELL_TOOLS.has(tool)) {
     return shellGuardError(payload);
   }
-  const pathKey = GUARDED_PATH_KEYS.get(tool);
-  if (!pathKey) return null;
-  const filePath = resolveToolPath(payload, pathKey);
-  if (typeof filePath === 'string' && isBlockedReadPath(filePath)) {
-    return `[agents-opencode] Blocked reading sensitive file: ${filePath}. Do not read or search credential or secret files. ${SENSITIVE_READ_HINT}`;
+  const pathKeys = GUARDED_PATH_KEYS.get(tool);
+  if (!pathKeys) return null;
+  for (const pathKey of pathKeys) {
+    const filePath = resolveToolPath(payload, [pathKey]);
+    if (typeof filePath === 'string' && isBlockedReadPath(filePath)) {
+      return `[agents-opencode] Blocked reading sensitive file: ${filePath}. Do not read or search credential or secret files. ${SENSITIVE_READ_HINT}`;
+    }
   }
   return null;
 }
@@ -548,7 +557,7 @@ export function readGuardError(tool, payload) {
 /**
  * Split a `tool.execute.before` call into its tool name and payload. Covers
  * both call forms: the whole v2 event (`{ tool, input }` or a flat
- * `{ tool, filePath }`) unwraps itself, while the split v1 pair
+ * `{ tool, path }`) unwraps itself, while the split v1 pair
  * (`(tool, output)`) is used as-is.
  */
 function splitToolAndPayload(toolOrEvent, payload) {
@@ -609,7 +618,7 @@ export function createReadGuardHandler(onUnresolvedRead) {
 
     if (
       split.tool === 'read' &&
-      resolveToolPath(split.payload, 'filePath') === undefined &&
+      resolveToolPath(split.payload, GUARDED_PATH_KEYS.get('read')) === undefined &&
       !warned
     ) {
       // Set the gate before notifying: a throwing callback must not lead to a
@@ -637,7 +646,7 @@ export function createReadGuardHandler(onUnresolvedRead) {
  * often the runtime fires.
  *
  * Idempotency is keyed on a stable sentinel: the first line of the first block
- * entry (e.g. `## Agents Opencode Context`), which survives version bumps.
+ * entry, which is fixed text.
  *
  * @param {unknown} target  Candidate context array to append to.
  * @param {unknown} lines   Block lines to append (the first entry carries the sentinel).
@@ -700,54 +709,6 @@ export function injectSystemContextOnce(target, text) {
 }
 
 /**
- * Replace (or clear) one model-facing system part by text prefix.
- *
- * The static pack block is injected once via `injectSystemContextOnce`; the
- * context-budget band must change as the session grows, so it lives in its own
- * part and is replaced on every request. This also makes the update correct if
- * the host reuses the `system` array across requests instead of rebuilding it.
- *
- * @param {unknown} target      Candidate `system` parts array.
- * @param {string[]|string} prefixes Part text prefixes to replace/remove.
- * @param {string} [text]       New part text; omit/blank to only remove.
- * @returns {boolean} true when a part was pushed (false on clear/no-op/failure).
- */
-export function replaceSystemContextPart(target, prefixes, text) {
-  if (!Array.isArray(target)) return false;
-
-  const markers = (Array.isArray(prefixes) ? prefixes : [prefixes]).filter(
-    (prefix) => typeof prefix === 'string' && prefix.length > 0
-  );
-  if (markers.length === 0) return false;
-
-  try {
-    for (let index = target.length - 1; index >= 0; index -= 1) {
-      const part = target[index];
-      if (
-        part !== null &&
-        typeof part === 'object' &&
-        typeof part.text === 'string' &&
-        markers.some((marker) => part.text.startsWith(marker))
-      ) {
-        target.splice(index, 1);
-      }
-    }
-  } catch {
-    // A frozen/sealed array cannot be updated; leave it untouched.
-    return false;
-  }
-
-  if (typeof text !== 'string' || text.trim() === '') return false;
-
-  try {
-    target.push({ type: 'text', text });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Run one hook/transform registration with full failure containment.
  *
  * OpenCode v2's `hook(...)` and `transform(...)` return `Promise<Registration>`,
@@ -789,212 +750,4 @@ export async function safeRegister(cleanups, register) {
   } catch {
     return false;
   }
-}
-
-/**
- * Wire a v2 event stream to `handler` and return a cleanup that aborts it.
- *
- * v2's `ctx.event.subscribe({ signal })` returns an `AsyncIterable` (documented
- * shape); it must be consumed with a signal-backed loop, not called with a
- * handler. This helper owns that loop so the wiring can be unit-tested, and:
- * - returns `undefined` (a quiet no-op) when `subscribe` is absent, throws, or
- *   produces a non-async-iterable value;
- * - never rejects: the background loop contains stream errors (normal on
- *   abort) and per-event handler failures;
- * - aborts the subscription from the returned cleanup.
- *
- * @param {unknown} stream  Candidate `ctx.event` object.
- * @param {(event: unknown) => unknown} handler Event consumer.
- * @returns {(() => void) | undefined} cleanup that aborts the subscription.
- */
-export function subscribeEventStream(stream, handler) {
-  const subscribe = stream?.subscribe;
-  if (typeof subscribe !== 'function') return undefined;
-
-  const controller = typeof AbortController === 'function' ? new AbortController() : undefined;
-  const onEvent = typeof handler === 'function' ? handler : () => {};
-
-  const abort = () => {
-    try {
-      controller?.abort();
-    } catch {
-      // ignore abort failures
-    }
-  };
-
-  let iterable;
-  try {
-    iterable = subscribe.call(stream, controller ? { signal: controller.signal } : {});
-  } catch {
-    abort();
-    return undefined;
-  }
-
-  if (!iterable || typeof iterable[Symbol.asyncIterator] !== 'function') {
-    abort();
-    return undefined;
-  }
-
-  void (async () => {
-    try {
-      for await (const event of iterable) {
-        try {
-          await onEvent(event);
-        } catch {
-          // Per-event containment: one throwing handler must not end the loop.
-        }
-      }
-    } catch {
-      // Stream aborted or failed: nothing left to do in the background.
-    }
-  })();
-
-  return abort;
-}
-
-/**
- * Session context-budget bands. Sorted high-to-low; `line()` reports the
- * highest band reached and never downgrades within a session (so a transient
- * token report cannot hide an earlier warning). Reset happens on compaction.
- */
-const CONTEXT_BANDS = [
-  { min: 0.5, key: 'stop', text: 'Context budget 50%+ — stop new work and hand off.' },
-  { min: 0.4, key: 'handoff', text: 'Context budget 40%+ — write the handoff or delegate before the next phase.' },
-  { min: 0.3, key: 'ask', text: 'Context budget 30%+ — ask the user: continue, delegate, or hand off.' },
-];
-
-/** Sum the token fields the host uses for measured context. */
-function tokenTotal(tokens) {
-  if (!tokens || typeof tokens !== 'object') return 0;
-  const num = (value) =>
-    typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
-  const cache = tokens.cache && typeof tokens.cache === 'object' ? tokens.cache : {};
-  return num(tokens.input) + num(tokens.output) + num(tokens.reasoning) + num(cache.read) + num(cache.write);
-}
-
-/**
- * Track measured context per session from completed assistant messages.
- *
- * The host emits `message.updated` several times per message while streaming;
- * only a completed message is counted, and a repeated `messageID` is ignored.
- * A large negative step (>50% drop) is treated as an in-band compaction and
- * clears the band; an explicit compaction/reset event also clears it.
- *
- * `line()` returns at most one band line plus a one-shot per-call warning. The
- * text is static per band (no exact percentage) so the system prefix only
- * changes when a band changes.
- *
- * @param {{bands?: Array<{min: number, text: string}>, perCallFraction?: number}} [options]
- */
-export function createContextBudgetTracker(options = {}) {
-  const bands =
-    Array.isArray(options.bands) && options.bands.length > 0 ? options.bands : CONTEXT_BANDS;
-  const perCallFraction =
-    typeof options.perCallFraction === 'number' && options.perCallFraction > 0
-      ? options.perCallFraction
-      : 0.025;
-  const perCallPercent = Number((perCallFraction * 100).toFixed(1));
-  const sessions = new Map();
-
-  const reset = (sessionID) => {
-    if (typeof sessionID === 'string' && sessionID) sessions.delete(sessionID);
-  };
-
-  const note = (event) => {
-    try {
-      if (!event || typeof event !== 'object') return false;
-
-      const eventSessionID = event?.properties?.sessionID;
-      if (
-        (event.type === 'session.compacted' ||
-          event.type === 'session.compaction.ended' ||
-          event.type === 'session.deleted') &&
-        typeof eventSessionID === 'string'
-      ) {
-        reset(eventSessionID);
-        return false;
-      }
-
-      if (event.type !== 'message.updated') return false;
-      const info = event?.properties?.info ?? event?.info;
-      if (!info || info.role !== 'assistant') return false;
-
-      const messageID = typeof info.id === 'string' ? info.id : '';
-      const sessionID =
-        typeof info.sessionID === 'string' ? info.sessionID : eventSessionID;
-      if (!messageID || !sessionID || !info.time?.completed) return false;
-
-      const used = tokenTotal(info.tokens);
-      if (used <= 0) return false;
-
-      const state =
-        sessions.get(sessionID) ?? { messageID: '', used: 0, band: -1, delta: 0 };
-      if (state.messageID === messageID) return false;
-
-      const previousUsed = state.used;
-      const delta = previousUsed > 0 ? used - previousUsed : 0;
-      state.messageID = messageID;
-      state.used = used;
-      state.delta = delta > 0 ? delta : 0;
-      // A >50% drop is compaction (even if the host's reset event is missed);
-      // a small drop is a token-report correction and keeps the earlier band.
-      if (delta < 0 && used < previousUsed * 0.5) state.band = -1;
-      sessions.set(sessionID, state);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
-  const line = (sessionID, limit) => {
-    try {
-      const state = sessions.get(sessionID);
-      if (!state || !Number.isFinite(limit) || limit <= 0) return undefined;
-
-      let index = -1;
-      for (let i = 0; i < bands.length; i += 1) {
-        if (state.used >= limit * bands[i].min) {
-          index = i;
-          break;
-        }
-      }
-
-      const delta = state.delta;
-      state.delta = 0;
-      const deltaText =
-        delta > limit * perCallFraction
-          ? `Last step added ~${Math.round(delta / 1000)}k tokens (>${perCallPercent}% of the window) — extract or delegate the next one.`
-          : undefined;
-
-      // No band yet: still surface a large single-step warning, if any. An
-      // existing band is kept (never downgrade within a session) until a
-      // compaction reset.
-      if (index === -1 && state.band === -1) return deltaText;
-      if (index !== -1 && (state.band === -1 || index < state.band)) state.band = index;
-
-      const bandText = state.band === -1 ? undefined : bands[state.band]?.text;
-      return [bandText, deltaText].filter(Boolean).join('\n') || undefined;
-    } catch {
-      return undefined;
-    }
-  };
-
-  return { note, line, reset };
-}
-
-/**
- * Resolve the pack version from installer markers first, then the pack
- * package.json. A consumer's own package.json must never win, so the
- * package fallback is gated on the package name.
- */
-export function selectPackVersion({ markers = [], packageName, packageVersion } = {}) {
-  for (const marker of markers) {
-    if (typeof marker === 'string' && marker.trim()) return marker.trim();
-  }
-
-  if (packageName === 'agents-opencode' && typeof packageVersion === 'string' && packageVersion) {
-    return packageVersion;
-  }
-
-  return 'unknown';
 }

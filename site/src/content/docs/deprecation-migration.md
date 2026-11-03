@@ -97,10 +97,17 @@ When introducing Level B/C changes:
 - Legacy `.opencode/agent/` (singular) is retired; only the canonical `.opencode/agents/` (plural) path is recognized
 - Command docs parity is enforced against canonical command frontmatter
 - The installer's target adapter emits v1 and v2 config key sets until a future breaking major
-  (`--target v1|v2|auto`); the two sets are never co-written. Both are supported; v2 is
-  verified to load on v2.0.30 (plugin, all 10 agents, and all skills shipped in that build discovered;
-  secret-read guard and shell-env hooks observed on v2.2.5, event and compaction hooks not). See
+  (`--target v1|v2|auto`); the two sets are never co-written. File install is the supported path:
+  on v2.0.30 the pack's 10 agents were discovered from v1-shaped frontmatter, 2.0.32 confirmed
+  the resolved permission rules, and 2.2.5 observed the secret-read guard and the post-compaction
+  context block. Session-error logging, context-budget bands, shell-env version injection, and
+  plugin-spec skill delivery were removed rather than left unverified. See
   **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)**.
+- Plugin-spec installs are retired (Level B). An existing `plugin`/`plugins` entry still
+  resolves in 4.x and loads the secret-read guard and context block (untrusted-memory rule,
+  plus a state pointer when the project has `state/session-state.json`) with a warning, but
+  delivers no agents, commands, or skills. Run the installer to migrate; 5.0 removes the
+  package entrypoint.
 
 ## Verify It Worked
 

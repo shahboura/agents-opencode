@@ -1,6 +1,6 @@
 {
   "goal": "Maintain governance-grade reliability for OpenCode agents and validation workflows.",
-  "current_phase": "PR #166 squash-merged (5895765) and released as 4.3.1 (d7361a3): pruning pass, state-first session read, untrusted-memory rule, minimatch 11.0.3 override. Doctor green on main; code graph rebuilt (1,416 nodes) and matches d7361a3.",
+  "current_phase": "Implementation branch chore/prune-v2-support: plugin trimmed to guard + two-line block, installer/CI/docs fixes, and the v2.2.5 read-path guard fix; doctor green; PR pending.",
   "plugin_version": "2.6.0",
   "decisions": [
     "Pack agents allow all skills (`*`: allow) because a pack cannot enumerate host/plugin skills; the working restriction mechanisms are editing the installed agent file or a v2 `integration.use` policy - global permission rules lose to agent rules, which are appended last (last match wins).",
@@ -33,11 +33,12 @@
     "The docs site is served at https://agnts.elkodr.com/ (Cloudflare Worker custom domain); this origin is the single source for canonical URLs, the sitemap, and README/package links.",
     "OpenCode v1/v2 support is delivered by an installer-time target adapter (scripts/lib/opencode-target.js) plus --target v1|v2|auto; v1 and v2 config keys (plugin/permission vs plugins/permissions) are never co-written, and the manifest records the resolved target so uninstall reverts the right keys.",
     "One plugin file serves both hosts: a v1 named export (AgentsOpencodePlugin) and a v2 default export { id, server, setup } (server is the v1 function, matching the documented dual pattern); v2 setup feature-detects a v1-shaped ctx and no-ops quietly.",
-    "Install model is hybrid: the file installer delivers agents/commands/skills/config; a plugin-spec install (plugins: [\"agents-opencode\"]) delivers skills + hooks/guards only, because a v2 plugin cannot register agents or global config. A coexistence guard skips skill registration when the pack is file-installed.",
+    "Install model is file-install only: the installer delivers agents/commands/skills/config. Plugin-spec installs are retired in 4.x (the entry still resolves and loads the guard + two-line block with a warning) and removed in 5.0; a v2 plugin cannot register agents or global config.",
     "The global config dir honors XDG_CONFIG_HOME (absolute only) with a legacy-path split-brain warning; verified empirically against opencode 1.19.0 (opencode debug paths resolves config to $XDG_CONFIG_HOME/opencode).",
     "--target auto detects the host via 'opencode --version' (spawnSync with a pinned cwd to avoid repo-local shim resolution, 4s timeout, stderr fallback); major >= 2 selects v2 else v1; AGENTS_OPENCODE_HOST_VERSION overrides detection for tests/CI.",
-    "OpenCode v2 support is verified against the published contract, not assumed: the plugin was aligned to the v2.0.30 API (the context hook injects event.system text parts; ctx has no client/app.log so a console fallback is used; ctx.event.subscribe({signal}) is the event API; hook() returns Promise<Registration>), and a disposable Docker sandbox confirmed plugin load, 10 agents, and 27 skills on both opencode 1.19.2 and 2.0.30.",
-    "v2 skill descriptors must satisfy Skill.Info exactly (id, name, path, content - 'location' does not exist) and v2-emitted config drops keys v2 marks unsupported; the installer never strips user config for keys it does not manage (a value-equality strip was removed as a data-loss risk).",
+    "OpenCode v2 support is verified against the published contract: the plugin keeps only the secret-read guard and a two-line context block (v2 context hook / v1 compaction), both through the documented hook API; a live v2.2.5 run blocked a sensitive read and a shell read and allowed a README read. Unverified hooks were removed, not documented as unobserved.",
+    "v2.2.5 read events carry `input.path`, not `filePath`; the guard accepts both names, checks both before allowing, and has tests for every flat/input/input.args shape. Live smoke verified the read and shell blocks on v2.2.5 and the read block on v1.19.2.",
+    "Plugin-spec skill delivery and its Skill.Info descriptor work were removed in 4.x; the plugin no longer registers skills. v2-emitted config still drops keys v2 marks unsupported, and the installer never strips user config for keys it does not manage (a value-equality strip was removed as a data-loss risk).",
     "The v2 secret-read guard stays fail-open by design but emits rate-limited telemetry when a read event has no resolvable path, so a payload-shape mismatch cannot silently disable it; a live-model v2 run is the exit gate before v2 is declared fully supported.",
     "Shell guard hardening (4dc6388) covers quoted redirect targets, dd if=, cp/mv/ln target-directory forms, quoted compounds, backticks, simple $(...) reads, and versioned/quoted interpreter names; interpreter detection keys on the command word so commit messages and echo lines stay allowed. Best-effort, not a sandbox; residuals live in PERM-5.",
     "Drill capture (4dc6388) runs host git against a harness-owned git dir in $TMPDIR with a rewritten config and neutralized global config; $WORK/.git is never used, so agent-written config, hooks, or gitdir files cannot execute. --local remains unsandboxed by design and is documented as such.",
@@ -62,7 +63,7 @@
     "Consumer-visible opencode.json defaults are not yet in the changelog.",
     "Multi-lens panel shares one model - correlated blind spots are irreducible until per-lens model choice is available.",
     "evals/harness/run-evals.js still uses a hand-rolled permission parser (VAL-4) that can drift from the shared module.",
-    "v2 runtime hooks partly exercised on v2.2.5 (2026-11-02): the secret-read guard blocked a live read and shell.env injected AGENTS_OPENCODE_VERSION on two models; event subscription, compaction context, plugin-spec skill delivery, and --target auto detection remain unexercised. This is the tracked exit gate before declaring v2 fully supported.",
+    "v2 guard and two-line block: the guard blocked a live sensitive read in one event shape; the trimmed block uses the observed context hook. Multi-model and remaining event-shape drills are still needed; session-error, budget, shell-env, and skill-delivery hooks were removed.",
     "v2 host wrinkles: the load log goes to stdout, which OpenCode's background service discards; 'opencode debug agents' returns [] on 2.0.30 (use the workspace API instead).",
     "Host detection runs 'opencode --version' via spawnSync; the Windows cmd.exe CWD-vs-PATH behavior is mitigated by a pinned cwd but was not executed on a live Windows opencode.cmd host.",
     "The v2 secret-read guard is best-effort: if a beta v2 host does not expose the tool hook, the plugin warns but the guard is absent.",
@@ -108,7 +109,6 @@
     "scripts/validate-docs.js",
     "scripts/validate-opencode-schema.js",
     "scripts/lib/opencode-target.js",
-    ".opencode/lib/pack-skills.mjs",
     ".opencode/lib/guards.mjs",
     "scripts/plugin-guards.test.js",
     ".opencode/skills/systematic-debugging/SKILL.md",
@@ -121,5 +121,5 @@
   ],
   "legal_reviews": [],
   "compaction_count": 0,
-  "last_updated": "2026-11-02T14:27:00Z"
+  "last_updated": "2026-11-03T12:00:00Z"
 }

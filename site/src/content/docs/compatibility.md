@@ -9,7 +9,7 @@ This matrix captures tested runtime/tooling targets for this repository.
 
 :::tip[What you get]
 - Which runtimes and versions the pack supports today.
-- What is verified, and what installs but is not yet exercised.
+- What is verified, and which install path is supported.
 :::
 
 ## Runtime and CI Targets
@@ -28,12 +28,13 @@ This matrix captures tested runtime/tooling targets for this repository.
 The pack supports OpenCode v1 and v2 from one source; the two use
 **disjoint config keys**. The installer emits per-target output
 (`--target v1|v2|auto`; `auto` detects the installed OpenCode version — v2 when the
-major is >= 2, else v1) and never co-writes both key sets. The **v2 path is
-verified to load** on v2.0.30 (plugin, all 10 agents, and all skills shipped in that build discovered,
-including v1-shaped frontmatter translation), and on **v2.0.32** the resolved
-permission rules were confirmed with `opencode debug agents`, and on **v2.2.5** the
-secret-read guard and shell-env injection were observed firing with a model. Event-stream
-and compaction hooks, and plugin-spec skill delivery, remain unobserved (see
+major is >= 2, else v1) and never co-writes both key sets. File install is the supported
+path. On **v2.0.30** the pack's 10 agents were discovered from v1-shaped frontmatter; on
+**v2.0.32** the resolved permission rules were confirmed with `opencode debug agents`; on
+**v2.2.5** the secret-read guard blocked a `.pem` read and the `context` hook re-injected
+the pack's context block after a 578k-token compaction. Session-error logging,
+context-budget bands, shell-env version injection, and plugin-spec skill delivery were
+removed in this release rather than left unverified (see
 [OpenCode v1/v2 support](/opencode-v1-v2-support/)).
 
 | Concern | v1 | v2 |
@@ -48,7 +49,7 @@ The global config directory honors `XDG_CONFIG_HOME` (absolute values only),
 falling back to `~/.config/opencode`.
 
 See **[OpenCode v1/v2 Support](/opencode-v1-v2-support/)** for the full target
-adapter, hybrid install model, and coexistence rules.
+adapter, file install model, and retired plugin-spec installs.
 
 ### `--auto` and permission prompts
 
@@ -85,25 +86,26 @@ External checks are also executed by a scheduled non-blocking workflow.
 
 | Check | Local command | CI gate |
 |---|---|---|
-| Agent configuration validation | `npm run validate:agents` | `validate-agents` |
-| OpenCode schema conformance | `npm run validate:opencode-schema` | `validate-opencode-schema` |
-| OpenCode v2-strict conformance | `npm run validate:opencode-schema:v2` | `validate-opencode-schema-v2` |
-| Command docs parity validation | `npm run validate:commands` | `validate-command-matrices` |
+| Agent configuration validation | `npm run validate:agents` | `validate-doctor` |
+| OpenCode schema conformance | `npm run validate:opencode-schema` | `validate-doctor` |
+| OpenCode v2-strict conformance | `npm run validate:opencode-schema:v2` | `validate-doctor` |
+| Command docs parity validation | `npm run validate:commands` | `validate-doctor` |
 | Agent eval harness | `npm run eval:agents` | `validate-agent-evals` |
 | Agent eval trend snapshot | `npm run eval:agents:json` + `npm run eval:agents:trend` | `validate-agent-evals` (artifact upload) |
 | Risk-scored review path (advisory) | _CI-driven_ | `validate-risk-path` |
-| Docs internal links | `npm run validate:docs` | `validate-docs` |
-| Changelog capability labels | `npm run validate:changelog` | `validate-changelog` |
-| Session state contract | `npm run validate:session` | `validate-session-state` |
-| Plugin guard tests | `npm run validate:plugin-guards` | `validate-tooling-tests` |
+| Docs internal links | `npm run validate:docs` | `validate-doctor` |
+| Changelog capability labels | `npm run validate:changelog` | `validate-doctor` |
+| Session state contract | `npm run validate:session` | `validate-doctor` |
+| Plugin guard tests | `npm run validate:plugin-guards` | `validate-doctor` |
 | Docs external links (optional) | `npm run validate:docs:external` | `validate-external-links` (scheduled, non-blocking) |
-| Tooling regression tests | `npm run doctor` | `validate-tooling-tests` |
-| Context size check | `npm run validate:context` | `validate-context` |
-| Markdown lint | `npm run lint:md` | `lint-markdown` |
+| Tooling regression tests | `npm run doctor` | `validate-doctor` |
+| Context size check | `npm run validate:context` | `validate-doctor` |
+| Markdown lint | `npm run lint:md` | `validate-doctor` |
 | Workflow lint | _CI-only_ | `lint-workflows` |
 
-`validate-risk-path` derives changed files from git context and reports a computed
-risk level plus whether the PR template acknowledges it. The check is **advisory**
+`validate-doctor` runs `npm ci` and `npm run doctor`, which aggregates the local checks in
+this table. `validate-risk-path` derives changed files from git context and reports a
+computed risk level plus whether the PR template acknowledges it. The check is **advisory**
 and does not block merges.
 
 ## The review gate is maintainer tooling

@@ -12,7 +12,7 @@ function assert(condition, message) {
 
 async function main() {
   const guardsPath = path.join(process.cwd(), '.opencode', 'lib', 'guards.mjs');
-  const { isBlockedReadPath, readGuardError, selectPackVersion } = await import(pathToFileURL(guardsPath).href);
+  const { isBlockedReadPath, readGuardError } = await import(pathToFileURL(guardsPath).href);
 
   const blocked = [
     '/x/.env',
@@ -274,22 +274,6 @@ async function main() {
   const startedAt = Date.now();
   readGuardError('bash', { args: { command: `cat "${'\\'.repeat(60)}` } });
   assert(Date.now() - startedAt < 2000, 'Unterminated quote must not hang the guard');
-
-  assert(selectPackVersion({ markers: [' 2.4.0 '] }) === '2.4.0', 'Marker should be trimmed');
-  assert(
-    selectPackVersion({ markers: [null, '', '1.2.3'] }) === '1.2.3',
-    'Should skip empty markers'
-  );
-  assert(
-    selectPackVersion({ packageName: 'agents-opencode', packageVersion: '9.9.9' }) === '9.9.9',
-    'Pack package.json fallback should apply'
-  );
-  assert(
-    selectPackVersion({ packageName: 'consumer-app', packageVersion: '1.0.0' }) === 'unknown',
-    'Consumer package.json must be rejected'
-  );
-  assert(selectPackVersion({}) === 'unknown', 'No inputs should resolve to unknown');
-  assert(selectPackVersion() === 'unknown', 'Undefined inputs should resolve to unknown');
 
   console.log('✅ Plugin guard tests passed');
 }

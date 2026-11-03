@@ -19,6 +19,16 @@ Rules:
 - 3-5 bullets per entry; skip trivial edits.
 - Keep the file under 100 KB by pruning the oldest entries.
 
+### 2026-11-03 12:30 - Pruned plugin to guard + context; installer and CI fixes
+
+**Agent:** orchestrator
+**Summary:** Trimmed the plugin layer to verified behavior, retired plugin-spec installs, fixed installer lifecycle bugs, and consolidated CI around doctor.
+- Plugin 715→281 lines; guards 1,000→744; `pack-skills.mjs` deleted. Kept the secret-read guard and a two-line context block (v1 compaction / v2 context; state pointer only when the state file exists).
+- v2.2.5 sends `input.path` for reads; the guard now accepts both `path` and `filePath` and fails closed across keys. Live smoke on v2.2.5 blocked read + shell and allowed a README read; v1.19.2 blocked the read and allowed README.
+- Installer: preserves a user `AGENTS.md` on uninstall, prunes installer-managed dev artifacts, retains orphaned managed files for uninstall, deletes test-only target exports; same-target plugin-entry test.
+- CI 448→198 lines and 15→6 jobs around `validate-doctor`; graph check is strict; doctor has per-check timeouts and no `process.exit` truncation.
+- Docs support matrix rewritten; plugin-spec retirement documented; v2 claims limited to observed guard and context-block behavior.
+
 ### 2026-11-02 22:27 - v2 runtime hooks exercised; docs claims corrected
 
 **Agent:** orchestrator

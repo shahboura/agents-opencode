@@ -193,6 +193,4 @@ For iterative work, define testable completion criteria first; run bounded cycle
 ## Context Persistence
 
 **State:** start from `state/session-state.json` (the handoff is the fallback when state is absent); at completion refresh state, regenerate the handoff, log a `MILESTONES.md` entry, and present for approval.
-**Context budget:** at each decision boundary, read the plugin's context band (v2).
-**30%:** emit the checkpoint (`/checkpoint`) with continue / delegate / hand off. **40%:** write state + handoff.
-**50%:** stop new work. A single tool result above ~2.5% of the window: extract or delegate.
+**Context budget:** at each decision boundary, check the host's reported context usage. Emit the checkpoint (`/checkpoint`) when a decision is due; write state + handoff before a long phase; stop new work when the window is nearly full. A single tool result above ~2.5% of the window: extract or delegate.

@@ -43,6 +43,17 @@ for (const entry of pkg.files) {
   assert(exists, `"${entry}" exists in package`);
 }
 
+// Plugin-spec resolution lives in package.json until 5.0: both the main entry
+// and the root export must keep pointing at the bundled plugin file.
+assert(
+  pkg.main === './.opencode/plugins/agents-opencode.ts',
+  'package main resolves to the bundled plugin for 4.x plugin-spec entries'
+);
+assert(
+  pkg.exports && pkg.exports['.'] === pkg.main,
+  'package root export resolves to the bundled plugin for 4.x plugin-spec entries'
+);
+
 // DOCS-2: the Cloudflare/Astro docs site must not ship in the npm package.
 console.log('\n🌐 Docs site excluded from package');
 const packResult = spawnSync(isWin ? 'npm.cmd' : 'npm', ['pack', '--dry-run', '--json'], {
@@ -59,14 +70,27 @@ if (packResult.status !== 0) {
     // npm 11 returns an object keyed by package name; older versions return an array.
     const packEntry = Array.isArray(packJson) ? packJson[0] : Object.values(packJson)[0];
     const packedFiles = (packEntry && packEntry.files) || [];
-    const sitePaths = packedFiles
-      .map((file) => file.path)
+    const packedPaths = packedFiles.map((file) => file.path);
+    const sitePaths = packedPaths
       .filter((filePath) => filePath === 'site' || filePath.startsWith('site/'));
     const detail = sitePaths.length > 0 ? ` (leaked: ${sitePaths.join(', ')})` : '';
     assert(sitePaths.length === 0, `Packed file list excludes site/ paths${detail}`);
 
-    const noticePacked = packedFiles.some((file) => file.path === 'THIRD_PARTY_NOTICES.md');
+    const noticePacked = packedPaths.includes('THIRD_PARTY_NOTICES.md');
     assert(noticePacked, 'Packed file list includes THIRD_PARTY_NOTICES.md (MIT attribution ships with adapted skills)');
+
+    assert(
+      packedPaths.includes('.opencode/plugins/agents-opencode.ts'),
+      'Packed file list includes the bundled plugin (4.x plugin-spec resolution + guard)'
+    );
+    assert(
+      packedPaths.includes('.opencode/lib/guards.mjs'),
+      'Packed file list includes the guard helpers the plugin imports'
+    );
+    assert(
+      !packedPaths.includes('.opencode/package.json'),
+      'Packed file list excludes the local-only .opencode/package.json'
+    );
   } catch (err) {
     assert(false, `Could not parse npm pack --dry-run output: ${err.message}`);
   }
