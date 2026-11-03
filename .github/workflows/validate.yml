@@ -34,10 +34,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  validate-agents:
-    name: Validate Agent Configurations
+  validate-doctor:
+    name: Run Doctor Checks
     runs-on: ubuntu-26.04
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
@@ -50,65 +50,11 @@ jobs:
         with:
           node-version: '26'
 
-      - name: Validate agents
-        run: node scripts/validate-agents.js
+      - name: Install dependencies
+        run: npm ci
 
-  validate-opencode-schema:
-    name: Validate OpenCode Schema Conformance
-    runs-on: ubuntu-26.04
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-
-      - name: Validate OpenCode schema conformance
-        run: node scripts/validate-opencode-schema.js --strict
-
-  validate-opencode-schema-v2:
-    name: Validate OpenCode v2 Schema Conformance
-    runs-on: ubuntu-26.04
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-
-      - name: Validate OpenCode v2-strict schema conformance
-        run: npm run validate:opencode-schema:v2
-
-  validate-command-matrices:
-    name: Validate Command Matrix Docs
-    runs-on: ubuntu-26.04
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-
-      - name: Validate command matrix docs parity
-        run: node scripts/validate-command-matrices.js
+      - name: Run doctor
+        run: npm run doctor
 
   validate-risk-path:
     name: Validate Risk-Scored Review Path
@@ -157,128 +103,6 @@ jobs:
             node scripts/assess-risk-path.js --changed-files-file changed-files.txt --advisory
           fi
 
-  validate-docs:
-    name: Validate Documentation Links
-    runs-on: ubuntu-26.04
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-
-      - name: Validate documentation links
-        run: node scripts/validate-docs.js
-
-  validate-changelog:
-    name: Validate Changelog Capability Labels
-    runs-on: ubuntu-26.04
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-
-      - name: Validate changelog capability labels
-        run: node scripts/validate-changelog-labels.js
-
-  validate-session-state:
-    name: Validate Session State Contract
-    runs-on: ubuntu-26.04
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-
-      - name: Validate session state
-        run: node scripts/validate-session-state.js
-
-      - name: Generate handoff packet
-        run: node scripts/generate-handoff.js --state state/session-state.json --out handoff/latest.md
-
-      - name: Upload handoff artifact
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: handoff-packet
-          path: handoff/latest.md
-          if-no-files-found: error
-
-  validate-tooling-tests:
-    name: Validate Tooling Regression Tests
-    runs-on: ubuntu-26.04
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-
-      - name: Run docs validator tests
-        run: node scripts/validate-docs.test.js
-
-      - name: Run agent validator tests
-        run: node scripts/validate-agents.test.js
-
-      - name: Run OpenCode schema validator tests
-        run: node scripts/validate-opencode-schema.test.js
-
-      - name: Run plugin guard tests
-        run: node scripts/plugin-guards.test.js
-
-      - name: Run plugin v2 guard parity tests
-        run: node scripts/plugin-v2.test.js
-
-      - name: Run agent permission tests
-        run: node scripts/agent-permissions.test.js
-
-      - name: Run pre-commit gate tests
-        run: node scripts/gate/gate.test.js
-
-      - name: Run risk-path assessment tests
-        run: node scripts/assess-risk-path.test.js
-
-      - name: Run changelog validator tests
-        run: node scripts/validate-changelog-labels.test.js
-
-      - name: Run session-state validator tests
-        run: node scripts/validate-session-state.test.js
-
-      - name: Run handoff generator tests
-        run: node scripts/generate-handoff.test.js
-
-      - name: Run installer lifecycle tests
-        run: npm run validate:installer
-
-      - name: Run npx package integrity tests
-        run: npm run validate:npx
-
   validate-agent-evals:
     name: Validate Agent Eval Harness
     runs-on: ubuntu-26.04
@@ -316,53 +140,6 @@ jobs:
       - name: Run agent eval harness tests
         run: node scripts/eval-harness.test.js
 
-  validate-context:
-    name: Validate Context Size
-    runs-on: ubuntu-26.04
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-
-      - name: Check context size
-        run: node scripts/check-context-size.js --check
-
-  lint-markdown:
-    name: Lint Markdown Files
-    runs-on: ubuntu-26.04
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint markdown
-        run: npm run lint:md
-
-      - name: Check for markdown lint issues
-        if: failure()
-        run: |
-          echo "::warning::Markdown linting failed. Run 'npm run lint:md:fix' to auto-fix issues."
-
   lint-workflows:
     name: Lint GitHub Workflows
     runs-on: ubuntu-26.04
@@ -392,54 +169,27 @@ jobs:
     name: Validation Summary
     runs-on: ubuntu-26.04
     timeout-minutes: 5
-    needs: [secrets-scan, validate-agents, validate-opencode-schema, validate-opencode-schema-v2, validate-command-matrices, validate-risk-path, validate-docs, validate-changelog, validate-session-state, validate-tooling-tests, validate-agent-evals, validate-context, lint-markdown, lint-workflows]
+    needs: [secrets-scan, validate-doctor, validate-risk-path, validate-agent-evals, lint-workflows]
     if: always()
 
     steps:
       - name: Check validation results
         env:
-          AGENTS_RESULT: ${{ needs.validate-agents.result }}
-          OPENCODE_SCHEMA_RESULT: ${{ needs.validate-opencode-schema.result }}
-          OPENCODE_SCHEMA_V2_RESULT: ${{ needs.validate-opencode-schema-v2.result }}
-          COMMAND_MATRIX_RESULT: ${{ needs.validate-command-matrices.result }}
-          RISK_PATH_RESULT: ${{ needs.validate-risk-path.result }}
           SECRETS_RESULT: ${{ needs.secrets-scan.result }}
-          DOCS_RESULT: ${{ needs.validate-docs.result }}
-          CHANGELOG_RESULT: ${{ needs.validate-changelog.result }}
-          SESSION_STATE_RESULT: ${{ needs.validate-session-state.result }}
-          TOOLING_TESTS_RESULT: ${{ needs.validate-tooling-tests.result }}
+          DOCTOR_RESULT: ${{ needs.validate-doctor.result }}
+          RISK_PATH_RESULT: ${{ needs.validate-risk-path.result }}
           AGENT_EVAL_RESULT: ${{ needs.validate-agent-evals.result }}
-          CONTEXT_RESULT: ${{ needs.validate-context.result }}
-          LINT_RESULT: ${{ needs.lint-markdown.result }}
           WORKFLOW_LINT_RESULT: ${{ needs.lint-workflows.result }}
         run: |
           echo "Secret Scan: ${SECRETS_RESULT}"
-          echo "Agent Validation: ${AGENTS_RESULT}"
-          echo "OpenCode Schema: ${OPENCODE_SCHEMA_RESULT}"
-          echo "OpenCode Schema v2-strict: ${OPENCODE_SCHEMA_V2_RESULT}"
-          echo "Command Matrix Docs: ${COMMAND_MATRIX_RESULT}"
+          echo "Doctor Checks: ${DOCTOR_RESULT}"
           echo "Risk Path Validation (advisory): ${RISK_PATH_RESULT}"
-          echo "Documentation Validation: ${DOCS_RESULT}"
-          echo "Changelog Validation: ${CHANGELOG_RESULT}"
-          echo "Session State Validation: ${SESSION_STATE_RESULT}"
-          echo "Tooling Tests: ${TOOLING_TESTS_RESULT}"
           echo "Agent Eval Harness: ${AGENT_EVAL_RESULT}"
-          echo "Context Validation: ${CONTEXT_RESULT}"
-          echo "Markdown Linting: ${LINT_RESULT}"
           echo "Workflow Linting: ${WORKFLOW_LINT_RESULT}"
 
           if [ "${SECRETS_RESULT}" != "success" ] || \
-             [ "${AGENTS_RESULT}" != "success" ] || \
-             [ "${OPENCODE_SCHEMA_RESULT}" != "success" ] || \
-             [ "${OPENCODE_SCHEMA_V2_RESULT}" != "success" ] || \
-             [ "${COMMAND_MATRIX_RESULT}" != "success" ] || \
-             [ "${DOCS_RESULT}" != "success" ] || \
-             [ "${CHANGELOG_RESULT}" != "success" ] || \
-             [ "${SESSION_STATE_RESULT}" != "success" ] || \
-             [ "${TOOLING_TESTS_RESULT}" != "success" ] || \
+             [ "${DOCTOR_RESULT}" != "success" ] || \
              [ "${AGENT_EVAL_RESULT}" != "success" ] || \
-             [ "${CONTEXT_RESULT}" != "success" ] || \
-             [ "${LINT_RESULT}" != "success" ] || \
              [ "${WORKFLOW_LINT_RESULT}" != "success" ]; then
             echo "::error::One or more validation checks failed"
             exit 1

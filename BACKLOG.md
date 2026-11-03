@@ -68,12 +68,13 @@ generates per target instead of concatenating.
 Phases:
 
 1. Phase 0 (shipped) - `--target v1|v2|auto` adapter, dual-entrypoint plugin,
-   plugin-spec entrypoint with the installer-marker guard, XDG fix, `--v2-strict`
-   validator, v1/v2 docs.
+   plugin-spec entrypoint with the installer-marker guard (retired in 4.x; the entry still
+   resolves for the guard), XDG fix, `--v2-strict` validator, v1/v2 docs.
 2. Phase 1 (partly shipped) - auto-detect, install e2e for both targets, sandbox run
    against v2.0.30 confirmed plugin load plus 10 agents. **Remaining exit gate:** a
-   live-model v2 run exercising the secret-read guard, context injection, and event
-   subscription, plus the plugin-spec skill-delivery path end-to-end.
+   live-model v2 run exercising the secret-read guard and the trimmed two-line context
+   block. Event subscription and plugin-spec skill delivery were removed with those hooks;
+   plugin-spec installs are retired.
 3. Phase 2 (future major) - stop emitting v1 keys, drop the v1 plugin branch.
 4. Host coexistence (shipped) - skills `"*": allow`, shell allowlists, `external_directory: ask`,
    `experimental.subagent_depth`, `compaction.keep.tokens`. **Deferred:** native

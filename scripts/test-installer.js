@@ -117,7 +117,7 @@ function testProjectInstallAndUninstall(tmpRoot) {
   runInstaller(['--uninstall', '--project', '.'], { cwd: projectDir });
 
   assert(!fs.existsSync(manifestPath), 'Project manifest should be removed after uninstall');
-  assert(!fs.existsSync(path.join(projectDir, 'AGENTS.md')), 'AGENTS.md should be removed from project root on real uninstall');
+  assert(fs.existsSync(path.join(projectDir, 'AGENTS.md')), 'A user AGENTS.md must be preserved by uninstall');
   assert(!fs.existsSync(path.join(projectDir, 'state', 'session-state.json')), 'Project state template should be removed on uninstall');
   assert(!fs.existsSync(path.join(projectDir, 'handoff', '.gitkeep')), 'Project handoff scaffold should be removed on uninstall');
 
@@ -127,7 +127,7 @@ function testProjectInstallAndUninstall(tmpRoot) {
   const latestSession = sessions[sessions.length - 1];
   const sessionName = path.basename(latestSession);
   assert(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}Z--uninstall--project$/.test(sessionName), 'Backup session folder should be readable and sortable');
-  assert(hasBackedUpFile(latestSession, 'AGENTS.md'), 'Backup session should include AGENTS.md');
+  assert(!hasBackedUpFile(latestSession, 'AGENTS.md'), 'Uninstall must not back up or touch a user AGENTS.md');
   assert(hasBackedUpFile(latestSession, 'backup-manifest.json'), 'Backup session should include backup-manifest.json');
 }
 
@@ -708,6 +708,81 @@ function testTargetSwitchStripsRetiredPluginEntries(tmpRoot) {
   assert(!('plugin' in config && 'plugins' in config), 'plugin and plugins must never co-exist');
 }
 
+// C9b: the retired installer plugin entry must also be stripped on a
+// same-target update. stripOtherTargetKeys runs on every merge, so an update
+// that keeps the v2 target still migrates a stale plugin-spec entry.
+function testSameTargetUpdateStripsRetiredPluginEntry(tmpRoot) {
+  const dir = path.join(tmpRoot, 'v2-same-target-retired-plugin');
+  createDir(dir);
+  const configPath = path.join(dir, 'opencode.json');
+
+  runInstaller(['--project', '.', '--target', 'v2'], { cwd: dir });
+
+  // Simulate a leftover plugin-spec entry on an already-installed config.
+  const seeded = readJson(configPath);
+  seeded.plugins = ['agents-opencode', 'my-own'];
+  writeJson(configPath, seeded);
+
+  runInstaller(['--project', '.', '--update', '--target', 'v2'], { cwd: dir });
+
+  const config = readJson(configPath);
+  const plugins = Array.isArray(config.plugins) ? config.plugins : [];
+  assert(!plugins.includes('agents-opencode'), 'a same-target update must strip the retired plugin entry from plugins');
+  assert(plugins.includes('my-own'), 'user plugin entries must survive the same-target retired-entry strip');
+  assert(!('plugin' in config), 'a v2 merge must not create the v1 plugin key');
+}
+
+// C9c: an update prunes installer-managed dev artifacts copied by older
+// versions (the current installer filters them out of the source list). The
+// previous manifest is the proof of installer authorship, so a user's own
+// package.json is not touched.
+function testUpdatePrunesInstallerManagedDevArtifacts(tmpRoot) {
+  const dir = path.join(tmpRoot, 'update-prunes-dev-artifacts');
+  createDir(dir);
+  const manifestPath = path.join(dir, '.opencode', '.agents-opencode-manifest.json');
+  const devRelative = path.join('.opencode', 'package.json');
+  const devAbsolute = path.join(dir, devRelative);
+
+  runInstaller(['--project', '.'], { cwd: dir });
+
+  fs.writeFileSync(devAbsolute, '{"dependencies":{}}\n');
+  const manifest = readJson(manifestPath);
+  manifest.managedFiles.push(devRelative);
+  writeJson(manifestPath, manifest);
+
+  runInstaller(['--project', '.', '--update'], { cwd: dir });
+
+  assert(!fs.existsSync(devAbsolute), 'update must prune an installer-managed dev artifact');
+  const updated = readJson(manifestPath);
+  assert(!updated.managedFiles.includes(devRelative), 'the pruned dev artifact must leave the manifest');
+}
+
+// C9d: a file that a previous manifest managed but the source no longer ships
+// (a retired agent or command) is retained in the manifest, so uninstall can
+// remove it. Without this it drops out of managedFiles and is orphaned forever.
+function testUpdateRetainsOrphanedManagedFiles(tmpRoot) {
+  const dir = path.join(tmpRoot, 'update-retains-orphan');
+  createDir(dir);
+  const manifestPath = path.join(dir, '.opencode', '.agents-opencode-manifest.json');
+  const orphanRelative = path.join('.opencode', 'agents', 'retired-agent.md');
+  const orphanAbsolute = path.join(dir, orphanRelative);
+
+  runInstaller(['--project', '.'], { cwd: dir });
+
+  fs.writeFileSync(orphanAbsolute, '# retired\n');
+  const manifest = readJson(manifestPath);
+  manifest.managedFiles.push(orphanRelative);
+  writeJson(manifestPath, manifest);
+
+  runInstaller(['--project', '.', '--update'], { cwd: dir });
+
+  const updated = readJson(manifestPath);
+  assert(updated.managedFiles.includes(orphanRelative), 'update must retain an orphaned managed file');
+
+  runInstaller(['--project', '.', '--uninstall'], { cwd: dir });
+  assert(!fs.existsSync(orphanAbsolute), 'uninstall must remove a retained orphan');
+}
+
 // F1 (data-loss regression): a v2 install must not remove user-owned v1-only
 // settings. `subagent_depth` / `compaction.prune` are never written by the
 // installer, and the documented happy path (customization.md) tells users to
@@ -1230,6 +1305,9 @@ function main() {
     testV2MergeSkipsNonArrayPermissions(tmpRoot);
     testUninstallRevertsReorderedV2PermissionRules(tmpRoot);
     testTargetSwitchStripsRetiredPluginEntries(tmpRoot);
+    testSameTargetUpdateStripsRetiredPluginEntry(tmpRoot);
+    testUpdatePrunesInstallerManagedDevArtifacts(tmpRoot);
+    testUpdateRetainsOrphanedManagedFiles(tmpRoot);
     testV2InstallPreservesUserLegacySettings(tmpRoot);
     testGlobalBothInstallsWarning(tmpRoot);
     testGlobalSymlinkedLegacyIsNotASplit(tmpRoot);

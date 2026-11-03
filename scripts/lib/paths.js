@@ -35,7 +35,6 @@ function getScopePaths(scope, projectDir) {
       manifestPath: path.join(rootDir, MANIFEST_FILE),
       versionPath: path.join(rootDir, VERSION_FILE),
       configPath: path.join(rootDir, 'opencode.json'),
-      agentsMdPath: null,
     };
   }
 
@@ -47,7 +46,6 @@ function getScopePaths(scope, projectDir) {
     manifestPath: path.join(resolvedProjectDir, '.opencode', MANIFEST_FILE),
     versionPath: path.join(resolvedProjectDir, VERSION_FILE),
     configPath: path.join(resolvedProjectDir, 'opencode.json'),
-    agentsMdPath: path.join(resolvedProjectDir, 'AGENTS.md'),
   };
 }
 

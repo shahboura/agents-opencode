@@ -32,9 +32,9 @@ const checks = [
     args: ['scripts/validate-inventory.js'],
   },
   {
-    name: 'Check knowledge graph freshness (advisory)',
+    name: 'Check knowledge graph freshness',
     command: process.execPath,
-    args: ['scripts/check-graph-freshness.js'],
+    args: ['scripts/check-graph-freshness.js', '--strict'],
   },
   {
     name: 'Run risk-path assessment tests',
@@ -150,6 +150,7 @@ function runCheck(check) {
     env: process.env,
     encoding: 'utf8',
     shell: check.shell === true,
+    timeout: 600000,
   });
 
   const errorOutput = result.error ? `${result.error.message}\n` : '';
@@ -184,11 +185,12 @@ function main() {
   console.log('—'.repeat(60));
   if (failed.length === 0) {
     console.log('✅ Doctor checks passed');
-    process.exit(0);
+    process.exitCode = 0;
+    return;
   }
 
   console.log(`❌ Doctor detected ${failed.length} failing check(s)`);
-  process.exit(1);
+  process.exitCode = 1;
 }
 
 main();

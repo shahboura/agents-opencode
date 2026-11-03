@@ -56,10 +56,6 @@ const V2_IGNORED_TOP_LEVEL_KEYS = ['subagent_depth', 'logLevel', 'server'];
 // checkpoint-based compaction). `compaction` itself stays a v2 key.
 const V2_IGNORED_COMPACTION_KEYS = ['prune', 'tail_turns'];
 
-// The shipped plugin file lives in `.opencode/plugins/`; both entrypoints are in
-// this one file (named export for v1, default export for v2).
-const PLUGIN_FILE = 'agents-opencode.ts';
-
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
@@ -303,34 +299,6 @@ function configPatchShape(target) {
   };
 }
 
-function revertKeysFor(target) {
-  return configKeysFor(target).managedKeys;
-}
-
-// Default passthrough: v2 translates v1 frontmatter in memory. These are the
-// seam for a future explicit `--v2-native` rewrite (Phase 4/5).
-function transformAgentFrontmatter(text, target) {
-  assertTarget(target);
-  return text;
-}
-
-function transformCommandFrontmatter(text, target) {
-  assertTarget(target);
-  return text;
-}
-
-function transformSkillFrontmatter(text, target) {
-  assertTarget(target);
-  return text;
-}
-
-function pluginEntrypoints(target) {
-  const t = assertTarget(target);
-  return t === 'v1'
-    ? { file: PLUGIN_FILE, exportName: 'AgentsOpencodePlugin' }
-    : { file: PLUGIN_FILE, exportName: 'default' };
-}
-
 module.exports = {
   TARGETS,
   parseHostMajor,
@@ -342,9 +310,4 @@ module.exports = {
   V2_IGNORED_TOP_LEVEL_KEYS,
   V2_IGNORED_COMPACTION_KEYS,
   configPatchShape,
-  revertKeysFor,
-  transformAgentFrontmatter,
-  transformCommandFrontmatter,
-  transformSkillFrontmatter,
-  pluginEntrypoints,
 };

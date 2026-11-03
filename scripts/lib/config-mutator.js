@@ -55,6 +55,8 @@ function otherTarget(target) {
 // Remove the *other* target's installer-shaped managed keys so a config file
 // never holds both the v1 and v2 key sets. Only values the installer itself
 // would have produced are removed; user-owned values are left untouched.
+// Runs on every merge, not only on a target switch: a same-target update still
+// strips installer-shaped keys left by an older target.
 // Returns true when anything was stripped so the caller can persist the change.
 function stripOtherTargetKeys(existing, target, sourceConfig, logWarning) {
   const other = opencodeTarget.configKeysFor(otherTarget(target));
@@ -109,7 +111,7 @@ function stripOtherTargetKeys(existing, target, sourceConfig, logWarning) {
     if (remaining.length !== existing[pluginKey].length) {
       changed = true;
       if (logWarning) {
-        logWarning(`Stripped retired installer plugin entry from '${pluginKey}' while switching to target '${target}'.`);
+        logWarning(`Stripped retired installer plugin entry from '${pluginKey}' while merging target '${target}' config.`);
       }
       if (remaining.length > 0) {
         existing[pluginKey] = remaining;
