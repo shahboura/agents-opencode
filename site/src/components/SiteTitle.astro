@@ -55,12 +55,19 @@
     color: #141414;
   }
   .site-wordmark:focus-visible {
+    /* The title wrapper clips at 4px, so a larger offset would hide the ring. */
     outline: 2px solid var(--sl-color-accent);
-    outline-offset: 4px;
+    outline-offset: 1px;
     border-radius: 6px;
   }
   @media (max-width: 480px) {
     .site-wordmark__tagline {
+      display: none;
+    }
+  }
+  /* The wordmark only survives as a mid-word clip; the badge carries the brand. */
+  @media (width < 26.25rem) {
+    .site-wordmark__text {
       display: none;
     }
   }

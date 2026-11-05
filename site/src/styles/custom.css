@@ -312,15 +312,41 @@ samp {
   }
 }
 
-/* Splash pages render no `data-has-sidebar` on <html> (docs pages do). With no
-   menu button, the header group holding the theme control is the only way to
-   reach it below 50rem: show that group, but only the theme select inside it. */
-@media (width < 50rem) {
-  html:not([data-has-sidebar]) header .sl-hidden:has(starlight-theme-select) {
+/* One spacing rhythm at every size, with the separator gone. */
+header .right-group {
+  /* 7px: the 18px glyph in a 36px desktop button sits 1px deeper than the
+     social pair's padding, so 7 + insets keeps every glyph gap at 16px. */
+  gap: 7px;
+}
+header .right-group .social-icons::after {
+  content: none;
+}
+
+/* Below 50rem Starlight hides the header's right group and duplicates its
+   controls in the mobile menu footer. Keep the cluster in the header instead;
+   the header already reserves space for the fixed menu button. */
+@media screen and (width < 50rem) {
+  header .right-group {
     display: flex;
+    gap: 3px;
   }
-  html:not([data-has-sidebar]) header .sl-hidden:has(starlight-theme-select) > :not(starlight-theme-select) {
+  /* Each control appears once: drop the menu footer copies. */
+  .mobile-preferences {
     display: none;
+  }
+  /* Pin search to the cluster; space-between would otherwise strand it mid-bar. */
+  header .header > div:has(site-search) {
+    margin-inline-start: auto;
+  }
+  /* Icon insets differ (search 6px, theme button 13px), so trim the box gaps
+     until the glyph-to-glyph distance matches the social pair's 16px. */
+  header .header {
+    gap: 10px;
+  }
+  /* Pull the cluster 16px closer to the fixed menu button: 21px between glyphs
+     with the two tap targets touching. */
+  html[data-has-sidebar] header.header {
+    padding-inline-end: calc(var(--sl-nav-pad-x) + var(--sl-menu-button-size));
   }
 }
 
