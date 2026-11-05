@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.4.0](https://github.com/shahboura/agents-opencode/compare/v4.3.5...v4.4.0) (2026-11-05)
+
+
+### Features
+
+* **site:** keep header controls visible below 50rem ([#185](https://github.com/shahboura/agents-opencode/issues/185)) ([3064372](https://github.com/shahboura/agents-opencode/commit/306437201078982b7c2d28c954f1631795df9be1))
+
 ## [4.3.5](https://github.com/shahboura/agents-opencode/compare/v4.3.4...v4.3.5) (2026-11-03)
 
 
